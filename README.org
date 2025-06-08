@@ -1,0 +1,131 @@
+#+title: Simple Annotate
+#+author: James Dyer
+#+email: captainflasmr@gmail.com
+#+language: en
+#+options: ':t toc:nil author:nil email:nil num:nil title:nil
+#+todo: TODO DOING | DONE
+#+startup: showall
+
+A lightweight annotation system for Emacs that allows you to attach comments to documents without modifying the original files. All annotations are stored in a centralized JSON database.
+
+* Features
+
+- 📝 *Non-intrusive*: Annotations don't modify your original files
+- 🎨 *Visual feedback*: Highlights annotated text with customizable colors
+- 💾 *Persistent storage*: Annotations saved automatically in JSON format
+- 🖱️ *Mouse support*: Hover over annotated text to see annotations
+- ⚡ *Lightweight*: ~200 lines of code
+- 🔍 *Easy inspection*: Human-readable JSON database format
+
+* Installation
+
+1. Download =simple-annotate.el= and place it in your Emacs load path
+2. Add to your Emacs configuration:
+
+#+begin_src emacs-lisp
+(require 'simple-annotate)
+#+end_src
+
+* Usage
+
+** Basic Commands
+
+Enable annotation mode in any buffer:
+#+begin_example
+M-x simple-annotate-mode
+#+end_example
+
+** Key Bindings
+
+| Key Binding | Command                    | Description                           |
+|-------------+----------------------------+---------------------------------------|
+| =C-c a a=   | simple-annotate-add        | Add annotation to selection/line      |
+| =C-c a d=   | simple-annotate-remove     | Delete annotation at point            |
+| =C-c a e=   | simple-annotate-edit       | Edit annotation at point              |
+| =C-c a s=   | simple-annotate-show       | Show annotation at point in minibuffer |
+| =C-c a l=   | simple-annotate-list       | List all annotations in buffer        |
+
+** Workflow
+
+1. *Enable the mode*: =M-x simple-annotate-mode=
+2. *Add annotations*:
+   - Select text and press =C-c a a=
+   - Or place cursor on a line and press =C-c a a=
+3. *View annotations*: Hover mouse over highlighted text or press =C-c a s=
+4. *Edit annotations*: Place cursor on annotated text and press =C-c a e=
+5. *Remove annotations*: Place cursor on annotated text and press =C-c a d=
+
+* Configuration
+
+** Customization Options
+
+#+begin_src emacs-lisp
+;; Change annotation database location (default: ~/.emacs.d/simple-annotations.json)
+(setq simple-annotate-file "~/my-annotations.json")
+
+;; Customize highlight appearance
+(setq simple-annotate-highlight-face '(:background "lightblue" :foreground "black"))
+
+;; Change annotation column position
+(setq simple-annotate-annotation-column 80)
+#+end_src
+
+** Auto-enable for Specific Modes
+
+#+begin_src emacs-lisp
+;; Enable for programming modes
+(add-hook 'prog-mode-hook #'simple-annotate-mode)
+
+;; Enable for text modes
+(add-hook 'text-mode-hook #'simple-annotate-mode)
+#+end_src
+
+* Database Format
+
+Annotations are stored in a simple JSON format at =~/.emacs.d/simple-annotations.json=:
+
+#+begin_src json
+{
+  "/path/to/file.txt": [
+    {
+      "start": 100,
+      "end": 150,
+      "text": "This is my annotation"
+    }
+  ]
+}
+#+end_src
+
+This format makes it easy to:
+- Backup your annotations
+- Share annotations with others
+- Inspect annotations outside of Emacs
+- Write external tools to process annotations
+
+* Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+* License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+* Acknowledgments
+
+- Inspired by the original [[https://github.com/bastibe/annotate.el][annotate.el]] package
+- Thanks to the Emacs community for feedback and suggestions
+
+* Changelog
+
+** v1.0.0
+- Initial release
+- Basic annotation functionality
+- JSON database format
+- Mouse hover support
+- Auto-save functionality
