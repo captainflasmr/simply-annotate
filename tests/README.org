@@ -71,7 +71,7 @@ cat > "$INIT_FILE" << EOF
 
 ;; Load the package
 (require 'simply-annotate)
-(require 'simply-annotate-transient)
+(global-set-key (kbd "C-c A") simply-annotate-mode)
 
 ;; Show a message to confirm we're in test mode
 (message "Testing simply-annotate in vanilla Emacs %s" emacs-version)
