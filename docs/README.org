@@ -1,4 +1,4 @@
-#+title: Simple Annotate: Simple Annotation
+#+title: Simply Annotate: Simple Annotation
 #+author: James Dyer
 #+email: captainflasmr@gmail.com
 #+language: en
@@ -18,17 +18,17 @@ sudo make install-docs
 #+RESULTS:
 : make: Nothing to be done for 'docs'.
 
-Then calling up =info= =C-h i= and Simple Annotate will be present in the Emacs menu, or just select =m= and search for =Simple Annotate=
+Then calling up =info= =C-h i= and Simply Annotate will be present in the Emacs menu, or just select =m= and search for =Simply Annotate=
 
 For those interested in the manual, I have converted it into html format, which is accessible here:
 
-[[file:docs/simple-annotate.org]]
+[[file:docs/simply-annotate.org]]
 
 It has been converted using the following command:
 
 #+begin_src bash
-makeinfo --html --no-split simple-annotate.texi -o simple-annotate.html
-pandoc -f html -t org -o simple-annotate.org simple-annotate.html
+makeinfo --html --no-split simply-annotate.texi -o simply-annotate.html
+pandoc -f html -t org -o simply-annotate.org simply-annotate.html
 #+end_src
 
 #+RESULTS:

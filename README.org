@@ -1,4 +1,4 @@
-#+title: Simple Annotate: A Lightweight Annotation System
+#+title: Simply Annotate: A Lightweight Annotation System
 #+author: James Dyer
 #+email: captainflasmr@gmail.com
 #+language: en
@@ -8,7 +8,7 @@
 
 #+attr_org: :width 300px
 #+attr_html: :width 50%
-[[file:img/simple-annotate-banner.jpg]]
+[[file:img/simply-annotate-banner.jpg]]
 
 A lightweight annotation system for Emacs that allows you to add persistent notes to any text file without modifying the original content.
 
@@ -24,7 +24,7 @@ The main functional aspects that I felt were important to me that generally diff
   - Can quickly step through annotations with =n= and =p=
  - org buffer summary of annotations (although =annotate.el= also has this)
 
-See [[file:docs/simple-annotate.org]] for the manual!
+See [[file:docs/simply-annotate.org]] for the manual!
 
 * Features
 
@@ -42,24 +42,24 @@ See [[file:docs/simple-annotate.org]] for the manual!
 ** MELPA (Recommended)
 
 #+begin_src emacs-lisp
-(use-package simple-annotate
-  :bind ("C-c A" . simple-annotate-mode))
+(use-package simply-annotate
+  :bind ("C-c A" . simply-annotate-mode))
 #+end_src
 
 ** Manual Installation
 
-1. Download =simple-annotate.el=
+1. Download =simply-annotate.el=
 2. Place it in your Emacs =load-path=
 3. Add to your configuration:
 
 #+begin_src emacs-lisp
-(require 'simple-annotate)
-(global-set-key (kbd "C-c A") simple-annotate-mode)
+(require 'simply-annotate)
+(global-set-key (kbd "C-c A") simply-annotate-mode)
 #+end_src
 
 * Quick Start
 
-1. *Enable the mode*: =M-x simple-annotate-mode= (or use =C-c A= if you've set up the binding)
+1. *Enable the mode*: =M-x simply-annotate-mode= (or use =C-c A= if you've set up the binding)
 2. *Add an annotation*: Select text and press =C-c a a=
 3. *Navigate*: Use =C-c a n= (next) and =C-c a p= (previous) to move between annotations
 4. **View all**: Press =C-c a l= to see all annotations in an org-mode list
@@ -70,24 +70,24 @@ See [[file:docs/simple-annotate.org]] for the manual!
 
 | Keybinding | Command                         | Description                                  |
 |------------+---------------------------------+----------------------------------------------|
-| =C-c a a=  | =simple-annotate-add=           | Add single-line annotation to selection/line |
-| =C-c a m=  | =simple-annotate-add-multiline= | Add multi-line annotation                    |
-| =C-c a d=  | =simple-annotate-remove=        | Delete annotation at point                   |
-| =C-c a e=  | =simple-annotate-edit=          | Edit annotation at point                     |
+| =C-c a a=  | =simply-annotate-add=           | Add single-line annotation to selection/line |
+| =C-c a m=  | =simply-annotate-add-multiline= | Add multi-line annotation                    |
+| =C-c a d=  | =simply-annotate-remove=        | Delete annotation at point                   |
+| =C-c a e=  | =simply-annotate-edit=          | Edit annotation at point                     |
 
 ** Navigation
 
 | Keybinding | Command                    | Description                      |
 |------------+----------------------------+----------------------------------|
-| =C-c a n=  | =simple-annotate-next=     | Jump to next annotation          |
-| =C-c a p=  | =simple-annotate-previous= | Jump to previous annotation      |
-| =C-c a l=  | =simple-annotate-list=     | List all annotations in org-mode |
+| =C-c a n=  | =simply-annotate-next=     | Jump to next annotation          |
+| =C-c a p=  | =simply-annotate-previous= | Jump to previous annotation      |
+| =C-c a l=  | =simply-annotate-list=     | List all annotations in org-mode |
 
 ** View Options
 
 | Keybinding | Command                  | Description                        |
 |------------+--------------------------+------------------------------------|
-| =C-c a t=  | =simple-annotate-toggle= | Toggle auto-show annotation buffer |
+| =C-c a t=  | =simply-annotate-toggle= | Toggle auto-show annotation buffer |
 
 ** Creating Annotations
 
@@ -108,7 +108,7 @@ See [[file:docs/simple-annotate.org]] for the manual!
 
 ** Viewing Annotations
 
-When =simple-annotate-mode= is active:
+When =simply-annotate-mode= is active:
 
 - Annotated text is highlighted with a colored background
 - The header line shows annotation count and available commands
@@ -139,50 +139,50 @@ When =simple-annotate-mode= is active:
 ** Basic Configuration
 
 #+begin_src emacs-lisp
-(use-package simple-annotate
+(use-package simply-annotate
   :custom
   ;; Customize highlight colors
-  (simple-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
+  (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
   
   ;; Change annotation buffer height (fraction of frame)
-  (simple-annotate-buffer-height 0.25)
+  (simply-annotate-buffer-height 0.25)
   
   ;; Disable auto-show buffer
-  (simple-annotate-auto-show-buffer nil)
+  (simply-annotate-auto-show-buffer nil)
   
   ;; Custom storage location
-  (simple-annotate-file "~/my-annotations.el")
+  (simply-annotate-file "~/my-annotations.el")
   
   :bind
-  ("C-c A" . simple-annotate-mode))
+  ("C-c A" . simply-annotate-mode))
 #+end_src
 
 ** Available Customization Options
 
 | Variable                           | Default                            | Description                            |
 |------------------------------------+------------------------------------+----------------------------------------|
-| =simple-annotate-file=             | =~/.emacs.d/simple-annotations.el= | File to store annotations              |
-| =simple-annotate-highlight-face=   | Yellow background, black text      | Face for highlighted text              |
-| =simple-annotate-buffer-name=      | =*Annotation*=                     | Name of annotation display buffer      |
-| =simple-annotate-auto-show-buffer= | =t=                                | Auto-show annotation buffer on hover   |
-| =simple-annotate-buffer-height=    | =0.3=                              | Height of annotation buffer (fraction) |
+| =simply-annotate-file=             | =~/.emacs.d/simply-annotations.el= | File to store annotations              |
+| =simply-annotate-highlight-face=   | Yellow background, black text      | Face for highlighted text              |
+| =simply-annotate-buffer-name=      | =*Annotation*=                     | Name of annotation display buffer      |
+| =simply-annotate-auto-show-buffer= | =t=                                | Auto-show annotation buffer on hover   |
+| =simply-annotate-buffer-height=    | =0.3=                              | Height of annotation buffer (fraction) |
 
 ** Custom Highlight Colors
 
 #+begin_src emacs-lisp
 ;; Subtle highlighting
-(setq simple-annotate-highlight-face '(:background "#fff3cd" :foreground "#856404"))
+(setq simply-annotate-highlight-face '(:background "#fff3cd" :foreground "#856404"))
 
 ;; High contrast
-(setq simple-annotate-highlight-face '(:background "#007acc" :foreground "white" :weight bold))
+(setq simply-annotate-highlight-face '(:background "#007acc" :foreground "white" :weight bold))
 
 ;; Use existing face
-(setq simple-annotate-highlight-face 'highlight)
+(setq simply-annotate-highlight-face 'highlight)
 #+end_src
 
 * Data Storage
 
-Annotations are stored in a separate file (by default =~/.emacs.d/simple-annotations.el=) and are organized by file path or buffer name. The storage format is:
+Annotations are stored in a separate file (by default =~/.emacs.d/simply-annotations.el=) and are organized by file path or buffer name. The storage format is:
 
 - **Persistent**: Survives Emacs restarts
 - **Portable**: Can be version controlled or shared
@@ -196,8 +196,8 @@ Annotations are stored in a separate file (by default =~/.emacs.d/simple-annotat
 1. *Enable globally for specific file types*:
    
    #+begin_src emacs-lisp
-   (add-hook 'prog-mode-hook #'simple-annotate-mode)
-   (add-hook 'text-mode-hook #'simple-annotate-mode)
+   (add-hook 'prog-mode-hook #'simply-annotate-mode)
+   (add-hook 'text-mode-hook #'simply-annotate-mode)
    #+end_src
 
 3. *Export annotations to file*:
@@ -216,30 +216,30 @@ Annotations are stored in a separate file (by default =~/.emacs.d/simple-annotat
 
 *** Annotations not persisting
 
-- Check that =simple-annotate-file= is writable
+- Check that =simply-annotate-file= is writable
 - Ensure the directory exists
 
 *** Highlighting not visible
 
-- Customize =simple-annotate-highlight-face= for your color theme
+- Customize =simply-annotate-highlight-face= for your color theme
 - Check for conflicting overlays from other packages
 
 *** Keybindings not working
 
-- Ensure =simple-annotate-mode= is enabled
+- Ensure =simply-annotate-mode= is enabled
 - Check for conflicting keybindings with =C-h k=
 
 ** Getting Help
 
 #+begin_src emacs-lisp
 ;; View current annotations
-M-x simple-annotate-list
+M-x simply-annotate-list
 
 ;; Check mode status  
 M-x describe-mode
 
 ;; View keybindings
-C-h m (when simple-annotate-mode is active)
+C-h m (when simply-annotate-mode is active)
 #+end_src
 
 * Alternative package comparison
@@ -254,7 +254,7 @@ C-h m (when simple-annotate-mode is active)
 - Support for annotation expansion macros
 - Database switching functionality
 
-*simple-annotate* differentiates by:
+*simply-annotate* differentiates by:
 - *Header-line status display* - UX status and keybindings
 - *Annotation buffer* - with auto-show, editing and navigation
 - *Lightweight implementation* - provides core functionality
@@ -267,7 +267,7 @@ C-h m (when simple-annotate-mode is active)
 - Leverages existing org-mode knowledge
 - Long-standing package with proven workflow
 
-*simple-annotate* differentiates by:
+*simply-annotate* differentiates by:
 - *Visual overlay highlighting* vs text-only annotations
 - *Interactive annotation buffer* that updates automatically
 - *Simpler annotation format* that's less prone to corruption
@@ -283,7 +283,7 @@ C-h m (when simple-annotate-mode is active)
 - Good for research and academic workflows
 - Support for multiple document types (PDFs, EPUBs, web pages)
 
-*simple-annotate* differentiates by:
+*simply-annotate* differentiates by:
 - *Focused on text files* rather than multi-format documents
 - *Lighter weight* with faster startup and operation
 - *Simpler annotation model* - text-centric rather than highlight-centric
@@ -299,7 +299,7 @@ C-h m (when simple-annotate-mode is active)
 - Strong academic and research focus
 - Good integration with document viewers (PDF-tools, DocView, nov.el)
 
-*simple-annotate* differentiates by:
+*simply-annotate* differentiates by:
 - *General-purpose file annotation* vs document-specific workflows
 - *Simpler mental model* - annotate any text file directly
 - *Lightweight operation* without requiring document viewer setup
@@ -320,8 +320,8 @@ Contributions are welcome! Please:
 
 #+begin_src emacs-lisp
 ;; For development, load from source
-(add-to-list 'load-path "/path/to/simple-annotate")
-(require 'simple-annotate)
+(add-to-list 'load-path "/path/to/simply-annotate")
+(require 'simply-annotate)
 #+end_src
 
 * License

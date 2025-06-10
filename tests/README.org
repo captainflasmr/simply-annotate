@@ -1,4 +1,4 @@
-#+title: Simple Annotate: Testing
+#+title: Simply Annotate: Testing
 #+author: James Dyer
 #+email: captainflasmr@gmail.com
 #+language: en
@@ -6,16 +6,16 @@
 #+todo: TODO DOING | DONE
 #+startup: showall
 
-* Simple Annotate Testing Process/Strategy
+* Simply Annotate Testing Process/Strategy
 
-This file contains a description of my testing strategy for the =simple-annotate= Emacs package and the tests directory includes local unit tests and files to aid in robustly testing before pushing to =github= https://github.com/captainflasmr/simple-annotate and then on to MELPA.
+This file contains a description of my testing strategy for the =simply-annotate= Emacs package and the tests directory includes local unit tests and files to aid in robustly testing before pushing to =github= https://github.com/captainflasmr/simply-annotate and then on to MELPA.
 
 ** Validate/lint elisp
 
 - Run =checkdoc=
-- =byte-compile= on simple-annotate.el
-- =flycheck= on simple-annotate.el
-- =package-lint= on simple-annotate.el
+- =byte-compile= on simply-annotate.el
+- =flycheck= on simply-annotate.el
+- =package-lint= on simply-annotate.el
 - Possibly =melpazoid= (if I can be bothered!)
 
 ** Batch-byte-compile
@@ -25,7 +25,7 @@ This file contains a description of my testing strategy for the =simple-annotate
 
 # List of elisp files to compile
 elisp_files=(
-  "simple-annotate.el"
+  "simply-annotate.el"
 )
 
 # Directory above current one
@@ -38,48 +38,48 @@ for el in "${elisp_files[@]}"; do
 done
 #+end_src
 
-** Run simple-annotate with different Emacs versions
+** Run simply-annotate with different Emacs versions
 
 - [X] emacs-28.1
 - [X] emacs-29.3
 - [X] emacs-29.4
 - [X] emacs-30.1
 
-Using the following script to generate a very simple init.el file which is then run up against varying versions of Emacs to then run up =simple-annotate= using =C-c o= and perform some quick tests.
+Using the following script to generate a very simple init.el file which is then run up against varying versions of Emacs to then run up =simply-annotate= using =C-c o= and perform some quick tests.
 
 #+begin_src bash
 #!/bin/bash
 
-# Script to test simple-annotate package in a vanilla Emacs environment
-# Usage: ./test-simple-annotate.sh [emacs-version]
-# Example: ./test-simple-annotate.sh 29.3
+# Script to test simply-annotate package in a vanilla Emacs environment
+# Usage: ./test-simply-annotate.sh [emacs-version]
+# Example: ./test-simply-annotate.sh 29.3
 
 # Default Emacs version if none specified
 VERSION=${1:-"28.2"}
-PACKAGE_PATH="~/source/repos/simple-annotate"
+PACKAGE_PATH="~/source/repos/simply-annotate"
 
 # Create a temporary directory for the test
-TEMP_DIR=$(mktemp -d -t simple-annotate-test-XXXXXX)
+TEMP_DIR=$(mktemp -d -t simply-annotate-test-XXXXXX)
 INIT_FILE="$TEMP_DIR/init.el"
 
 # Create a minimal init.el file
 cat > "$INIT_FILE" << EOF
-;; Minimal init.el for testing simple-annotate (offline version)
+;; Minimal init.el for testing simply-annotate (offline version)
 
 ;; Add the package to the load path
 (add-to-list 'load-path "$PACKAGE_PATH")
 
 ;; Load the package
-(require 'simple-annotate)
-(require 'simple-annotate-transient)
+(require 'simply-annotate)
+(require 'simply-annotate-transient)
 
 ;; Show a message to confirm we're in test mode
-(message "Testing simple-annotate in vanilla Emacs %s" emacs-version)
+(message "Testing simply-annotate in vanilla Emacs %s" emacs-version)
 EOF
 
 # Run Emacs with the temporary init file
 echo "Starting Emacs $VERSION with minimal configuration..."
-echo "Testing simple-annotate from: $PACKAGE_PATH"
+echo "Testing simply-annotate from: $PACKAGE_PATH"
 echo "Temporary init file: $INIT_FILE"
 
 # Run the appropriate Emacs version
