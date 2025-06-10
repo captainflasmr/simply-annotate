@@ -1,7 +1,7 @@
-This is simple-annotate.info, produced by makeinfo version 6.5 from
-simple-annotate.texi.
+This is simply-annotate.info, produced by makeinfo version 7.2 from
+simply-annotate.texi.
 
-This manual is for Simple Annotate (version 0.0.1).
+This manual is for Simply Annotate (version 0.0.1).
 
    Copyright © 2025 James Dyer.
 
@@ -10,23 +10,23 @@ This manual is for Simple Annotate (version 0.0.1).
      Version 1.3 or any later version published by the Free Software
      Foundation; with no Invariant Sections, no Front-Cover Texts, and
      no Back-Cover Texts.  A copy of the license is included in the
-     section entitled “GNU Free Documentation License”.
+     section entitled "GNU Free Documentation License".
 INFO-DIR-SECTION Emacs
 START-INFO-DIR-ENTRY
-* Simple Annotate: (simple-annotate).    Simple annotation system for Emacs.
+* Simply Annotate: (simply-annotate).    Simple annotation system for Emacs.
 END-INFO-DIR-ENTRY
 
 
-File: simple-annotate.info,  Node: Top,  Next: Introduction,  Up: (dir)
+File: simply-annotate.info,  Node: Top,  Next: Introduction,  Up: (dir)
 
-Simple Annotate
+Simply Annotate
 ***************
 
-This manual documents Simple Annotate, a lightweight annotation system
+This manual documents Simply Annotate, a lightweight annotation system
 for Emacs that allows you to add persistent notes to any text file
 without modifying the original content.
 
-   This manual is for Simple Annotate (version 0.0.1).
+   This manual is for Simply Annotate (version 0.0.1).
 
    Copyright © 2025 James Dyer.
 
@@ -35,42 +35,42 @@ without modifying the original content.
      Version 1.3 or any later version published by the Free Software
      Foundation; with no Invariant Sections, no Front-Cover Texts, and
      no Back-Cover Texts.  A copy of the license is included in the
-     section entitled “GNU Free Documentation License”.
+     section entitled "GNU Free Documentation License".
 
 * Menu:
 
-* Introduction::                What is Simple Annotate?
-* Installation::                How to install Simple Annotate
+* Introduction::                What is Simply Annotate?
+* Installation::                How to install Simply Annotate
 * Getting Started::             Quick start guide
 * Basic Usage::                 Creating and managing annotations
 * Navigation::                  Moving between annotations
-* Customization::               Configuring Simple Annotate
+* Customization::               Configuring Simply Annotate
 * Advanced Features::           Org-mode integration and more
 * Troubleshooting::             Common issues and solutions
 * Index::                       Complete index
 
 
-File: simple-annotate.info,  Node: Introduction,  Next: Installation,  Prev: Top,  Up: Top
+File: simply-annotate.info,  Node: Introduction,  Next: Installation,  Prev: Top,  Up: Top
 
 1 Introduction
 **************
 
-Simple Annotate is a lightweight annotation system for Emacs that
+Simply Annotate is a lightweight annotation system for Emacs that
 provides a non-intrusive way to add persistent notes to any text file.
-Unlike other annotation systems, Simple Annotate stores your notes
+Unlike other annotation systems, Simply Annotate stores your notes
 separately from the original files, ensuring that your source code,
 documents, and configuration files remain unchanged.
 
 1.1 Key Features
 ================
 
-   • *Non-intrusive*: Annotations are stored separately and don’t modify
+   • *Non-intrusive*: Annotations are stored separately and don't modify
      your original files
    • *Multiple formats*: Support for both single-line and multi-line
      annotations
    • *Visual highlighting*: Annotated text is highlighted with
      customizable colors
-   • *Easy navigation*: Jump between annotations with simple keybindings
+   • *Easy navigation*: Jump between annotations with simply keybindings
    • *Persistent storage*: Annotations survive between Emacs sessions
    • *Org-mode export*: List all annotations in a structured org-mode
      buffer
@@ -82,7 +82,7 @@ documents, and configuration files remain unchanged.
 1.2 Use Cases
 =============
 
-Simple Annotate is perfect for:
+Simply Annotate is perfect for:
 
    • Code review and analysis
    • Learning new codebases
@@ -91,7 +91,7 @@ Simple Annotate is perfect for:
    • Note-taking during reading
 
 
-File: simple-annotate.info,  Node: Installation,  Next: Getting Started,  Prev: Introduction,  Up: Top
+File: simply-annotate.info,  Node: Installation,  Next: Getting Started,  Prev: Introduction,  Up: Top
 
 2 Installation
 **************
@@ -99,42 +99,42 @@ File: simple-annotate.info,  Node: Installation,  Next: Getting Started,  Prev: 
 2.1 Requirements
 ================
 
-Simple Annotate requires Emacs 28.1 or later.  No external dependencies
+Simply Annotate requires Emacs 28.1 or later.  No external dependencies
 are needed.
 
 2.2 Installing from MELPA
 =========================
 
-The easiest way to install Simple Annotate is through MELPA:
+The easiest way to install Simply Annotate is through MELPA:
 
-     (use-package simple-annotate
+     (use-package simply-annotate
        :ensure t)
 
 2.3 Manual Installation
 =======================
 
-  1. Download ‘simple-annotate.el’ from the project repository
+  1. Download ‘simply-annotate.el’ from the project repository
   2. Place it in your Emacs ‘load-path’
   3. Add the following to your Emacs configuration:
 
-          (require 'simple-annotate)
+          (require 'simply-annotate)
 
 
-File: simple-annotate.info,  Node: Getting Started,  Next: Basic Usage,  Prev: Installation,  Up: Top
+File: simply-annotate.info,  Node: Getting Started,  Next: Basic Usage,  Prev: Installation,  Up: Top
 
 3 Getting Started
 *****************
 
-3.1 Enabling Simple Annotate Mode
+3.1 Enabling Simply Annotate Mode
 =================================
 
-To start using Simple Annotate in a buffer, enable the minor mode:
+To start using Simply Annotate in a buffer, enable the minor mode:
 
-     M-x simple-annotate-mode
+     M-x simply-annotate-mode
 
    You can also bind this to a convenient key:
 
-     (global-set-key (kbd "C-c a") #'simple-annotate-mode)
+     (global-set-key (kbd "C-c a") #'simply-annotate-mode)
 
 3.2 Your First Annotation
 =========================
@@ -153,7 +153,7 @@ When you move your cursor to annotated text:
    • A tooltip shows when you hover over the text
 
 
-File: simple-annotate.info,  Node: Basic Usage,  Next: Navigation,  Prev: Getting Started,  Up: Top
+File: simply-annotate.info,  Node: Basic Usage,  Next: Navigation,  Prev: Getting Started,  Up: Top
 
 4 Basic Usage
 *************
@@ -164,10 +164,10 @@ File: simple-annotate.info,  Node: Basic Usage,  Next: Navigation,  Prev: Gettin
 4.1.1 Single-line Annotations
 -----------------------------
 
-To create a simple annotation:
+To create a simply annotation:
 
   1. Select text or place cursor on a line
-  2. Press ‘C-c a a’ (‘simple-annotate-add’)
+  2. Press ‘C-c a a’ (‘simply-annotate-add’)
   3. Enter your annotation text
   4. Press <RET> to save
 
@@ -177,7 +177,7 @@ To create a simple annotation:
 For longer annotations:
 
   1. Select text or place cursor on a line
-  2. Press ‘C-c a m’ (‘simple-annotate-add-multiline’)
+  2. Press ‘C-c a m’ (‘simply-annotate-add-multiline’)
   3. A dedicated buffer opens for editing
   4. Type your multi-line annotation
   5. Press ‘C-c C-c’ to save or ‘C-c C-k’ to cancel
@@ -188,7 +188,7 @@ For longer annotations:
 To modify an existing annotation:
 
   1. Place cursor on annotated text
-  2. Press ‘C-c a e’ (‘simple-annotate-edit’)
+  2. Press ‘C-c a e’ (‘simply-annotate-edit’)
   3. For single-line annotations, edit in the minibuffer
   4. For multi-line annotations, a dedicated buffer opens
   5. Save with ‘C-c C-c’ or cancel with ‘C-c C-k’
@@ -199,7 +199,7 @@ To modify an existing annotation:
 To delete an annotation:
 
   1. Place cursor on annotated text
-  2. Press ‘C-c a d’ (‘simple-annotate-remove’)
+  2. Press ‘C-c a d’ (‘simply-annotate-remove’)
   3. The annotation is immediately removed
 
 4.4 Key Bindings Summary
@@ -217,7 +217,7 @@ Key Binding            Command
 ‘C-c a t’              Toggle auto-show buffer
 
 
-File: simple-annotate.info,  Node: Navigation,  Next: Customization,  Prev: Basic Usage,  Up: Top
+File: simply-annotate.info,  Node: Navigation,  Next: Customization,  Prev: Basic Usage,  Up: Top
 
 5 Navigation
 ************
@@ -228,21 +228,21 @@ File: simple-annotate.info,  Node: Navigation,  Next: Customization,  Prev: Basi
 5.1.1 Next Annotation
 ---------------------
 
-Press ‘C-c a n’ (‘simple-annotate-next’) to jump to the next annotation
-in the buffer.  If you’re at the last annotation, it wraps to the first
+Press ‘C-c a n’ (‘simply-annotate-next’) to jump to the next annotation
+in the buffer.  If you're at the last annotation, it wraps to the first
 one.
 
 5.1.2 Previous Annotation
 -------------------------
 
-Press ‘C-c a p’ (‘simple-annotate-previous’) to jump to the previous
-annotation in the buffer.  If you’re at the first annotation, it wraps
+Press ‘C-c a p’ (‘simply-annotate-previous’) to jump to the previous
+annotation in the buffer.  If you're at the first annotation, it wraps
 to the last one.
 
 5.2 Listing All Annotations
 ===========================
 
-Press ‘C-c a l’ (‘simple-annotate-list’) to open an org-mode buffer
+Press ‘C-c a l’ (‘simply-annotate-list’) to open an org-mode buffer
 showing all annotations in the current buffer.  This provides:
 
    • A structured overview of all your annotations
@@ -253,7 +253,7 @@ showing all annotations in the current buffer.  This provides:
 5.3 Automatic Preview
 =====================
 
-When ‘simple-annotate-auto-show-buffer’ is enabled (the default), moving
+When ‘simply-annotate-auto-show-buffer’ is enabled (the default), moving
 your cursor to annotated text automatically:
 
    • Updates the header line with annotation information
@@ -261,7 +261,7 @@ your cursor to annotated text automatically:
    • Displays the annotation number and total count
 
 
-File: simple-annotate.info,  Node: Customization,  Next: Advanced Features,  Prev: Navigation,  Up: Top
+File: simply-annotate.info,  Node: Customization,  Next: Advanced Features,  Prev: Navigation,  Up: Top
 
 6 Customization
 ***************
@@ -272,91 +272,91 @@ File: simple-annotate.info,  Node: Customization,  Next: Advanced Features,  Pre
 6.1.1 Storage Location
 ----------------------
 
- -- Variable: simple-annotate-file
-     File to store annotations.  Default is ‘simple-annotations.el’ in
+ -- Variable: simply-annotate-file
+     File to store annotations.  Default is ‘simply-annotations.el’ in
      your ‘user-emacs-directory’.
 
-          (setq simple-annotate-file "~/my-annotations.el")
+          (setq simply-annotate-file "~/my-annotations.el")
 
 6.1.2 Visual Appearance
 -----------------------
 
- -- Variable: simple-annotate-highlight-face
+ -- Variable: simply-annotate-highlight-face
      Face used to highlight annotated text.  Default is yellow
      background with black foreground.
 
           ;; Subtle highlighting
-          (setq simple-annotate-highlight-face
+          (setq simply-annotate-highlight-face
                 '(:background "#fff3cd" :foreground "#856404"))
 
           ;; High contrast
-          (setq simple-annotate-highlight-face
+          (setq simply-annotate-highlight-face
                 '(:background "#007acc" :foreground "white" :weight bold))
 
           ;; Use existing face
-          (setq simple-annotate-highlight-face 'highlight)
+          (setq simply-annotate-highlight-face 'highlight)
 
 6.1.3 Buffer Behavior
 ---------------------
 
- -- Variable: simple-annotate-buffer-name
+ -- Variable: simply-annotate-buffer-name
      Name of the buffer used to display annotation content.  Default is
      ‘*Annotation*’.
 
- -- Variable: simple-annotate-auto-show-buffer
+ -- Variable: simply-annotate-auto-show-buffer
      Whether to automatically show the annotation buffer when cursor
      moves to annotated text.  Default is ‘t’.
 
           ;; Disable auto-show
-          (setq simple-annotate-auto-show-buffer nil)
+          (setq simply-annotate-auto-show-buffer nil)
 
- -- Variable: simple-annotate-buffer-height
+ -- Variable: simply-annotate-buffer-height
      Height of the annotation buffer as a fraction of the frame height.
      Default is ‘0.3’ (30% of frame height).
 
           ;; Smaller annotation buffer
-          (setq simple-annotate-buffer-height 0.2)
+          (setq simply-annotate-buffer-height 0.2)
 
 6.2 Complete Configuration Example
 ==================================
 
-     (use-package simple-annotate
+     (use-package simply-annotate
        :ensure t
        :custom
        ;; Custom storage location
-       (simple-annotate-file "~/Documents/annotations.el")
+       (simply-annotate-file "~/Documents/annotations.el")
 
        ;; Subtle highlighting
-       (simple-annotate-highlight-face
+       (simply-annotate-highlight-face
         '(:background "lightblue" :foreground "darkblue"))
 
        ;; Smaller annotation buffer
-       (simple-annotate-buffer-height 0.25)
+       (simply-annotate-buffer-height 0.25)
 
        ;; Disable auto-show
-       (simple-annotate-auto-show-buffer nil)
+       (simply-annotate-auto-show-buffer nil)
 
        :bind
        ;; Custom key binding
-       (("C-c n" . simple-annotate-mode)))
+       (("C-c n" . simply-annotate-mode)))
 
 6.3 Enabling for Specific Modes
 ===============================
 
-You can automatically enable Simple Annotate for specific file types:
+You can automatically enable Simply Annotate for specific file types:
 
      ;; Enable for programming modes
-     (add-hook 'prog-mode-hook #'simple-annotate-mode)
+     (add-hook 'prog-mode-hook #'simply-annotate-mode)
 
      ;; Enable for text modes
-     (add-hook 'text-mode-hook #'simple-annotate-mode)
+     (add-hook 'text-mode-hook #'simply-annotate-mode)
 
      ;; Enable for specific modes
-     (add-hook 'python-mode-hook #'simple-annotate-mode)
-     (add-hook 'org-mode-hook #'simple-annotate-mode)
+     (add-hook 'python-mode-hook #'simply-annotate-mode)
+     (add-hook 'org-mode-hook #'simply-annotate-mode)
 
 
-File: simple-annotate.info,  Node: Advanced Features,  Next: Troubleshooting,  Prev: Customization,  Up: Top
+File: simply-annotate.info,  Node: Advanced Features,  Next: Troubleshooting,  Prev: Customization,  Up: Top
 
 7 Advanced Features
 *******************
@@ -367,7 +367,7 @@ File: simple-annotate.info,  Node: Advanced Features,  Next: Troubleshooting,  P
 7.1.1 Annotation Listing
 ------------------------
 
-The ‘simple-annotate-list’ command creates a structured org-mode buffer
+The ‘simply-annotate-list’ command creates a structured org-mode buffer
 with all annotations.  This buffer includes:
 
    • A title with the source buffer name
@@ -422,7 +422,7 @@ Annotations are stored in a Lisp data structure organized by file:
    • Efficient for loading and saving
 
 
-File: simple-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advanced Features,  Up: Top
+File: simply-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advanced Features,  Up: Top
 
 8 Troubleshooting
 *****************
@@ -436,7 +436,7 @@ File: simple-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advance
 *Problem*: Annotations disappear between Emacs sessions.
 
    *Solutions*:
-   • Check that ‘simple-annotate-file’ points to a writable location
+   • Check that ‘simply-annotate-file’ points to a writable location
    • Ensure the directory exists
    • Verify file permissions
    • Check for errors in the *Messages* buffer
@@ -444,10 +444,10 @@ File: simple-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advance
 8.1.2 Highlighting Not Visible
 ------------------------------
 
-*Problem*: Annotated text doesn’t appear highlighted.
+*Problem*: Annotated text doesn't appear highlighted.
 
    *Solutions*:
-   • Customize ‘simple-annotate-highlight-face’ for your color theme
+   • Customize ‘simply-annotate-highlight-face’ for your color theme
    • Check for conflicting overlays from other packages
    • Try a high-contrast color scheme temporarily
    • Restart Emacs after making face changes
@@ -455,10 +455,10 @@ File: simple-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advance
 8.1.3 Key Bindings Not Working
 ------------------------------
 
-*Problem*: Annotation commands don’t respond to key presses.
+*Problem*: Annotation commands don't respond to key presses.
 
    *Solutions*:
-   • Ensure ‘simple-annotate-mode’ is enabled
+   • Ensure ‘simply-annotate-mode’ is enabled
    • Check for conflicting key bindings with ‘C-h k’
    • Try the commands via ‘M-x’ to test functionality
    • Review your configuration for binding conflicts
@@ -470,8 +470,8 @@ File: simple-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advance
 
    *Solutions*:
    • Consider splitting large annotation databases
-   • Disable ‘simple-annotate-auto-show-buffer’ for better performance
-   • Use fewer visual effects in ‘simple-annotate-highlight-face’
+   • Disable ‘simply-annotate-auto-show-buffer’ for better performance
+   • Use fewer visual effects in ‘simply-annotate-highlight-face’
    • Regular cleanup of unused annotations
 
 8.2 Getting Help
@@ -480,7 +480,7 @@ File: simple-annotate.info,  Node: Troubleshooting,  Next: Index,  Prev: Advance
 8.2.1 Built-in Help
 -------------------
 
-   • ‘C-h m’ - Show mode documentation when ‘simple-annotate-mode’ is
+   • ‘C-h m’ - Show mode documentation when ‘simply-annotate-mode’ is
      active
    • ‘C-h k’ followed by a key - Show what a key binding does
    • ‘M-x describe-variable’ - Get information about customization
@@ -503,13 +503,13 @@ To debug issues:
 When reporting issues, please include:
 
    • Emacs version (‘M-x emacs-version’)
-   • Simple Annotate version
+   • Simply Annotate version
    • Minimal configuration to reproduce the problem
    • Steps to reproduce the issue
    • Error messages or unexpected behavior description
 
 
-File: simple-annotate.info,  Node: Index,  Prev: Troubleshooting,  Up: Top
+File: simply-annotate.info,  Node: Index,  Prev: Troubleshooting,  Up: Top
 
 Index
 *****
@@ -534,23 +534,23 @@ Index
 * setup:                                 Installation.          (line 5)
 * troubleshooting:                       Troubleshooting.       (line 6)
 
-
 
 Tag Table:
-Node: Top722
-Node: Introduction2037
-Node: Installation3436
-Node: Getting Started4112
-Node: Basic Usage5085
-Node: Navigation6966
-Node: Customization8332
-Node: Advanced Features11128
-Node: Troubleshooting13034
-Node: Index15648
+Node: Top718
+Node: Introduction2029
+Node: Installation3426
+Node: Getting Started4102
+Node: Basic Usage5075
+Node: Navigation6956
+Node: Customization8318
+Node: Advanced Features11114
+Node: Troubleshooting13020
+Node: Index15630
 
 End Tag Table
 
 
 Local Variables:
 coding: utf-8
+Info-documentlanguage: en
 End:
