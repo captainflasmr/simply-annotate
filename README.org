@@ -24,6 +24,8 @@ The main functional aspects that I felt were important to me that generally diff
   - Can quickly step through annotations with =n= and =p=
  - org buffer summary of annotations (although =annotate.el= also has this)
 
+See [[file:docs/simple-annotate.org]] for the manual!
+
 * Features
 
 - *Non-intrusive*: Annotations are stored separately and don't modify your original files
