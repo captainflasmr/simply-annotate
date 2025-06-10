@@ -1,4 +1,4 @@
-#+title: Simple Annotate: Local LLM Integration for Emacs
+#+title: Simple Annotate: A Lightweight Annotation System
 #+author: James Dyer
 #+email: captainflasmr@gmail.com
 #+language: en

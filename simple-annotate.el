@@ -23,7 +23,7 @@
 ;;
 ;;; Commentary:
 ;;
-;; A lightweight and intuitive annotation system for Emacs that allows
+;; A lightweight annotation system for Emacs that allows
 ;; you to add persistent notes to any text file without modifying the
 ;; original content.
 ;;
