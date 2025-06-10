@@ -1,4 +1,4 @@
-;;; simply-annotate.el --- Simple annotation system for Emacs -*- lexical-binding: t; -*-
+;;; simply-annotate.el --- Simple annotation system -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
 ;; Version: 0.0.1
@@ -238,8 +238,7 @@ Optional argument POS ."
   (let ((buffer (get-buffer-create simply-annotate-buffer-name)))
     (with-current-buffer buffer
       (unless (eq major-mode 'simply-annotate-annotation-mode)
-        (simply-annotate-annotation-mode)
-        ))
+        (simply-annotate-annotation-mode)))
     buffer))
 
 (defun simply-annotate-update-annotation-buffer (annotation-text overlay)
@@ -252,13 +251,13 @@ Optional argument POS ."
     (with-current-buffer buffer
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (insert (propertize 
-                 (format "Annotation %d/%d in %s (Line %d)\n" 
+        (insert (propertize
+                 (format "Annotation %d/%d in %s (Line %d)\n"
                          (with-current-buffer source-buf
                            (simply-annotate-get-annotation-number overlay))
                          total (buffer-name source-buf) line-num)
                  'face 'bold))
-        (insert (propertize 
+        (insert (propertize
                  "Press C-x C-q to edit, C-c C-c to save changes\n"
                  'face 'italic))
         (insert (make-string 50 ?-) "\n\n")
