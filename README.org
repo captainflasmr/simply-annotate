@@ -1,4 +1,4 @@
-#+title: Simple Annotate
+#+title: Simple Annotate: Local LLM Integration for Emacs
 #+author: James Dyer
 #+email: captainflasmr@gmail.com
 #+language: en
@@ -6,101 +6,304 @@
 #+todo: TODO DOING | DONE
 #+startup: showall
 
-A lightweight annotation system for Emacs that allows you to attach comments to documents without modifying the original files. All annotations are stored in a centralized JSON database.
+#+attr_org: :width 300px
+#+attr_html: :width 50%
+[[file:img/simple-annotate-banner.jpg]]
+
+A lightweight annotation system for Emacs that allows you to add persistent notes to any text file without modifying the original content.
+
+I developed this package to fill a gap in the existing Emacs note-taking ecosystem. Although =annotate.el= comes close to what I needed, I wanted something with a few workflow adjustments that better suit my note-taking preferences. The result is a lightweight alternative that handles annotations the way I've always wanted them to work.
+
+The main functional aspects that I felt were important to me that generally differ from other existing Emacs annotation packages are:
+
+- Header-line status display
+- Multi-line annotation editing via a buffer
+- Dedicated annotation buffer
+  - Pops up when point is over an annotation
+  - Ability to edit annotation from within the buffer
+  - Can quickly step through annotations with =n= and =p=
+ - org buffer summary of annotations (although =annotate.el= also has this)
 
 * Features
 
-- 📝 *Non-intrusive*: Annotations don't modify your original files
-- 🎨 *Visual feedback*: Highlights annotated text with customizable colors
-- 💾 *Persistent storage*: Annotations saved automatically in JSON format
-- 🖱️ *Mouse support*: Hover over annotated text to see annotations
-- ⚡ *Lightweight*: ~200 lines of code
-- 🔍 *Easy inspection*: Human-readable JSON database format
+- *Non-intrusive*: Annotations are stored separately and don't modify your original files
+- *Multiple formats*: Support for both single-line and multi-line annotations
+- *Visual highlighting*: Annotated text is highlighted with customizable colors
+- *Easy navigation*: Jump between annotations with simple keybindings
+- *Persistent storage*: Annotations survive between Emacs sessions
+- *Org-mode export*: List all annotations in a structured org-mode buffer
+- *Auto-preview*: Automatically display annotation content as you navigate
+- *Customizable*: Adjust colors, buffer sizes, and behavior to your preferences
 
 * Installation
 
-1. Download =simple-annotate.el= and place it in your Emacs load path
-2. Add to your Emacs configuration:
+** MELPA (Recommended)
+
+#+begin_src emacs-lisp
+(use-package simple-annotate
+  :bind ("C-c A" . simple-annotate-mode))
+#+end_src
+
+** Manual Installation
+
+1. Download =simple-annotate.el=
+2. Place it in your Emacs =load-path=
+3. Add to your configuration:
 
 #+begin_src emacs-lisp
 (require 'simple-annotate)
+(global-set-key (kbd "C-c A") simple-annotate-mode)
 #+end_src
+
+* Quick Start
+
+1. *Enable the mode*: =M-x simple-annotate-mode= (or use =C-c A= if you've set up the binding)
+2. *Add an annotation*: Select text and press =C-c a a=
+3. *Navigate*: Use =C-c a n= (next) and =C-c a p= (previous) to move between annotations
+4. **View all**: Press =C-c a l= to see all annotations in an org-mode list
 
 * Usage
 
-** Basic Commands
+** Basic Operations
 
-Enable annotation mode in any buffer:
-#+begin_example
-M-x simple-annotate-mode
-#+end_example
+| Keybinding | Command                         | Description                                  |
+|------------+---------------------------------+----------------------------------------------|
+| =C-c a a=  | =simple-annotate-add=           | Add single-line annotation to selection/line |
+| =C-c a m=  | =simple-annotate-add-multiline= | Add multi-line annotation                    |
+| =C-c a d=  | =simple-annotate-remove=        | Delete annotation at point                   |
+| =C-c a e=  | =simple-annotate-edit=          | Edit annotation at point                     |
 
-** Key Bindings
+** Navigation
 
-| Key Binding | Command                    | Description                           |
-|-------------+----------------------------+---------------------------------------|
-| =C-c a a=   | simple-annotate-add        | Add annotation to selection/line      |
-| =C-c a d=   | simple-annotate-remove     | Delete annotation at point            |
-| =C-c a e=   | simple-annotate-edit       | Edit annotation at point              |
-| =C-c a s=   | simple-annotate-show       | Show annotation at point in minibuffer |
-| =C-c a l=   | simple-annotate-list       | List all annotations in buffer        |
+| Keybinding | Command                    | Description                      |
+|------------+----------------------------+----------------------------------|
+| =C-c a n=  | =simple-annotate-next=     | Jump to next annotation          |
+| =C-c a p=  | =simple-annotate-previous= | Jump to previous annotation      |
+| =C-c a l=  | =simple-annotate-list=     | List all annotations in org-mode |
 
-** Workflow
+** View Options
 
-1. *Enable the mode*: =M-x simple-annotate-mode=
-2. *Add annotations*:
-   - Select text and press =C-c a a=
-   - Or place cursor on a line and press =C-c a a=
-3. *View annotations*: Hover mouse over highlighted text or press =C-c a s=
-4. *Edit annotations*: Place cursor on annotated text and press =C-c a e=
-5. *Remove annotations*: Place cursor on annotated text and press =C-c a d=
+| Keybinding | Command                  | Description                        |
+|------------+--------------------------+------------------------------------|
+| =C-c a t=  | =simple-annotate-toggle= | Toggle auto-show annotation buffer |
 
-* Configuration
+** Creating Annotations
 
-** Customization Options
+*** Single-line Annotations
+
+1. Select text or place cursor on a line
+2. Press =C-c a a=
+3. Type your annotation in the minibuffer
+4. Press =Enter=
+
+*** Multi-line Annotations
+
+1. Select text or place cursor on a line  
+2. Press =C-c a m=
+3. A dedicated buffer opens for editing
+4. Type your multi-line annotation
+5. Press =C-c C-c= to save or =C-c C-k= to cancel
+
+** Viewing Annotations
+
+When =simple-annotate-mode= is active:
+
+- Annotated text is highlighted with a colored background
+- The header line shows annotation count and available commands
+- Moving your cursor to annotated text automatically displays the annotation content
+- A dedicated annotation buffer can show detailed information
+
+** Managing Annotations
+
+*** Editing
+
+- Place cursor on annotated text
+- Press =C-c a e= to edit the annotation
+- For multi-line annotations, a dedicated editing buffer opens
+
+*** Deleting
+
+- Place cursor on annotated text
+- Press =C-c a d= to remove the annotation
+
+*** Listing All Annotations
+
+- Press =C-c a l= to open an org-mode buffer showing all annotations
+- Click on line numbers to jump directly to annotations
+- Perfect for getting an overview of all your notes
+
+* Customization
+
+** Basic Configuration
 
 #+begin_src emacs-lisp
-;; Change annotation database location (default: ~/.emacs.d/simple-annotations.json)
-(setq simple-annotate-file "~/my-annotations.json")
-
-;; Customize highlight appearance
-(setq simple-annotate-highlight-face '(:background "lightblue" :foreground "black"))
-
-;; Change annotation column position
-(setq simple-annotate-annotation-column 80)
+(use-package simple-annotate
+  :custom
+  ;; Customize highlight colors
+  (simple-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
+  
+  ;; Change annotation buffer height (fraction of frame)
+  (simple-annotate-buffer-height 0.25)
+  
+  ;; Disable auto-show buffer
+  (simple-annotate-auto-show-buffer nil)
+  
+  ;; Custom storage location
+  (simple-annotate-file "~/my-annotations.el")
+  
+  :bind
+  ("C-c A" . simple-annotate-mode))
 #+end_src
 
-** Auto-enable for Specific Modes
+** Available Customization Options
+
+| Variable                           | Default                            | Description                            |
+|------------------------------------+------------------------------------+----------------------------------------|
+| =simple-annotate-file=             | =~/.emacs.d/simple-annotations.el= | File to store annotations              |
+| =simple-annotate-highlight-face=   | Yellow background, black text      | Face for highlighted text              |
+| =simple-annotate-buffer-name=      | =*Annotation*=                     | Name of annotation display buffer      |
+| =simple-annotate-auto-show-buffer= | =t=                                | Auto-show annotation buffer on hover   |
+| =simple-annotate-buffer-height=    | =0.3=                              | Height of annotation buffer (fraction) |
+
+** Custom Highlight Colors
 
 #+begin_src emacs-lisp
-;; Enable for programming modes
-(add-hook 'prog-mode-hook #'simple-annotate-mode)
+;; Subtle highlighting
+(setq simple-annotate-highlight-face '(:background "#fff3cd" :foreground "#856404"))
 
-;; Enable for text modes
-(add-hook 'text-mode-hook #'simple-annotate-mode)
+;; High contrast
+(setq simple-annotate-highlight-face '(:background "#007acc" :foreground "white" :weight bold))
+
+;; Use existing face
+(setq simple-annotate-highlight-face 'highlight)
 #+end_src
 
-* Database Format
+* Data Storage
 
-Annotations are stored in a simple JSON format at =~/.emacs.d/simple-annotations.json=:
+Annotations are stored in a separate file (by default =~/.emacs.d/simple-annotations.el=) and are organized by file path or buffer name. The storage format is:
 
-#+begin_src json
-{
-  "/path/to/file.txt": [
-    {
-      "start": 100,
-      "end": 150,
-      "text": "This is my annotation"
-    }
-  ]
-}
+- **Persistent**: Survives Emacs restarts
+- **Portable**: Can be version controlled or shared
+- **Non-intrusive**: Original files remain unchanged
+- **Efficient**: Only loads annotations for the current buffer
+
+* Tips and Tricks
+
+** Workflow Suggestions
+
+1. *Enable globally for specific file types*:
+   
+   #+begin_src emacs-lisp
+   (add-hook 'prog-mode-hook #'simple-annotate-mode)
+   (add-hook 'text-mode-hook #'simple-annotate-mode)
+   #+end_src
+
+3. *Export annotations to file*:
+   
+   Use =C-c a l= then save the org-mode buffer to export your annotations.
+
+** Performance Notes
+
+- Annotations are loaded on-demand per buffer
+- Large numbers of annotations (100+) may slightly impact performance
+- Consider splitting very large annotation databases
+
+* Troubleshooting
+
+** Common Issues
+
+*** Annotations not persisting
+
+- Check that =simple-annotate-file= is writable
+- Ensure the directory exists
+
+*** Highlighting not visible
+
+- Customize =simple-annotate-highlight-face= for your color theme
+- Check for conflicting overlays from other packages
+
+*** Keybindings not working
+
+- Ensure =simple-annotate-mode= is enabled
+- Check for conflicting keybindings with =C-h k=
+
+** Getting Help
+
+#+begin_src emacs-lisp
+;; View current annotations
+M-x simple-annotate-list
+
+;; Check mode status  
+M-x describe-mode
+
+;; View keybindings
+C-h m (when simple-annotate-mode is active)
 #+end_src
 
-This format makes it easy to:
-- Backup your annotations
-- Share annotations with others
-- Inspect annotations outside of Emacs
-- Write external tools to process annotations
+* Alternative package comparison
+
+** 1. *annotate.el*
+
+*Pros*:
+- Mature and battle-tested with extensive user base
+- Sophisticated query language for filtering annotations
+- Flexible annotation positioning (inline, new line, based on font size)
+- Comprehensive customization options
+- Support for annotation expansion macros
+- Database switching functionality
+
+*simple-annotate* differentiates by:
+- *Header-line status display* - UX status and keybindings
+- *Annotation buffer* - with auto-show, editing and navigation
+- *Lightweight implementation* - provides core functionality
+- *Multi-line editing* with dedicated buffer interface
+
+** 2. *org-annotate-file*
+
+*Pros*:
+- Full org-mode integration with all org features (outlines, babel, etc.)
+- Leverages existing org-mode knowledge
+- Long-standing package with proven workflow
+
+*simple-annotate* differentiates by:
+- *Visual overlay highlighting* vs text-only annotations
+- *Interactive annotation buffer* that updates automatically
+- *Simpler annotation format* that's less prone to corruption
+- *Better multi-line support* without org-mode formatting requirements
+- *More responsive user interface* with immediate visual feedback
+
+** 3. *org-remark* (formerly org-marginalia)
+
+*Pros*:
+- Modern design with active development
+- Sophisticated highlighting system with multiple highlight types
+- Full org-mode integration for rich note-taking
+- Good for research and academic workflows
+- Support for multiple document types (PDFs, EPUBs, web pages)
+
+*simple-annotate* differentiates by:
+- *Focused on text files* rather than multi-format documents
+- *Lighter weight* with faster startup and operation
+- *Simpler annotation model* - text-centric rather than highlight-centric
+- *More straightforward workflow* without requiring org-mode knowledge
+- *Better for code annotation* and development workflows
+- *Cleaner interface* with header-line status and dedicated annotation buffer
+
+** 4. *org-noter*
+
+*Pros*:
+- Excellent for PDF and document annotation workflows
+- Synchronized scrolling between document and notes
+- Strong academic and research focus
+- Good integration with document viewers (PDF-tools, DocView, nov.el)
+
+*simple-annotate* differentiates by:
+- *General-purpose file annotation* vs document-specific workflows
+- *Simpler mental model* - annotate any text file directly
+- *Lightweight operation* without requiring document viewer setup
+- *Better for source code* and plain text file workflows
+- *More immediate annotation access* without session management
+- *Project-friendly storage* that travels with files
 
 * Contributing
 
@@ -108,24 +311,30 @@ Contributions are welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+3. Add tests if applicable  
+4. Submit a pull request
+
+** Development Setup
+
+#+begin_src emacs-lisp
+;; For development, load from source
+(add-to-list 'load-path "/path/to/simple-annotate")
+(require 'simple-annotate)
+#+end_src
 
 * License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-* Acknowledgments
-
-- Inspired by the original [[https://github.com/bastibe/annotate.el][annotate.el]] package
-- Thanks to the Emacs community for feedback and suggestions
+See the [[https://www.gnu.org/licenses/gpl-3.0.en.html][GNU General Public License]] for more details.
 
 * Changelog
 
-** v1.0.0
-- Initial release
+** Version 0.0.1 (Initial Release)
+
 - Basic annotation functionality
-- JSON database format
-- Mouse hover support
-- Auto-save functionality
+- Persistent storage
+- Navigation commands
+- Org-mode export
+- Customizable highlighting
+- Auto-preview feature
