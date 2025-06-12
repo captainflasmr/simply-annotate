@@ -501,12 +501,12 @@ Optional argument INITIAL-TEXT ."
   (message "Auto-show annotation buffer: %s"
            (if simply-annotate-auto-show-buffer "enabled" "disabled")))
 
-(defcustom simply-annotate-annotation-separator "===="
+(defcustom simply-annotate-annotation-separator "┌───────────"
   "Regex matching the annotation separator line."
   :type 'regexp
   :group 'simply-annotate-list)
 
-(defcustom simply-annotate-text-separator "===="
+(defcustom simply-annotate-text-separator "└──────────────"
   "Regex matching the text separator line."
   :type 'regexp
   :group 'simply-annotate-list)
@@ -517,7 +517,7 @@ Optional argument INITIAL-TEXT ."
   :group 'simply-annotate-list)
 
 (defcustom simply-annotate-annotation-block-regexp
-  "\=\=\=\=\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*\=\=\=\="
+  "˹\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*˻"
   "Regexp matching the annotation block (between ANNOTATION and TEXT)."
   :type 'regexp
   :group 'simply-annotate-list)
