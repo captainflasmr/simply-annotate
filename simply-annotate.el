@@ -105,7 +105,7 @@
   :type 'string
   :group 'simply-annotate)
 
-(defcustom simply-annotate-auto-show-buffer t
+(defcustom simply-annotate-auto-show-buffer nil
   "Automatically show annotation buffer when point moves to an annotation."
   :type 'boolean
   :group 'simply-annotate)
