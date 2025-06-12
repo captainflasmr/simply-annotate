@@ -501,12 +501,12 @@ Optional argument INITIAL-TEXT ."
   (message "Auto-show annotation buffer: %s"
            (if simply-annotate-auto-show-buffer "enabled" "disabled")))
 
-(defcustom simply-annotate-annotation-separator "┌───────────"
+(defcustom simply-annotate-annotation-separator "┌─────"
   "Regex matching the annotation separator line."
   :type 'regexp
   :group 'simply-annotate-list)
 
-(defcustom simply-annotate-text-separator "└──────────────"
+(defcustom simply-annotate-text-separator "└─────"
   "Regex matching the text separator line."
   :type 'regexp
   :group 'simply-annotate-list)
@@ -517,7 +517,7 @@ Optional argument INITIAL-TEXT ."
   :group 'simply-annotate-list)
 
 (defcustom simply-annotate-annotation-block-regexp
-  "˹\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*˻"
+  "┌─────\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*└─────"
   "Regexp matching the annotation block (between ANNOTATION and TEXT)."
   :type 'regexp
   :group 'simply-annotate-list)
@@ -556,17 +556,21 @@ Optional argument INITIAL-TEXT ."
                 (insert (format "%s:%d:%d\n"
                                 source-file line-num
                                 (1+ col-num)))
-                (insert (format "%s\n%s\n%s\n"
-                                simply-annotate-annotation-separator
-                                (string-trim text)
-                                simply-annotate-text-separator))
+                
+                (let* ((lines (split-string (string-trim text) "\n"))
+                       (indented-text (mapconcat (lambda (line) (concat "│ " line)) lines "\n")))
+                  (prin1 lines)
+                  (insert (format "%s\n%s\n%s\n"
+                                  simply-annotate-annotation-separator
+                                  indented-text
+                                  simply-annotate-text-separator)))
                 (insert (format "%s\n\n" 
                                 (string-trim line-content)))))
             ;; Enable grep-mode
             (grep-mode)
             ;; Add custom font-lock rules that use the custom regexps
             (font-lock-add-keywords nil
-                                    `((,simply-annotate-annotation-block-regexp 1 '(:weight bold))
+                                    `((,simply-annotate-annotation-block-regexp 1 '(:slant italic))
                                       (,simply-annotate-header-regexp 1 '(:weight bold))
                                       (,simply-annotate-annotation-separator 0 '(:underline nil))
                                       (,simply-annotate-text-separator 0 '(:underline nil)))
