@@ -503,49 +503,69 @@ Optional argument INITIAL-TEXT ."
 
 ;;;###autoload
 (defun simply-annotate-list ()
-  "List all annotations in current buffer using `org-mode' format."
+  "List all annotations in current buffer using grep-mode format."
   (interactive)
   (if simply-annotate-overlays
       (let* ((source-buffer (current-buffer))
-             (source-name (buffer-name))
-             (buffer-name "*Annotations List*")
+             (source-file (or (buffer-file-name) (buffer-name)))
+             (buffer-name "*Annotations*")
              (annotations (simply-annotate-get-sorted-overlays)))
         
         (with-current-buffer (get-buffer-create buffer-name)
           (let ((inhibit-read-only t))
             (erase-buffer)
-            (org-mode)
             
-            (insert (format "#+TITLE: Annotations for %s\n" source-name) "\n")
-            (insert (format "* %s\n" source-name))
+            ;; Add a header comment
+            (insert (format "Annotations for %s:\n\n" source-file))
             
+            ;; Format each annotation in grep-mode style
             (dolist (overlay annotations)
               (let* ((start-pos (overlay-start overlay))
+                     (end-pos (overlay-end overlay))
                      (line-num (with-current-buffer source-buffer
                                  (line-number-at-pos start-pos)))
-                     (text (overlay-get overlay 'simply-annotation)))
+                     (col-num (with-current-buffer source-buffer
+                                (save-excursion
+                                  (goto-char start-pos)
+                                  (current-column))))
+                     (text (overlay-get overlay 'simply-annotation))
+                     ;; Get the actual line content from the source buffer
+                     (line-content (with-current-buffer source-buffer
+                                     (save-excursion
+                                       (goto-char start-pos)
+                                       (buffer-substring-no-properties
+                                        start-pos end-pos)))))
                 
-                (insert (format "** [[elisp:(simply-annotate-jump-to-annotation %d \"%s\")][Line %d]]\n"
-                                start-pos source-name line-num))
-                (insert text "\n")))
+                ;; Format: filename:line:column:content
+                (insert (format "%s:%d:%d\n"
+                                source-file line-num
+                                (1+ col-num)))
+
+                (insert (format "ANNOTATION\n%s\nTEXT\n"
+                                (string-trim text)))
+                
+                (insert (format "%s\n----------------------------------------------------------------------------\n\n" 
+                                (string-trim line-content)))
+                ))
+            ;; Enable grep-mode
+            (grep-mode)
+
+             ;; Add custom font-lock rules that will override grep-mode's
+            (font-lock-add-keywords nil
+                                    '(
+                                      ("ANNOTATION\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*TEXT" 1 '(:weight bold))
+                                      ("^Annotations for \\(.*\\)" 1 '(:weight bold))
+                                      ("^ANNOTATION" 0 '(:underline t))
+                                      ("^TEXT" 0 '(:underline t))
+                                      )
+                                    'append)
             
-            (goto-char (point-min))
-            (when (fboundp 'org-show-all) (org-show-all)))
-          (setq buffer-read-only t)
+            ;; Set up the buffer properly
+            (setq buffer-read-only t)
+            (goto-char (point-min)))
+          
           (display-buffer buffer-name)))
     (message "No annotations in buffer")))
-
-(defun simply-annotate-jump-to-annotation (position source-buffer-name)
-  "Jump to annotation at POSITION in buffer named SOURCE-BUFFER-NAME."
-  (if-let ((source-buffer (get-buffer source-buffer-name)))
-      (progn
-        (switch-to-buffer-other-window source-buffer)
-        (goto-char position)
-        (recenter)
-        (when (fboundp 'pulse-momentary-highlight-one-line)
-          (pulse-momentary-highlight-one-line (point)))
-        (message "Jumped to annotation"))
-    (message "Source buffer '%s' no longer exists" source-buffer-name)))
 
 ;;; Annotation Buffer Mode Functions
 (defun simply-annotate-save-annotation-buffer ()
