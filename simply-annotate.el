@@ -501,6 +501,27 @@ Optional argument INITIAL-TEXT ."
   (message "Auto-show annotation buffer: %s"
            (if simply-annotate-auto-show-buffer "enabled" "disabled")))
 
+(defcustom simply-annotate-annotation-separator "===="
+  "Regex matching the annotation separator line."
+  :type 'regexp
+  :group 'simply-annotate-list)
+
+(defcustom simply-annotate-text-separator "===="
+  "Regex matching the text separator line."
+  :type 'regexp
+  :group 'simply-annotate-list)
+
+(defcustom simply-annotate-header-regexp "^Annotations for \\(.*\\)"
+  "Regex matching the buffer header."
+  :type 'regexp
+  :group 'simply-annotate-list)
+
+(defcustom simply-annotate-annotation-block-regexp
+  "\=\=\=\=\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*\=\=\=\="
+  "Regexp matching the annotation block (between ANNOTATION and TEXT)."
+  :type 'regexp
+  :group 'simply-annotate-list)
+
 ;;;###autoload
 (defun simply-annotate-list ()
   "List all annotations in current buffer using grep-mode format."
@@ -510,14 +531,11 @@ Optional argument INITIAL-TEXT ."
              (source-file (or (buffer-file-name) (buffer-name)))
              (buffer-name "*Annotations*")
              (annotations (simply-annotate-get-sorted-overlays)))
-        
         (with-current-buffer (get-buffer-create buffer-name)
           (let ((inhibit-read-only t))
             (erase-buffer)
-            
             ;; Add a header comment
             (insert (format "Annotations for %s:\n\n" source-file))
-            
             ;; Format each annotation in grep-mode style
             (dolist (overlay annotations)
               (let* ((start-pos (overlay-start overlay))
@@ -529,41 +547,32 @@ Optional argument INITIAL-TEXT ."
                                   (goto-char start-pos)
                                   (current-column))))
                      (text (overlay-get overlay 'simply-annotation))
-                     ;; Get the actual line content from the source buffer
                      (line-content (with-current-buffer source-buffer
                                      (save-excursion
                                        (goto-char start-pos)
                                        (buffer-substring-no-properties
                                         start-pos end-pos)))))
-                
                 ;; Format: filename:line:column:content
                 (insert (format "%s:%d:%d\n"
                                 source-file line-num
                                 (1+ col-num)))
-
-                (insert (format "ANNOTATION\n%s\nTEXT\n"
-                                (string-trim text)))
-                
-                (insert (format "%s\n----------------------------------------------------------------------------\n\n" 
-                                (string-trim line-content)))
-                ))
+                (insert (format "%s\n%s\n%s\n"
+                                simply-annotate-annotation-separator
+                                (string-trim text)
+                                simply-annotate-text-separator))
+                (insert (format "%s\n\n" 
+                                (string-trim line-content)))))
             ;; Enable grep-mode
             (grep-mode)
-
-             ;; Add custom font-lock rules that will override grep-mode's
+            ;; Add custom font-lock rules that use the custom regexps
             (font-lock-add-keywords nil
-                                    '(
-                                      ("ANNOTATION\\s-*\\(\\(.\\|\n\\)*?\\)\\s-*TEXT" 1 '(:weight bold))
-                                      ("^Annotations for \\(.*\\)" 1 '(:weight bold))
-                                      ("^ANNOTATION" 0 '(:underline t))
-                                      ("^TEXT" 0 '(:underline t))
-                                      )
+                                    `((,simply-annotate-annotation-block-regexp 1 '(:weight bold))
+                                      (,simply-annotate-header-regexp 1 '(:weight bold))
+                                      (,simply-annotate-annotation-separator 0 '(:underline nil))
+                                      (,simply-annotate-text-separator 0 '(:underline nil)))
                                     'append)
-            
-            ;; Set up the buffer properly
             (setq buffer-read-only t)
             (goto-char (point-min)))
-          
           (display-buffer buffer-name)))
     (message "No annotations in buffer")))
 
