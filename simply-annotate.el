@@ -1,4 +1,4 @@
-;; simply-annotate.el --- Simple annotation system -*- lexical-binding: t; -*-
+;;; simply-annotate.el --- Simple annotation system -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
 ;; Version: 0.0.2
@@ -319,7 +319,7 @@ Optional argument POS ."
   "Get or create the annotation buffer."
   (let ((buffer (get-buffer-create simply-annotate-buffer-name)))
     (with-current-buffer buffer
-      (unless (eq major-mode 'simply-annotate-annotation-mode)
+      (unless (derived-mode-p 'simply-annotate-annotation-mode)
         (simply-annotate-annotation-mode)))
     buffer))
 
@@ -794,7 +794,7 @@ Otherwise, list all annotations in current buffer using `grep-mode' format."
         (message "No annotation at point"))))))
 
 (defun simply-annotate-edit ()
-  "Edit the buffer, just a wrapper around normal edit"
+  "Edit the buffer, just a wrapper around normal edit."
   (interactive)
   (setq buffer-read-only nil)
   (goto-char simply-annotate-header-end-pos)
