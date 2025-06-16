@@ -31,6 +31,24 @@ The main functional aspects that I felt were important to me that generally diff
 
 See [[file:docs/simply-annotate.org]] for the manual!
 
+* Quick Demo Video
+
+Open this file and open the simply-annotate.el file
+
+- highlight some regions and put in some annotation comments
+
+- step through annotation comments
+
+- show summary
+
+- delete some annotations
+
+Go to the directory level and now browse the 2 files
+
+#+attr_org: :width 300px
+#+attr_html: :width 100%
+[[file:img/simply-annotate-screen-recording.gif]]
+
 * Whats New
 
 ** <2025-06-16> *0.0.2*
