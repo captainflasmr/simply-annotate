@@ -1,20 +1,21 @@
 <<Top>>
 
 Next: [[#Introduction][Introduction]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 * Simply Annotate [[#Simply-Annotate][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Simply-Annotate
 :CLASS: top
 :END:
-This manual documents Simply Annotate, a lightweight annotation system
+This manual describes Simply Annotate, a lightweight annotation system
 for Emacs that allows you to add persistent notes to any text file
 without modifying the original content.
 
-This manual is for Simply Annotate (version 0.0.1).
+This manual is for Simply Annotate (version 0.0.1), a lightweight
+annotation system for Emacs.
 
-Copyright © 2025 James Dyer.
+Copyright © 2024 James Dyer.
 
 #+begin_quote
 Permission is granted to copy, distribute and/or modify this document
@@ -35,58 +36,45 @@ Documentation License”.
 
 - [[#Introduction][1 Introduction]]
   - [[#Key-Features][1.1 Key Features]]
-  - [[#Use-Cases][1.2 Use Cases]]
 - [[#Installation][2 Installation]]
-  - [[#Requirements][2.1 Requirements]]
-  - [[#Installing-from-MELPA][2.2 Installing from MELPA]]
-  - [[#Manual-Installation][2.3 Manual Installation]]
-- [[#Getting-Started][3 Getting Started]]
-  - [[#Enabling-Simply-Annotate-Mode][3.1 Enabling Simply Annotate
-    Mode]]
-  - [[#Your-First-Annotation][3.2 Your First Annotation]]
-  - [[#Viewing-Annotations][3.3 Viewing Annotations]]
+  - [[#Using-MELPA-_0028Recommended_0029][2.1 Using MELPA
+    (Recommended)]]
+  - [[#Manual-Installation][2.2 Manual Installation]]
+- [[#Quick-Start][3 Quick Start]]
 - [[#Basic-Usage][4 Basic Usage]]
-  - [[#Creating-Annotations][4.1 Creating Annotations]]
-    - [[#Single_002dline-Annotations][4.1.1 Single-line Annotations]]
-    - [[#Multi_002dline-Annotations][4.1.2 Multi-line Annotations]]
-  - [[#Editing-Annotations][4.2 Editing Annotations]]
-  - [[#Removing-Annotations][4.3 Removing Annotations]]
-  - [[#Key-Bindings-Summary][4.4 Key Bindings Summary]]
+  - [[#Enabling-Annotation-Mode][4.1 Enabling Annotation Mode]]
+  - [[#Creating-Annotations][4.2 Creating Annotations]]
+    - [[#Multi_002dline-Annotations][4.2.1 Multi-line Annotations]]
+  - [[#Viewing-Annotations][4.3 Viewing Annotations]]
+  - [[#Editing-Annotations][4.4 Editing Annotations]]
+  - [[#Deleting-Annotations][4.5 Deleting Annotations]]
 - [[#Navigation][5 Navigation]]
   - [[#Moving-Between-Annotations][5.1 Moving Between Annotations]]
-    - [[#Next-Annotation][5.1.1 Next Annotation]]
-    - [[#Previous-Annotation][5.1.2 Previous Annotation]]
-  - [[#Listing-All-Annotations][5.2 Listing All Annotations]]
-  - [[#Automatic-Preview][5.3 Automatic Preview]]
-- [[#Customization][6 Customization]]
-  - [[#Customization-Variables][6.1 Customization Variables]]
-    - [[#Storage-Location][6.1.1 Storage Location]]
-    - [[#Visual-Appearance][6.1.2 Visual Appearance]]
-    - [[#Buffer-Behavior][6.1.3 Buffer Behavior]]
-  - [[#Complete-Configuration-Example][6.2 Complete Configuration
-    Example]]
-  - [[#Enabling-for-Specific-Modes][6.3 Enabling for Specific Modes]]
-- [[#Advanced-Features][7 Advanced Features]]
-  - [[#Org_002dmode-Integration][7.1 Org-mode Integration]]
-    - [[#Annotation-Listing][7.1.1 Annotation Listing]]
-    - [[#Exporting-Annotations][7.1.2 Exporting Annotations]]
-  - [[#Annotation-Buffer-Features][7.2 Annotation Buffer Features]]
-    - [[#Editing-in-the-Annotation-Buffer][7.2.1 Editing in the
-      Annotation Buffer]]
-    - [[#Navigation-from-Annotation-Buffer][7.2.2 Navigation from
-      Annotation Buffer]]
-  - [[#Data-Storage-Format][7.3 Data Storage Format]]
-- [[#Troubleshooting][8 Troubleshooting]]
-  - [[#Common-Issues][8.1 Common Issues]]
-    - [[#Annotations-Not-Persisting][8.1.1 Annotations Not Persisting]]
-    - [[#Highlighting-Not-Visible][8.1.2 Highlighting Not Visible]]
-    - [[#Key-Bindings-Not-Working][8.1.3 Key Bindings Not Working]]
-    - [[#Performance-Issues][8.1.4 Performance Issues]]
-  - [[#Getting-Help][8.2 Getting Help]]
-    - [[#Built_002din-Help][8.2.1 Built-in Help]]
-    - [[#Debugging][8.2.2 Debugging]]
-    - [[#Reporting-Bugs][8.2.3 Reporting Bugs]]
-- [[#Index][Index]]
+  - [[#Viewing-Current-Annotation][5.2 Viewing Current Annotation]]
+- [[#Advanced-Features][6 Advanced Features]]
+  - [[#Listing-All-Annotations][6.1 Listing All Annotations]]
+  - [[#Cross_002dfile-Annotation-Browsing][6.2 Cross-file Annotation
+    Browsing]]
+  - [[#Annotation-Buffer-Features][6.3 Annotation Buffer Features]]
+- [[#Key-Bindings][7 Key Bindings]]
+  - [[#Main-Mode-Bindings][7.1 Main Mode Bindings]]
+  - [[#Annotation-Buffer-Bindings][7.2 Annotation Buffer Bindings]]
+- [[#Customization][8 Customization]]
+  - [[#Basic-Configuration][8.1 Basic Configuration]]
+  - [[#Customization-Variables][8.2 Customization Variables]]
+  - [[#Custom-Faces][8.3 Custom Faces]]
+- [[#Data-Storage][9 Data Storage]]
+  - [[#Storage-Format][9.1 Storage Format]]
+  - [[#Sample-Storage-Format][9.2 Sample Storage Format]]
+  - [[#Data-Management][9.3 Data Management]]
+- [[#Troubleshooting][10 Troubleshooting]]
+  - [[#Annotations-Not-Persisting][10.1 Annotations Not Persisting]]
+  - [[#Performance-with-Large-Files][10.2 Performance with Large Files]]
+  - [[#Integration-Issues][10.3 Integration Issues]]
+  - [[#Common-Error-Messages][10.4 Common Error Messages]]
+- [[#Function-Index][Function Index]]
+- [[#Variable-Index][Variable Index]]
+- [[#Concept-Index][Concept Index]]
 
 --------------
 
@@ -94,21 +82,19 @@ Documentation License”.
 
 Next: [[#Installation][Installation]], Previous: [[#Top][Simply
 Annotate]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 ** 1 Introduction [[#Introduction-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Introduction-1
 :CLASS: chapter
 :END:
-Simply Annotate is a lightweight annotation system for Emacs that
-provides a non-intrusive way to add persistent notes to any text file.
-Unlike other annotation systems, Simply Annotate stores your notes
-separately from the original files, ensuring that your source code,
-documents, and configuration files remain unchanged.
+Simply Annotate is a lightweight annotation system for Emacs that allows
+you to add persistent notes to any text file without modifying the
+original content. It's perfect for code review, research, note-taking,
+and documentation.
 
 - [[#Key-Features][Key Features]]
-- [[#Use-Cases][Use Cases]]
 
 <<Key-Features>>
 *** 1.1 Key Features [[#Key-Features][¶]]
@@ -116,112 +102,107 @@ documents, and configuration files remain unchanged.
 :CUSTOM_ID: key-features
 :CLASS: section
 :END:
-- *Non-intrusive*: Annotations are stored separately and don't modify
-  your original files
-- *Multiple formats*: Support for both single-line and multi-line
-  annotations
-- *Visual highlighting*: Annotated text is highlighted with customizable
-  colors
-- *Easy navigation*: Jump between annotations with simply keybindings
-- *Persistent storage*: Annotations survive between Emacs sessions
-- *Org-mode export*: List all annotations in a structured org-mode
-  buffer
-- *Auto-preview*: Automatically display annotation content as you
-  navigate
-- *Customizable*: Adjust colors, buffer sizes, and behavior to your
-  preferences
-
-<<Use-Cases>>
-*** 1.2 Use Cases [[#Use-Cases][¶]]
-:PROPERTIES:
-:CUSTOM_ID: use-cases
-:CLASS: section
-:END:
-Simply Annotate is perfect for:
-
-- Code review and analysis
-- Learning new codebases
-- Research and document analysis
-- Project documentation
-- Note-taking during reading
+- *Non-intrusive*: Annotations don't modify your original files
+- *Persistent*: Notes survive between Emacs sessions
+- *Contextual*: Automatic display when cursor moves over annotated text
+- *Rich editing*: Full-featured annotation buffer for longer notes
+- *Navigation*: Jump between annotations with simple keybindings
+- *Overview*: List all annotations in grep-mode format
+- *Cross-file*: Browse annotations across multiple files
 
 --------------
 
 <<Installation>>
 
-Next: [[#Getting-Started][Getting Started]], Previous:
+Next: [[#Quick-Start][Quick Start]], Previous:
 [[#Introduction][Introduction]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 ** 2 Installation [[#Installation-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Installation-1
 :CLASS: chapter
 :END:
-- [[#Requirements][Requirements]]
-- [[#Installing-from-MELPA][Installing from MELPA]]
+- [[#Using-MELPA-_0028Recommended_0029][Using MELPA (Recommended)]]
 - [[#Manual-Installation][Manual Installation]]
 
-<<Requirements>>
-*** 2.1 Requirements [[#Requirements][¶]]
+<<Using-MELPA-_0028Recommended_0029>>
+*** 2.1 Using MELPA (Recommended) [[#Using-MELPA-_0028Recommended_0029][¶]]
 :PROPERTIES:
-:CUSTOM_ID: requirements
-:CLASS: section
-:END:
-Simply Annotate requires Emacs 28.1 or later. No external dependencies
-are needed.
-
-<<Installing-from-MELPA>>
-*** 2.2 Installing from MELPA [[#Installing-from-MELPA][¶]]
-:PROPERTIES:
-:CUSTOM_ID: installing-from-melpa
+:CUSTOM_ID: using-melpa-recommended
 :CLASS: section
 :END:
 The easiest way to install Simply Annotate is through MELPA:
 
-#+begin_src example-preformatted
+#+begin_src lisp-preformatted
 (use-package simply-annotate
-  :ensure t)
+  :ensure t
+  :bind ("C-c A" . simply-annotate-mode))
 #+end_src
 
 <<Manual-Installation>>
-*** 2.3 Manual Installation [[#Manual-Installation][¶]]
+*** 2.2 Manual Installation [[#Manual-Installation][¶]]
 :PROPERTIES:
 :CUSTOM_ID: manual-installation
 :CLASS: section
 :END:
-1. Download =simply-annotate.el= from the project repository
-2. Place it in your Emacs =load-path=
-3. Add the following to your Emacs configuration:
+If you prefer to install manually:
 
-   #+begin_src example-preformatted
+1. Download =simply-annotate.el=
+2. Add to your load path:
+
+   #+begin_src lisp-preformatted
+   (add-to-list 'load-path "/path/to/simply-annotate")
    (require 'simply-annotate)
    #+end_src
 
 --------------
 
-<<Getting-Started>>
+<<Quick-Start>>
 
 Next: [[#Basic-Usage][Basic Usage]], Previous:
 [[#Installation][Installation]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 3 Getting Started [[#Getting-Started-1][¶]]
+** 3 Quick Start [[#Quick-Start-1][¶]]
 :PROPERTIES:
-:CUSTOM_ID: Getting-Started-1
+:CUSTOM_ID: Quick-Start-1
 :CLASS: chapter
 :END:
-- [[#Enabling-Simply-Annotate-Mode][Enabling Simply Annotate Mode]]
-- [[#Your-First-Annotation][Your First Annotation]]
-- [[#Viewing-Annotations][Viewing Annotations]]
+Here's how to get started with Simply Annotate in under a minute:
 
-<<Enabling-Simply-Annotate-Mode>>
-*** 3.1 Enabling Simply Annotate Mode [[#Enabling-Simply-Annotate-Mode][¶]]
+1. Open any file in Emacs
+2. Enable annotation mode: M-x simply-annotate-mode
+3. Select some text and press M-s SPC to create your first annotation
+4. Type your annotation text and press C-c C-c to save
+5. Navigate with M-n (next) and M-p (previous)
+
+--------------
+
+<<Basic-Usage>>
+
+Next: [[#Navigation][Navigation]], Previous: [[#Quick-Start][Quick
+Start]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 4 Basic Usage [[#Basic-Usage-1][¶]]
 :PROPERTIES:
-:CUSTOM_ID: enabling-simply-annotate-mode
+:CUSTOM_ID: Basic-Usage-1
+:CLASS: chapter
+:END:
+- [[#Enabling-Annotation-Mode][Enabling Annotation Mode]]
+- [[#Creating-Annotations][Creating Annotations]]
+- [[#Viewing-Annotations][Viewing Annotations]]
+- [[#Editing-Annotations][Editing Annotations]]
+- [[#Deleting-Annotations][Deleting Annotations]]
+
+<<Enabling-Annotation-Mode>>
+*** 4.1 Enabling Annotation Mode [[#Enabling-Annotation-Mode][¶]]
+:PROPERTIES:
+:CUSTOM_ID: enabling-annotation-mode
 :CLASS: section
 :END:
-To start using Simply Annotate in a buffer, enable the minor mode:
+To start using annotations in a buffer, enable the minor mode:
 
 #+begin_src example-preformatted
 M-x simply-annotate-mode
@@ -229,137 +210,78 @@ M-x simply-annotate-mode
 
 You can also bind this to a convenient key:
 
-#+begin_src example-preformatted
-(global-set-key (kbd "C-c a") #'simply-annotate-mode)
+#+begin_src lisp-preformatted
+(global-set-key (kbd "C-c A") 'simply-annotate-mode)
 #+end_src
 
-<<Your-First-Annotation>>
-*** 3.2 Your First Annotation [[#Your-First-Annotation][¶]]
-:PROPERTIES:
-:CUSTOM_ID: your-first-annotation
-:CLASS: section
-:END:
-1. Select some text in your buffer (or place cursor on a line)
-2. Press C-c a a to add an annotation
-3. Type your note in the minibuffer and press RET
-4. The text is now highlighted, indicating it has an annotation
-
-<<Viewing-Annotations>>
-*** 3.3 Viewing Annotations [[#Viewing-Annotations][¶]]
-:PROPERTIES:
-:CUSTOM_ID: viewing-annotations
-:CLASS: section
-:END:
-When you move your cursor to annotated text:
-
-- The annotation content appears in the header line
-- An annotation buffer may automatically appear (if enabled)
-- A tooltip shows when you hover over the text
-
---------------
-
-<<Basic-Usage>>
-
-Next: [[#Navigation][Navigation]], Previous: [[#Getting-Started][Getting
-Started]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
-
-** 4 Basic Usage [[#Basic-Usage-1][¶]]
-:PROPERTIES:
-:CUSTOM_ID: Basic-Usage-1
-:CLASS: chapter
-:END:
-- [[#Creating-Annotations][Creating Annotations]]
-- [[#Editing-Annotations][Editing Annotations]]
-- [[#Removing-Annotations][Removing Annotations]]
-- [[#Key-Bindings-Summary][Key Bindings Summary]]
-
 <<Creating-Annotations>>
-*** 4.1 Creating Annotations [[#Creating-Annotations][¶]]
+*** 4.2 Creating Annotations [[#Creating-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: creating-annotations
 :CLASS: section
 :END:
-- [[#Single_002dline-Annotations][Single-line Annotations]]
 - [[#Multi_002dline-Annotations][Multi-line Annotations]]
 
-<<Single_002dline-Annotations>>
-**** 4.1.1 Single-line Annotations [[#Single_002dline-Annotations][¶]]
-:PROPERTIES:
-:CUSTOM_ID: single-line-annotations
-:CLASS: subsection
-:END:
-To create a simply annotation:
-
-1. Select text or place cursor on a line
-2. Press C-c a a (=simply-annotate-add=)
-3. Enter your annotation text
-4. Press RET to save
-
 <<Multi_002dline-Annotations>>
-**** 4.1.2 Multi-line Annotations [[#Multi_002dline-Annotations][¶]]
+**** 4.2.1 Multi-line Annotations [[#Multi_002dline-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: multi-line-annotations
 :CLASS: subsection
 :END:
-For longer annotations:
+For longer, detailed annotations:
 
-1. Select text or place cursor on a line
-2. Press C-c a m (=simply-annotate-add-multiline=)
-3. A dedicated buffer opens for editing
-4. Type your multi-line annotation
-5. Press C-c C-c to save or C-c C-k to cancel
+1. Select the region you want to annotate
+2. Press M-s SPC
+3. Use the full annotation buffer for detailed notes
+4. Press C-x C-q to enter edit mode if needed
+5. Save with C-c C-c
+
+<<Viewing-Annotations>>
+*** 4.3 Viewing Annotations [[#Viewing-Annotations][¶]]
+:PROPERTIES:
+:CUSTOM_ID: viewing-annotations
+:CLASS: section
+:END:
+When =simply-annotate-mode= is active:
+
+- Annotated text is highlighted with a colored background
+- The header line shows annotation count and available commands
+- Moving to the next and previous annotation displays the annotation if
+  the *Annotations* buffer is currently active
+- Press M-s SPC on annotated text to view in detail
 
 <<Editing-Annotations>>
-*** 4.2 Editing Annotations [[#Editing-Annotations][¶]]
+*** 4.4 Editing Annotations [[#Editing-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: editing-annotations
 :CLASS: section
 :END:
-To modify an existing annotation:
+To edit an existing annotation:
 
 1. Place cursor on annotated text
-2. Press C-c a e (=simply-annotate-edit=)
-3. For single-line annotations, edit in the minibuffer
-4. For multi-line annotations, a dedicated buffer opens
+2. Press M-s SPC to open the annotation buffer
+3. Press C-x C-q to enter edit mode
+4. Make your changes
 5. Save with C-c C-c or cancel with C-c C-k
 
-<<Removing-Annotations>>
-*** 4.3 Removing Annotations [[#Removing-Annotations][¶]]
+<<Deleting-Annotations>>
+*** 4.5 Deleting Annotations [[#Deleting-Annotations][¶]]
 :PROPERTIES:
-:CUSTOM_ID: removing-annotations
+:CUSTOM_ID: deleting-annotations
 :CLASS: section
 :END:
-To delete an annotation:
+To remove an annotation:
 
 1. Place cursor on annotated text
-2. Press C-c a d (=simply-annotate-remove=)
-3. The annotation is immediately removed
-
-<<Key-Bindings-Summary>>
-*** 4.4 Key Bindings Summary [[#Key-Bindings-Summary][¶]]
-:PROPERTIES:
-:CUSTOM_ID: key-bindings-summary
-:CLASS: section
-:END:
-| Key Binding | Command                    |
-|-------------+----------------------------|
-| C-c a a     | Add single-line annotation |
-| C-c a m     | Add multi-line annotation  |
-| C-c a e     | Edit annotation at point   |
-| C-c a d     | Remove annotation at point |
-| C-c a n     | Next annotation            |
-| C-c a p     | Previous annotation        |
-| C-c a l     | List all annotations       |
-| C-c a t     | Toggle auto-show buffer    |
+2. Press M-s - to remove the annotation
 
 --------------
 
 <<Navigation>>
 
-Next: [[#Customization][Customization]], Previous: [[#Basic-Usage][Basic
-Usage]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+Next: [[#Advanced-Features][Advanced Features]], Previous:
+[[#Basic-Usage][Basic Usage]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 ** 5 Navigation [[#Navigation-1][¶]]
 :PROPERTIES:
@@ -367,8 +289,7 @@ Usage]], Up: [[#Top][Simply Annotate]]  
 :CLASS: chapter
 :END:
 - [[#Moving-Between-Annotations][Moving Between Annotations]]
-- [[#Listing-All-Annotations][Listing All Annotations]]
-- [[#Automatic-Preview][Automatic Preview]]
+- [[#Viewing-Current-Annotation][Viewing Current Annotation]]
 
 <<Moving-Between-Annotations>>
 *** 5.1 Moving Between Annotations [[#Moving-Between-Annotations][¶]]
@@ -376,501 +297,419 @@ Usage]], Up: [[#Top][Simply Annotate]]  
 :CUSTOM_ID: moving-between-annotations
 :CLASS: section
 :END:
-- [[#Next-Annotation][Next Annotation]]
-- [[#Previous-Annotation][Previous Annotation]]
+Simply Annotate provides convenient commands for navigation:
 
-<<Next-Annotation>>
-**** 5.1.1 Next Annotation [[#Next-Annotation][¶]]
-:PROPERTIES:
-:CUSTOM_ID: next-annotation
-:CLASS: subsection
-:END:
-Press C-c a n (=simply-annotate-next=) to jump to the next annotation in
-the buffer. If you're at the last annotation, it wraps to the first one.
+- M-n :: =simply-annotate-next= - Jump to next annotation
 
-<<Previous-Annotation>>
-**** 5.1.2 Previous Annotation [[#Previous-Annotation][¶]]
-:PROPERTIES:
-:CUSTOM_ID: previous-annotation
-:CLASS: subsection
-:END:
-Press C-c a p (=simply-annotate-previous=) to jump to the previous
-annotation in the buffer. If you're at the first annotation, it wraps to
-the last one.
+- M-p :: =simply-annotate-previous= - Jump to previous annotation
 
-<<Listing-All-Annotations>>
-*** 5.2 Listing All Annotations [[#Listing-All-Annotations][¶]]
+These commands automatically wrap around, so you can continuously
+navigate through all annotations in a buffer.
+
+<<Viewing-Current-Annotation>>
+*** 5.2 Viewing Current Annotation [[#Viewing-Current-Annotation][¶]]
 :PROPERTIES:
-:CUSTOM_ID: listing-all-annotations
+:CUSTOM_ID: viewing-current-annotation
 :CLASS: section
 :END:
-Press C-c a l (=simply-annotate-list=) to open an org-mode buffer
-showing all annotations in the current buffer. This provides:
+When you're on an annotated region, you can:
 
-- A structured overview of all your annotations
-- Clickable links to jump directly to each annotation
-- Line numbers for easy reference
-- The ability to export or save the annotation summary
-
-<<Automatic-Preview>>
-*** 5.3 Automatic Preview [[#Automatic-Preview][¶]]
-:PROPERTIES:
-:CUSTOM_ID: automatic-preview
-:CLASS: section
-:END:
-When =simply-annotate-auto-show-buffer= is enabled (the default), moving
-your cursor to annotated text automatically:
-
-- Updates the header line with annotation information
-- Shows the annotation content in a dedicated buffer
-- Displays the annotation number and total count
-
---------------
-
-<<Customization>>
-
-Next: [[#Advanced-Features][Advanced Features]], Previous:
-[[#Navigation][Navigation]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
-
-** 6 Customization [[#Customization-1][¶]]
-:PROPERTIES:
-:CUSTOM_ID: Customization-1
-:CLASS: chapter
-:END:
-- [[#Customization-Variables][Customization Variables]]
-- [[#Complete-Configuration-Example][Complete Configuration Example]]
-- [[#Enabling-for-Specific-Modes][Enabling for Specific Modes]]
-
-<<Customization-Variables>>
-*** 6.1 Customization Variables [[#Customization-Variables][¶]]
-:PROPERTIES:
-:CUSTOM_ID: customization-variables
-:CLASS: section
-:END:
-- [[#Storage-Location][Storage Location]]
-- [[#Visual-Appearance][Visual Appearance]]
-- [[#Buffer-Behavior][Buffer Behavior]]
-
-<<Storage-Location>>
-**** 6.1.1 Storage Location [[#Storage-Location][¶]]
-:PROPERTIES:
-:CUSTOM_ID: storage-location
-:CLASS: subsection
-:END:
-- Variable: *simply-annotate-file*
-  [[#index-simply_002dannotate_002dfile][¶]] :: File to store
-  annotations. Default is =simply-annotations.el= in your
-  =user-emacs-directory=.
-
-  #+begin_src example-preformatted
-  (setq simply-annotate-file "~/my-annotations.el")
-  #+end_src
-
-<<Visual-Appearance>>
-**** 6.1.2 Visual Appearance [[#Visual-Appearance][¶]]
-:PROPERTIES:
-:CUSTOM_ID: visual-appearance
-:CLASS: subsection
-:END:
-- Variable: *simply-annotate-highlight-face*
-  [[#index-simply_002dannotate_002dhighlight_002dface][¶]] :: Face used
-  to highlight annotated text. Default is yellow background with black
-  foreground.
-
-  #+begin_src example-preformatted
-  ;; Subtle highlighting
-  (setq simply-annotate-highlight-face 
-        '(:background "#fff3cd" :foreground "#856404"))
-
-  ;; High contrast
-  (setq simply-annotate-highlight-face 
-        '(:background "#007acc" :foreground "white" :weight bold))
-
-  ;; Use existing face
-  (setq simply-annotate-highlight-face 'highlight)
-  #+end_src
-
-<<Buffer-Behavior>>
-**** 6.1.3 Buffer Behavior [[#Buffer-Behavior][¶]]
-:PROPERTIES:
-:CUSTOM_ID: buffer-behavior
-:CLASS: subsection
-:END:
-- Variable: *simply-annotate-buffer-name*
-  [[#index-simply_002dannotate_002dbuffer_002dname][¶]] :: Name of the
-  buffer used to display annotation content. Default is
-  ‘=*Annotation*='.
-
-- Variable: *simply-annotate-auto-show-buffer*
-  [[#index-simply_002dannotate_002dauto_002dshow_002dbuffer][¶]] :: Whether
-  to automatically show the annotation buffer when cursor moves to
-  annotated text. Default is =t=.
-
-  #+begin_src example-preformatted
-  ;; Disable auto-show
-  (setq simply-annotate-auto-show-buffer nil)
-  #+end_src
-
-- Variable: *simply-annotate-buffer-height*
-  [[#index-simply_002dannotate_002dbuffer_002dheight][¶]] :: Height of
-  the annotation buffer as a fraction of the frame height. Default is
-  =0.3= (30% of frame height).
-
-  #+begin_src example-preformatted
-  ;; Smaller annotation buffer
-  (setq simply-annotate-buffer-height 0.2)
-  #+end_src
-
-<<Complete-Configuration-Example>>
-*** 6.2 Complete Configuration Example [[#Complete-Configuration-Example][¶]]
-:PROPERTIES:
-:CUSTOM_ID: complete-configuration-example
-:CLASS: section
-:END:
-
-#+begin_src example-preformatted
-(use-package simply-annotate
-  :ensure t
-  :custom
-  ;; Custom storage location
-  (simply-annotate-file "~/Documents/annotations.el")
-  
-  ;; Subtle highlighting
-  (simply-annotate-highlight-face 
-   '(:background "lightblue" :foreground "darkblue"))
-  
-  ;; Smaller annotation buffer
-  (simply-annotate-buffer-height 0.25)
-  
-  ;; Disable auto-show
-  (simply-annotate-auto-show-buffer nil)
-  
-  :bind
-  ;; Custom key binding
-  (("C-c n" . simply-annotate-mode)))
-#+end_src
-
-<<Enabling-for-Specific-Modes>>
-*** 6.3 Enabling for Specific Modes [[#Enabling-for-Specific-Modes][¶]]
-:PROPERTIES:
-:CUSTOM_ID: enabling-for-specific-modes
-:CLASS: section
-:END:
-You can automatically enable Simply Annotate for specific file types:
-
-#+begin_src example-preformatted
-;; Enable for programming modes
-(add-hook 'prog-mode-hook #'simply-annotate-mode)
-
-;; Enable for text modes
-(add-hook 'text-mode-hook #'simply-annotate-mode)
-
-;; Enable for specific modes
-(add-hook 'python-mode-hook #'simply-annotate-mode)
-(add-hook 'org-mode-hook #'simply-annotate-mode)
-#+end_src
+- View the annotation content in the header line
+- Press M-s SPC to open the detailed annotation buffer
+- See the annotation count and position in the header line
 
 --------------
 
 <<Advanced-Features>>
 
-Next: [[#Troubleshooting][Troubleshooting]], Previous:
-[[#Customization][Customization]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+Next: [[#Key-Bindings][Key Bindings]], Previous:
+[[#Navigation][Navigation]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 7 Advanced Features [[#Advanced-Features-1][¶]]
+** 6 Advanced Features [[#Advanced-Features-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Advanced-Features-1
 :CLASS: chapter
 :END:
-- [[#Org_002dmode-Integration][Org-mode Integration]]
+- [[#Listing-All-Annotations][Listing All Annotations]]
+- [[#Cross_002dfile-Annotation-Browsing][Cross-file Annotation
+  Browsing]]
 - [[#Annotation-Buffer-Features][Annotation Buffer Features]]
-- [[#Data-Storage-Format][Data Storage Format]]
 
-<<Org_002dmode-Integration>>
-*** 7.1 Org-mode Integration [[#Org_002dmode-Integration][¶]]
+<<Listing-All-Annotations>>
+*** 6.1 Listing All Annotations [[#Listing-All-Annotations][¶]]
 :PROPERTIES:
-:CUSTOM_ID: org-mode-integration
+:CUSTOM_ID: listing-all-annotations
 :CLASS: section
 :END:
-- [[#Annotation-Listing][Annotation Listing]]
-- [[#Exporting-Annotations][Exporting Annotations]]
+To see an overview of all annotations in the current buffer:
 
-<<Annotation-Listing>>
-**** 7.1.1 Annotation Listing [[#Annotation-Listing][¶]]
+#+begin_src example-preformatted
+M-s l
+#+end_src
+
+This opens a grep-mode buffer showing:
+
+- Line numbers for each annotation
+- The annotated text content
+- The annotation text itself
+- Clickable links to jump to each annotation
+
+<<Cross_002dfile-Annotation-Browsing>>
+*** 6.2 Cross-file Annotation Browsing [[#Cross_002dfile-Annotation-Browsing][¶]]
 :PROPERTIES:
-:CUSTOM_ID: annotation-listing
-:CLASS: subsection
+:CUSTOM_ID: cross-file-annotation-browsing
+:CLASS: section
 :END:
-The =simply-annotate-list= command creates a structured org-mode buffer
-with all annotations. This buffer includes:
+To browse annotations across all files:
 
-- A title with the source buffer name
-- Hierarchical organization with headings
-- Clickable links to jump to annotations
-- Line numbers for reference
-- Full annotation text
+#+begin_src example-preformatted
+M-s 0
+#+end_src
 
-<<Exporting-Annotations>>
-**** 7.1.2 Exporting Annotations [[#Exporting-Annotations][¶]]
-:PROPERTIES:
-:CUSTOM_ID: exporting-annotations
-:CLASS: subsection
-:END:
-You can export your annotations by:
+This command:
 
-1. Running C-c a l to create the org-mode listing
-2. Saving the resulting buffer to a file
-3. Using org-mode export functions to convert to various formats
+- Shows a completion list of all files with annotations
+- Displays the annotation count for each file
+- Opens the selected file and shows its annotations
+- Uses grep-mode format for easy navigation
 
 <<Annotation-Buffer-Features>>
-*** 7.2 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
+*** 6.3 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-features
 :CLASS: section
 :END:
-- [[#Editing-in-the-Annotation-Buffer][Editing in the Annotation
-  Buffer]]
-- [[#Navigation-from-Annotation-Buffer][Navigation from Annotation
-  Buffer]]
+The annotation buffer provides a rich editing environment:
 
-<<Editing-in-the-Annotation-Buffer>>
-**** 7.2.1 Editing in the Annotation Buffer [[#Editing-in-the-Annotation-Buffer][¶]]
+- Shows annotation position and count
+- Displays source file and line number information
+- Supports multi-line annotations with full editing capabilities
+- Provides save and cancel operations
+- Automatically formats and displays content
+
+--------------
+
+<<Key-Bindings>>
+
+Next: [[#Customization][Customization]], Previous:
+[[#Advanced-Features][Advanced Features]], Up: [[#Top][Simply Annotate]]
+  [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 7 Key Bindings [[#Key-Bindings-1][¶]]
 :PROPERTIES:
-:CUSTOM_ID: editing-in-the-annotation-buffer
-:CLASS: subsection
+:CUSTOM_ID: Key-Bindings-1
+:CLASS: chapter
 :END:
-When viewing an annotation in the dedicated buffer:
+- [[#Main-Mode-Bindings][Main Mode Bindings]]
+- [[#Annotation-Buffer-Bindings][Annotation Buffer Bindings]]
 
-- Press C-x C-q to enter edit mode
-- Make your changes to the annotation text
-- Press C-c C-c to save changes
-- Press C-c C-k to cancel editing
-
-<<Navigation-from-Annotation-Buffer>>
-**** 7.2.2 Navigation from Annotation Buffer [[#Navigation-from-Annotation-Buffer][¶]]
+<<Main-Mode-Bindings>>
+*** 7.1 Main Mode Bindings [[#Main-Mode-Bindings][¶]]
 :PROPERTIES:
-:CUSTOM_ID: navigation-from-annotation-buffer
-:CLASS: subsection
-:END:
-While in the annotation buffer, you can:
-
-- Press n to go to the next annotation
-- Press p to go to the previous annotation
-- Press q to close the annotation buffer
-
-<<Data-Storage-Format>>
-*** 7.3 Data Storage Format [[#Data-Storage-Format][¶]]
-:PROPERTIES:
-:CUSTOM_ID: data-storage-format
+:CUSTOM_ID: main-mode-bindings
 :CLASS: section
 :END:
-Annotations are stored in a Lisp data structure organized by file:
+When =simply-annotate-mode= is enabled:
 
-#+begin_src example-preformatted
-((file1 . ((start . 100) (end . 150) (text . "My note")))
- (file2 . ((start . 200) (end . 250) (text . "Another note"))))
+| Key Binding | Command                        | Description                          |
+|-------------+--------------------------------+--------------------------------------|
+| M-s SPC     | =simply-annotate-smart-action= | Create/view/edit annotation          |
+| M-s -       | =simply-annotate-remove=       | Delete annotation at point           |
+| M-s l       | =simply-annotate-list=         | List all annotations in current file |
+| M-s 0       | =simply-annotate-show-all=     | Browse annotations across all files  |
+| M-n         | =simply-annotate-next=         | Jump to next annotation              |
+| M-p         | =simply-annotate-previous=     | Jump to previous annotation          |
+
+<<Annotation-Buffer-Bindings>>
+*** 7.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
+:PROPERTIES:
+:CUSTOM_ID: annotation-buffer-bindings
+:CLASS: section
+:END:
+In the annotation buffer:
+
+| Key Binding | Command                                  | Description          |
+|-------------+------------------------------------------+----------------------|
+| C-c C-c     | =simply-annotate-save-annotation-buffer= | Save changes         |
+| C-c C-k     | =simply-annotate-cancel-edit=            | Cancel editing       |
+| C-x C-q     | =toggle-read-only=                       | Enter/exit edit mode |
+
+--------------
+
+<<Customization>>
+
+Next: [[#Data-Storage][Data Storage]], Previous: [[#Key-Bindings][Key
+Bindings]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 8 Customization [[#Customization-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Customization-1
+:CLASS: chapter
+:END:
+- [[#Basic-Configuration][Basic Configuration]]
+- [[#Customization-Variables][Customization Variables]]
+- [[#Custom-Faces][Custom Faces]]
+
+<<Basic-Configuration>>
+*** 8.1 Basic Configuration [[#Basic-Configuration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: basic-configuration
+:CLASS: section
+:END:
+
+#+begin_src lisp-preformatted
+(use-package simply-annotate
+  :ensure t
+  :config
+  ;; Customize the highlight face
+  (setq simply-annotate-highlight-face 'highlight)
+  
+  ;; Customize storage location
+  (setq simply-annotate-file 
+        (expand-file-name "my-annotations.el" user-emacs-directory))
+  
+  ;; Customize annotation buffer height
+  (setq simply-annotate-buffer-height 0.4)
+  
+  :bind 
+  ("C-c A" . simply-annotate-mode))
 #+end_src
 
-This format is:
+<<Customization-Variables>>
+*** 8.2 Customization Variables [[#Customization-Variables][¶]]
+:PROPERTIES:
+:CUSTOM_ID: customization-variables
+:CLASS: section
+:END:
+- <<index-simply_002dannotate_002dfile>>=simply-annotate-file=
+  [[#index-simply_002dannotate_002dfile][¶]] :: 
 
-- Human-readable and editable
-- Version control friendly
-- Portable between systems
-- Efficient for loading and saving
+  File to store annotations. Default: =~/.emacs.d/simply-annotations.el=
+
+- <<index-simply_002dannotate_002dhighlight_002dface>>=simply-annotate-highlight-face=
+  [[#index-simply_002dannotate_002dhighlight_002dface][¶]] :: 
+
+  Face for highlighted annotated text. Default: ='highlight=
+
+- <<index-simply_002dannotate_002dbuffer_002dname>>=simply-annotate-buffer-name=
+  [[#index-simply_002dannotate_002dbuffer_002dname][¶]] :: 
+
+  Name of the annotation display buffer. Default: ="*Annotation*"=
+
+- <<index-simply_002dannotate_002dbuffer_002dheight>>=simply-annotate-buffer-height=
+  [[#index-simply_002dannotate_002dbuffer_002dheight][¶]] :: 
+
+  Height of annotation buffer as fraction of frame height. Default:
+  =0.3=
+
+<<Custom-Faces>>
+*** 8.3 Custom Faces [[#Custom-Faces][¶]]
+:PROPERTIES:
+:CUSTOM_ID: custom-faces
+:CLASS: section
+:END:
+You can define custom faces for annotation highlights:
+
+#+begin_src lisp-preformatted
+;; Custom highlight face for annotations
+(defface my-annotation-face
+  '((t :background "lightyellow" :foreground "black"))
+  "Face for annotation highlights")
+
+(setq simply-annotate-highlight-face 'my-annotation-face)
+#+end_src
+
+--------------
+
+<<Data-Storage>>
+
+Next: [[#Troubleshooting][Troubleshooting]], Previous:
+[[#Customization][Customization]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 9 Data Storage [[#Data-Storage-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Data-Storage-1
+:CLASS: chapter
+:END:
+- [[#Storage-Format][Storage Format]]
+- [[#Sample-Storage-Format][Sample Storage Format]]
+- [[#Data-Management][Data Management]]
+
+<<Storage-Format>>
+*** 9.1 Storage Format [[#Storage-Format][¶]]
+:PROPERTIES:
+:CUSTOM_ID: storage-format
+:CLASS: section
+:END:
+Annotations are stored in a single Emacs Lisp file (by default
+=~/.emacs.d/simply-annotations.el=). The format is human-readable and
+can be version controlled if desired.
+
+<<Sample-Storage-Format>>
+*** 9.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
+:PROPERTIES:
+:CUSTOM_ID: sample-storage-format
+:CLASS: section
+:END:
+
+#+begin_src lisp-preformatted
+;;; Simply Annotate Database
+;;; This file is auto-generated. Do not edit manually.
+
+(("simply-annotate:/path/to/file.el"
+  ((start . 1250) (end . 1300) (text . "This needs refactoring"))
+  ((start . 2100) (end . 2150) (text . "Add error handling here")))
+ ("simply-annotate:/path/to/other-file.py"
+  ((start . 450) (end . 500) (text . "Performance bottleneck"))))
+#+end_src
+
+<<Data-Management>>
+*** 9.3 Data Management [[#Data-Management][¶]]
+:PROPERTIES:
+:CUSTOM_ID: data-management
+:CLASS: section
+:END:
+- The database file is automatically created when first needed
+- Annotations are saved automatically when buffers are saved or killed
+- The file uses a namespace prefix to avoid conflicts
+- Empty databases are automatically cleaned up
 
 --------------
 
 <<Troubleshooting>>
 
-Next: [[#Index][Index]], Previous: [[#Advanced-Features][Advanced
-Features]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+Next: [[#Function-Index][Function Index]], Previous:
+[[#Data-Storage][Data Storage]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 8 Troubleshooting [[#Troubleshooting-1][¶]]
+** 10 Troubleshooting [[#Troubleshooting-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Troubleshooting-1
 :CLASS: chapter
 :END:
-- [[#Common-Issues][Common Issues]]
-- [[#Getting-Help][Getting Help]]
-
-<<Common-Issues>>
-*** 8.1 Common Issues [[#Common-Issues][¶]]
-:PROPERTIES:
-:CUSTOM_ID: common-issues
-:CLASS: section
-:END:
 - [[#Annotations-Not-Persisting][Annotations Not Persisting]]
-- [[#Highlighting-Not-Visible][Highlighting Not Visible]]
-- [[#Key-Bindings-Not-Working][Key Bindings Not Working]]
-- [[#Performance-Issues][Performance Issues]]
+- [[#Performance-with-Large-Files][Performance with Large Files]]
+- [[#Integration-Issues][Integration Issues]]
+- [[#Common-Error-Messages][Common Error Messages]]
 
 <<Annotations-Not-Persisting>>
-**** 8.1.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
+*** 10.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotations-not-persisting
-:CLASS: subsection
-:END:
-*Problem*: Annotations disappear between Emacs sessions.
-
-*Solutions*:
-
-- Check that =simply-annotate-file= points to a writable location
-- Ensure the directory exists
-- Verify file permissions
-- Check for errors in the *Messages* buffer
-
-<<Highlighting-Not-Visible>>
-**** 8.1.2 Highlighting Not Visible [[#Highlighting-Not-Visible][¶]]
-:PROPERTIES:
-:CUSTOM_ID: highlighting-not-visible
-:CLASS: subsection
-:END:
-*Problem*: Annotated text doesn't appear highlighted.
-
-*Solutions*:
-
-- Customize =simply-annotate-highlight-face= for your color theme
-- Check for conflicting overlays from other packages
-- Try a high-contrast color scheme temporarily
-- Restart Emacs after making face changes
-
-<<Key-Bindings-Not-Working>>
-**** 8.1.3 Key Bindings Not Working [[#Key-Bindings-Not-Working][¶]]
-:PROPERTIES:
-:CUSTOM_ID: key-bindings-not-working
-:CLASS: subsection
-:END:
-*Problem*: Annotation commands don't respond to key presses.
-
-*Solutions*:
-
-- Ensure =simply-annotate-mode= is enabled
-- Check for conflicting key bindings with C-h k
-- Try the commands via M-x to test functionality
-- Review your configuration for binding conflicts
-
-<<Performance-Issues>>
-**** 8.1.4 Performance Issues [[#Performance-Issues][¶]]
-:PROPERTIES:
-:CUSTOM_ID: performance-issues
-:CLASS: subsection
-:END:
-*Problem*: Emacs feels slow with many annotations.
-
-*Solutions*:
-
-- Consider splitting large annotation databases
-- Disable =simply-annotate-auto-show-buffer= for better performance
-- Use fewer visual effects in =simply-annotate-highlight-face=
-- Regular cleanup of unused annotations
-
-<<Getting-Help>>
-*** 8.2 Getting Help [[#Getting-Help][¶]]
-:PROPERTIES:
-:CUSTOM_ID: getting-help
 :CLASS: section
 :END:
-- [[#Built_002din-Help][Built-in Help]]
-- [[#Debugging][Debugging]]
-- [[#Reporting-Bugs][Reporting Bugs]]
+If your annotations aren't being saved between sessions:
 
-<<Built_002din-Help>>
-**** 8.2.1 Built-in Help [[#Built_002din-Help][¶]]
+- Check that =simply-annotate-file= is writable
+- Ensure annotation mode is properly enabled
+- Verify that hooks are installed correctly
+- Check file permissions on the storage directory
+
+<<Performance-with-Large-Files>>
+*** 10.2 Performance with Large Files [[#Performance-with-Large-Files][¶]]
 :PROPERTIES:
-:CUSTOM_ID: built-in-help
-:CLASS: subsection
+:CUSTOM_ID: performance-with-large-files
+:CLASS: section
 :END:
-- C-h m - Show mode documentation when =simply-annotate-mode= is active
-- C-h k followed by a key - Show what a key binding does
-- M-x describe-variable - Get information about customization variables
-- M-x describe-function - Get help for specific commands
+Simply Annotate is designed to be lightweight:
 
-<<Debugging>>
-**** 8.2.2 Debugging [[#Debugging][¶]]
+- Annotations use lightweight overlays
+- No performance impact on file operations
+- Consider splitting very large annotation sets across multiple files
+
+<<Integration-Issues>>
+*** 10.3 Integration Issues [[#Integration-Issues][¶]]
 :PROPERTIES:
-:CUSTOM_ID: debugging
-:CLASS: subsection
+:CUSTOM_ID: integration-issues
+:CLASS: section
 :END:
-To debug issues:
+- Annotations work with most major modes
+- Compatible with =lsp-mode=, =flycheck=, and other packages
+- May need customization for exotic display modes
+- Check for conflicting key bindings
 
-1. Check the *Messages* buffer for error messages
-2. Try M-x toggle-debug-on-error to get detailed error information
-3. Test with emacs -Q to eliminate configuration conflicts
-4. Verify the annotation file contents manually
-
-<<Reporting-Bugs>>
-**** 8.2.3 Reporting Bugs [[#Reporting-Bugs][¶]]
+<<Common-Error-Messages>>
+*** 10.4 Common Error Messages [[#Common-Error-Messages][¶]]
 :PROPERTIES:
-:CUSTOM_ID: reporting-bugs
-:CLASS: subsection
+:CUSTOM_ID: common-error-messages
+:CLASS: section
 :END:
-When reporting issues, please include:
+- *"No annotation at point"* :: You're trying to edit or remove an
+  annotation, but the cursor isn't positioned on annotated text.
 
-- Emacs version (M-x emacs-version)
-- Simply Annotate version
-- Minimal configuration to reproduce the problem
-- Steps to reproduce the issue
-- Error messages or unexpected behavior description
+- *"Annotation cancelled/removed"* :: You saved an empty annotation,
+  which automatically removes it.
+
+- *Database file errors* :: Check permissions and disk space for the
+  storage file location.
 
 --------------
 
-<<Index>>
+<<Function-Index>>
 
-Previous: [[#Troubleshooting][Troubleshooting]], Up: [[#Top][Simply
-Annotate]]   [[[#SEC_Contents][Contents]]][[[#Index][Index]]]
+Next: [[#Variable-Index][Variable Index]], Previous:
+[[#Troubleshooting][Troubleshooting]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** Index [[#Index-1][¶]]
+** Function Index [[#Function-Index-1][¶]]
 :PROPERTIES:
-:CUSTOM_ID: Index-1
+:CUSTOM_ID: Function-Index-1
 :CLASS: unnumbered
 :END:
 
-| Jump to:   | [[#Index_cp_letter-A][*A*]]   [[#Index_cp_letter-B][*B*]]   [[#Index_cp_letter-C][*C*]]   [[#Index_cp_letter-G][*G*]]   [[#Index_cp_letter-I][*I*]]   [[#Index_cp_letter-M][*M*]]   [[#Index_cp_letter-N][*N*]]   [[#Index_cp_letter-O][*O*]]   [[#Index_cp_letter-P][*P*]]   [[#Index_cp_letter-Q][*Q*]]   [[#Index_cp_letter-S][*S*]]   [[#Index_cp_letter-T][*T*]]   |
+|                | Index Entry                                                                                                 | Section                                   |
+| -------------- |                                                                                                             |                                           |
+| S              |                                                                                                             |                                           |
+|                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                           | [[#Basic-Usage][Basic Usage]]             |
+|                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                             | [[#Advanced-Features][Advanced Features]] |
+|                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                             | [[#Basic-Usage][Basic Usage]]             |
+|                | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                             | [[#Navigation][Navigation]]               |
+|                | [[#index-simply_002dannotate_002dprevious][=simply-annotate-previous=]]                                     | [[#Navigation][Navigation]]               |
+|                | [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                         | [[#Basic-Usage][Basic Usage]]             |
+|                | [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]] | [[#Basic-Usage][Basic Usage]]             |
+|                | [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                             | [[#Navigation][Navigation]]               |
+|                | [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                 | [[#Advanced-Features][Advanced Features]] |
+| -------------- |                                                                                                             |                                           |
 
-|                | Index Entry                                                       | Section                                   |
-| -------------- |                                                                   |                                           |
-| A              |                                                                   |                                           |
-|                | [[#index-advanced-features][advanced features]]                   | [[#Advanced-Features][Advanced Features]] |
-|                | [[#index-annotations][annotations]]                               | [[#Basic-Usage][Basic Usage]]             |
-| -------------- |                                                                   |                                           |
-| B              |                                                                   |                                           |
-|                | [[#index-basic-usage][basic usage]]                               | [[#Basic-Usage][Basic Usage]]             |
-| -------------- |                                                                   |                                           |
-| C              |                                                                   |                                           |
-|                | [[#index-configuration][configuration]]                           | [[#Customization][Customization]]         |
-|                | [[#index-customization][customization]]                           | [[#Customization][Customization]]         |
-| -------------- |                                                                   |                                           |
-| G              |                                                                   |                                           |
-|                | [[#index-getting-started][getting started]]                       | [[#Getting-Started][Getting Started]]     |
-| -------------- |                                                                   |                                           |
-| I              |                                                                   |                                           |
-|                | [[#index-installation][installation]]                             | [[#Installation][Installation]]           |
-|                | [[#index-introduction][introduction]]                             | [[#Introduction][Introduction]]           |
-| -------------- |                                                                   |                                           |
-| M              |                                                                   |                                           |
-|                | [[#index-moving-between-annotations][moving between annotations]] | [[#Navigation][Navigation]]               |
-| -------------- |                                                                   |                                           |
-| N              |                                                                   |                                           |
-|                | [[#index-navigation][navigation]]                                 | [[#Navigation][Navigation]]               |
-| -------------- |                                                                   |                                           |
-| O              |                                                                   |                                           |
-|                | [[#index-org_002dmode-integration][org-mode integration]]         | [[#Advanced-Features][Advanced Features]] |
-|                | [[#index-overview][overview]]                                     | [[#Introduction][Introduction]]           |
-| -------------- |                                                                   |                                           |
-| P              |                                                                   |                                           |
-|                | [[#index-problems][problems]]                                     | [[#Troubleshooting][Troubleshooting]]     |
-| -------------- |                                                                   |                                           |
-| Q              |                                                                   |                                           |
-|                | [[#index-quick-start][quick start]]                               | [[#Getting-Started][Getting Started]]     |
-| -------------- |                                                                   |                                           |
-| S              |                                                                   |                                           |
-|                | [[#index-setup][setup]]                                           | [[#Installation][Installation]]           |
-| -------------- |                                                                   |                                           |
-| T              |                                                                   |                                           |
-|                | [[#index-troubleshooting][troubleshooting]]                       | [[#Troubleshooting][Troubleshooting]]     |
-| -------------- |                                                                   |                                           |
+--------------
 
-| Jump to:   | [[#Index_cp_letter-A][*A*]]   [[#Index_cp_letter-B][*B*]]   [[#Index_cp_letter-C][*C*]]   [[#Index_cp_letter-G][*G*]]   [[#Index_cp_letter-I][*I*]]   [[#Index_cp_letter-M][*M*]]   [[#Index_cp_letter-N][*N*]]   [[#Index_cp_letter-O][*O*]]   [[#Index_cp_letter-P][*P*]]   [[#Index_cp_letter-Q][*Q*]]   [[#Index_cp_letter-S][*S*]]   [[#Index_cp_letter-T][*T*]]   |
+<<Variable-Index>>
+
+Next: [[#Concept-Index][Concept Index]], Previous:
+[[#Function-Index][Function Index]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** Variable Index [[#Variable-Index-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Variable-Index-1
+:CLASS: unnumbered
+:END:
+
+|                | Index Entry                                                                               | Section                           |
+| -------------- |                                                                                           |                                   |
+| S              |                                                                                           |                                   |
+|                | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]     | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]   | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]         | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]       | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                           | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                         | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]   | [[#Customization][Customization]] |
+|                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]] | [[#Customization][Customization]] |
+| -------------- |                                                                                           |                                   |
+
+--------------
+
+<<Concept-Index>>
+
+Previous: [[#Variable-Index][Variable Index]], Up: [[#Top][Simply
+Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** Concept Index [[#Concept-Index-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Concept-Index-1
+:CLASS: unnumbered
+:END:

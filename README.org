@@ -10,32 +10,32 @@
 #+attr_html: :width 50%
 [[file:img/simply-annotate-banner.jpg]]
 
-A lightweight annotation system for Emacs that allows you to add persistent notes to any text file without modifying the original content.
+Yes thats right, yet another annotation system!, in this case it is a lightweight annotation system for Emacs that allows you to add persistent notes to any text file without modifying the original content.
 
-I developed this package to fill a gap in the existing Emacs note-taking ecosystem. Although =annotate.el= comes close to what I needed, I wanted something with a few workflow adjustments that better suit my note-taking preferences. The result is a lightweight alternative that handles annotations the way I've always wanted them to work.
+Still not convinced it is any different to any other note taking package in Emacs given that previous generic sparse description? Well I shall do my best to explain my own note taking ideas.  Of course this is also just a pet project to continue to learn elisp, so there is that too :)
+
+I developed this package to fill my own perceived gap in the existing Emacs note-taking ecosystem. Although =annotate.el= comes close to what I needed, I wanted a simplified version and something with a few workflow adjustments that better suit my note taking preferences. The result is a lightweight alternative that handles annotations the way I have always wanted them to work.
 
 The main functional aspects that I felt were important to me that generally differ from other existing Emacs annotation packages are:
 
 - Header-line status display
-- Multi-line annotation editing via a buffer
-- Dedicated annotation buffer
-  - Pops up when point is over an annotation
-  - Ability to edit annotation from within the buffer
-  - Can quickly step through annotations with =n= and =p=
- - org buffer summary of annotations (although =annotate.el= also has this)
+- Simple intuitive workflow (hopefully)
+- Keybindings always shown in the header-line
+- Annotation editing via a buffer
+- Lightweight (if possible <1000 lines)
+- Multi-purpose key to show/edit/toggle annotations
+- Dedicated annotation buffer that can pop in and out
+- Quickly step through annotations with =M-n= and =M-p=
+- Buffer summary of annotations (although =annotate.el= also has this)
+- Quickly browse through all annotated files using completing-read
 
 See [[file:docs/simply-annotate.org]] for the manual!
 
-* Features
+* Whats New
 
-- *Non-intrusive*: Annotations are stored separately and don't modify your original files
-- *Multiple formats*: Support for both single-line and multi-line annotations
-- *Visual highlighting*: Annotated text is highlighted with customizable colors
-- *Easy navigation*: Jump between annotations with simple keybindings
-- *Persistent storage*: Annotations survive between Emacs sessions
-- *Org-mode export*: List all annotations in a structured org-mode buffer
-- *Auto-preview*: Automatically display annotation content as you navigate
-- *Customizable*: Adjust colors, buffer sizes, and behavior to your preferences
+** <2025-06-16> *0.0.2*
+
+Refactored annotation system and enhance usability
 
 * Installation
 
@@ -59,52 +59,32 @@ See [[file:docs/simply-annotate.org]] for the manual!
 
 * Quick Start
 
-1. *Enable the mode*: =M-x simply-annotate-mode= (or use =C-c A= if you've set up the binding)
-2. *Add an annotation*: Select text and press =C-c a a=
-3. *Navigate*: Use =C-c a n= (next) and =C-c a p= (previous) to move between annotations
-4. **View all**: Press =C-c a l= to see all annotations in an org-mode list
+1. Open any file
+2. Enable annotation mode: =M-x simply-annotate-mode=
+3. Select text and press =M-s SPC= to create your first annotation
+4. Create some more annotations
+5. Navigate with =M-n= (next) and =M-p= (previous)
 
 * Usage
 
-** Basic Operations
+** Enabling Annotation Mode
 
-| Keybinding | Command                         | Description                                  |
-|------------+---------------------------------+----------------------------------------------|
-| =C-c a a=  | =simply-annotate-add=           | Add single-line annotation to selection/line |
-| =C-c a m=  | =simply-annotate-add-multiline= | Add multi-line annotation                    |
-| =C-c a d=  | =simply-annotate-remove=        | Delete annotation at point                   |
-| =C-c a e=  | =simply-annotate-edit=          | Edit annotation at point                     |
+#+begin_src emacs-lisp
+M-x simply-annotate-mode
+#+end_src
 
-** Navigation
+Or bind to a convenient key:
 
-| Keybinding | Command                    | Description                      |
-|------------+----------------------------+----------------------------------|
-| =C-c a n=  | =simply-annotate-next=     | Jump to next annotation          |
-| =C-c a p=  | =simply-annotate-previous= | Jump to previous annotation      |
-| =C-c a l=  | =simply-annotate-list=     | List all annotations in org-mode |
-
-** View Options
-
-| Keybinding | Command                  | Description                        |
-|------------+--------------------------+------------------------------------|
-| =C-c a t=  | =simply-annotate-toggle= | Toggle auto-show annotation buffer |
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-c A") 'simply-annotate-mode)
+#+end_src
 
 ** Creating Annotations
 
-*** Single-line Annotations
-
-1. Select text or place cursor on a line
-2. Press =C-c a a=
-3. Type your annotation in the minibuffer
-4. Press =Enter=
-
-*** Multi-line Annotations
-
-1. Select text or place cursor on a line  
-2. Press =C-c a m=
-3. A dedicated buffer opens for editing
-4. Type your multi-line annotation
-5. Press =C-c C-c= to save or =C-c C-k= to cancel
+1. Select the region you want to annotate
+2. Press =M-s SPC=
+3. Use the full annotation buffer for detailed notes
+4. Save with =C-c C-c=
 
 ** Viewing Annotations
 
@@ -112,27 +92,63 @@ When =simply-annotate-mode= is active:
 
 - Annotated text is highlighted with a colored background
 - The header line shows annotation count and available commands
-- Moving your cursor to annotated text automatically displays the annotation content
-- A dedicated annotation buffer can show detailed information
+- Moving to the next and previous annotation displays the annotation if the *Annotations* buffer is currently active
+- Press =M-s SPC= on annotated text to view in detail
+
+** Navigation
+
+| Key Binding | Action                      |
+|-------------+-----------------------------|
+| =M-n=       | Jump to next annotation     |
+| =M-p=       | Jump to previous annotation |
+| =M-s SPC=   | Create/view/edit annotation |
 
 ** Managing Annotations
 
 *** Editing
 
 - Place cursor on annotated text
-- Press =C-c a e= to edit the annotation
-- For multi-line annotations, a dedicated editing buffer opens
+- Press =M-s SPC= to open the annotation buffer
+- Make your changes
+- Save with =C-c C-c=
 
 *** Deleting
 
 - Place cursor on annotated text
-- Press =C-c a d= to remove the annotation
+- Press =M-s -= to remove the annotation
 
 *** Listing All Annotations
 
-- Press =C-c a l= to open an org-mode buffer showing all annotations
-- Click on line numbers to jump directly to annotations
+- Press =M-s l= to open a grep-mode buffer showing all annotations in the current file
+- Click on line numbers or press =Enter= to jump directly to annotations
 - Perfect for getting an overview of all your notes
+
+*** Cross-file Overview
+
+- Press =M-s 0= to browse annotations across all files
+- Select a file from the completion list
+- View all annotations for that file in grep-mode format
+
+* Key Bindings
+
+When =simply-annotate-mode= is enabled:
+
+| Key Binding | Command                        | Description                          |
+|-------------+--------------------------------+--------------------------------------|
+| =M-s SPC=   | =simply-annotate-smart-action= | Create/view/edit annotation          |
+| =M-s -=     | =simply-annotate-remove=       | Delete annotation at point           |
+| =M-s l=     | =simply-annotate-list=         | List all annotations in current file |
+| =M-s 0=     | =simply-annotate-show-all=     | Browse annotations across all files  |
+| =M-n=       | =simply-annotate-next=         | Jump to next annotation              |
+| =M-p=       | =simply-annotate-previous=     | Jump to previous annotation          |
+
+In the annotation buffer:
+
+| Key Binding | Command | Description |
+|-------------|---------|-------------|
+| =C-c C-c= | =simply-annotate-save-annotation-buffer= | Save changes |
+| =C-c C-k= | =simply-annotate-cancel-edit= | Cancel editing |
+| =C-x C-q= | =toggle-read-only= | Enter/exit edit mode |
 
 * Customization
 
@@ -147,9 +163,6 @@ When =simply-annotate-mode= is active:
   ;; Change annotation buffer height (fraction of frame)
   (simply-annotate-buffer-height 0.25)
   
-  ;; Disable auto-show buffer
-  (simply-annotate-auto-show-buffer nil)
-  
   ;; Custom storage location
   (simply-annotate-file "~/my-annotations.el")
   
@@ -157,58 +170,95 @@ When =simply-annotate-mode= is active:
   ("C-c A" . simply-annotate-mode))
 #+end_src
 
-** Available Customization Options
+** Customization Options
 
-| Variable                           | Default                            | Description                            |
-|------------------------------------+------------------------------------+----------------------------------------|
-| =simply-annotate-file=             | =~/.emacs.d/simply-annotations.el= | File to store annotations              |
-| =simply-annotate-highlight-face=   | Yellow background, black text      | Face for highlighted text              |
-| =simply-annotate-buffer-name=      | =*Annotation*=                     | Name of annotation display buffer      |
-| =simply-annotate-auto-show-buffer= | =t=                                | Auto-show annotation buffer on hover   |
-| =simply-annotate-buffer-height=    | =0.3=                              | Height of annotation buffer (fraction) |
+| Variable                         | Default                              | Description                                     |
+|----------------------------------+--------------------------------------+-------------------------------------------------|
+| =simply-annotate-file=           | ="~/.emacs.d/simply-annotations.el"= | File to store annotations                       |
+| =simply-annotate-highlight-face= | ='highlight=                         | Face for highlighted annotated text             |
+| =simply-annotate-buffer-name=    | ="*Annotation*"=                     | Name of the annotation display buffer           |
+| =simply-annotate-buffer-height=  | =0.3=                                | Height of annotation buffer (fraction of frame) |
 
-** Custom Highlight Colors
+** Custom Faces
 
 #+begin_src emacs-lisp
-;; Subtle highlighting
-(setq simply-annotate-highlight-face '(:background "#fff3cd" :foreground "#856404"))
+;; Custom highlight face for annotations
+(defface my-annotation-face
+  '((t :background "lightyellow" :foreground "black"))
+  "Face for annotation highlights")
 
-;; High contrast
-(setq simply-annotate-highlight-face '(:background "#007acc" :foreground "white" :weight bold))
+(setq simply-annotate-highlight-face 'my-annotation-face)
+#+end_src
 
-;; Use existing face
-(setq simply-annotate-highlight-face 'highlight)
+* Examples
+
+** Code Review Workflow
+
+#+begin_src emacs-lisp
+;; 1. Open the file you're reviewing
+;; 2. Enable annotation mode
+(simply-annotate-mode 1)
+
+;; 3. Select problematic code and annotate
+;; M-s SPC -> "TODO: This function needs error handling"
+
+;; 4. Review all annotations before submitting
+;; M-s l (to see all annotations in grep format)
+#+end_src
+
+** Research Notes
+
+#+begin_src emacs-lisp
+;; While reading academic papers or documentation:
+;; 1. Select important passages
+;; 2. Add contextual notes and cross-references
+;; 3. Use M-s 0 to review notes across multiple files
+#+end_src
+
+** Documentation Workflow
+
+#+begin_src emacs-lisp
+;; 1. Annotate code sections that need documentation
+;; 2. Use multi-line annotations for detailed explanations
+;; 3. Export annotation list for documentation planning
 #+end_src
 
 * Data Storage
 
-Annotations are stored in a separate file (by default =~/.emacs.d/simply-annotations.el=) and are organized by file path or buffer name. The storage format is:
+Annotations are stored in a single Emacs Lisp file (by default =~/.emacs.d/simply-annotations.el=). The format is human-readable and can be version controlled if desired.
 
-- **Persistent**: Survives Emacs restarts
-- **Portable**: Can be version controlled or shared
-- **Non-intrusive**: Original files remain unchanged
-- **Efficient**: Only loads annotations for the current buffer
+** Sample Storage Format
+
+#+begin_src emacs-lisp
+;;; Simply Annotate Database
+;;; This file is auto-generated. Do not edit manually.
+
+(("simply-annotate:/path/to/file.el"
+  ((start . 1250) (end . 1300) (text . "This needs refactoring"))
+  ((start . 2100) (end . 2150) (text . "Add error handling here")))
+ ("simply-annotate:/path/to/other-file.py"
+  ((start . 450) (end . 500) (text . "Performance bottleneck"))))
+#+end_src
 
 * Tips and Tricks
 
 ** Workflow Suggestions
 
-1. *Enable globally for specific file types*:
+Enable the mode globally if you wish
    
-   #+begin_src emacs-lisp
-   (add-hook 'prog-mode-hook #'simply-annotate-mode)
-   (add-hook 'text-mode-hook #'simply-annotate-mode)
-   #+end_src
-
-3. *Export annotations to file*:
-   
-   Use =C-c a l= then save the org-mode buffer to export your annotations.
+#+begin_src emacs-lisp
+(use-package simply-annotate
+  :hook
+  (find-file-hook . simply-annotate-mode)
+  :bind
+  ("C-c A" . simply-annotate-mode)
+  ("C-c 0" . simply-annotate-show-all))
+#+end_src
 
 ** Performance Notes
 
 - Annotations are loaded on-demand per buffer
 - Large numbers of annotations (100+) may slightly impact performance
-- Consider splitting very large annotation databases
 
 * Troubleshooting
 
@@ -231,16 +281,7 @@ Annotations are stored in a separate file (by default =~/.emacs.d/simply-annotat
 
 ** Getting Help
 
-#+begin_src emacs-lisp
-;; View current annotations
-M-x simply-annotate-list
-
-;; Check mode status  
-M-x describe-mode
-
-;; View keybindings
-C-h m (when simply-annotate-mode is active)
-#+end_src
+There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annotate=
 
 * Alternative package comparison
 

@@ -1,4 +1,4 @@
-\input texinfo    @c -*- texinfo -*-
+\input texinfo    @c -*-texinfo-*-
 @c %**start of header
 @setfilename simply-annotate.info
 @settitle Simply Annotate Manual
@@ -7,9 +7,10 @@
 @c %**end of header
 
 @copying
-This manual is for Simply Annotate (version 0.0.1).
+This manual is for Simply Annotate (version 0.0.1), a lightweight annotation
+system for Emacs.
 
-Copyright @copyright{} 2025 James Dyer.
+Copyright @copyright{} 2024 James Dyer.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -23,20 +24,19 @@ Free Documentation License''.
 
 @dircategory Emacs
 @direntry
-* Simply Annotate: (simply-annotate).    Simple annotation system for Emacs.
+* Simply Annotate: (simply-annotate).    Lightweight annotation system for Emacs.
 @end direntry
 
-@finalout
 @titlepage
 @title Simply Annotate Manual
-@subtitle A Simple Annotation System for Emacs
+@subtitle A lightweight annotation system for Emacs
 @author James Dyer
 
 @page
 @vskip 0pt plus 1filll
 @insertcopying
 
-Published by James Dyer
+Published by the author.
 @end titlepage
 
 @contents
@@ -45,9 +45,9 @@ Published by James Dyer
 @node Top
 @top Simply Annotate
 
-This manual documents Simply Annotate, a lightweight annotation system for Emacs
-that allows you to add persistent notes to any text file without modifying the
-original content.
+This manual describes Simply Annotate, a lightweight annotation system for
+Emacs that allows you to add persistent notes to any text file without
+modifying the original content.
 
 @insertcopying
 @end ifnottex
@@ -55,105 +55,99 @@ original content.
 @menu
 * Introduction::                What is Simply Annotate?
 * Installation::                How to install Simply Annotate
-* Getting Started::             Quick start guide
+* Quick Start::                 Getting started quickly
 * Basic Usage::                 Creating and managing annotations
 * Navigation::                  Moving between annotations
+* Advanced Features::           Cross-file annotations and listing
+* Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
-* Advanced Features::           Org-mode integration and more
+* Data Storage::                How annotations are stored
 * Troubleshooting::             Common issues and solutions
-* Index::                       Complete index
+* Function Index::              Index of all functions
+* Variable Index::              Index of all variables
+* Concept Index::               Index of concepts
 @end menu
 
 @node Introduction
 @chapter Introduction
 
-@cindex introduction
-@cindex overview
-
-Simply Annotate is a lightweight annotation system for Emacs that provides
-a non-intrusive way to add persistent notes to any text file. Unlike other
-annotation systems, Simply Annotate stores your notes separately from the
-original files, ensuring that your source code, documents, and configuration
-files remain unchanged.
+Simply Annotate is a lightweight annotation system for Emacs that allows
+you to add persistent notes to any text file without modifying the original
+content. It's perfect for code review, research, note-taking, and documentation.
 
 @section Key Features
 
 @itemize @bullet
 @item
-@strong{Non-intrusive}: Annotations are stored separately and don't modify
-your original files
+@strong{Non-intrusive}: Annotations don't modify your original files
 @item
-@strong{Multiple formats}: Support for both single-line and multi-line annotations
+@strong{Persistent}: Notes survive between Emacs sessions
 @item
-@strong{Visual highlighting}: Annotated text is highlighted with customizable colors
+@strong{Contextual}: Automatic display when cursor moves over annotated text
 @item
-@strong{Easy navigation}: Jump between annotations with simply keybindings
+@strong{Rich editing}: Full-featured annotation buffer for longer notes
 @item
-@strong{Persistent storage}: Annotations survive between Emacs sessions
+@strong{Navigation}: Jump between annotations with simple keybindings
 @item
-@strong{Org-mode export}: List all annotations in a structured org-mode buffer
+@strong{Overview}: List all annotations in grep-mode format
 @item
-@strong{Auto-preview}: Automatically display annotation content as you navigate
-@item
-@strong{Customizable}: Adjust colors, buffer sizes, and behavior to your preferences
-@end itemize
-
-@section Use Cases
-
-Simply Annotate is perfect for:
-
-@itemize @bullet
-@item Code review and analysis
-@item Learning new codebases
-@item Research and document analysis
-@item Project documentation
-@item Note-taking during reading
+@strong{Cross-file}: Browse annotations across multiple files
 @end itemize
 
 @node Installation
 @chapter Installation
 
-@cindex installation
-@cindex setup
-
-@section Requirements
-
-Simply Annotate requires Emacs 28.1 or later. No external dependencies
-are needed.
-
-@section Installing from MELPA
+@section Using MELPA (Recommended)
 
 The easiest way to install Simply Annotate is through MELPA:
 
-@example
+@lisp
 (use-package simply-annotate
-  :ensure t)
-@end example
+  :ensure t
+  :bind ("C-c A" . simply-annotate-mode))
+@end lisp
 
 @section Manual Installation
 
+If you prefer to install manually:
+
 @enumerate
 @item
-Download @file{simply-annotate.el} from the project repository
+Download @file{simply-annotate.el}
 @item
-Place it in your Emacs @code{load-path}
-@item
-Add the following to your Emacs configuration:
+Add to your load path:
 
-@example
+@lisp
+(add-to-list 'load-path "/path/to/simply-annotate")
 (require 'simply-annotate)
-@end example
+@end lisp
 @end enumerate
 
-@node Getting Started
-@chapter Getting Started
+@node Quick Start
+@chapter Quick Start
 
-@cindex getting started
-@cindex quick start
+Here's how to get started with Simply Annotate in under a minute:
 
-@section Enabling Simply Annotate Mode
+@enumerate
+@item
+Open any file in Emacs
+@item
+Enable annotation mode: @kbd{M-x simply-annotate-mode}
+@item
+Select some text and press @kbd{M-s SPC} to create your first annotation
+@item
+Type your annotation text and press @kbd{C-c C-c} to save
+@item
+Navigate with @kbd{M-n} (next) and @kbd{M-p} (previous)
+@end enumerate
 
-To start using Simply Annotate in a buffer, enable the minor mode:
+@node Basic Usage
+@chapter Basic Usage
+
+@section Enabling Annotation Mode
+
+@findex simply-annotate-mode
+To start using annotations in a buffer, enable the minor mode:
 
 @example
 M-x simply-annotate-mode
@@ -161,493 +155,359 @@ M-x simply-annotate-mode
 
 You can also bind this to a convenient key:
 
-@example
-(global-set-key (kbd "C-c a") #'simply-annotate-mode)
-@end example
+@lisp
+(global-set-key (kbd "C-c A") 'simply-annotate-mode)
+@end lisp
 
-@section Your First Annotation
+@section Creating Annotations
+
+@subsection Multi-line Annotations
+
+For longer, detailed annotations:
 
 @enumerate
 @item
-Select some text in your buffer (or place cursor on a line)
+Select the region you want to annotate
 @item
-Press @kbd{C-c a a} to add an annotation
+Press @kbd{M-s SPC}
 @item
-Type your note in the minibuffer and press @key{RET}
+Use the full annotation buffer for detailed notes
 @item
-The text is now highlighted, indicating it has an annotation
+Press @kbd{C-x C-q} to enter edit mode if needed
+@item
+Save with @kbd{C-c C-c}
 @end enumerate
 
 @section Viewing Annotations
 
-When you move your cursor to annotated text:
+When @code{simply-annotate-mode} is active:
+
 @itemize @bullet
 @item
-The annotation content appears in the header line
+Annotated text is highlighted with a colored background
 @item
-An annotation buffer may automatically appear (if enabled)
+The header line shows annotation count and available commands
 @item
-A tooltip shows when you hover over the text
+Moving to the next and previous annotation displays the annotation if the *Annotations* buffer is currently active
+@item
+Press @kbd{M-s SPC} on annotated text to view in detail
 @end itemize
-
-@node Basic Usage
-@chapter Basic Usage
-
-@cindex basic usage
-@cindex annotations
-
-@section Creating Annotations
-
-@subsection Single-line Annotations
-
-@findex simply-annotate-add
-To create a simply annotation:
-
-@enumerate
-@item
-Select text or place cursor on a line
-@item
-Press @kbd{C-c a a} (@code{simply-annotate-add})
-@item
-Enter your annotation text
-@item
-Press @key{RET} to save
-@end enumerate
-
-@subsection Multi-line Annotations
-
-@findex simply-annotate-add-multiline
-For longer annotations:
-
-@enumerate
-@item
-Select text or place cursor on a line
-@item
-Press @kbd{C-c a m} (@code{simply-annotate-add-multiline})
-@item
-A dedicated buffer opens for editing
-@item
-Type your multi-line annotation
-@item
-Press @kbd{C-c C-c} to save or @kbd{C-c C-k} to cancel
-@end enumerate
 
 @section Editing Annotations
 
-@findex simply-annotate-edit
-To modify an existing annotation:
+@findex simply-annotate-save-annotation-buffer
+@findex simply-annotate-cancel-edit
+To edit an existing annotation:
 
 @enumerate
 @item
 Place cursor on annotated text
 @item
-Press @kbd{C-c a e} (@code{simply-annotate-edit})
+Press @kbd{M-s SPC} to open the annotation buffer
 @item
-For single-line annotations, edit in the minibuffer
+Press @kbd{C-x C-q} to enter edit mode
 @item
-For multi-line annotations, a dedicated buffer opens
+Make your changes
 @item
 Save with @kbd{C-c C-c} or cancel with @kbd{C-c C-k}
 @end enumerate
 
-@section Removing Annotations
+@section Deleting Annotations
 
 @findex simply-annotate-remove
-To delete an annotation:
+To remove an annotation:
 
 @enumerate
 @item
 Place cursor on annotated text
 @item
-Press @kbd{C-c a d} (@code{simply-annotate-remove})
-@item
-The annotation is immediately removed
+Press @kbd{M-s -} to remove the annotation
 @end enumerate
-
-@section Key Bindings Summary
-
-@multitable @columnfractions .3 .7
-@headitem Key Binding @tab Command
-@item @kbd{C-c a a} @tab Add single-line annotation
-@item @kbd{C-c a m} @tab Add multi-line annotation
-@item @kbd{C-c a e} @tab Edit annotation at point
-@item @kbd{C-c a d} @tab Remove annotation at point
-@item @kbd{C-c a n} @tab Next annotation
-@item @kbd{C-c a p} @tab Previous annotation
-@item @kbd{C-c a l} @tab List all annotations
-@item @kbd{C-c a t} @tab Toggle auto-show buffer
-@end multitable
 
 @node Navigation
 @chapter Navigation
 
-@cindex navigation
-@cindex moving between annotations
-
 @section Moving Between Annotations
 
-@subsection Next Annotation
-
 @findex simply-annotate-next
-Press @kbd{C-c a n} (@code{simply-annotate-next}) to jump to the next
-annotation in the buffer. If you're at the last annotation, it wraps
-to the first one.
-
-@subsection Previous Annotation
-
 @findex simply-annotate-previous
-Press @kbd{C-c a p} (@code{simply-annotate-previous}) to jump to the
-previous annotation in the buffer. If you're at the first annotation,
-it wraps to the last one.
+Simply Annotate provides convenient commands for navigation:
 
-@section Listing All Annotations
+@table @kbd
+@item M-n
+@code{simply-annotate-next} - Jump to next annotation
+@item M-p
+@code{simply-annotate-previous} - Jump to previous annotation
+@end table
 
-@findex simply-annotate-list
-Press @kbd{C-c a l} (@code{simply-annotate-list}) to open an org-mode
-buffer showing all annotations in the current buffer. This provides:
+These commands automatically wrap around, so you can continuously navigate
+through all annotations in a buffer.
 
-@itemize @bullet
-@item
-A structured overview of all your annotations
-@item
-Clickable links to jump directly to each annotation
-@item
-Line numbers for easy reference
-@item
-The ability to export or save the annotation summary
-@end itemize
+@section Viewing Current Annotation
 
-@section Automatic Preview
-
-When @code{simply-annotate-auto-show-buffer} is enabled (the default),
-moving your cursor to annotated text automatically:
+@findex simply-annotate-show
+When you're on an annotated region, you can:
 
 @itemize @bullet
 @item
-Updates the header line with annotation information
+View the annotation content in the header line
 @item
-Shows the annotation content in a dedicated buffer
+Press @kbd{M-s SPC} to open the detailed annotation buffer
 @item
-Displays the annotation number and total count
+See the annotation count and position in the header line
 @end itemize
-
-@node Customization
-@chapter Customization
-
-@cindex customization
-@cindex configuration
-
-@section Customization Variables
-
-@subsection Storage Location
-
-@defvar simply-annotate-file
-File to store annotations. Default is @file{simply-annotations.el} in
-your @code{user-emacs-directory}.
-
-@example
-(setq simply-annotate-file "~/my-annotations.el")
-@end example
-@end defvar
-
-@subsection Visual Appearance
-
-@defvar simply-annotate-highlight-face
-Face used to highlight annotated text. Default is yellow background
-with black foreground.
-
-@example
-;; Subtle highlighting
-(setq simply-annotate-highlight-face 
-      '(:background "#fff3cd" :foreground "#856404"))
-
-;; High contrast
-(setq simply-annotate-highlight-face 
-      '(:background "#007acc" :foreground "white" :weight bold))
-
-;; Use existing face
-(setq simply-annotate-highlight-face 'highlight)
-@end example
-@end defvar
-
-@subsection Buffer Behavior
-
-@defvar simply-annotate-buffer-name
-Name of the buffer used to display annotation content. Default is
-@samp{*Annotation*}.
-@end defvar
-
-@defvar simply-annotate-auto-show-buffer
-Whether to automatically show the annotation buffer when cursor moves
-to annotated text. Default is @code{t}.
-
-@example
-;; Disable auto-show
-(setq simply-annotate-auto-show-buffer nil)
-@end example
-@end defvar
-
-@defvar simply-annotate-buffer-height
-Height of the annotation buffer as a fraction of the frame height.
-Default is @code{0.3} (30% of frame height).
-
-@example
-;; Smaller annotation buffer
-(setq simply-annotate-buffer-height 0.2)
-@end example
-@end defvar
-
-@section Complete Configuration Example
-
-@example
-(use-package simply-annotate
-  :ensure t
-  :custom
-  ;; Custom storage location
-  (simply-annotate-file "~/Documents/annotations.el")
-  
-  ;; Subtle highlighting
-  (simply-annotate-highlight-face 
-   '(:background "lightblue" :foreground "darkblue"))
-  
-  ;; Smaller annotation buffer
-  (simply-annotate-buffer-height 0.25)
-  
-  ;; Disable auto-show
-  (simply-annotate-auto-show-buffer nil)
-  
-  :bind
-  ;; Custom key binding
-  (("C-c n" . simply-annotate-mode)))
-@end example
-
-@section Enabling for Specific Modes
-
-You can automatically enable Simply Annotate for specific file types:
-
-@example
-;; Enable for programming modes
-(add-hook 'prog-mode-hook #'simply-annotate-mode)
-
-;; Enable for text modes
-(add-hook 'text-mode-hook #'simply-annotate-mode)
-
-;; Enable for specific modes
-(add-hook 'python-mode-hook #'simply-annotate-mode)
-(add-hook 'org-mode-hook #'simply-annotate-mode)
-@end example
 
 @node Advanced Features
 @chapter Advanced Features
 
-@cindex advanced features
-@cindex org-mode integration
+@section Listing All Annotations
 
-@section Org-mode Integration
+@findex simply-annotate-list
+To see an overview of all annotations in the current buffer:
 
-@subsection Annotation Listing
+@example
+M-s l
+@end example
 
-The @code{simply-annotate-list} command creates a structured org-mode
-buffer with all annotations. This buffer includes:
-
+This opens a grep-mode buffer showing:
 @itemize @bullet
 @item
-A title with the source buffer name
+Line numbers for each annotation
 @item
-Hierarchical organization with headings
+The annotated text content
 @item
-Clickable links to jump to annotations
+The annotation text itself
 @item
-Line numbers for reference
-@item
-Full annotation text
+Clickable links to jump to each annotation
 @end itemize
 
-@subsection Exporting Annotations
+@section Cross-file Annotation Browsing
 
-You can export your annotations by:
+@findex simply-annotate-show-all
+To browse annotations across all files:
 
-@enumerate
+@example
+M-s 0
+@end example
+
+This command:
+@itemize @bullet
 @item
-Running @kbd{C-c a l} to create the org-mode listing
+Shows a completion list of all files with annotations
 @item
-Saving the resulting buffer to a file
+Displays the annotation count for each file
 @item
-Using org-mode export functions to convert to various formats
-@end enumerate
+Opens the selected file and shows its annotations
+@item
+Uses grep-mode format for easy navigation
+@end itemize
 
 @section Annotation Buffer Features
 
-@subsection Editing in the Annotation Buffer
-
-When viewing an annotation in the dedicated buffer:
+The annotation buffer provides a rich editing environment:
 
 @itemize @bullet
 @item
-Press @kbd{C-x C-q} to enter edit mode
+Shows annotation position and count
 @item
-Make your changes to the annotation text
+Displays source file and line number information
 @item
-Press @kbd{C-c C-c} to save changes
+Supports multi-line annotations with full editing capabilities
 @item
-Press @kbd{C-c C-k} to cancel editing
+Provides save and cancel operations
+@item
+Automatically formats and displays content
 @end itemize
 
-@subsection Navigation from Annotation Buffer
+@node Key Bindings
+@chapter Key Bindings
 
-While in the annotation buffer, you can:
+@section Main Mode Bindings
+
+When @code{simply-annotate-mode} is enabled:
+
+@multitable @columnfractions .2 .3 .5
+@headitem Key Binding @tab Command @tab Description
+@item @kbd{M-s SPC} @tab @code{simply-annotate-smart-action} @tab Create/view/edit annotation
+@item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
+@item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
+@item @kbd{M-s 0} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
+@item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
+@item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
+@end multitable
+
+@section Annotation Buffer Bindings
+
+In the annotation buffer:
+
+@multitable @columnfractions .2 .4 .4
+@headitem Key Binding @tab Command @tab Description
+@item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Save changes
+@item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing
+@item @kbd{C-x C-q} @tab @code{toggle-read-only} @tab Enter/exit edit mode
+@end multitable
+
+@node Customization
+@chapter Customization
+
+@section Basic Configuration
+
+@lisp
+(use-package simply-annotate
+  :ensure t
+  :config
+  ;; Customize the highlight face
+  (setq simply-annotate-highlight-face 'highlight)
+  
+  ;; Customize storage location
+  (setq simply-annotate-file 
+        (expand-file-name "my-annotations.el" user-emacs-directory))
+  
+  ;; Customize annotation buffer height
+  (setq simply-annotate-buffer-height 0.4)
+  
+  :bind 
+  ("C-c A" . simply-annotate-mode))
+@end lisp
+
+@section Customization Variables
+
+@vtable @code
+@item simply-annotate-file
+@vindex simply-annotate-file
+File to store annotations. Default: @file{~/.emacs.d/simply-annotations.el}
+
+@item simply-annotate-highlight-face
+@vindex simply-annotate-highlight-face
+Face for highlighted annotated text. Default: @code{'highlight}
+
+@item simply-annotate-buffer-name
+@vindex simply-annotate-buffer-name
+Name of the annotation display buffer. Default: @code{"*Annotation*"}
+
+@item simply-annotate-buffer-height
+@vindex simply-annotate-buffer-height
+Height of annotation buffer as fraction of frame height. Default: @code{0.3}
+@end vtable
+
+@section Custom Faces
+
+You can define custom faces for annotation highlights:
+
+@lisp
+;; Custom highlight face for annotations
+(defface my-annotation-face
+  '((t :background "lightyellow" :foreground "black"))
+  "Face for annotation highlights")
+
+(setq simply-annotate-highlight-face 'my-annotation-face)
+@end lisp
+
+@node Data Storage
+@chapter Data Storage
+
+@section Storage Format
+
+Annotations are stored in a single Emacs Lisp file (by default
+@file{~/.emacs.d/simply-annotations.el}). The format is human-readable
+and can be version controlled if desired.
+
+@section Sample Storage Format
+
+@lisp
+;;; Simply Annotate Database
+;;; This file is auto-generated. Do not edit manually.
+
+(("simply-annotate:/path/to/file.el"
+  ((start . 1250) (end . 1300) (text . "This needs refactoring"))
+  ((start . 2100) (end . 2150) (text . "Add error handling here")))
+ ("simply-annotate:/path/to/other-file.py"
+  ((start . 450) (end . 500) (text . "Performance bottleneck"))))
+@end lisp
+
+@section Data Management
 
 @itemize @bullet
 @item
-Press @kbd{n} to go to the next annotation
+The database file is automatically created when first needed
 @item
-Press @kbd{p} to go to the previous annotation
+Annotations are saved automatically when buffers are saved or killed
 @item
-Press @kbd{q} to close the annotation buffer
-@end itemize
-
-@section Data Storage Format
-
-Annotations are stored in a Lisp data structure organized by file:
-
-@example
-((file1 . ((start . 100) (end . 150) (text . "My note")))
- (file2 . ((start . 200) (end . 250) (text . "Another note"))))
-@end example
-
-This format is:
-@itemize @bullet
+The file uses a namespace prefix to avoid conflicts
 @item
-Human-readable and editable
-@item
-Version control friendly
-@item
-Portable between systems
-@item
-Efficient for loading and saving
+Empty databases are automatically cleaned up
 @end itemize
 
 @node Troubleshooting
 @chapter Troubleshooting
 
-@cindex troubleshooting
-@cindex problems
+@section Annotations Not Persisting
 
-@section Common Issues
-
-@subsection Annotations Not Persisting
-
-@strong{Problem}: Annotations disappear between Emacs sessions.
-
-@strong{Solutions}:
-@itemize @bullet
-@item
-Check that @code{simply-annotate-file} points to a writable location
-@item
-Ensure the directory exists
-@item
-Verify file permissions
-@item
-Check for errors in the *Messages* buffer
-@end itemize
-
-@subsection Highlighting Not Visible
-
-@strong{Problem}: Annotated text doesn't appear highlighted.
-
-@strong{Solutions}:
-@itemize @bullet
-@item
-Customize @code{simply-annotate-highlight-face} for your color theme
-@item
-Check for conflicting overlays from other packages
-@item
-Try a high-contrast color scheme temporarily
-@item
-Restart Emacs after making face changes
-@end itemize
-
-@subsection Key Bindings Not Working
-
-@strong{Problem}: Annotation commands don't respond to key presses.
-
-@strong{Solutions}:
-@itemize @bullet
-@item
-Ensure @code{simply-annotate-mode} is enabled
-@item
-Check for conflicting key bindings with @kbd{C-h k}
-@item
-Try the commands via @kbd{M-x} to test functionality
-@item
-Review your configuration for binding conflicts
-@end itemize
-
-@subsection Performance Issues
-
-@strong{Problem}: Emacs feels slow with many annotations.
-
-@strong{Solutions}:
-@itemize @bullet
-@item
-Consider splitting large annotation databases
-@item
-Disable @code{simply-annotate-auto-show-buffer} for better performance
-@item
-Use fewer visual effects in @code{simply-annotate-highlight-face}
-@item
-Regular cleanup of unused annotations
-@end itemize
-
-@section Getting Help
-
-@subsection Built-in Help
+If your annotations aren't being saved between sessions:
 
 @itemize @bullet
 @item
-@kbd{C-h m} - Show mode documentation when @code{simply-annotate-mode} is active
+Check that @code{simply-annotate-file} is writable
 @item
-@kbd{C-h k} followed by a key - Show what a key binding does
+Ensure annotation mode is properly enabled
 @item
-@kbd{M-x describe-variable} - Get information about customization variables
+Verify that hooks are installed correctly
 @item
-@kbd{M-x describe-function} - Get help for specific commands
+Check file permissions on the storage directory
 @end itemize
 
-@subsection Debugging
+@section Performance with Large Files
 
-To debug issues:
-
-@enumerate
-@item
-Check the *Messages* buffer for error messages
-@item
-Try @kbd{M-x toggle-debug-on-error} to get detailed error information
-@item
-Test with @kbd{emacs -Q} to eliminate configuration conflicts
-@item
-Verify the annotation file contents manually
-@end enumerate
-
-@subsection Reporting Bugs
-
-When reporting issues, please include:
+Simply Annotate is designed to be lightweight:
 
 @itemize @bullet
 @item
-Emacs version (@kbd{M-x emacs-version})
+Annotations use lightweight overlays
 @item
-Simply Annotate version
+No performance impact on file operations
 @item
-Minimal configuration to reproduce the problem
-@item
-Steps to reproduce the issue
-@item
-Error messages or unexpected behavior description
+Consider splitting very large annotation sets across multiple files
 @end itemize
 
-@node Index
-@unnumbered Index
+@section Integration Issues
+
+@itemize @bullet
+@item
+Annotations work with most major modes
+@item
+Compatible with @code{lsp-mode}, @code{flycheck}, and other packages
+@item
+May need customization for exotic display modes
+@item
+Check for conflicting key bindings
+@end itemize
+
+@section Common Error Messages
+
+@table @strong
+@item "No annotation at point"
+You're trying to edit or remove an annotation, but the cursor isn't
+positioned on annotated text.
+
+@item "Annotation cancelled/removed"
+You saved an empty annotation, which automatically removes it.
+
+@item Database file errors
+Check permissions and disk space for the storage file location.
+@end table
+
+@node Function Index
+@unnumbered Function Index
+
+@printindex fn
+
+@node Variable Index
+@unnumbered Variable Index
+
+@printindex vr
+
+@node Concept Index
+@unnumbered Concept Index
 
 @printindex cp
 
