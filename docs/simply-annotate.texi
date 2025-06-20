@@ -7,8 +7,8 @@
 @c %**end of header
 
 @copying
-This manual is for Simply Annotate (version 0.0.1), a lightweight annotation
-system for Emacs.
+This manual is for Simply Annotate, a lightweight annotation
+system for Emacs with threading and collaboration features.
 
 Copyright @copyright{} 2024 James Dyer.
 
@@ -57,8 +57,11 @@ modifying the original content.
 * Installation::                How to install Simply Annotate
 * Quick Start::                 Getting started quickly
 * Basic Usage::                 Creating and managing annotations
+* Threading and Collaboration:: Replies, status, and multi-author support
+* Display Styles::              Different ways to show annotations
 * Navigation::                  Moving between annotations
 * Advanced Features::           Cross-file annotations and listing
+* Org-mode Integration::        Export annotations to org-mode
 * Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
 * Data Storage::                How annotations are stored
@@ -73,7 +76,7 @@ modifying the original content.
 
 Simply Annotate is a lightweight annotation system for Emacs that allows
 you to add persistent notes to any text file without modifying the original
-content. It's perfect for code review, research, note-taking, and documentation.
+content. It's perfect for code review, research, note-taking, and documentation and includes threading and collaboration features.
 
 @section Key Features
 
@@ -83,7 +86,19 @@ content. It's perfect for code review, research, note-taking, and documentation.
 @item
 @strong{Persistent}: Notes survive between Emacs sessions
 @item
-@strong{Contextual}: Automatic display when cursor moves over annotated text
+@strong{Threading}: Add replies to annotations for conversations
+@item
+@strong{Status tracking}: Manage annotation lifecycle (open → resolved)
+@item
+@strong{Multi-author support}: Collaborate with team members
+@item
+@strong{Priority levels}: Organize by importance (low, normal, high, critical)
+@item
+@strong{Tag system}: Categorize with hashtags (@code{#review}, @code{#bug}, @code{#question})
+@item
+@strong{Multiple display styles}: Choose between highlighting, fringe indicators, or both
+@item
+@strong{Smart action}: Context-aware command that adapts to the situation
 @item
 @strong{Rich editing}: Full-featured annotation buffer for longer notes
 @item
@@ -92,6 +107,10 @@ content. It's perfect for code review, research, note-taking, and documentation.
 @strong{Overview}: List all annotations in grep-mode format
 @item
 @strong{Cross-file}: Browse annotations across multiple files
+@item
+@strong{Org-mode export}: Convert annotation threads to structured TODO items
+@item
+@strong{Header-line integration}: Shows annotation count and available commands
 @end itemize
 
 @node Installation
@@ -126,7 +145,7 @@ Add to your load path:
 @node Quick Start
 @chapter Quick Start
 
-Here's how to get started with Simply Annotate in under a minute:
+Here's how to get started with Simply Annotate:
 
 @enumerate
 @item
@@ -134,11 +153,19 @@ Open any file in Emacs
 @item
 Enable annotation mode: @kbd{M-x simply-annotate-mode}
 @item
-Select some text and press @kbd{M-s SPC} to create your first annotation
+Select some text and press @kbd{M-s j} to create your first annotation
 @item
 Type your annotation text and press @kbd{C-c C-c} to save
 @item
 Navigate with @kbd{M-n} (next) and @kbd{M-p} (previous)
+@item
+Press @kbd{M-s ]} to cycle through different display styles
+@item
+Press @kbd{M-s r} to add a reply to any annotation
+@item
+Press @kbd{M-s s} to set status (open, resolved, etc.)
+@item
+Press @kbd{M-s o} to export annotations to org-mode
 @end enumerate
 
 @node Basic Usage
@@ -161,19 +188,51 @@ You can also bind this to a convenient key:
 
 @section Creating Annotations
 
-@subsection Multi-line Annotations
+@subsection Smart Action Command
 
-For longer, detailed annotations:
+@findex simply-annotate-smart-action
+The @kbd{M-s j} command (@code{simply-annotate-smart-action}) is context-aware
+and behaves differently depending on the situation:
+
+@table @strong
+@item With region selected
+Creates new annotation or edits existing one at the selected text
+@item On annotated text (no region)
+Toggles annotation buffer visibility to show/hide the annotation
+@item With prefix argument (@kbd{C-u M-s j})
+Forces edit mode on existing annotation
+@item Elsewhere (no region, no annotation)
+Creates annotation for the current line
+@end table
+
+@subsection Traditional Method
+
+For more explicit control:
 
 @enumerate
 @item
 Select the region you want to annotate
 @item
-Press @kbd{M-s SPC}
+Press @kbd{M-s j}
+@item
+Enter your annotation text in the dedicated buffer
+@item
+Save with @kbd{C-c C-c}
+@end enumerate
+
+@subsection Multi-line Annotations
+
+The annotation buffer supports full multi-line editing:
+
+@enumerate
+@item
+Select the region you want to annotate
+@item
+Press @kbd{M-s j}
 @item
 Use the full annotation buffer for detailed notes
 @item
-Press @kbd{C-x C-q} to enter edit mode if needed
+Format your text as needed (multiple paragraphs, bullet points, etc.)
 @item
 Save with @kbd{C-c C-c}
 @end enumerate
@@ -184,13 +243,15 @@ When @code{simply-annotate-mode} is active:
 
 @itemize @bullet
 @item
-Annotated text is highlighted with a colored background
+Annotated text is displayed according to your chosen display style
 @item
 The header line shows annotation count and available commands
 @item
-Moving to the next and previous annotation displays the annotation if the *Annotations* buffer is currently active
+Thread status and comment count displayed in header (e.g., @code{[OPEN/HIGH:3]})
 @item
-Press @kbd{M-s SPC} on annotated text to view in detail
+Moving to annotated text shows annotation details in the header
+@item
+Press @kbd{M-s j} on annotated text to view/edit in detail
 @end itemize
 
 @section Editing Annotations
@@ -203,11 +264,9 @@ To edit an existing annotation:
 @item
 Place cursor on annotated text
 @item
-Press @kbd{M-s SPC} to open the annotation buffer
+Press @kbd{M-s j} to open the annotation buffer
 @item
-Press @kbd{C-x C-q} to enter edit mode
-@item
-Make your changes
+Make your changes directly (the buffer starts in edit mode)
 @item
 Save with @kbd{C-c C-c} or cancel with @kbd{C-c C-k}
 @end enumerate
@@ -223,6 +282,262 @@ Place cursor on annotated text
 @item
 Press @kbd{M-s -} to remove the annotation
 @end enumerate
+
+Alternatively, you can edit the annotation and delete all text, then save
+with @kbd{C-c C-c} to remove it.
+
+@node Threading and Collaboration
+@chapter Threading and Collaboration
+
+Lets create a thread!, reply and add in authors
+
+@section Threading System
+
+@cindex threading
+@cindex replies
+@cindex conversations
+
+Each annotation can become a threaded conversation with multiple replies.
+This is perfect for code reviews, collaborative editing, and ongoing discussions
+about specific parts of your code or documents.
+
+@subsection Adding Replies
+
+@findex simply-annotate-reply-to-annotation
+To add a reply to any annotation:
+
+@enumerate
+@item
+Place cursor on annotated text
+@item
+Press @kbd{M-s r} 
+@item
+Enter your reply text
+@item
+The annotation automatically becomes a threaded conversation
+@end enumerate
+
+@subsection Thread Display
+
+Threaded annotations are displayed with rich formatting:
+
+@example
+┌─ Thread: thread-123456 [OPEN/HIGH] Tags: review, urgent (3 authors)
+│ 💬 John Doe (06/19 09:49):
+│   This needs review before release
+│ ↳ Jane Smith (06/19 10:15):
+│   I'll check this today  
+│ ↳ Bob Wilson (06/19 11:30):
+│   Looks good to me, approved
+└─────
+@end example
+
+@section Status Management
+
+@cindex status
+@cindex priority
+@cindex workflow
+
+@subsection Setting Status
+
+@findex simply-annotate-set-annotation-status
+@vindex simply-annotate-thread-statuses
+
+Track the lifecycle of your annotations:
+
+@enumerate
+@item
+Place cursor on annotated text
+@item
+Press @kbd{M-s s} to set status
+@item
+Choose from: @code{open}, @code{in-progress}, @code{resolved}, @code{closed}
+@end enumerate
+
+The default statuses can be customized via @code{simply-annotate-thread-statuses}.
+
+@subsection Setting Priority
+
+@findex simply-annotate-set-annotation-priority
+@vindex simply-annotate-priority-levels
+
+Organize annotations by importance:
+
+@enumerate
+@item
+Place cursor on annotated text
+@item
+Press @kbd{M-s p} to set priority
+@item
+Choose from: @code{low}, @code{normal}, @code{high}, @code{critical}
+@end enumerate
+
+@subsection Adding Tags
+
+@findex simply-annotate-add-annotation-tag
+@cindex tags
+@cindex organization
+
+Categorize your annotations with tags:
+
+@enumerate
+@item
+Place cursor on annotated text
+@item
+Press @kbd{M-s t} to add a tag
+@item
+Enter a tag like @code{review}, @code{bug}, @code{question}, etc.
+@item
+Tags appear as @code{#review #bug} in the annotation display
+@end enumerate
+
+@section Multi-Author Support
+
+@cindex collaboration
+@cindex authors
+@cindex team
+
+@subsection Author Configuration
+
+@vindex simply-annotate-author-list
+@vindex simply-annotate-prompt-for-author
+
+Configure team members and prompting behavior:
+
+@lisp
+;; Single user (default behavior)
+(setq simply-annotate-prompt-for-author nil)
+
+;; Team collaboration
+(setq simply-annotate-author-list '("John Doe" "Jane Smith" "Bob Wilson"))
+(setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+(setq simply-annotate-remember-author-per-file t)       ; Remember per file
+@end lisp
+
+@subsection Prompting Modes
+
+@table @code
+@item nil
+Never prompt (single-user mode) - default behavior
+@item 'first-only
+Prompt once per session, then remember choice
+@item 'always
+Prompt for every annotation and reply
+@item 'threads-only
+Prompt only when adding replies (great for code reviews)
+@end table
+
+@subsection Author Management Commands
+
+@findex simply-annotate-change-annotation-author
+@findex simply-annotate-reset-session-author
+
+@table @kbd
+@item M-s a
+@code{simply-annotate-change-annotation-author} - Change author of existing annotation/comment
+@item M-s A
+@code{simply-annotate-reset-session-author} - Reset session author (forces prompt on next annotation)
+@end table
+
+@section Collaboration Workflows
+
+@subsection Code Review Workflow
+
+@enumerate
+@item
+@strong{Reviewer} creates annotations on problematic code sections
+@item
+Set priority with @kbd{M-s p} (high for blocking issues)
+@item
+Add relevant tags with @kbd{M-s t} (@code{#security}, @code{#performance}, @code{#style})
+@item
+@strong{Developer} adds replies with @kbd{M-s r} explaining or asking questions
+@item
+@strong{Reviewer} responds with additional context or approval
+@item
+Mark as resolved with @kbd{M-s s} when fixed
+@item
+Export final review with @kbd{M-s o} to org-mode for documentation
+@end enumerate
+
+@subsection Document Collaboration
+
+@enumerate
+@item
+@strong{Author} writes draft document
+@item
+@strong{Reviewers} add annotations with feedback using different author names
+@item
+Track status of each feedback item with @kbd{M-s s}
+@item
+Use @kbd{M-s l} to get overview of all feedback
+@item
+Export to org-mode with @kbd{M-s o} for final review meeting
+@item
+Archive resolved items, keep open ones visible
+@end enumerate
+
+@node Display Styles
+@chapter Display Styles
+
+Simply Annotate supports three different ways to display annotations,
+allowing you to choose the visual style that best fits your workflow.
+
+@section Available Styles
+
+@table @code
+@item highlight
+Traditional background highlighting of annotated text (good for emphasis)
+@item fringe
+Shows small indicators in the left fringe (minimal visual impact)
+@item both
+Combines both highlighting and fringe indicators (maximum visibility)
+@end table
+
+@section Changing Display Styles
+
+@findex simply-annotate-cycle-display-style
+@vindex simply-annotate-display-style
+
+You can change the display style in several ways:
+
+@itemize @bullet
+@item
+Press @kbd{M-s ]} to cycle through all three styles
+@item
+Set @code{simply-annotate-display-style} in your configuration
+@item
+Use @code{simply-annotate-update-display-style} to refresh existing annotations
+@end itemize
+
+@section Style Recommendations
+
+@table @strong
+@item Code Review
+Use @code{fringe} style to avoid visual clutter while coding
+@item Research and Documentation
+Use @code{highlight} style for emphasis on important passages
+@item Critical Files
+Use @code{both} style for maximum visibility of important annotations
+@item Threading Display
+All styles work well with threaded annotations and status indicators
+@end table
+
+@section Fringe Customization
+
+@vindex simply-annotate-fringe-indicator
+@vindex simply-annotate-fringe-face
+
+The fringe display can be customized:
+
+@itemize @bullet
+@item
+Choose different symbols: @code{left-triangle}, @code{right-triangle}, @code{filled-rectangle}, or @code{custom}
+@item
+Customize colors with @code{simply-annotate-fringe-face}
+@item
+Define custom bitmaps for unique indicators
+@end itemize
 
 @node Navigation
 @chapter Navigation
@@ -241,7 +556,8 @@ Simply Annotate provides convenient commands for navigation:
 @end table
 
 These commands automatically wrap around, so you can continuously navigate
-through all annotations in a buffer.
+through all annotations in a buffer. When you arrive at an annotation,
+the text is briefly highlighted with a pulse effect.
 
 @section Viewing Current Annotation
 
@@ -252,9 +568,31 @@ When you're on an annotated region, you can:
 @item
 View the annotation content in the header line
 @item
-Press @kbd{M-s SPC} to open the detailed annotation buffer
+See thread status, priority, and comment count (e.g., @code{[OPEN/HIGH:3]})
 @item
-See the annotation count and position in the header line
+Press @kbd{M-s j} to open the detailed annotation buffer
+@item
+See the annotation count and position (e.g., "2/5") in the header line
+@item
+View available keybindings in the header line
+@end itemize
+
+@section Smart Navigation
+
+The navigation commands work intelligently with different display styles and
+threading:
+
+@itemize @bullet
+@item
+In @code{highlight} mode: jumps to the exact annotated text
+@item
+In @code{fringe} mode: finds annotations anywhere on the current line
+@item
+Shows appropriate message for simple or threaded annotations
+@item
+Always shows a visual pulse when arriving at the annotation
+@item
+Thread summary displayed for complex annotations
 @end itemize
 
 @node Advanced Features
@@ -269,16 +607,36 @@ To see an overview of all annotations in the current buffer:
 M-s l
 @end example
 
-This opens a grep-mode buffer showing:
+The list now shows rich threading information:
+
+@example
+Annotations for myfile.txt:
+Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+
+myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
+┌─ THREAD ─┐
+│ 💬 james dyer (06/19 09:49):
+│   This needs review before release
+│ ↳ jane smith (06/19 10:15):
+│   I'll check this today
+└───────────┘
+Source: function calculateTotal()
+@end example
+
+The enhanced listing includes:
 @itemize @bullet
 @item
-Line numbers for each annotation
+Summary statistics (total, threads vs simple, open vs resolved)
 @item
-The annotated text content
+Status and priority indicators for each annotation
 @item
-The annotation text itself
+Comment counts for threaded annotations
 @item
-Clickable links to jump to each annotation
+Visual thread display with author names and timestamps
+@item
+Tag display with hashtag formatting
+@item
+Color coding for different statuses and priorities
 @end itemize
 
 @section Cross-file Annotation Browsing
@@ -290,33 +648,153 @@ To browse annotations across all files:
 M-s 0
 @end example
 
-This command:
+This command now shows:
 @itemize @bullet
 @item
-Shows a completion list of all files with annotations
+Completion list with annotation counts per file
 @item
-Displays the annotation count for each file
+Thread and status statistics for each file
 @item
-Opens the selected file and shows its annotations
+Enhanced grep-mode display with threading information
 @item
-Uses grep-mode format for easy navigation
+Color-coded status indicators
+@item
+Author information for collaborative workflows
 @end itemize
 
 @section Annotation Buffer Features
 
-The annotation buffer provides a rich editing environment:
+The annotation buffer provides a rich editing environment with threading support:
 
 @itemize @bullet
 @item
-Shows annotation position and count
+Shows helpful instructions with threading commands in the header
 @item
-Displays source file and line number information
+Displays thread information, status, and priority
+@item
+Shows complete conversation thread with replies
+@item
+Access to threading commands (@kbd{C-c r}, @kbd{C-c s}, @kbd{C-c p}, @kbd{C-c t})
 @item
 Supports multi-line annotations with full editing capabilities
 @item
-Provides save and cancel operations
+Starts in edit mode for immediate typing
 @item
-Automatically formats and displays content
+Provides save (@kbd{C-c C-c}) and cancel (@kbd{C-c C-k}) operations
+@item
+Automatically handles empty annotations (removes them)
+@end itemize
+
+@section Header-line Integration
+
+@cindex header-line
+@cindex status display
+
+The header-line provides real-time information with threading support:
+
+@itemize @bullet
+@item
+Current annotation position (e.g., "2/5")
+@item
+Thread status and priority (e.g., @code{[OPEN/HIGH:3]})
+@item
+Total annotation count
+@item
+Enhanced keybinding help including threading commands
+@item
+Context-sensitive help text
+@item
+Automatic updates when annotations or threads change
+@end itemize
+
+@node Org-mode Integration
+@chapter Org-mode Integration
+
+Simply Annotate can export annotation threads to
+org-mode files for further processing, documentation, or meeting preparation.
+
+@section Exporting Annotations
+
+@findex simply-annotate-export-to-org-file
+
+To export current buffer annotations to org-mode:
+
+@example
+M-s o
+@end example
+
+This prompts for a filename and creates a structured org-mode file with:
+
+@itemize @bullet
+@item
+Each annotation thread as a TODO item
+@item
+Complete metadata preserved in properties
+@item
+Replies as sub-entries under the main annotation
+@item
+Status, priority, tags, and timestamps included
+@item
+Author information for each comment and reply
+@end itemize
+
+@section Export Format
+
+The exported org-mode structure looks like:
+
+@example
+#+TITLE: Annotations for myfile.el
+#+DATE: 2025-06-19
+
+* TODO This needs review before release
+:PROPERTIES:
+:ID: thread-123456
+:STATUS: open
+:PRIORITY: high
+:TAGS: review urgent
+:CREATED: 2025-06-19T09:49:03
+:AUTHOR: John Doe
+:END:
+
+The current implementation has potential security issues.
+
+** Reply by Jane Smith (2025-06-19T10:15:00)
+I'll check this today and provide feedback.
+
+** Reply by Bob Wilson (2025-06-19T11:30:00)
+Security audit completed. Issues documented in SECURITY.md
+@end example
+
+@section Use Cases for Export
+
+@itemize @bullet
+@item
+@strong{Code review meetings}: Export all review comments for discussion
+@item
+@strong{Documentation}: Convert important annotations to permanent docs
+@item
+@strong{Issue tracking}: Import into org-mode TODO systems
+@item
+@strong{Project planning}: Use annotation threads as input for planning
+@item
+@strong{Knowledge base}: Build searchable knowledge from annotation discussions
+@end itemize
+
+@section Integration with Org Workflows
+
+The exported files work seamlessly with:
+
+@itemize @bullet
+@item
+@code{org-agenda} for tracking annotation TODOs
+@item
+@code{org-capture} for further processing
+@item
+@code{org-babel} for executable code examples
+@item
+@code{org-export} for publishing to other formats
+@item
+Version control for tracking annotation history
 @end itemize
 
 @node Key Bindings
@@ -326,12 +804,20 @@ Automatically formats and displays content
 
 When @code{simply-annotate-mode} is enabled:
 
-@multitable @columnfractions .2 .3 .5
-@headitem Key Binding @tab Command @tab Description
-@item @kbd{M-s SPC} @tab @code{simply-annotate-smart-action} @tab Create/view/edit annotation
+@multitable @columnfractions .15 .35 .5
+@headitem Key @tab Command @tab Description
+@item @kbd{M-s j} @tab @code{simply-annotate-smart-action} @tab Smart create/view/edit annotation
+@item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab @strong{New:} Add reply to annotation
+@item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab @strong{New:} Set status (open/resolved)
+@item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab @strong{New:} Set priority (low/high)
+@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab @strong{New:} Add tag (#review, #bug)
+@item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab @strong{New:} Change author
+@item @kbd{M-s A} @tab @code{simply-annotate-reset-session-author} @tab @strong{New:} Reset session author
+@item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab @strong{New:} Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
 @item @kbd{M-s 0} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
+@item @kbd{M-s ]} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
 @item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @end multitable
@@ -340,11 +826,28 @@ When @code{simply-annotate-mode} is enabled:
 
 In the annotation buffer:
 
-@multitable @columnfractions .2 .4 .4
-@headitem Key Binding @tab Command @tab Description
+@multitable @columnfractions .15 .4 .45
+@headitem Key @tab Command @tab Description
 @item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Save changes
 @item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing
-@item @kbd{C-x C-q} @tab @code{toggle-read-only} @tab Enter/exit edit mode
+@item @kbd{C-g} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing (alternative)
+@item @kbd{C-c r} @tab @code{simply-annotate-reply-to-annotation} @tab @strong{New:} Add reply
+@item @kbd{C-c s} @tab @code{simply-annotate-set-annotation-status} @tab @strong{New:} Set status
+@item @kbd{C-c p} @tab @code{simply-annotate-set-annotation-priority} @tab @strong{New:} Set priority
+@item @kbd{C-c t} @tab @code{simply-annotate-add-annotation-tag} @tab @strong{New:} Add tag
+@item @kbd{C-c o} @tab @code{simply-annotate-export-to-org-file} @tab @strong{New:} Export to org-mode
+@end multitable
+
+@section Smart Action Behavior
+
+The @kbd{M-s j} key binding changes behavior based on context:
+
+@multitable @columnfractions .3 .7
+@headitem Context @tab Behavior
+@item Region selected @tab Create new annotation or edit existing
+@item On annotation (no region) @tab Toggle annotation buffer visibility
+@item @kbd{C-u M-s j} on annotation @tab Force edit mode
+@item Elsewhere @tab Create annotation for current line
 @end multitable
 
 @node Customization
@@ -355,22 +858,73 @@ In the annotation buffer:
 @lisp
 (use-package simply-annotate
   :ensure t
-  :config
+  :custom
+  ;; Choose display style
+  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  
   ;; Customize the highlight face
-  (setq simply-annotate-highlight-face 'highlight)
+  (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
   
   ;; Customize storage location
-  (setq simply-annotate-file 
-        (expand-file-name "my-annotations.el" user-emacs-directory))
+  (simply-annotate-file "~/my-annotations.el")
   
   ;; Customize annotation buffer height
-  (setq simply-annotate-buffer-height 0.4)
+  (simply-annotate-buffer-height 0.25)
+  
+  ;; Fringe indicator settings
+  (simply-annotate-fringe-indicator 'right-triangle)
+  (simply-annotate-fringe-face 'simply-annotate-fringe-face)
   
   :bind 
   ("C-c A" . simply-annotate-mode))
 @end lisp
 
-@section Customization Variables
+@section Threading and Collaboration Configuration
+
+Configure team collaboration and threading features:
+
+@lisp
+(use-package simply-annotate
+  :custom
+  ;; Author configuration
+  (simply-annotate-author-list '("John Doe" "Jane Smith" "Bob Wilson" "Alice Chen"))
+  (simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+  (simply-annotate-remember-author-per-file t)       ; Remember per file
+  
+  ;; Customize available statuses and priorities
+  (simply-annotate-thread-statuses '("open" "in-progress" "resolved" "closed"))
+  (simply-annotate-priority-levels '("low" "normal" "high" "critical"))
+  
+  :bind
+  ("C-c A" . simply-annotate-mode)
+  ("C-c 0" . simply-annotate-show-all))
+@end lisp
+
+@section Configuration Examples
+
+@subsection Single User (Default)
+@lisp
+;; Minimal setup - works like original simply-annotate
+(setq simply-annotate-prompt-for-author nil)
+@end lisp
+
+@subsection Code Review Team
+@lisp
+;; Review team setup
+(setq simply-annotate-author-list '("John Reviewer" "Jane Developer" "Bob QA"))
+(setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt for replies only
+(setq simply-annotate-remember-author-per-file t)       ; Different authors per file
+@end lisp
+
+@subsection Multi-Project Consultant
+@lisp
+;; Different clients/contexts
+(setq simply-annotate-author-list '("John (Client A)" "John (Client B)" "John (Internal)"))
+(setq simply-annotate-prompt-for-author 'first-only)    ; Prompt once per session
+(setq simply-annotate-remember-author-per-file t)       ; Remember per project
+@end lisp
+
+@section Core Customization Variables
 
 @vtable @code
 @item simply-annotate-file
@@ -379,7 +933,7 @@ File to store annotations. Default: @file{~/.emacs.d/simply-annotations.el}
 
 @item simply-annotate-highlight-face
 @vindex simply-annotate-highlight-face
-Face for highlighted annotated text. Default: @code{'highlight}
+Face for highlighted annotated text. Default: @code{'(:inherit highlight)}
 
 @item simply-annotate-buffer-name
 @vindex simply-annotate-buffer-name
@@ -388,11 +942,21 @@ Name of the annotation display buffer. Default: @code{"*Annotation*"}
 @item simply-annotate-buffer-height
 @vindex simply-annotate-buffer-height
 Height of annotation buffer as fraction of frame height. Default: @code{0.3}
+
+@item simply-annotate-display-style
+@vindex simply-annotate-display-style
+How to display annotations. Options: @code{'highlight}, @code{'fringe}, @code{'both}. Default: @code{'fringe}
+
+@item simply-annotate-fringe-indicator
+@vindex simply-annotate-fringe-indicator
+Symbol for fringe indicators. Options: @code{'left-triangle}, @code{'right-triangle}, @code{'filled-rectangle}, @code{'custom}. Default: @code{'right-triangle}
+
+@item simply-annotate-fringe-face
+@vindex simply-annotate-fringe-face
+Face for fringe indicators. Default: @code{'simply-annotate-fringe-face}
 @end vtable
 
-@section Custom Faces
-
-You can define custom faces for annotation highlights:
+@section Threading and Collaboration Variables
 
 @lisp
 ;; Custom highlight face for annotations
@@ -401,6 +965,64 @@ You can define custom faces for annotation highlights:
   "Face for annotation highlights")
 
 (setq simply-annotate-highlight-face 'my-annotation-face)
+
+;; Custom fringe face
+(defface my-fringe-face
+  '((t :foreground "red" :background nil))
+  "Face for fringe annotation indicators")
+
+(setq simply-annotate-fringe-face 'my-fringe-face)
+@end lisp
+
+@section Display Style Configuration
+
+@lisp
+;; Use only fringe indicators (minimal visual impact)
+(setq simply-annotate-display-style 'fringe)
+
+;; Use traditional highlighting
+(setq simply-annotate-display-style 'highlight)
+
+;; Use both for maximum visibility
+(setq simply-annotate-display-style 'both)
+
+;; Customize fringe indicators
+(setq simply-annotate-fringe-indicator 'left-triangle)
+@end lisp
+
+@section Advanced Customization
+
+@subsection Custom Fringe Bitmaps
+
+You can define custom fringe bitmaps:
+
+@lisp
+(when (fboundp 'define-fringe-bitmap)
+  (define-fringe-bitmap 'my-annotation-bitmap
+    [#b00000000
+     #b00011000
+     #b00111100
+     #b01111110
+     #b11111111
+     #b01111110
+     #b00111100
+     #b00011000]
+    nil nil 'center))
+
+(setq simply-annotate-fringe-indicator 'custom)
+@end lisp
+
+@subsection Global Mode Setup
+
+To enable annotation mode automatically:
+
+@lisp
+(use-package simply-annotate
+  :hook
+  (find-file-hook . simply-annotate-mode)
+  :bind
+  ("C-c A" . simply-annotate-mode)
+  ("C-c 0" . simply-annotate-show-all))
 @end lisp
 
 @node Data Storage
@@ -433,9 +1055,25 @@ The database file is automatically created when first needed
 @item
 Annotations are saved automatically when buffers are saved or killed
 @item
-The file uses a namespace prefix to avoid conflicts
+The file uses a file key system to track annotations per file
 @item
 Empty databases are automatically cleaned up
+@item
+Only saves when there are actual changes to annotations
+@end itemize
+
+@section File Key System
+
+Each file is identified by a unique key:
+@itemize @bullet
+@item
+Uses the full file path for file-visiting buffers
+@item
+Uses the buffer name for non-file buffers
+@item
+Ensures annotations persist across Emacs sessions
+@item
+Supports moving files (annotations follow the buffer name)
 @end itemize
 
 @node Troubleshooting
@@ -454,6 +1092,49 @@ Ensure annotation mode is properly enabled
 Verify that hooks are installed correctly
 @item
 Check file permissions on the storage directory
+@item
+Look for error messages in the @code{*Messages*} buffer
+@end itemize
+
+@section Display Issues
+
+@subsection Highlighting Not Visible
+
+@itemize @bullet
+@item
+Customize @code{simply-annotate-highlight-face} for your color theme
+@item
+Check for conflicting overlays from other packages
+@item
+Try switching to fringe mode: @code{(setq simply-annotate-display-style 'fringe)}
+@item
+Verify the face definition with @kbd{M-x describe-face}
+@end itemize
+
+@subsection Fringe Indicators Not Showing
+
+@itemize @bullet
+@item
+Ensure your Emacs build supports fringe bitmaps
+@item
+Check that fringe is visible: @code{(set-window-fringes nil 8 8)}
+@item
+Try a different fringe indicator: @code{(setq simply-annotate-fringe-indicator 'left-triangle)}
+@item
+Verify fringe face colors are visible against your theme
+@end itemize
+
+@section Smart Action Issues
+
+@itemize @bullet
+@item
+Remember the command is context-sensitive - behavior changes based on region selection and cursor position
+@item
+Use @kbd{C-u M-s j} to force edit mode on existing annotations
+@item
+Check if you're properly positioned on annotated text (especially in fringe mode)
+@item
+Verify the annotation buffer is responding to @kbd{C-c C-c} and @kbd{C-c C-k}
 @end itemize
 
 @section Performance with Large Files
@@ -465,6 +1146,8 @@ Simply Annotate is designed to be lightweight:
 Annotations use lightweight overlays
 @item
 No performance impact on file operations
+@item
+Fringe mode generally has better performance than highlight mode
 @item
 Consider splitting very large annotation sets across multiple files
 @end itemize
@@ -479,7 +1162,9 @@ Compatible with @code{lsp-mode}, @code{flycheck}, and other packages
 @item
 May need customization for exotic display modes
 @item
-Check for conflicting key bindings
+Check for conflicting key bindings with @kbd{C-h k}
+@item
+Fringe indicators work well with line number modes
 @end itemize
 
 @section Common Error Messages
@@ -487,14 +1172,33 @@ Check for conflicting key bindings
 @table @strong
 @item "No annotation at point"
 You're trying to edit or remove an annotation, but the cursor isn't
-positioned on annotated text.
+positioned on annotated text. In fringe mode, make sure you're on the correct line.
 
-@item "Annotation cancelled/removed"
+@item "Annotation cancelled/removed" 
 You saved an empty annotation, which automatically removes it.
+
+@item "No annotations in buffer"
+The current buffer has no annotations to navigate or list.
+
+@item "No annotations database found"
+No annotation file exists yet. Create your first annotation to initialize the database.
 
 @item Database file errors
 Check permissions and disk space for the storage file location.
 @end table
+
+@section Getting Help
+
+@itemize @bullet
+@item
+Use @kbd{C-h k} followed by a key binding to see what command it runs
+@item
+Check the @code{*Messages*} buffer for error messages
+@item
+Use @kbd{M-x describe-mode} in an annotation buffer for mode-specific help
+@item
+The header-line always shows available commands and current status
+@end itemize
 
 @node Function Index
 @unnumbered Function Index

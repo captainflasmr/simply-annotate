@@ -12,8 +12,8 @@ This manual describes Simply Annotate, a lightweight annotation system
 for Emacs that allows you to add persistent notes to any text file
 without modifying the original content.
 
-This manual is for Simply Annotate (version 0.0.1), a lightweight
-annotation system for Emacs.
+This manual is for Simply Annotate, a lightweight annotation system for
+Emacs with threading and collaboration features.
 
 Copyright © 2024 James Dyer.
 
@@ -44,34 +44,83 @@ Documentation License”.
 - [[#Basic-Usage][4 Basic Usage]]
   - [[#Enabling-Annotation-Mode][4.1 Enabling Annotation Mode]]
   - [[#Creating-Annotations][4.2 Creating Annotations]]
-    - [[#Multi_002dline-Annotations][4.2.1 Multi-line Annotations]]
+    - [[#Smart-Action-Command][4.2.1 Smart Action Command]]
+    - [[#Traditional-Method][4.2.2 Traditional Method]]
+    - [[#Multi_002dline-Annotations][4.2.3 Multi-line Annotations]]
   - [[#Viewing-Annotations][4.3 Viewing Annotations]]
   - [[#Editing-Annotations][4.4 Editing Annotations]]
   - [[#Deleting-Annotations][4.5 Deleting Annotations]]
-- [[#Navigation][5 Navigation]]
-  - [[#Moving-Between-Annotations][5.1 Moving Between Annotations]]
-  - [[#Viewing-Current-Annotation][5.2 Viewing Current Annotation]]
-- [[#Advanced-Features][6 Advanced Features]]
-  - [[#Listing-All-Annotations][6.1 Listing All Annotations]]
-  - [[#Cross_002dfile-Annotation-Browsing][6.2 Cross-file Annotation
+- [[#Threading-and-Collaboration][5 Threading and Collaboration]]
+  - [[#Threading-System][5.1 Threading System]]
+    - [[#Adding-Replies][5.1.1 Adding Replies]]
+    - [[#Thread-Display][5.1.2 Thread Display]]
+  - [[#Status-Management][5.2 Status Management]]
+    - [[#Setting-Status][5.2.1 Setting Status]]
+    - [[#Setting-Priority][5.2.2 Setting Priority]]
+    - [[#Adding-Tags][5.2.3 Adding Tags]]
+  - [[#Multi_002dAuthor-Support][5.3 Multi-Author Support]]
+    - [[#Author-Configuration][5.3.1 Author Configuration]]
+    - [[#Prompting-Modes][5.3.2 Prompting Modes]]
+    - [[#Author-Management-Commands][5.3.3 Author Management Commands]]
+  - [[#Collaboration-Workflows][5.4 Collaboration Workflows]]
+    - [[#Code-Review-Workflow][5.4.1 Code Review Workflow]]
+    - [[#Document-Collaboration][5.4.2 Document Collaboration]]
+- [[#Display-Styles][6 Display Styles]]
+  - [[#Available-Styles][6.1 Available Styles]]
+  - [[#Changing-Display-Styles][6.2 Changing Display Styles]]
+  - [[#Style-Recommendations][6.3 Style Recommendations]]
+  - [[#Fringe-Customization][6.4 Fringe Customization]]
+- [[#Navigation][7 Navigation]]
+  - [[#Moving-Between-Annotations][7.1 Moving Between Annotations]]
+  - [[#Viewing-Current-Annotation][7.2 Viewing Current Annotation]]
+  - [[#Smart-Navigation][7.3 Smart Navigation]]
+- [[#Advanced-Features][8 Advanced Features]]
+  - [[#Listing-All-Annotations][8.1 Listing All Annotations]]
+  - [[#Cross_002dfile-Annotation-Browsing][8.2 Cross-file Annotation
     Browsing]]
-  - [[#Annotation-Buffer-Features][6.3 Annotation Buffer Features]]
-- [[#Key-Bindings][7 Key Bindings]]
-  - [[#Main-Mode-Bindings][7.1 Main Mode Bindings]]
-  - [[#Annotation-Buffer-Bindings][7.2 Annotation Buffer Bindings]]
-- [[#Customization][8 Customization]]
-  - [[#Basic-Configuration][8.1 Basic Configuration]]
-  - [[#Customization-Variables][8.2 Customization Variables]]
-  - [[#Custom-Faces][8.3 Custom Faces]]
-- [[#Data-Storage][9 Data Storage]]
-  - [[#Storage-Format][9.1 Storage Format]]
-  - [[#Sample-Storage-Format][9.2 Sample Storage Format]]
-  - [[#Data-Management][9.3 Data Management]]
-- [[#Troubleshooting][10 Troubleshooting]]
-  - [[#Annotations-Not-Persisting][10.1 Annotations Not Persisting]]
-  - [[#Performance-with-Large-Files][10.2 Performance with Large Files]]
-  - [[#Integration-Issues][10.3 Integration Issues]]
-  - [[#Common-Error-Messages][10.4 Common Error Messages]]
+  - [[#Annotation-Buffer-Features][8.3 Annotation Buffer Features]]
+  - [[#Header_002dline-Integration][8.4 Header-line Integration]]
+- [[#Org_002dmode-Integration][9 Org-mode Integration]]
+  - [[#Exporting-Annotations][9.1 Exporting Annotations]]
+  - [[#Export-Format][9.2 Export Format]]
+  - [[#Use-Cases-for-Export][9.3 Use Cases for Export]]
+  - [[#Integration-with-Org-Workflows][9.4 Integration with Org
+    Workflows]]
+- [[#Key-Bindings][10 Key Bindings]]
+  - [[#Main-Mode-Bindings][10.1 Main Mode Bindings]]
+  - [[#Annotation-Buffer-Bindings][10.2 Annotation Buffer Bindings]]
+  - [[#Smart-Action-Behavior][10.3 Smart Action Behavior]]
+- [[#Customization][11 Customization]]
+  - [[#Basic-Configuration][11.1 Basic Configuration]]
+  - [[#Threading-and-Collaboration-Configuration][11.2 Threading and
+    Collaboration Configuration]]
+  - [[#Configuration-Examples][11.3 Configuration Examples]]
+    - [[#Single-User-_0028Default_0029][11.3.1 Single User (Default)]]
+    - [[#Code-Review-Team][11.3.2 Code Review Team]]
+    - [[#Multi_002dProject-Consultant][11.3.3 Multi-Project Consultant]]
+  - [[#Core-Customization-Variables][11.4 Core Customization Variables]]
+  - [[#Threading-and-Collaboration-Variables][11.5 Threading and
+    Collaboration Variables]]
+  - [[#Display-Style-Configuration][11.6 Display Style Configuration]]
+  - [[#Advanced-Customization][11.7 Advanced Customization]]
+    - [[#Custom-Fringe-Bitmaps][11.7.1 Custom Fringe Bitmaps]]
+    - [[#Global-Mode-Setup][11.7.2 Global Mode Setup]]
+- [[#Data-Storage][12 Data Storage]]
+  - [[#Storage-Format][12.1 Storage Format]]
+  - [[#Sample-Storage-Format][12.2 Sample Storage Format]]
+  - [[#Data-Management][12.3 Data Management]]
+  - [[#File-Key-System][12.4 File Key System]]
+- [[#Troubleshooting][13 Troubleshooting]]
+  - [[#Annotations-Not-Persisting][13.1 Annotations Not Persisting]]
+  - [[#Display-Issues][13.2 Display Issues]]
+    - [[#Highlighting-Not-Visible][13.2.1 Highlighting Not Visible]]
+    - [[#Fringe-Indicators-Not-Showing][13.2.2 Fringe Indicators Not
+      Showing]]
+  - [[#Smart-Action-Issues][13.3 Smart Action Issues]]
+  - [[#Performance-with-Large-Files][13.4 Performance with Large Files]]
+  - [[#Integration-Issues][13.5 Integration Issues]]
+  - [[#Common-Error-Messages][13.6 Common Error Messages]]
+  - [[#Getting-Help][13.7 Getting Help]]
 - [[#Function-Index][Function Index]]
 - [[#Variable-Index][Variable Index]]
 - [[#Concept-Index][Concept Index]]
@@ -92,7 +141,7 @@ Annotate]], Up: [[#Top][Simply Annotate]]  
 Simply Annotate is a lightweight annotation system for Emacs that allows
 you to add persistent notes to any text file without modifying the
 original content. It's perfect for code review, research, note-taking,
-and documentation.
+and documentation and includes threading and collaboration features.
 
 - [[#Key-Features][Key Features]]
 
@@ -104,11 +153,23 @@ and documentation.
 :END:
 - *Non-intrusive*: Annotations don't modify your original files
 - *Persistent*: Notes survive between Emacs sessions
-- *Contextual*: Automatic display when cursor moves over annotated text
+- *Threading*: Add replies to annotations for conversations
+- *Status tracking*: Manage annotation lifecycle (open → resolved)
+- *Multi-author support*: Collaborate with team members
+- *Priority levels*: Organize by importance (low, normal, high,
+  critical)
+- *Tag system*: Categorize with hashtags (=#review=, =#bug=,
+  =#question=)
+- *Multiple display styles*: Choose between highlighting, fringe
+  indicators, or both
+- *Smart action*: Context-aware command that adapts to the situation
 - *Rich editing*: Full-featured annotation buffer for longer notes
 - *Navigation*: Jump between annotations with simple keybindings
 - *Overview*: List all annotations in grep-mode format
 - *Cross-file*: Browse annotations across multiple files
+- *Org-mode export*: Convert annotation threads to structured TODO items
+- *Header-line integration*: Shows annotation count and available
+  commands
 
 --------------
 
@@ -169,20 +230,24 @@ Next: [[#Basic-Usage][Basic Usage]], Previous:
 :CUSTOM_ID: Quick-Start-1
 :CLASS: chapter
 :END:
-Here's how to get started with Simply Annotate in under a minute:
+Here's how to get started with Simply Annotate:
 
 1. Open any file in Emacs
 2. Enable annotation mode: M-x simply-annotate-mode
-3. Select some text and press M-s SPC to create your first annotation
+3. Select some text and press M-s j to create your first annotation
 4. Type your annotation text and press C-c C-c to save
 5. Navigate with M-n (next) and M-p (previous)
+6. Press M-s ] to cycle through different display styles
+7. Press M-s r to add a reply to any annotation
+8. Press M-s s to set status (open, resolved, etc.)
+9. Press M-s o to export annotations to org-mode
 
 --------------
 
 <<Basic-Usage>>
 
-Next: [[#Navigation][Navigation]], Previous: [[#Quick-Start][Quick
-Start]], Up: [[#Top][Simply Annotate]]  
+Next: [[#Threading-and-Collaboration][Threading and Collaboration]],
+Previous: [[#Quick-Start][Quick Start]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 ** 4 Basic Usage [[#Basic-Usage-1][¶]]
@@ -220,20 +285,56 @@ You can also bind this to a convenient key:
 :CUSTOM_ID: creating-annotations
 :CLASS: section
 :END:
+- [[#Smart-Action-Command][Smart Action Command]]
+- [[#Traditional-Method][Traditional Method]]
 - [[#Multi_002dline-Annotations][Multi-line Annotations]]
 
+<<Smart-Action-Command>>
+**** 4.2.1 Smart Action Command [[#Smart-Action-Command][¶]]
+:PROPERTIES:
+:CUSTOM_ID: smart-action-command
+:CLASS: subsection
+:END:
+The M-s j command (=simply-annotate-smart-action=) is context-aware and
+behaves differently depending on the situation:
+
+- *With region selected* :: Creates new annotation or edits existing one
+  at the selected text
+
+- *On annotated text (no region)* :: Toggles annotation buffer
+  visibility to show/hide the annotation
+
+- *With prefix argument (C-u M-s j)* :: Forces edit mode on existing
+  annotation
+
+- *Elsewhere (no region, no annotation)* :: Creates annotation for the
+  current line
+
+<<Traditional-Method>>
+**** 4.2.2 Traditional Method [[#Traditional-Method][¶]]
+:PROPERTIES:
+:CUSTOM_ID: traditional-method
+:CLASS: subsection
+:END:
+For more explicit control:
+
+1. Select the region you want to annotate
+2. Press M-s j
+3. Enter your annotation text in the dedicated buffer
+4. Save with C-c C-c
+
 <<Multi_002dline-Annotations>>
-**** 4.2.1 Multi-line Annotations [[#Multi_002dline-Annotations][¶]]
+**** 4.2.3 Multi-line Annotations [[#Multi_002dline-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: multi-line-annotations
 :CLASS: subsection
 :END:
-For longer, detailed annotations:
+The annotation buffer supports full multi-line editing:
 
 1. Select the region you want to annotate
-2. Press M-s SPC
+2. Press M-s j
 3. Use the full annotation buffer for detailed notes
-4. Press C-x C-q to enter edit mode if needed
+4. Format your text as needed (multiple paragraphs, bullet points, etc.)
 5. Save with C-c C-c
 
 <<Viewing-Annotations>>
@@ -244,11 +345,12 @@ For longer, detailed annotations:
 :END:
 When =simply-annotate-mode= is active:
 
-- Annotated text is highlighted with a colored background
+- Annotated text is displayed according to your chosen display style
 - The header line shows annotation count and available commands
-- Moving to the next and previous annotation displays the annotation if
-  the *Annotations* buffer is currently active
-- Press M-s SPC on annotated text to view in detail
+- Thread status and comment count displayed in header (e.g.,
+  =[OPEN/HIGH:3]=)
+- Moving to annotated text shows annotation details in the header
+- Press M-s j on annotated text to view/edit in detail
 
 <<Editing-Annotations>>
 *** 4.4 Editing Annotations [[#Editing-Annotations][¶]]
@@ -259,10 +361,9 @@ When =simply-annotate-mode= is active:
 To edit an existing annotation:
 
 1. Place cursor on annotated text
-2. Press M-s SPC to open the annotation buffer
-3. Press C-x C-q to enter edit mode
-4. Make your changes
-5. Save with C-c C-c or cancel with C-c C-k
+2. Press M-s j to open the annotation buffer
+3. Make your changes directly (the buffer starts in edit mode)
+4. Save with C-c C-c or cancel with C-c C-k
 
 <<Deleting-Annotations>>
 *** 4.5 Deleting Annotations [[#Deleting-Annotations][¶]]
@@ -275,24 +376,316 @@ To remove an annotation:
 1. Place cursor on annotated text
 2. Press M-s - to remove the annotation
 
+Alternatively, you can edit the annotation and delete all text, then
+save with C-c C-c to remove it.
+
+--------------
+
+<<Threading-and-Collaboration>>
+
+Next: [[#Display-Styles][Display Styles]], Previous:
+[[#Basic-Usage][Basic Usage]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 5 Threading and Collaboration [[#Threading-and-Collaboration-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Threading-and-Collaboration-1
+:CLASS: chapter
+:END:
+Lets create a thread!, reply and add in authors
+
+- [[#Threading-System][Threading System]]
+- [[#Status-Management][Status Management]]
+- [[#Multi_002dAuthor-Support][Multi-Author Support]]
+- [[#Collaboration-Workflows][Collaboration Workflows]]
+
+<<Threading-System>>
+*** 5.1 Threading System [[#Threading-System][¶]]
+:PROPERTIES:
+:CUSTOM_ID: threading-system
+:CLASS: section
+:END:
+Each annotation can become a threaded conversation with multiple
+replies. This is perfect for code reviews, collaborative editing, and
+ongoing discussions about specific parts of your code or documents.
+
+- [[#Adding-Replies][Adding Replies]]
+- [[#Thread-Display][Thread Display]]
+
+<<Adding-Replies>>
+**** 5.1.1 Adding Replies [[#Adding-Replies][¶]]
+:PROPERTIES:
+:CUSTOM_ID: adding-replies
+:CLASS: subsection
+:END:
+To add a reply to any annotation:
+
+1. Place cursor on annotated text
+2. Press M-s r
+3. Enter your reply text
+4. The annotation automatically becomes a threaded conversation
+
+<<Thread-Display>>
+**** 5.1.2 Thread Display [[#Thread-Display][¶]]
+:PROPERTIES:
+:CUSTOM_ID: thread-display
+:CLASS: subsection
+:END:
+Threaded annotations are displayed with rich formatting:
+
+#+begin_src example-preformatted
+┌─ Thread: thread-123456 [OPEN/HIGH] Tags: review, urgent (3 authors)
+│ 💬 John Doe (06/19 09:49):
+│   This needs review before release
+│ ↳ Jane Smith (06/19 10:15):
+│   I'll check this today  
+│ ↳ Bob Wilson (06/19 11:30):
+│   Looks good to me, approved
+└─────
+#+end_src
+
+<<Status-Management>>
+*** 5.2 Status Management [[#Status-Management][¶]]
+:PROPERTIES:
+:CUSTOM_ID: status-management
+:CLASS: section
+:END:
+- [[#Setting-Status][Setting Status]]
+- [[#Setting-Priority][Setting Priority]]
+- [[#Adding-Tags][Adding Tags]]
+
+<<Setting-Status>>
+**** 5.2.1 Setting Status [[#Setting-Status][¶]]
+:PROPERTIES:
+:CUSTOM_ID: setting-status
+:CLASS: subsection
+:END:
+Track the lifecycle of your annotations:
+
+1. Place cursor on annotated text
+2. Press M-s s to set status
+3. Choose from: =open=, =in-progress=, =resolved=, =closed=
+
+The default statuses can be customized via
+=simply-annotate-thread-statuses=.
+
+<<Setting-Priority>>
+**** 5.2.2 Setting Priority [[#Setting-Priority][¶]]
+:PROPERTIES:
+:CUSTOM_ID: setting-priority
+:CLASS: subsection
+:END:
+Organize annotations by importance:
+
+1. Place cursor on annotated text
+2. Press M-s p to set priority
+3. Choose from: =low=, =normal=, =high=, =critical=
+
+<<Adding-Tags>>
+**** 5.2.3 Adding Tags [[#Adding-Tags][¶]]
+:PROPERTIES:
+:CUSTOM_ID: adding-tags
+:CLASS: subsection
+:END:
+Categorize your annotations with tags:
+
+1. Place cursor on annotated text
+2. Press M-s t to add a tag
+3. Enter a tag like =review=, =bug=, =question=, etc.
+4. Tags appear as =#review #bug= in the annotation display
+
+<<Multi_002dAuthor-Support>>
+*** 5.3 Multi-Author Support [[#Multi_002dAuthor-Support][¶]]
+:PROPERTIES:
+:CUSTOM_ID: multi-author-support
+:CLASS: section
+:END:
+- [[#Author-Configuration][Author Configuration]]
+- [[#Prompting-Modes][Prompting Modes]]
+- [[#Author-Management-Commands][Author Management Commands]]
+
+<<Author-Configuration>>
+**** 5.3.1 Author Configuration [[#Author-Configuration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: author-configuration
+:CLASS: subsection
+:END:
+Configure team members and prompting behavior:
+
+#+begin_src lisp-preformatted
+;; Single user (default behavior)
+(setq simply-annotate-prompt-for-author nil)
+
+;; Team collaboration
+(setq simply-annotate-author-list '("John Doe" "Jane Smith" "Bob Wilson"))
+(setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+(setq simply-annotate-remember-author-per-file t)       ; Remember per file
+#+end_src
+
+<<Prompting-Modes>>
+**** 5.3.2 Prompting Modes [[#Prompting-Modes][¶]]
+:PROPERTIES:
+:CUSTOM_ID: prompting-modes
+:CLASS: subsection
+:END:
+- =nil= :: Never prompt (single-user mode) - default behavior
+
+- ='first-only= :: Prompt once per session, then remember choice
+
+- ='always= :: Prompt for every annotation and reply
+
+- ='threads-only= :: Prompt only when adding replies (great for code
+  reviews)
+
+<<Author-Management-Commands>>
+**** 5.3.3 Author Management Commands [[#Author-Management-Commands][¶]]
+:PROPERTIES:
+:CUSTOM_ID: author-management-commands
+:CLASS: subsection
+:END:
+- M-s a :: =simply-annotate-change-annotation-author= - Change author of
+  existing annotation/comment
+
+- M-s A :: =simply-annotate-reset-session-author= - Reset session author
+  (forces prompt on next annotation)
+
+<<Collaboration-Workflows>>
+*** 5.4 Collaboration Workflows [[#Collaboration-Workflows][¶]]
+:PROPERTIES:
+:CUSTOM_ID: collaboration-workflows
+:CLASS: section
+:END:
+- [[#Code-Review-Workflow][Code Review Workflow]]
+- [[#Document-Collaboration][Document Collaboration]]
+
+<<Code-Review-Workflow>>
+**** 5.4.1 Code Review Workflow [[#Code-Review-Workflow][¶]]
+:PROPERTIES:
+:CUSTOM_ID: code-review-workflow
+:CLASS: subsection
+:END:
+1. *Reviewer* creates annotations on problematic code sections
+2. Set priority with M-s p (high for blocking issues)
+3. Add relevant tags with M-s t (=#security=, =#performance=, =#style=)
+4. *Developer* adds replies with M-s r explaining or asking questions
+5. *Reviewer* responds with additional context or approval
+6. Mark as resolved with M-s s when fixed
+7. Export final review with M-s o to org-mode for documentation
+
+<<Document-Collaboration>>
+**** 5.4.2 Document Collaboration [[#Document-Collaboration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: document-collaboration
+:CLASS: subsection
+:END:
+1. *Author* writes draft document
+2. *Reviewers* add annotations with feedback using different author
+   names
+3. Track status of each feedback item with M-s s
+4. Use M-s l to get overview of all feedback
+5. Export to org-mode with M-s o for final review meeting
+6. Archive resolved items, keep open ones visible
+
+--------------
+
+<<Display-Styles>>
+
+Next: [[#Navigation][Navigation]], Previous:
+[[#Threading-and-Collaboration][Threading and Collaboration]], Up:
+[[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 6 Display Styles [[#Display-Styles-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Display-Styles-1
+:CLASS: chapter
+:END:
+Simply Annotate supports three different ways to display annotations,
+allowing you to choose the visual style that best fits your workflow.
+
+- [[#Available-Styles][Available Styles]]
+- [[#Changing-Display-Styles][Changing Display Styles]]
+- [[#Style-Recommendations][Style Recommendations]]
+- [[#Fringe-Customization][Fringe Customization]]
+
+<<Available-Styles>>
+*** 6.1 Available Styles [[#Available-Styles][¶]]
+:PROPERTIES:
+:CUSTOM_ID: available-styles
+:CLASS: section
+:END:
+- =highlight= :: Traditional background highlighting of annotated text
+  (good for emphasis)
+
+- =fringe= :: Shows small indicators in the left fringe (minimal visual
+  impact)
+
+- =both= :: Combines both highlighting and fringe indicators (maximum
+  visibility)
+
+<<Changing-Display-Styles>>
+*** 6.2 Changing Display Styles [[#Changing-Display-Styles][¶]]
+:PROPERTIES:
+:CUSTOM_ID: changing-display-styles
+:CLASS: section
+:END:
+You can change the display style in several ways:
+
+- Press M-s ] to cycle through all three styles
+- Set =simply-annotate-display-style= in your configuration
+- Use =simply-annotate-update-display-style= to refresh existing
+  annotations
+
+<<Style-Recommendations>>
+*** 6.3 Style Recommendations [[#Style-Recommendations][¶]]
+:PROPERTIES:
+:CUSTOM_ID: style-recommendations
+:CLASS: section
+:END:
+- *Code Review* :: Use =fringe= style to avoid visual clutter while
+  coding
+
+- *Research and Documentation* :: Use =highlight= style for emphasis on
+  important passages
+
+- *Critical Files* :: Use =both= style for maximum visibility of
+  important annotations
+
+- *Threading Display* :: All styles work well with threaded annotations
+  and status indicators
+
+<<Fringe-Customization>>
+*** 6.4 Fringe Customization [[#Fringe-Customization][¶]]
+:PROPERTIES:
+:CUSTOM_ID: fringe-customization
+:CLASS: section
+:END:
+The fringe display can be customized:
+
+- Choose different symbols: =left-triangle=, =right-triangle=,
+  =filled-rectangle=, or =custom=
+- Customize colors with =simply-annotate-fringe-face=
+- Define custom bitmaps for unique indicators
+
 --------------
 
 <<Navigation>>
 
 Next: [[#Advanced-Features][Advanced Features]], Previous:
-[[#Basic-Usage][Basic Usage]], Up: [[#Top][Simply Annotate]]  
+[[#Display-Styles][Display Styles]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 5 Navigation [[#Navigation-1][¶]]
+** 7 Navigation [[#Navigation-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Navigation-1
 :CLASS: chapter
 :END:
 - [[#Moving-Between-Annotations][Moving Between Annotations]]
 - [[#Viewing-Current-Annotation][Viewing Current Annotation]]
+- [[#Smart-Navigation][Smart Navigation]]
 
 <<Moving-Between-Annotations>>
-*** 5.1 Moving Between Annotations [[#Moving-Between-Annotations][¶]]
+*** 7.1 Moving Between Annotations [[#Moving-Between-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: moving-between-annotations
 :CLASS: section
@@ -304,10 +697,11 @@ Simply Annotate provides convenient commands for navigation:
 - M-p :: =simply-annotate-previous= - Jump to previous annotation
 
 These commands automatically wrap around, so you can continuously
-navigate through all annotations in a buffer.
+navigate through all annotations in a buffer. When you arrive at an
+annotation, the text is briefly highlighted with a pulse effect.
 
 <<Viewing-Current-Annotation>>
-*** 5.2 Viewing Current Annotation [[#Viewing-Current-Annotation][¶]]
+*** 7.2 Viewing Current Annotation [[#Viewing-Current-Annotation][¶]]
 :PROPERTIES:
 :CUSTOM_ID: viewing-current-annotation
 :CLASS: section
@@ -315,18 +709,35 @@ navigate through all annotations in a buffer.
 When you're on an annotated region, you can:
 
 - View the annotation content in the header line
-- Press M-s SPC to open the detailed annotation buffer
-- See the annotation count and position in the header line
+- See thread status, priority, and comment count (e.g., =[OPEN/HIGH:3]=)
+- Press M-s j to open the detailed annotation buffer
+- See the annotation count and position (e.g., "2/5") in the header line
+- View available keybindings in the header line
+
+<<Smart-Navigation>>
+*** 7.3 Smart Navigation [[#Smart-Navigation][¶]]
+:PROPERTIES:
+:CUSTOM_ID: smart-navigation
+:CLASS: section
+:END:
+The navigation commands work intelligently with different display styles
+and threading:
+
+- In =highlight= mode: jumps to the exact annotated text
+- In =fringe= mode: finds annotations anywhere on the current line
+- Shows appropriate message for simple or threaded annotations
+- Always shows a visual pulse when arriving at the annotation
+- Thread summary displayed for complex annotations
 
 --------------
 
 <<Advanced-Features>>
 
-Next: [[#Key-Bindings][Key Bindings]], Previous:
+Next: [[#Org_002dmode-Integration][Org-mode Integration]], Previous:
 [[#Navigation][Navigation]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 6 Advanced Features [[#Advanced-Features-1][¶]]
+** 8 Advanced Features [[#Advanced-Features-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Advanced-Features-1
 :CLASS: chapter
@@ -335,9 +746,10 @@ Next: [[#Key-Bindings][Key Bindings]], Previous:
 - [[#Cross_002dfile-Annotation-Browsing][Cross-file Annotation
   Browsing]]
 - [[#Annotation-Buffer-Features][Annotation Buffer Features]]
+- [[#Header_002dline-Integration][Header-line Integration]]
 
 <<Listing-All-Annotations>>
-*** 6.1 Listing All Annotations [[#Listing-All-Annotations][¶]]
+*** 8.1 Listing All Annotations [[#Listing-All-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: listing-all-annotations
 :CLASS: section
@@ -348,15 +760,33 @@ To see an overview of all annotations in the current buffer:
 M-s l
 #+end_src
 
-This opens a grep-mode buffer showing:
+The list now shows rich threading information:
 
-- Line numbers for each annotation
-- The annotated text content
-- The annotation text itself
-- Clickable links to jump to each annotation
+#+begin_src example-preformatted
+Annotations for myfile.txt:
+Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+
+myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
+┌─ THREAD ─┐
+│ 💬 james dyer (06/19 09:49):
+│   This needs review before release
+│ ↳ jane smith (06/19 10:15):
+│   I'll check this today
+└───────────┘
+Source: function calculateTotal()
+#+end_src
+
+The enhanced listing includes:
+
+- Summary statistics (total, threads vs simple, open vs resolved)
+- Status and priority indicators for each annotation
+- Comment counts for threaded annotations
+- Visual thread display with author names and timestamps
+- Tag display with hashtag formatting
+- Color coding for different statuses and priorities
 
 <<Cross_002dfile-Annotation-Browsing>>
-*** 6.2 Cross-file Annotation Browsing [[#Cross_002dfile-Annotation-Browsing][¶]]
+*** 8.2 Cross-file Annotation Browsing [[#Cross_002dfile-Annotation-Browsing][¶]]
 :PROPERTIES:
 :CUSTOM_ID: cross-file-annotation-browsing
 :CLASS: section
@@ -367,73 +797,221 @@ To browse annotations across all files:
 M-s 0
 #+end_src
 
-This command:
+This command now shows:
 
-- Shows a completion list of all files with annotations
-- Displays the annotation count for each file
-- Opens the selected file and shows its annotations
-- Uses grep-mode format for easy navigation
+- Completion list with annotation counts per file
+- Thread and status statistics for each file
+- Enhanced grep-mode display with threading information
+- Color-coded status indicators
+- Author information for collaborative workflows
 
 <<Annotation-Buffer-Features>>
-*** 6.3 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
+*** 8.3 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-features
 :CLASS: section
 :END:
-The annotation buffer provides a rich editing environment:
+The annotation buffer provides a rich editing environment with threading
+support:
 
-- Shows annotation position and count
-- Displays source file and line number information
+- Shows helpful instructions with threading commands in the header
+- Displays thread information, status, and priority
+- Shows complete conversation thread with replies
+- Access to threading commands (C-c r, C-c s, C-c p, C-c t)
 - Supports multi-line annotations with full editing capabilities
-- Provides save and cancel operations
-- Automatically formats and displays content
+- Starts in edit mode for immediate typing
+- Provides save (C-c C-c) and cancel (C-c C-k) operations
+- Automatically handles empty annotations (removes them)
+
+<<Header_002dline-Integration>>
+*** 8.4 Header-line Integration [[#Header_002dline-Integration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: header-line-integration
+:CLASS: section
+:END:
+The header-line provides real-time information with threading support:
+
+- Current annotation position (e.g., "2/5")
+- Thread status and priority (e.g., =[OPEN/HIGH:3]=)
+- Total annotation count
+- Enhanced keybinding help including threading commands
+- Context-sensitive help text
+- Automatic updates when annotations or threads change
+
+--------------
+
+<<Org_002dmode-Integration>>
+
+Next: [[#Key-Bindings][Key Bindings]], Previous:
+[[#Advanced-Features][Advanced Features]], Up: [[#Top][Simply Annotate]]
+  [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 9 Org-mode Integration [[#Org_002dmode-Integration-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Org_002dmode-Integration-1
+:CLASS: chapter
+:END:
+Simply Annotate can export annotation threads to org-mode files for
+further processing, documentation, or meeting preparation.
+
+- [[#Exporting-Annotations][Exporting Annotations]]
+- [[#Export-Format][Export Format]]
+- [[#Use-Cases-for-Export][Use Cases for Export]]
+- [[#Integration-with-Org-Workflows][Integration with Org Workflows]]
+
+<<Exporting-Annotations>>
+*** 9.1 Exporting Annotations [[#Exporting-Annotations][¶]]
+:PROPERTIES:
+:CUSTOM_ID: exporting-annotations
+:CLASS: section
+:END:
+To export current buffer annotations to org-mode:
+
+#+begin_src example-preformatted
+M-s o
+#+end_src
+
+This prompts for a filename and creates a structured org-mode file with:
+
+- Each annotation thread as a TODO item
+- Complete metadata preserved in properties
+- Replies as sub-entries under the main annotation
+- Status, priority, tags, and timestamps included
+- Author information for each comment and reply
+
+<<Export-Format>>
+*** 9.2 Export Format [[#Export-Format][¶]]
+:PROPERTIES:
+:CUSTOM_ID: export-format
+:CLASS: section
+:END:
+The exported org-mode structure looks like:
+
+#+begin_src example-preformatted
+,#+TITLE: Annotations for myfile.el
+,#+DATE: 2025-06-19
+
+,* TODO This needs review before release
+:PROPERTIES:
+:ID: thread-123456
+:STATUS: open
+:PRIORITY: high
+:TAGS: review urgent
+:CREATED: 2025-06-19T09:49:03
+:AUTHOR: John Doe
+:END:
+
+The current implementation has potential security issues.
+
+,** Reply by Jane Smith (2025-06-19T10:15:00)
+I'll check this today and provide feedback.
+
+,** Reply by Bob Wilson (2025-06-19T11:30:00)
+Security audit completed. Issues documented in SECURITY.md
+#+end_src
+
+<<Use-Cases-for-Export>>
+*** 9.3 Use Cases for Export [[#Use-Cases-for-Export][¶]]
+:PROPERTIES:
+:CUSTOM_ID: use-cases-for-export
+:CLASS: section
+:END:
+- *Code review meetings*: Export all review comments for discussion
+- *Documentation*: Convert important annotations to permanent docs
+- *Issue tracking*: Import into org-mode TODO systems
+- *Project planning*: Use annotation threads as input for planning
+- *Knowledge base*: Build searchable knowledge from annotation
+  discussions
+
+<<Integration-with-Org-Workflows>>
+*** 9.4 Integration with Org Workflows [[#Integration-with-Org-Workflows][¶]]
+:PROPERTIES:
+:CUSTOM_ID: integration-with-org-workflows
+:CLASS: section
+:END:
+The exported files work seamlessly with:
+
+- =org-agenda= for tracking annotation TODOs
+- =org-capture= for further processing
+- =org-babel= for executable code examples
+- =org-export= for publishing to other formats
+- Version control for tracking annotation history
 
 --------------
 
 <<Key-Bindings>>
 
 Next: [[#Customization][Customization]], Previous:
-[[#Advanced-Features][Advanced Features]], Up: [[#Top][Simply Annotate]]
-  [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[#Org_002dmode-Integration][Org-mode Integration]], Up: [[#Top][Simply
+Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 7 Key Bindings [[#Key-Bindings-1][¶]]
+** 10 Key Bindings [[#Key-Bindings-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Key-Bindings-1
 :CLASS: chapter
 :END:
 - [[#Main-Mode-Bindings][Main Mode Bindings]]
 - [[#Annotation-Buffer-Bindings][Annotation Buffer Bindings]]
+- [[#Smart-Action-Behavior][Smart Action Behavior]]
 
 <<Main-Mode-Bindings>>
-*** 7.1 Main Mode Bindings [[#Main-Mode-Bindings][¶]]
+*** 10.1 Main Mode Bindings [[#Main-Mode-Bindings][¶]]
 :PROPERTIES:
 :CUSTOM_ID: main-mode-bindings
 :CLASS: section
 :END:
 When =simply-annotate-mode= is enabled:
 
-| Key Binding | Command                        | Description                          |
-|-------------+--------------------------------+--------------------------------------|
-| M-s SPC     | =simply-annotate-smart-action= | Create/view/edit annotation          |
-| M-s -       | =simply-annotate-remove=       | Delete annotation at point           |
-| M-s l       | =simply-annotate-list=         | List all annotations in current file |
-| M-s 0       | =simply-annotate-show-all=     | Browse annotations across all files  |
-| M-n         | =simply-annotate-next=         | Jump to next annotation              |
-| M-p         | =simply-annotate-previous=     | Jump to previous annotation          |
+| Key   | Command                                    | Description                          |
+|-------+--------------------------------------------+--------------------------------------|
+| M-s j | =simply-annotate-smart-action=             | Smart create/view/edit annotation    |
+| M-s r | =simply-annotate-reply-to-annotation=      | *New:* Add reply to annotation       |
+| M-s s | =simply-annotate-set-annotation-status=    | *New:* Set status (open/resolved)    |
+| M-s p | =simply-annotate-set-annotation-priority=  | *New:* Set priority (low/high)       |
+| M-s t | =simply-annotate-add-annotation-tag=       | *New:* Add tag (#review, #bug)       |
+| M-s a | =simply-annotate-change-annotation-author= | *New:* Change author                 |
+| M-s A | =simply-annotate-reset-session-author=     | *New:* Reset session author          |
+| M-s o | =simply-annotate-export-to-org-file=       | *New:* Export to org-mode            |
+| M-s - | =simply-annotate-remove=                   | Delete annotation at point           |
+| M-s l | =simply-annotate-list=                     | List all annotations in current file |
+| M-s 0 | =simply-annotate-show-all=                 | Browse annotations across all files  |
+| M-s ] | =simply-annotate-cycle-display-style=      | Cycle through display styles         |
+| M-n   | =simply-annotate-next=                     | Jump to next annotation              |
+| M-p   | =simply-annotate-previous=                 | Jump to previous annotation          |
 
 <<Annotation-Buffer-Bindings>>
-*** 7.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
+*** 10.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-bindings
 :CLASS: section
 :END:
 In the annotation buffer:
 
-| Key Binding | Command                                  | Description          |
-|-------------+------------------------------------------+----------------------|
-| C-c C-c     | =simply-annotate-save-annotation-buffer= | Save changes         |
-| C-c C-k     | =simply-annotate-cancel-edit=            | Cancel editing       |
-| C-x C-q     | =toggle-read-only=                       | Enter/exit edit mode |
+| Key     | Command                                   | Description                  |
+|---------+-------------------------------------------+------------------------------|
+| C-c C-c | =simply-annotate-save-annotation-buffer=  | Save changes                 |
+| C-c C-k | =simply-annotate-cancel-edit=             | Cancel editing               |
+| C-g     | =simply-annotate-cancel-edit=             | Cancel editing (alternative) |
+| C-c r   | =simply-annotate-reply-to-annotation=     | *New:* Add reply             |
+| C-c s   | =simply-annotate-set-annotation-status=   | *New:* Set status            |
+| C-c p   | =simply-annotate-set-annotation-priority= | *New:* Set priority          |
+| C-c t   | =simply-annotate-add-annotation-tag=      | *New:* Add tag               |
+| C-c o   | =simply-annotate-export-to-org-file=      | *New:* Export to org-mode    |
+
+<<Smart-Action-Behavior>>
+*** 10.3 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
+:PROPERTIES:
+:CUSTOM_ID: smart-action-behavior
+:CLASS: section
+:END:
+The M-s j key binding changes behavior based on context:
+
+| Context                   | Behavior                               |
+|---------------------------+----------------------------------------|
+| Region selected           | Create new annotation or edit existing |
+| On annotation (no region) | Toggle annotation buffer visibility    |
+| C-u M-s j on annotation   | Force edit mode                        |
+| Elsewhere                 | Create annotation for current line     |
 
 --------------
 
@@ -443,17 +1021,23 @@ Next: [[#Data-Storage][Data Storage]], Previous: [[#Key-Bindings][Key
 Bindings]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 8 Customization [[#Customization-1][¶]]
+** 11 Customization [[#Customization-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Customization-1
 :CLASS: chapter
 :END:
 - [[#Basic-Configuration][Basic Configuration]]
-- [[#Customization-Variables][Customization Variables]]
-- [[#Custom-Faces][Custom Faces]]
+- [[#Threading-and-Collaboration-Configuration][Threading and
+  Collaboration Configuration]]
+- [[#Configuration-Examples][Configuration Examples]]
+- [[#Core-Customization-Variables][Core Customization Variables]]
+- [[#Threading-and-Collaboration-Variables][Threading and Collaboration
+  Variables]]
+- [[#Display-Style-Configuration][Display Style Configuration]]
+- [[#Advanced-Customization][Advanced Customization]]
 
 <<Basic-Configuration>>
-*** 8.1 Basic Configuration [[#Basic-Configuration][¶]]
+*** 11.1 Basic Configuration [[#Basic-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: basic-configuration
 :CLASS: section
@@ -462,25 +1046,106 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
 #+begin_src lisp-preformatted
 (use-package simply-annotate
   :ensure t
-  :config
+  :custom
+  ;; Choose display style
+  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  
   ;; Customize the highlight face
-  (setq simply-annotate-highlight-face 'highlight)
+  (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
   
   ;; Customize storage location
-  (setq simply-annotate-file 
-        (expand-file-name "my-annotations.el" user-emacs-directory))
+  (simply-annotate-file "~/my-annotations.el")
   
   ;; Customize annotation buffer height
-  (setq simply-annotate-buffer-height 0.4)
+  (simply-annotate-buffer-height 0.25)
+  
+  ;; Fringe indicator settings
+  (simply-annotate-fringe-indicator 'right-triangle)
+  (simply-annotate-fringe-face 'simply-annotate-fringe-face)
   
   :bind 
   ("C-c A" . simply-annotate-mode))
 #+end_src
 
-<<Customization-Variables>>
-*** 8.2 Customization Variables [[#Customization-Variables][¶]]
+<<Threading-and-Collaboration-Configuration>>
+*** 11.2 Threading and Collaboration Configuration [[#Threading-and-Collaboration-Configuration][¶]]
 :PROPERTIES:
-:CUSTOM_ID: customization-variables
+:CUSTOM_ID: threading-and-collaboration-configuration
+:CLASS: section
+:END:
+Configure team collaboration and threading features:
+
+#+begin_src lisp-preformatted
+(use-package simply-annotate
+  :custom
+  ;; Author configuration
+  (simply-annotate-author-list '("John Doe" "Jane Smith" "Bob Wilson" "Alice Chen"))
+  (simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+  (simply-annotate-remember-author-per-file t)       ; Remember per file
+  
+  ;; Customize available statuses and priorities
+  (simply-annotate-thread-statuses '("open" "in-progress" "resolved" "closed"))
+  (simply-annotate-priority-levels '("low" "normal" "high" "critical"))
+  
+  :bind
+  ("C-c A" . simply-annotate-mode)
+  ("C-c 0" . simply-annotate-show-all))
+#+end_src
+
+<<Configuration-Examples>>
+*** 11.3 Configuration Examples [[#Configuration-Examples][¶]]
+:PROPERTIES:
+:CUSTOM_ID: configuration-examples
+:CLASS: section
+:END:
+- [[#Single-User-_0028Default_0029][Single User (Default)]]
+- [[#Code-Review-Team][Code Review Team]]
+- [[#Multi_002dProject-Consultant][Multi-Project Consultant]]
+
+<<Single-User-_0028Default_0029>>
+**** 11.3.1 Single User (Default) [[#Single-User-_0028Default_0029][¶]]
+:PROPERTIES:
+:CUSTOM_ID: single-user-default
+:CLASS: subsection
+:END:
+
+#+begin_src lisp-preformatted
+;; Minimal setup - works like original simply-annotate
+(setq simply-annotate-prompt-for-author nil)
+#+end_src
+
+<<Code-Review-Team>>
+**** 11.3.2 Code Review Team [[#Code-Review-Team][¶]]
+:PROPERTIES:
+:CUSTOM_ID: code-review-team
+:CLASS: subsection
+:END:
+
+#+begin_src lisp-preformatted
+;; Review team setup
+(setq simply-annotate-author-list '("John Reviewer" "Jane Developer" "Bob QA"))
+(setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt for replies only
+(setq simply-annotate-remember-author-per-file t)       ; Different authors per file
+#+end_src
+
+<<Multi_002dProject-Consultant>>
+**** 11.3.3 Multi-Project Consultant [[#Multi_002dProject-Consultant][¶]]
+:PROPERTIES:
+:CUSTOM_ID: multi-project-consultant
+:CLASS: subsection
+:END:
+
+#+begin_src lisp-preformatted
+;; Different clients/contexts
+(setq simply-annotate-author-list '("John (Client A)" "John (Client B)" "John (Internal)"))
+(setq simply-annotate-prompt-for-author 'first-only)    ; Prompt once per session
+(setq simply-annotate-remember-author-per-file t)       ; Remember per project
+#+end_src
+
+<<Core-Customization-Variables>>
+*** 11.4 Core Customization Variables [[#Core-Customization-Variables][¶]]
+:PROPERTIES:
+:CUSTOM_ID: core-customization-variables
 :CLASS: section
 :END:
 - <<index-simply_002dannotate_002dfile>>=simply-annotate-file=
@@ -491,7 +1156,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
 - <<index-simply_002dannotate_002dhighlight_002dface>>=simply-annotate-highlight-face=
   [[#index-simply_002dannotate_002dhighlight_002dface][¶]] :: 
 
-  Face for highlighted annotated text. Default: ='highlight=
+  Face for highlighted annotated text. Default: ='(:inherit highlight)=
 
 - <<index-simply_002dannotate_002dbuffer_002dname>>=simply-annotate-buffer-name=
   [[#index-simply_002dannotate_002dbuffer_002dname][¶]] :: 
@@ -504,13 +1169,30 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
   Height of annotation buffer as fraction of frame height. Default:
   =0.3=
 
-<<Custom-Faces>>
-*** 8.3 Custom Faces [[#Custom-Faces][¶]]
+- <<index-simply_002dannotate_002ddisplay_002dstyle-1>>=simply-annotate-display-style=
+  [[#index-simply_002dannotate_002ddisplay_002dstyle-1][¶]] :: 
+
+  How to display annotations. Options: ='highlight=, ='fringe=, ='both=.
+  Default: ='fringe=
+
+- <<index-simply_002dannotate_002dfringe_002dindicator-1>>=simply-annotate-fringe-indicator=
+  [[#index-simply_002dannotate_002dfringe_002dindicator-1][¶]] :: 
+
+  Symbol for fringe indicators. Options: ='left-triangle=,
+  ='right-triangle=, ='filled-rectangle=, ='custom=. Default:
+  ='right-triangle=
+
+- <<index-simply_002dannotate_002dfringe_002dface-1>>=simply-annotate-fringe-face=
+  [[#index-simply_002dannotate_002dfringe_002dface-1][¶]] :: 
+
+  Face for fringe indicators. Default: ='simply-annotate-fringe-face=
+
+<<Threading-and-Collaboration-Variables>>
+*** 11.5 Threading and Collaboration Variables [[#Threading-and-Collaboration-Variables][¶]]
 :PROPERTIES:
-:CUSTOM_ID: custom-faces
+:CUSTOM_ID: threading-and-collaboration-variables
 :CLASS: section
 :END:
-You can define custom faces for annotation highlights:
 
 #+begin_src lisp-preformatted
 ;; Custom highlight face for annotations
@@ -519,6 +1201,84 @@ You can define custom faces for annotation highlights:
   "Face for annotation highlights")
 
 (setq simply-annotate-highlight-face 'my-annotation-face)
+
+;; Custom fringe face
+(defface my-fringe-face
+  '((t :foreground "red" :background nil))
+  "Face for fringe annotation indicators")
+
+(setq simply-annotate-fringe-face 'my-fringe-face)
+#+end_src
+
+<<Display-Style-Configuration>>
+*** 11.6 Display Style Configuration [[#Display-Style-Configuration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: display-style-configuration
+:CLASS: section
+:END:
+
+#+begin_src lisp-preformatted
+;; Use only fringe indicators (minimal visual impact)
+(setq simply-annotate-display-style 'fringe)
+
+;; Use traditional highlighting
+(setq simply-annotate-display-style 'highlight)
+
+;; Use both for maximum visibility
+(setq simply-annotate-display-style 'both)
+
+;; Customize fringe indicators
+(setq simply-annotate-fringe-indicator 'left-triangle)
+#+end_src
+
+<<Advanced-Customization>>
+*** 11.7 Advanced Customization [[#Advanced-Customization][¶]]
+:PROPERTIES:
+:CUSTOM_ID: advanced-customization
+:CLASS: section
+:END:
+- [[#Custom-Fringe-Bitmaps][Custom Fringe Bitmaps]]
+- [[#Global-Mode-Setup][Global Mode Setup]]
+
+<<Custom-Fringe-Bitmaps>>
+**** 11.7.1 Custom Fringe Bitmaps [[#Custom-Fringe-Bitmaps][¶]]
+:PROPERTIES:
+:CUSTOM_ID: custom-fringe-bitmaps
+:CLASS: subsection
+:END:
+You can define custom fringe bitmaps:
+
+#+begin_src lisp-preformatted
+(when (fboundp 'define-fringe-bitmap)
+  (define-fringe-bitmap 'my-annotation-bitmap
+    [#b00000000
+     #b00011000
+     #b00111100
+     #b01111110
+     #b11111111
+     #b01111110
+     #b00111100
+     #b00011000]
+    nil nil 'center))
+
+(setq simply-annotate-fringe-indicator 'custom)
+#+end_src
+
+<<Global-Mode-Setup>>
+**** 11.7.2 Global Mode Setup [[#Global-Mode-Setup][¶]]
+:PROPERTIES:
+:CUSTOM_ID: global-mode-setup
+:CLASS: subsection
+:END:
+To enable annotation mode automatically:
+
+#+begin_src lisp-preformatted
+(use-package simply-annotate
+  :hook
+  (find-file-hook . simply-annotate-mode)
+  :bind
+  ("C-c A" . simply-annotate-mode)
+  ("C-c 0" . simply-annotate-show-all))
 #+end_src
 
 --------------
@@ -529,7 +1289,7 @@ Next: [[#Troubleshooting][Troubleshooting]], Previous:
 [[#Customization][Customization]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 9 Data Storage [[#Data-Storage-1][¶]]
+** 12 Data Storage [[#Data-Storage-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Data-Storage-1
 :CLASS: chapter
@@ -537,9 +1297,10 @@ Next: [[#Troubleshooting][Troubleshooting]], Previous:
 - [[#Storage-Format][Storage Format]]
 - [[#Sample-Storage-Format][Sample Storage Format]]
 - [[#Data-Management][Data Management]]
+- [[#File-Key-System][File Key System]]
 
 <<Storage-Format>>
-*** 9.1 Storage Format [[#Storage-Format][¶]]
+*** 12.1 Storage Format [[#Storage-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: storage-format
 :CLASS: section
@@ -549,7 +1310,7 @@ Annotations are stored in a single Emacs Lisp file (by default
 can be version controlled if desired.
 
 <<Sample-Storage-Format>>
-*** 9.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
+*** 12.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sample-storage-format
 :CLASS: section
@@ -567,15 +1328,29 @@ can be version controlled if desired.
 #+end_src
 
 <<Data-Management>>
-*** 9.3 Data Management [[#Data-Management][¶]]
+*** 12.3 Data Management [[#Data-Management][¶]]
 :PROPERTIES:
 :CUSTOM_ID: data-management
 :CLASS: section
 :END:
 - The database file is automatically created when first needed
 - Annotations are saved automatically when buffers are saved or killed
-- The file uses a namespace prefix to avoid conflicts
+- The file uses a file key system to track annotations per file
 - Empty databases are automatically cleaned up
+- Only saves when there are actual changes to annotations
+
+<<File-Key-System>>
+*** 12.4 File Key System [[#File-Key-System][¶]]
+:PROPERTIES:
+:CUSTOM_ID: file-key-system
+:CLASS: section
+:END:
+Each file is identified by a unique key:
+
+- Uses the full file path for file-visiting buffers
+- Uses the buffer name for non-file buffers
+- Ensures annotations persist across Emacs sessions
+- Supports moving files (annotations follow the buffer name)
 
 --------------
 
@@ -585,18 +1360,21 @@ Next: [[#Function-Index][Function Index]], Previous:
 [[#Data-Storage][Data Storage]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 10 Troubleshooting [[#Troubleshooting-1][¶]]
+** 13 Troubleshooting [[#Troubleshooting-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Troubleshooting-1
 :CLASS: chapter
 :END:
 - [[#Annotations-Not-Persisting][Annotations Not Persisting]]
+- [[#Display-Issues][Display Issues]]
+- [[#Smart-Action-Issues][Smart Action Issues]]
 - [[#Performance-with-Large-Files][Performance with Large Files]]
 - [[#Integration-Issues][Integration Issues]]
 - [[#Common-Error-Messages][Common Error Messages]]
+- [[#Getting-Help][Getting Help]]
 
 <<Annotations-Not-Persisting>>
-*** 10.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
+*** 13.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotations-not-persisting
 :CLASS: section
@@ -607,9 +1385,56 @@ If your annotations aren't being saved between sessions:
 - Ensure annotation mode is properly enabled
 - Verify that hooks are installed correctly
 - Check file permissions on the storage directory
+- Look for error messages in the =*Messages*= buffer
+
+<<Display-Issues>>
+*** 13.2 Display Issues [[#Display-Issues][¶]]
+:PROPERTIES:
+:CUSTOM_ID: display-issues
+:CLASS: section
+:END:
+- [[#Highlighting-Not-Visible][Highlighting Not Visible]]
+- [[#Fringe-Indicators-Not-Showing][Fringe Indicators Not Showing]]
+
+<<Highlighting-Not-Visible>>
+**** 13.2.1 Highlighting Not Visible [[#Highlighting-Not-Visible][¶]]
+:PROPERTIES:
+:CUSTOM_ID: highlighting-not-visible
+:CLASS: subsection
+:END:
+- Customize =simply-annotate-highlight-face= for your color theme
+- Check for conflicting overlays from other packages
+- Try switching to fringe mode:
+  =(setq simply-annotate-display-style 'fringe)=
+- Verify the face definition with M-x describe-face
+
+<<Fringe-Indicators-Not-Showing>>
+**** 13.2.2 Fringe Indicators Not Showing [[#Fringe-Indicators-Not-Showing][¶]]
+:PROPERTIES:
+:CUSTOM_ID: fringe-indicators-not-showing
+:CLASS: subsection
+:END:
+- Ensure your Emacs build supports fringe bitmaps
+- Check that fringe is visible: =(set-window-fringes nil 8 8)=
+- Try a different fringe indicator:
+  =(setq simply-annotate-fringe-indicator 'left-triangle)=
+- Verify fringe face colors are visible against your theme
+
+<<Smart-Action-Issues>>
+*** 13.3 Smart Action Issues [[#Smart-Action-Issues][¶]]
+:PROPERTIES:
+:CUSTOM_ID: smart-action-issues
+:CLASS: section
+:END:
+- Remember the command is context-sensitive - behavior changes based on
+  region selection and cursor position
+- Use C-u M-s j to force edit mode on existing annotations
+- Check if you're properly positioned on annotated text (especially in
+  fringe mode)
+- Verify the annotation buffer is responding to C-c C-c and C-c C-k
 
 <<Performance-with-Large-Files>>
-*** 10.2 Performance with Large Files [[#Performance-with-Large-Files][¶]]
+*** 13.4 Performance with Large Files [[#Performance-with-Large-Files][¶]]
 :PROPERTIES:
 :CUSTOM_ID: performance-with-large-files
 :CLASS: section
@@ -618,10 +1443,11 @@ Simply Annotate is designed to be lightweight:
 
 - Annotations use lightweight overlays
 - No performance impact on file operations
+- Fringe mode generally has better performance than highlight mode
 - Consider splitting very large annotation sets across multiple files
 
 <<Integration-Issues>>
-*** 10.3 Integration Issues [[#Integration-Issues][¶]]
+*** 13.5 Integration Issues [[#Integration-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: integration-issues
 :CLASS: section
@@ -629,22 +1455,41 @@ Simply Annotate is designed to be lightweight:
 - Annotations work with most major modes
 - Compatible with =lsp-mode=, =flycheck=, and other packages
 - May need customization for exotic display modes
-- Check for conflicting key bindings
+- Check for conflicting key bindings with C-h k
+- Fringe indicators work well with line number modes
 
 <<Common-Error-Messages>>
-*** 10.4 Common Error Messages [[#Common-Error-Messages][¶]]
+*** 13.6 Common Error Messages [[#Common-Error-Messages][¶]]
 :PROPERTIES:
 :CUSTOM_ID: common-error-messages
 :CLASS: section
 :END:
 - *"No annotation at point"* :: You're trying to edit or remove an
-  annotation, but the cursor isn't positioned on annotated text.
+  annotation, but the cursor isn't positioned on annotated text. In
+  fringe mode, make sure you're on the correct line.
 
 - *"Annotation cancelled/removed"* :: You saved an empty annotation,
   which automatically removes it.
 
+- *"No annotations in buffer"* :: The current buffer has no annotations
+  to navigate or list.
+
+- *"No annotations database found"* :: No annotation file exists yet.
+  Create your first annotation to initialize the database.
+
 - *Database file errors* :: Check permissions and disk space for the
   storage file location.
+
+<<Getting-Help>>
+*** 13.7 Getting Help [[#Getting-Help][¶]]
+:PROPERTIES:
+:CUSTOM_ID: getting-help
+:CLASS: section
+:END:
+- Use C-h k followed by a key binding to see what command it runs
+- Check the =*Messages*= buffer for error messages
+- Use M-x describe-mode in an annotation buffer for mode-specific help
+- The header-line always shows available commands and current status
 
 --------------
 
@@ -660,19 +1505,28 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 :CLASS: unnumbered
 :END:
 
-|                | Index Entry                                                                                                 | Section                                   |
-| -------------- |                                                                                                             |                                           |
-| S              |                                                                                                             |                                           |
-|                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                           | [[#Basic-Usage][Basic Usage]]             |
-|                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                             | [[#Advanced-Features][Advanced Features]] |
-|                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                             | [[#Basic-Usage][Basic Usage]]             |
-|                | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                             | [[#Navigation][Navigation]]               |
-|                | [[#index-simply_002dannotate_002dprevious][=simply-annotate-previous=]]                                     | [[#Navigation][Navigation]]               |
-|                | [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                         | [[#Basic-Usage][Basic Usage]]             |
-|                | [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]] | [[#Basic-Usage][Basic Usage]]             |
-|                | [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                             | [[#Navigation][Navigation]]               |
-|                | [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                 | [[#Advanced-Features][Advanced Features]] |
-| -------------- |                                                                                                             |                                           |
+|                | Index Entry                                                                                                     | Section                                                       |
+| -------------- |                                                                                                                 |                                                               |
+| S              |                                                                                                                 |                                                               |
+|                | [[#index-simply_002dannotate_002dadd_002dannotation_002dtag][=simply-annotate-add-annotation-tag=]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                               | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dchange_002dannotation_002dauthor][=simply-annotate-change-annotation-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
+|                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
+|                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                                 | [[#Navigation][Navigation]]                                   |
+|                | [[#index-simply_002dannotate_002dprevious][=simply-annotate-previous=]]                                         | [[#Navigation][Navigation]]                                   |
+|                | [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                             | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dreply_002dto_002dannotation][=simply-annotate-reply-to-annotation=]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dreset_002dsession_002dauthor][=simply-annotate-reset-session-author=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]]     | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dset_002dannotation_002dpriority][=simply-annotate-set-annotation-priority=]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dset_002dannotation_002dstatus][=simply-annotate-set-annotation-status=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                                 | [[#Navigation][Navigation]]                                   |
+|                | [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                     | [[#Advanced-Features][Advanced Features]]                     |
+|                | [[#index-simply_002dannotate_002dsmart_002daction][=simply-annotate-smart-action=]]                             | [[#Basic-Usage][Basic Usage]]                                 |
+| -------------- |                                                                                                                 |                                                               |
 
 --------------
 
@@ -688,18 +1542,31 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 :CLASS: unnumbered
 :END:
 
-|                | Index Entry                                                                               | Section                           |
-| -------------- |                                                                                           |                                   |
-| S              |                                                                                           |                                   |
-|                | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]     | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]   | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]         | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]       | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                           | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                         | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]   | [[#Customization][Customization]] |
-|                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]] | [[#Customization][Customization]] |
-| -------------- |                                                                                           |                                   |
+|                | Index Entry                                                                                       | Section                                                       |
+| -------------- |                                                                                                   |                                                               |
+| S              |                                                                                                   |                                                               |
+|                | [[#index-simply_002dannotate_002dauthor_002dlist][=simply-annotate-author-list=]]                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]             | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]                 | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002ddisplay_002dstyle][=simply-annotate-display-style=]]             | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-1][=simply-annotate-display-style=]]           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-2][=simply-annotate-display-style=]]           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                                 | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dface][=simply-annotate-fringe-face=]]                 | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dfringe_002dface-1][=simply-annotate-fringe-face=]]               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dface-2][=simply-annotate-fringe-face=]]               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dindicator][=simply-annotate-fringe-indicator=]]       | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dfringe_002dindicator-1][=simply-annotate-fringe-indicator=]]     | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]     | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]         | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dpriority_002dlevels][=simply-annotate-priority-levels=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor][=simply-annotate-prompt-for-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dthread_002dstatuses][=simply-annotate-thread-statuses=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                                                                   |                                                               |
 
 --------------
 
@@ -713,3 +1580,41 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 :CUSTOM_ID: Concept-Index-1
 :CLASS: unnumbered
 :END:
+
+| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
+
+|                | Index Entry                               | Section                                                       |
+| -------------- |                                           |                                                               |
+| A              |                                           |                                                               |
+|                | [[#index-authors][authors]]               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+| C              |                                           |                                                               |
+|                | [[#index-collaboration][collaboration]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-conversations][conversations]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+| H              |                                           |                                                               |
+|                | [[#index-header_002dline][header-line]]   | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                           |                                                               |
+| O              |                                           |                                                               |
+|                | [[#index-organization][organization]]     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+| P              |                                           |                                                               |
+|                | [[#index-priority][priority]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+| R              |                                           |                                                               |
+|                | [[#index-replies][replies]]               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+| S              |                                           |                                                               |
+|                | [[#index-status][status]]                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-status-display][status display]] | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                           |                                                               |
+| T              |                                           |                                                               |
+|                | [[#index-tags][tags]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-team][team]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-threading][threading]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+| W              |                                           |                                                               |
+|                | [[#index-workflow][workflow]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                           |                                                               |
+
+| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |

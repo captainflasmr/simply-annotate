@@ -3,8 +3,8 @@
 <!-- Created by GNU Texinfo 7.2, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<!-- This manual is for Simply Annotate (version 0.0.1), a lightweight annotation
-system for Emacs.
+<!-- This manual is for Simply Annotate, a lightweight annotation
+system for Emacs with threading and collaboration features.
 
 Copyright © 2024 James Dyer.
 
@@ -63,8 +63,8 @@ Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [
 Emacs that allows you to add persistent notes to any text file without
 modifying the original content.
 </p>
-<p>This manual is for Simply Annotate (version 0.0.1), a lightweight annotation
-system for Emacs.
+<p>This manual is for Simply Annotate, a lightweight annotation
+system for Emacs with threading and collaboration features.
 </p>
 <p>Copyright &copy; 2024 James Dyer.
 </p>
@@ -99,46 +99,111 @@ Free Documentation License&rdquo;.
     <li><a id="toc-Enabling-Annotation-Mode" href="#Enabling-Annotation-Mode">4.1 Enabling Annotation Mode</a></li>
     <li><a id="toc-Creating-Annotations" href="#Creating-Annotations">4.2 Creating Annotations</a>
     <ul class="toc-numbered-mark">
-      <li><a id="toc-Multi_002dline-Annotations" href="#Multi_002dline-Annotations">4.2.1 Multi-line Annotations</a></li>
+      <li><a id="toc-Smart-Action-Command" href="#Smart-Action-Command">4.2.1 Smart Action Command</a></li>
+      <li><a id="toc-Traditional-Method" href="#Traditional-Method">4.2.2 Traditional Method</a></li>
+      <li><a id="toc-Multi_002dline-Annotations" href="#Multi_002dline-Annotations">4.2.3 Multi-line Annotations</a></li>
     </ul></li>
     <li><a id="toc-Viewing-Annotations" href="#Viewing-Annotations">4.3 Viewing Annotations</a></li>
     <li><a id="toc-Editing-Annotations" href="#Editing-Annotations">4.4 Editing Annotations</a></li>
     <li><a id="toc-Deleting-Annotations" href="#Deleting-Annotations">4.5 Deleting Annotations</a></li>
   </ul></li>
-  <li><a id="toc-Navigation" href="#Navigation">5 Navigation</a>
+  <li><a id="toc-Threading-and-Collaboration" href="#Threading-and-Collaboration">5 Threading and Collaboration</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Moving-Between-Annotations" href="#Moving-Between-Annotations">5.1 Moving Between Annotations</a></li>
-    <li><a id="toc-Viewing-Current-Annotation" href="#Viewing-Current-Annotation">5.2 Viewing Current Annotation</a></li>
+    <li><a id="toc-Threading-System" href="#Threading-System">5.1 Threading System</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Adding-Replies" href="#Adding-Replies">5.1.1 Adding Replies</a></li>
+      <li><a id="toc-Thread-Display" href="#Thread-Display">5.1.2 Thread Display</a></li>
+    </ul></li>
+    <li><a id="toc-Status-Management" href="#Status-Management">5.2 Status Management</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Setting-Status" href="#Setting-Status">5.2.1 Setting Status</a></li>
+      <li><a id="toc-Setting-Priority" href="#Setting-Priority">5.2.2 Setting Priority</a></li>
+      <li><a id="toc-Adding-Tags" href="#Adding-Tags">5.2.3 Adding Tags</a></li>
+    </ul></li>
+    <li><a id="toc-Multi_002dAuthor-Support" href="#Multi_002dAuthor-Support">5.3 Multi-Author Support</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Author-Configuration" href="#Author-Configuration">5.3.1 Author Configuration</a></li>
+      <li><a id="toc-Prompting-Modes" href="#Prompting-Modes">5.3.2 Prompting Modes</a></li>
+      <li><a id="toc-Author-Management-Commands" href="#Author-Management-Commands">5.3.3 Author Management Commands</a></li>
+    </ul></li>
+    <li><a id="toc-Collaboration-Workflows" href="#Collaboration-Workflows">5.4 Collaboration Workflows</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Code-Review-Workflow" href="#Code-Review-Workflow">5.4.1 Code Review Workflow</a></li>
+      <li><a id="toc-Document-Collaboration" href="#Document-Collaboration">5.4.2 Document Collaboration</a></li>
+    </ul></li>
   </ul></li>
-  <li><a id="toc-Advanced-Features" href="#Advanced-Features">6 Advanced Features</a>
+  <li><a id="toc-Display-Styles" href="#Display-Styles">6 Display Styles</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Listing-All-Annotations" href="#Listing-All-Annotations">6.1 Listing All Annotations</a></li>
-    <li><a id="toc-Cross_002dfile-Annotation-Browsing" href="#Cross_002dfile-Annotation-Browsing">6.2 Cross-file Annotation Browsing</a></li>
-    <li><a id="toc-Annotation-Buffer-Features" href="#Annotation-Buffer-Features">6.3 Annotation Buffer Features</a></li>
+    <li><a id="toc-Available-Styles" href="#Available-Styles">6.1 Available Styles</a></li>
+    <li><a id="toc-Changing-Display-Styles" href="#Changing-Display-Styles">6.2 Changing Display Styles</a></li>
+    <li><a id="toc-Style-Recommendations" href="#Style-Recommendations">6.3 Style Recommendations</a></li>
+    <li><a id="toc-Fringe-Customization" href="#Fringe-Customization">6.4 Fringe Customization</a></li>
   </ul></li>
-  <li><a id="toc-Key-Bindings" href="#Key-Bindings">7 Key Bindings</a>
+  <li><a id="toc-Navigation" href="#Navigation">7 Navigation</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Main-Mode-Bindings" href="#Main-Mode-Bindings">7.1 Main Mode Bindings</a></li>
-    <li><a id="toc-Annotation-Buffer-Bindings" href="#Annotation-Buffer-Bindings">7.2 Annotation Buffer Bindings</a></li>
+    <li><a id="toc-Moving-Between-Annotations" href="#Moving-Between-Annotations">7.1 Moving Between Annotations</a></li>
+    <li><a id="toc-Viewing-Current-Annotation" href="#Viewing-Current-Annotation">7.2 Viewing Current Annotation</a></li>
+    <li><a id="toc-Smart-Navigation" href="#Smart-Navigation">7.3 Smart Navigation</a></li>
   </ul></li>
-  <li><a id="toc-Customization" href="#Customization">8 Customization</a>
+  <li><a id="toc-Advanced-Features" href="#Advanced-Features">8 Advanced Features</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Basic-Configuration" href="#Basic-Configuration">8.1 Basic Configuration</a></li>
-    <li><a id="toc-Customization-Variables" href="#Customization-Variables">8.2 Customization Variables</a></li>
-    <li><a id="toc-Custom-Faces" href="#Custom-Faces">8.3 Custom Faces</a></li>
+    <li><a id="toc-Listing-All-Annotations" href="#Listing-All-Annotations">8.1 Listing All Annotations</a></li>
+    <li><a id="toc-Cross_002dfile-Annotation-Browsing" href="#Cross_002dfile-Annotation-Browsing">8.2 Cross-file Annotation Browsing</a></li>
+    <li><a id="toc-Annotation-Buffer-Features" href="#Annotation-Buffer-Features">8.3 Annotation Buffer Features</a></li>
+    <li><a id="toc-Header_002dline-Integration" href="#Header_002dline-Integration">8.4 Header-line Integration</a></li>
   </ul></li>
-  <li><a id="toc-Data-Storage" href="#Data-Storage">9 Data Storage</a>
+  <li><a id="toc-Org_002dmode-Integration" href="#Org_002dmode-Integration">9 Org-mode Integration</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Storage-Format" href="#Storage-Format">9.1 Storage Format</a></li>
-    <li><a id="toc-Sample-Storage-Format" href="#Sample-Storage-Format">9.2 Sample Storage Format</a></li>
-    <li><a id="toc-Data-Management" href="#Data-Management">9.3 Data Management</a></li>
+    <li><a id="toc-Exporting-Annotations" href="#Exporting-Annotations">9.1 Exporting Annotations</a></li>
+    <li><a id="toc-Export-Format" href="#Export-Format">9.2 Export Format</a></li>
+    <li><a id="toc-Use-Cases-for-Export" href="#Use-Cases-for-Export">9.3 Use Cases for Export</a></li>
+    <li><a id="toc-Integration-with-Org-Workflows" href="#Integration-with-Org-Workflows">9.4 Integration with Org Workflows</a></li>
   </ul></li>
-  <li><a id="toc-Troubleshooting" href="#Troubleshooting">10 Troubleshooting</a>
+  <li><a id="toc-Key-Bindings" href="#Key-Bindings">10 Key Bindings</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Annotations-Not-Persisting" href="#Annotations-Not-Persisting">10.1 Annotations Not Persisting</a></li>
-    <li><a id="toc-Performance-with-Large-Files" href="#Performance-with-Large-Files">10.2 Performance with Large Files</a></li>
-    <li><a id="toc-Integration-Issues" href="#Integration-Issues">10.3 Integration Issues</a></li>
-    <li><a id="toc-Common-Error-Messages" href="#Common-Error-Messages">10.4 Common Error Messages</a></li>
+    <li><a id="toc-Main-Mode-Bindings" href="#Main-Mode-Bindings">10.1 Main Mode Bindings</a></li>
+    <li><a id="toc-Annotation-Buffer-Bindings" href="#Annotation-Buffer-Bindings">10.2 Annotation Buffer Bindings</a></li>
+    <li><a id="toc-Smart-Action-Behavior" href="#Smart-Action-Behavior">10.3 Smart Action Behavior</a></li>
+  </ul></li>
+  <li><a id="toc-Customization" href="#Customization">11 Customization</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Basic-Configuration" href="#Basic-Configuration">11.1 Basic Configuration</a></li>
+    <li><a id="toc-Threading-and-Collaboration-Configuration" href="#Threading-and-Collaboration-Configuration">11.2 Threading and Collaboration Configuration</a></li>
+    <li><a id="toc-Configuration-Examples" href="#Configuration-Examples">11.3 Configuration Examples</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Single-User-_0028Default_0029" href="#Single-User-_0028Default_0029">11.3.1 Single User (Default)</a></li>
+      <li><a id="toc-Code-Review-Team" href="#Code-Review-Team">11.3.2 Code Review Team</a></li>
+      <li><a id="toc-Multi_002dProject-Consultant" href="#Multi_002dProject-Consultant">11.3.3 Multi-Project Consultant</a></li>
+    </ul></li>
+    <li><a id="toc-Core-Customization-Variables" href="#Core-Customization-Variables">11.4 Core Customization Variables</a></li>
+    <li><a id="toc-Threading-and-Collaboration-Variables" href="#Threading-and-Collaboration-Variables">11.5 Threading and Collaboration Variables</a></li>
+    <li><a id="toc-Display-Style-Configuration" href="#Display-Style-Configuration">11.6 Display Style Configuration</a></li>
+    <li><a id="toc-Advanced-Customization" href="#Advanced-Customization">11.7 Advanced Customization</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Custom-Fringe-Bitmaps" href="#Custom-Fringe-Bitmaps">11.7.1 Custom Fringe Bitmaps</a></li>
+      <li><a id="toc-Global-Mode-Setup" href="#Global-Mode-Setup">11.7.2 Global Mode Setup</a></li>
+    </ul></li>
+  </ul></li>
+  <li><a id="toc-Data-Storage" href="#Data-Storage">12 Data Storage</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Storage-Format" href="#Storage-Format">12.1 Storage Format</a></li>
+    <li><a id="toc-Sample-Storage-Format" href="#Sample-Storage-Format">12.2 Sample Storage Format</a></li>
+    <li><a id="toc-Data-Management" href="#Data-Management">12.3 Data Management</a></li>
+    <li><a id="toc-File-Key-System" href="#File-Key-System">12.4 File Key System</a></li>
+  </ul></li>
+  <li><a id="toc-Troubleshooting" href="#Troubleshooting">13 Troubleshooting</a>
+  <ul class="toc-numbered-mark">
+    <li><a id="toc-Annotations-Not-Persisting" href="#Annotations-Not-Persisting">13.1 Annotations Not Persisting</a></li>
+    <li><a id="toc-Display-Issues" href="#Display-Issues">13.2 Display Issues</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Highlighting-Not-Visible" href="#Highlighting-Not-Visible">13.2.1 Highlighting Not Visible</a></li>
+      <li><a id="toc-Fringe-Indicators-Not-Showing" href="#Fringe-Indicators-Not-Showing">13.2.2 Fringe Indicators Not Showing</a></li>
+    </ul></li>
+    <li><a id="toc-Smart-Action-Issues" href="#Smart-Action-Issues">13.3 Smart Action Issues</a></li>
+    <li><a id="toc-Performance-with-Large-Files" href="#Performance-with-Large-Files">13.4 Performance with Large Files</a></li>
+    <li><a id="toc-Integration-Issues" href="#Integration-Issues">13.5 Integration Issues</a></li>
+    <li><a id="toc-Common-Error-Messages" href="#Common-Error-Messages">13.6 Common Error Messages</a></li>
+    <li><a id="toc-Getting-Help" href="#Getting-Help">13.7 Getting Help</a></li>
   </ul></li>
   <li><a id="toc-Function-Index" href="#Function-Index" rel="index">Function Index</a></li>
   <li><a id="toc-Variable-Index" href="#Variable-Index" rel="index">Variable Index</a></li>
@@ -156,7 +221,7 @@ Next: <a href="#Installation" accesskey="n" rel="next">Installation</a>, Previou
 
 <p>Simply Annotate is a lightweight annotation system for Emacs that allows
 you to add persistent notes to any text file without modifying the original
-content. It&rsquo;s perfect for code review, research, note-taking, and documentation.
+content. It&rsquo;s perfect for code review, research, note-taking, and documentation and includes threading and collaboration features.
 </p>
 <ul class="mini-toc">
 <li><a href="#Key-Features" accesskey="1">Key Features</a></li>
@@ -167,11 +232,19 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 <ul class="itemize mark-bullet">
 <li><strong class="strong">Non-intrusive</strong>: Annotations don&rsquo;t modify your original files
 </li><li><strong class="strong">Persistent</strong>: Notes survive between Emacs sessions
-</li><li><strong class="strong">Contextual</strong>: Automatic display when cursor moves over annotated text
+</li><li><strong class="strong">Threading</strong>: Add replies to annotations for conversations
+</li><li><strong class="strong">Status tracking</strong>: Manage annotation lifecycle (open → resolved)
+</li><li><strong class="strong">Multi-author support</strong>: Collaborate with team members
+</li><li><strong class="strong">Priority levels</strong>: Organize by importance (low, normal, high, critical)
+</li><li><strong class="strong">Tag system</strong>: Categorize with hashtags (<code class="code">#review</code>, <code class="code">#bug</code>, <code class="code">#question</code>)
+</li><li><strong class="strong">Multiple display styles</strong>: Choose between highlighting, fringe indicators, or both
+</li><li><strong class="strong">Smart action</strong>: Context-aware command that adapts to the situation
 </li><li><strong class="strong">Rich editing</strong>: Full-featured annotation buffer for longer notes
 </li><li><strong class="strong">Navigation</strong>: Jump between annotations with simple keybindings
 </li><li><strong class="strong">Overview</strong>: List all annotations in grep-mode format
 </li><li><strong class="strong">Cross-file</strong>: Browse annotations across multiple files
+</li><li><strong class="strong">Org-mode export</strong>: Convert annotation threads to structured TODO items
+</li><li><strong class="strong">Header-line integration</strong>: Shows annotation count and available commands
 </li></ul>
 
 <hr>
@@ -225,14 +298,18 @@ Next: <a href="#Basic-Usage" accesskey="n" rel="next">Basic Usage</a>, Previous:
 </div>
 <h2 class="chapter" id="Quick-Start-1"><span>3 Quick Start<a class="copiable-link" href="#Quick-Start-1"> &para;</a></span></h2>
 
-<p>Here&rsquo;s how to get started with Simply Annotate in under a minute:
+<p>Here&rsquo;s how to get started with Simply Annotate:
 </p>
 <ol class="enumerate">
 <li> Open any file in Emacs
 </li><li> Enable annotation mode: <kbd class="kbd">M-x simply-annotate-mode</kbd>
-</li><li> Select some text and press <kbd class="kbd">M-s SPC</kbd> to create your first annotation
+</li><li> Select some text and press <kbd class="kbd">M-s j</kbd> to create your first annotation
 </li><li> Type your annotation text and press <kbd class="kbd">C-c C-c</kbd> to save
 </li><li> Navigate with <kbd class="kbd">M-n</kbd> (next) and <kbd class="kbd">M-p</kbd> (previous)
+</li><li> Press <kbd class="kbd">M-s ]</kbd> to cycle through different display styles
+</li><li> Press <kbd class="kbd">M-s r</kbd> to add a reply to any annotation
+</li><li> Press <kbd class="kbd">M-s s</kbd> to set status (open, resolved, etc.)
+</li><li> Press <kbd class="kbd">M-s o</kbd> to export annotations to org-mode
 </li></ol>
 
 <hr>
@@ -240,7 +317,7 @@ Next: <a href="#Basic-Usage" accesskey="n" rel="next">Basic Usage</a>, Previous:
 <div class="chapter-level-extent" id="Basic-Usage">
 <div class="nav-panel">
 <p>
-Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <a href="#Quick-Start" accesskey="p" rel="prev">Quick Start</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Threading-and-Collaboration" accesskey="n" rel="next">Threading and Collaboration</a>, Previous: <a href="#Quick-Start" accesskey="p" rel="prev">Quick Start</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
 <h2 class="chapter" id="Basic-Usage-1"><span>4 Basic Usage<a class="copiable-link" href="#Basic-Usage-1"> &para;</a></span></h2>
 
@@ -272,18 +349,56 @@ Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <
 <h3 class="section"><span>4.2 Creating Annotations<a class="copiable-link" href="#Creating-Annotations"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Multi_002dline-Annotations" accesskey="1">Multi-line Annotations</a></li>
+<li><a href="#Smart-Action-Command" accesskey="1">Smart Action Command</a></li>
+<li><a href="#Traditional-Method" accesskey="2">Traditional Method</a></li>
+<li><a href="#Multi_002dline-Annotations" accesskey="3">Multi-line Annotations</a></li>
 </ul>
-<div class="subsection-level-extent" id="Multi_002dline-Annotations">
-<h4 class="subsection"><span>4.2.1 Multi-line Annotations<a class="copiable-link" href="#Multi_002dline-Annotations"> &para;</a></span></h4>
+<div class="subsection-level-extent" id="Smart-Action-Command">
+<h4 class="subsection"><span>4.2.1 Smart Action Command<a class="copiable-link" href="#Smart-Action-Command"> &para;</a></span></h4>
 
-<p>For longer, detailed annotations:
+<a class="index-entry-id" id="index-simply_002dannotate_002dsmart_002daction"></a>
+<p>The <kbd class="kbd">M-s j</kbd> command (<code class="code">simply-annotate-smart-action</code>) is context-aware
+and behaves differently depending on the situation:
+</p>
+<dl class="table">
+<dt><strong class="strong">With region selected</strong></dt>
+<dd><p>Creates new annotation or edits existing one at the selected text
+</p></dd>
+<dt><strong class="strong">On annotated text (no region)</strong></dt>
+<dd><p>Toggles annotation buffer visibility to show/hide the annotation
+</p></dd>
+<dt><strong class="strong">With prefix argument (<kbd class="kbd">C-u M-s j</kbd>)</strong></dt>
+<dd><p>Forces edit mode on existing annotation
+</p></dd>
+<dt><strong class="strong">Elsewhere (no region, no annotation)</strong></dt>
+<dd><p>Creates annotation for the current line
+</p></dd>
+</dl>
+
+</div>
+<div class="subsection-level-extent" id="Traditional-Method">
+<h4 class="subsection"><span>4.2.2 Traditional Method<a class="copiable-link" href="#Traditional-Method"> &para;</a></span></h4>
+
+<p>For more explicit control:
 </p>
 <ol class="enumerate">
 <li> Select the region you want to annotate
-</li><li> Press <kbd class="kbd">M-s SPC</kbd>
+</li><li> Press <kbd class="kbd">M-s j</kbd>
+</li><li> Enter your annotation text in the dedicated buffer
+</li><li> Save with <kbd class="kbd">C-c C-c</kbd>
+</li></ol>
+
+</div>
+<div class="subsection-level-extent" id="Multi_002dline-Annotations">
+<h4 class="subsection"><span>4.2.3 Multi-line Annotations<a class="copiable-link" href="#Multi_002dline-Annotations"> &para;</a></span></h4>
+
+<p>The annotation buffer supports full multi-line editing:
+</p>
+<ol class="enumerate">
+<li> Select the region you want to annotate
+</li><li> Press <kbd class="kbd">M-s j</kbd>
 </li><li> Use the full annotation buffer for detailed notes
-</li><li> Press <kbd class="kbd">C-x C-q</kbd> to enter edit mode if needed
+</li><li> Format your text as needed (multiple paragraphs, bullet points, etc.)
 </li><li> Save with <kbd class="kbd">C-c C-c</kbd>
 </li></ol>
 
@@ -295,10 +410,11 @@ Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <
 <p>When <code class="code">simply-annotate-mode</code> is active:
 </p>
 <ul class="itemize mark-bullet">
-<li>Annotated text is highlighted with a colored background
+<li>Annotated text is displayed according to your chosen display style
 </li><li>The header line shows annotation count and available commands
-</li><li>Moving to the next and previous annotation displays the annotation if the *Annotations* buffer is currently active
-</li><li>Press <kbd class="kbd">M-s SPC</kbd> on annotated text to view in detail
+</li><li>Thread status and comment count displayed in header (e.g., <code class="code">[OPEN/HIGH:3]</code>)
+</li><li>Moving to annotated text shows annotation details in the header
+</li><li>Press <kbd class="kbd">M-s j</kbd> on annotated text to view/edit in detail
 </li></ul>
 
 </div>
@@ -311,9 +427,8 @@ Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <
 </p>
 <ol class="enumerate">
 <li> Place cursor on annotated text
-</li><li> Press <kbd class="kbd">M-s SPC</kbd> to open the annotation buffer
-</li><li> Press <kbd class="kbd">C-x C-q</kbd> to enter edit mode
-</li><li> Make your changes
+</li><li> Press <kbd class="kbd">M-s j</kbd> to open the annotation buffer
+</li><li> Make your changes directly (the buffer starts in edit mode)
 </li><li> Save with <kbd class="kbd">C-c C-c</kbd> or cancel with <kbd class="kbd">C-c C-k</kbd>
 </li></ol>
 
@@ -329,22 +444,337 @@ Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <
 </li><li> Press <kbd class="kbd">M-s -</kbd> to remove the annotation
 </li></ol>
 
+<p>Alternatively, you can edit the annotation and delete all text, then save
+with <kbd class="kbd">C-c C-c</kbd> to remove it.
+</p>
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="Threading-and-Collaboration">
+<div class="nav-panel">
+<p>
+Next: <a href="#Display-Styles" accesskey="n" rel="next">Display Styles</a>, Previous: <a href="#Basic-Usage" accesskey="p" rel="prev">Basic Usage</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<h2 class="chapter" id="Threading-and-Collaboration-1"><span>5 Threading and Collaboration<a class="copiable-link" href="#Threading-and-Collaboration-1"> &para;</a></span></h2>
+
+<p>Lets create a thread!, reply and add in authors
+</p>
+<ul class="mini-toc">
+<li><a href="#Threading-System" accesskey="1">Threading System</a></li>
+<li><a href="#Status-Management" accesskey="2">Status Management</a></li>
+<li><a href="#Multi_002dAuthor-Support" accesskey="3">Multi-Author Support</a></li>
+<li><a href="#Collaboration-Workflows" accesskey="4">Collaboration Workflows</a></li>
+</ul>
+<div class="section-level-extent" id="Threading-System">
+<h3 class="section"><span>5.1 Threading System<a class="copiable-link" href="#Threading-System"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-threading"></a>
+<a class="index-entry-id" id="index-replies"></a>
+<a class="index-entry-id" id="index-conversations"></a>
+
+<p>Each annotation can become a threaded conversation with multiple replies.
+This is perfect for code reviews, collaborative editing, and ongoing discussions
+about specific parts of your code or documents.
+</p>
+<ul class="mini-toc">
+<li><a href="#Adding-Replies" accesskey="1">Adding Replies</a></li>
+<li><a href="#Thread-Display" accesskey="2">Thread Display</a></li>
+</ul>
+<div class="subsection-level-extent" id="Adding-Replies">
+<h4 class="subsection"><span>5.1.1 Adding Replies<a class="copiable-link" href="#Adding-Replies"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dreply_002dto_002dannotation"></a>
+<p>To add a reply to any annotation:
+</p>
+<ol class="enumerate">
+<li> Place cursor on annotated text
+</li><li> Press <kbd class="kbd">M-s r</kbd> 
+</li><li> Enter your reply text
+</li><li> The annotation automatically becomes a threaded conversation
+</li></ol>
+
+</div>
+<div class="subsection-level-extent" id="Thread-Display">
+<h4 class="subsection"><span>5.1.2 Thread Display<a class="copiable-link" href="#Thread-Display"> &para;</a></span></h4>
+
+<p>Threaded annotations are displayed with rich formatting:
+</p>
+<div class="example">
+<pre class="example-preformatted">┌─ Thread: thread-123456 [OPEN/HIGH] Tags: review, urgent (3 authors)
+│ 💬 John Doe (06/19 09:49):
+│   This needs review before release
+│ ↳ Jane Smith (06/19 10:15):
+│   I'll check this today  
+│ ↳ Bob Wilson (06/19 11:30):
+│   Looks good to me, approved
+└─────
+</pre></div>
+
+</div>
+</div>
+<div class="section-level-extent" id="Status-Management">
+<h3 class="section"><span>5.2 Status Management<a class="copiable-link" href="#Status-Management"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-status"></a>
+<a class="index-entry-id" id="index-priority"></a>
+<a class="index-entry-id" id="index-workflow"></a>
+
+<ul class="mini-toc">
+<li><a href="#Setting-Status" accesskey="1">Setting Status</a></li>
+<li><a href="#Setting-Priority" accesskey="2">Setting Priority</a></li>
+<li><a href="#Adding-Tags" accesskey="3">Adding Tags</a></li>
+</ul>
+<div class="subsection-level-extent" id="Setting-Status">
+<h4 class="subsection"><span>5.2.1 Setting Status<a class="copiable-link" href="#Setting-Status"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dset_002dannotation_002dstatus"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dthread_002dstatuses"></a>
+
+<p>Track the lifecycle of your annotations:
+</p>
+<ol class="enumerate">
+<li> Place cursor on annotated text
+</li><li> Press <kbd class="kbd">M-s s</kbd> to set status
+</li><li> Choose from: <code class="code">open</code>, <code class="code">in-progress</code>, <code class="code">resolved</code>, <code class="code">closed</code>
+</li></ol>
+
+<p>The default statuses can be customized via <code class="code">simply-annotate-thread-statuses</code>.
+</p>
+</div>
+<div class="subsection-level-extent" id="Setting-Priority">
+<h4 class="subsection"><span>5.2.2 Setting Priority<a class="copiable-link" href="#Setting-Priority"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dset_002dannotation_002dpriority"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dpriority_002dlevels"></a>
+
+<p>Organize annotations by importance:
+</p>
+<ol class="enumerate">
+<li> Place cursor on annotated text
+</li><li> Press <kbd class="kbd">M-s p</kbd> to set priority
+</li><li> Choose from: <code class="code">low</code>, <code class="code">normal</code>, <code class="code">high</code>, <code class="code">critical</code>
+</li></ol>
+
+</div>
+<div class="subsection-level-extent" id="Adding-Tags">
+<h4 class="subsection"><span>5.2.3 Adding Tags<a class="copiable-link" href="#Adding-Tags"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dadd_002dannotation_002dtag"></a>
+<a class="index-entry-id" id="index-tags"></a>
+<a class="index-entry-id" id="index-organization"></a>
+
+<p>Categorize your annotations with tags:
+</p>
+<ol class="enumerate">
+<li> Place cursor on annotated text
+</li><li> Press <kbd class="kbd">M-s t</kbd> to add a tag
+</li><li> Enter a tag like <code class="code">review</code>, <code class="code">bug</code>, <code class="code">question</code>, etc.
+</li><li> Tags appear as <code class="code">#review #bug</code> in the annotation display
+</li></ol>
+
+</div>
+</div>
+<div class="section-level-extent" id="Multi_002dAuthor-Support">
+<h3 class="section"><span>5.3 Multi-Author Support<a class="copiable-link" href="#Multi_002dAuthor-Support"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-collaboration"></a>
+<a class="index-entry-id" id="index-authors"></a>
+<a class="index-entry-id" id="index-team"></a>
+
+<ul class="mini-toc">
+<li><a href="#Author-Configuration" accesskey="1">Author Configuration</a></li>
+<li><a href="#Prompting-Modes" accesskey="2">Prompting Modes</a></li>
+<li><a href="#Author-Management-Commands" accesskey="3">Author Management Commands</a></li>
+</ul>
+<div class="subsection-level-extent" id="Author-Configuration">
+<h4 class="subsection"><span>5.3.1 Author Configuration<a class="copiable-link" href="#Author-Configuration"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dauthor_002dlist"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dprompt_002dfor_002dauthor"></a>
+
+<p>Configure team members and prompting behavior:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">;; Single user (default behavior)
+(setq simply-annotate-prompt-for-author nil)
+
+;; Team collaboration
+(setq simply-annotate-author-list '(&quot;John Doe&quot; &quot;Jane Smith&quot; &quot;Bob Wilson&quot;))
+(setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+(setq simply-annotate-remember-author-per-file t)       ; Remember per file
+</pre></div>
+
+</div>
+<div class="subsection-level-extent" id="Prompting-Modes">
+<h4 class="subsection"><span>5.3.2 Prompting Modes<a class="copiable-link" href="#Prompting-Modes"> &para;</a></span></h4>
+
+<dl class="table">
+<dt><code class="code">nil</code></dt>
+<dd><p>Never prompt (single-user mode) - default behavior
+</p></dd>
+<dt><code class="code">'first-only</code></dt>
+<dd><p>Prompt once per session, then remember choice
+</p></dd>
+<dt><code class="code">'always</code></dt>
+<dd><p>Prompt for every annotation and reply
+</p></dd>
+<dt><code class="code">'threads-only</code></dt>
+<dd><p>Prompt only when adding replies (great for code reviews)
+</p></dd>
+</dl>
+
+</div>
+<div class="subsection-level-extent" id="Author-Management-Commands">
+<h4 class="subsection"><span>5.3.3 Author Management Commands<a class="copiable-link" href="#Author-Management-Commands"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dchange_002dannotation_002dauthor"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dreset_002dsession_002dauthor"></a>
+
+<dl class="table">
+<dt><kbd class="kbd">M-s a</kbd></dt>
+<dd><p><code class="code">simply-annotate-change-annotation-author</code> - Change author of existing annotation/comment
+</p></dd>
+<dt><kbd class="kbd">M-s A</kbd></dt>
+<dd><p><code class="code">simply-annotate-reset-session-author</code> - Reset session author (forces prompt on next annotation)
+</p></dd>
+</dl>
+
+</div>
+</div>
+<div class="section-level-extent" id="Collaboration-Workflows">
+<h3 class="section"><span>5.4 Collaboration Workflows<a class="copiable-link" href="#Collaboration-Workflows"> &para;</a></span></h3>
+
+<ul class="mini-toc">
+<li><a href="#Code-Review-Workflow" accesskey="1">Code Review Workflow</a></li>
+<li><a href="#Document-Collaboration" accesskey="2">Document Collaboration</a></li>
+</ul>
+<div class="subsection-level-extent" id="Code-Review-Workflow">
+<h4 class="subsection"><span>5.4.1 Code Review Workflow<a class="copiable-link" href="#Code-Review-Workflow"> &para;</a></span></h4>
+
+<ol class="enumerate">
+<li> <strong class="strong">Reviewer</strong> creates annotations on problematic code sections
+</li><li> Set priority with <kbd class="kbd">M-s p</kbd> (high for blocking issues)
+</li><li> Add relevant tags with <kbd class="kbd">M-s t</kbd> (<code class="code">#security</code>, <code class="code">#performance</code>, <code class="code">#style</code>)
+</li><li> <strong class="strong">Developer</strong> adds replies with <kbd class="kbd">M-s r</kbd> explaining or asking questions
+</li><li> <strong class="strong">Reviewer</strong> responds with additional context or approval
+</li><li> Mark as resolved with <kbd class="kbd">M-s s</kbd> when fixed
+</li><li> Export final review with <kbd class="kbd">M-s o</kbd> to org-mode for documentation
+</li></ol>
+
+</div>
+<div class="subsection-level-extent" id="Document-Collaboration">
+<h4 class="subsection"><span>5.4.2 Document Collaboration<a class="copiable-link" href="#Document-Collaboration"> &para;</a></span></h4>
+
+<ol class="enumerate">
+<li> <strong class="strong">Author</strong> writes draft document
+</li><li> <strong class="strong">Reviewers</strong> add annotations with feedback using different author names
+</li><li> Track status of each feedback item with <kbd class="kbd">M-s s</kbd>
+</li><li> Use <kbd class="kbd">M-s l</kbd> to get overview of all feedback
+</li><li> Export to org-mode with <kbd class="kbd">M-s o</kbd> for final review meeting
+</li><li> Archive resolved items, keep open ones visible
+</li></ol>
+
+<hr>
+</div>
+</div>
+</div>
+<div class="chapter-level-extent" id="Display-Styles">
+<div class="nav-panel">
+<p>
+Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <a href="#Threading-and-Collaboration" accesskey="p" rel="prev">Threading and Collaboration</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<h2 class="chapter" id="Display-Styles-1"><span>6 Display Styles<a class="copiable-link" href="#Display-Styles-1"> &para;</a></span></h2>
+
+<p>Simply Annotate supports three different ways to display annotations,
+allowing you to choose the visual style that best fits your workflow.
+</p>
+<ul class="mini-toc">
+<li><a href="#Available-Styles" accesskey="1">Available Styles</a></li>
+<li><a href="#Changing-Display-Styles" accesskey="2">Changing Display Styles</a></li>
+<li><a href="#Style-Recommendations" accesskey="3">Style Recommendations</a></li>
+<li><a href="#Fringe-Customization" accesskey="4">Fringe Customization</a></li>
+</ul>
+<div class="section-level-extent" id="Available-Styles">
+<h3 class="section"><span>6.1 Available Styles<a class="copiable-link" href="#Available-Styles"> &para;</a></span></h3>
+
+<dl class="table">
+<dt><code class="code">highlight</code></dt>
+<dd><p>Traditional background highlighting of annotated text (good for emphasis)
+</p></dd>
+<dt><code class="code">fringe</code></dt>
+<dd><p>Shows small indicators in the left fringe (minimal visual impact)
+</p></dd>
+<dt><code class="code">both</code></dt>
+<dd><p>Combines both highlighting and fringe indicators (maximum visibility)
+</p></dd>
+</dl>
+
+</div>
+<div class="section-level-extent" id="Changing-Display-Styles">
+<h3 class="section"><span>6.2 Changing Display Styles<a class="copiable-link" href="#Changing-Display-Styles"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002ddisplay_002dstyle"></a>
+
+<p>You can change the display style in several ways:
+</p>
+<ul class="itemize mark-bullet">
+<li>Press <kbd class="kbd">M-s ]</kbd> to cycle through all three styles
+</li><li>Set <code class="code">simply-annotate-display-style</code> in your configuration
+</li><li>Use <code class="code">simply-annotate-update-display-style</code> to refresh existing annotations
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Style-Recommendations">
+<h3 class="section"><span>6.3 Style Recommendations<a class="copiable-link" href="#Style-Recommendations"> &para;</a></span></h3>
+
+<dl class="table">
+<dt><strong class="strong">Code Review</strong></dt>
+<dd><p>Use <code class="code">fringe</code> style to avoid visual clutter while coding
+</p></dd>
+<dt><strong class="strong">Research and Documentation</strong></dt>
+<dd><p>Use <code class="code">highlight</code> style for emphasis on important passages
+</p></dd>
+<dt><strong class="strong">Critical Files</strong></dt>
+<dd><p>Use <code class="code">both</code> style for maximum visibility of important annotations
+</p></dd>
+<dt><strong class="strong">Threading Display</strong></dt>
+<dd><p>All styles work well with threaded annotations and status indicators
+</p></dd>
+</dl>
+
+</div>
+<div class="section-level-extent" id="Fringe-Customization">
+<h3 class="section"><span>6.4 Fringe Customization<a class="copiable-link" href="#Fringe-Customization"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dindicator"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dface"></a>
+
+<p>The fringe display can be customized:
+</p>
+<ul class="itemize mark-bullet">
+<li>Choose different symbols: <code class="code">left-triangle</code>, <code class="code">right-triangle</code>, <code class="code">filled-rectangle</code>, or <code class="code">custom</code>
+</li><li>Customize colors with <code class="code">simply-annotate-fringe-face</code>
+</li><li>Define custom bitmaps for unique indicators
+</li></ul>
+
 <hr>
 </div>
 </div>
 <div class="chapter-level-extent" id="Navigation">
 <div class="nav-panel">
 <p>
-Next: <a href="#Advanced-Features" accesskey="n" rel="next">Advanced Features</a>, Previous: <a href="#Basic-Usage" accesskey="p" rel="prev">Basic Usage</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Advanced-Features" accesskey="n" rel="next">Advanced Features</a>, Previous: <a href="#Display-Styles" accesskey="p" rel="prev">Display Styles</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
-<h2 class="chapter" id="Navigation-1"><span>5 Navigation<a class="copiable-link" href="#Navigation-1"> &para;</a></span></h2>
+<h2 class="chapter" id="Navigation-1"><span>7 Navigation<a class="copiable-link" href="#Navigation-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
 <li><a href="#Moving-Between-Annotations" accesskey="1">Moving Between Annotations</a></li>
 <li><a href="#Viewing-Current-Annotation" accesskey="2">Viewing Current Annotation</a></li>
+<li><a href="#Smart-Navigation" accesskey="3">Smart Navigation</a></li>
 </ul>
 <div class="section-level-extent" id="Moving-Between-Annotations">
-<h3 class="section"><span>5.1 Moving Between Annotations<a class="copiable-link" href="#Moving-Between-Annotations"> &para;</a></span></h3>
+<h3 class="section"><span>7.1 Moving Between Annotations<a class="copiable-link" href="#Moving-Between-Annotations"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dnext"></a>
 <a class="index-entry-id" id="index-simply_002dannotate_002dprevious"></a>
@@ -360,19 +790,37 @@ Next: <a href="#Advanced-Features" accesskey="n" rel="next">Advanced Features</a
 </dl>
 
 <p>These commands automatically wrap around, so you can continuously navigate
-through all annotations in a buffer.
+through all annotations in a buffer. When you arrive at an annotation,
+the text is briefly highlighted with a pulse effect.
 </p>
 </div>
 <div class="section-level-extent" id="Viewing-Current-Annotation">
-<h3 class="section"><span>5.2 Viewing Current Annotation<a class="copiable-link" href="#Viewing-Current-Annotation"> &para;</a></span></h3>
+<h3 class="section"><span>7.2 Viewing Current Annotation<a class="copiable-link" href="#Viewing-Current-Annotation"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dshow"></a>
 <p>When you&rsquo;re on an annotated region, you can:
 </p>
 <ul class="itemize mark-bullet">
 <li>View the annotation content in the header line
-</li><li>Press <kbd class="kbd">M-s SPC</kbd> to open the detailed annotation buffer
-</li><li>See the annotation count and position in the header line
+</li><li>See thread status, priority, and comment count (e.g., <code class="code">[OPEN/HIGH:3]</code>)
+</li><li>Press <kbd class="kbd">M-s j</kbd> to open the detailed annotation buffer
+</li><li>See the annotation count and position (e.g., &quot;2/5&quot;) in the header line
+</li><li>View available keybindings in the header line
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Smart-Navigation">
+<h3 class="section"><span>7.3 Smart Navigation<a class="copiable-link" href="#Smart-Navigation"> &para;</a></span></h3>
+
+<p>The navigation commands work intelligently with different display styles and
+threading:
+</p>
+<ul class="itemize mark-bullet">
+<li>In <code class="code">highlight</code> mode: jumps to the exact annotated text
+</li><li>In <code class="code">fringe</code> mode: finds annotations anywhere on the current line
+</li><li>Shows appropriate message for simple or threaded annotations
+</li><li>Always shows a visual pulse when arriving at the annotation
+</li><li>Thread summary displayed for complex annotations
 </li></ul>
 
 <hr>
@@ -381,17 +829,18 @@ through all annotations in a buffer.
 <div class="chapter-level-extent" id="Advanced-Features">
 <div class="nav-panel">
 <p>
-Next: <a href="#Key-Bindings" accesskey="n" rel="next">Key Bindings</a>, Previous: <a href="#Navigation" accesskey="p" rel="prev">Navigation</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Org_002dmode-Integration" accesskey="n" rel="next">Org-mode Integration</a>, Previous: <a href="#Navigation" accesskey="p" rel="prev">Navigation</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
-<h2 class="chapter" id="Advanced-Features-1"><span>6 Advanced Features<a class="copiable-link" href="#Advanced-Features-1"> &para;</a></span></h2>
+<h2 class="chapter" id="Advanced-Features-1"><span>8 Advanced Features<a class="copiable-link" href="#Advanced-Features-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
 <li><a href="#Listing-All-Annotations" accesskey="1">Listing All Annotations</a></li>
 <li><a href="#Cross_002dfile-Annotation-Browsing" accesskey="2">Cross-file Annotation Browsing</a></li>
 <li><a href="#Annotation-Buffer-Features" accesskey="3">Annotation Buffer Features</a></li>
+<li><a href="#Header_002dline-Integration" accesskey="4">Header-line Integration</a></li>
 </ul>
 <div class="section-level-extent" id="Listing-All-Annotations">
-<h3 class="section"><span>6.1 Listing All Annotations<a class="copiable-link" href="#Listing-All-Annotations"> &para;</a></span></h3>
+<h3 class="section"><span>8.1 Listing All Annotations<a class="copiable-link" href="#Listing-All-Annotations"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dlist"></a>
 <p>To see an overview of all annotations in the current buffer:
@@ -400,17 +849,35 @@ Next: <a href="#Key-Bindings" accesskey="n" rel="next">Key Bindings</a>, Previou
 <pre class="example-preformatted">M-s l
 </pre></div>
 
-<p>This opens a grep-mode buffer showing:
+<p>The list now shows rich threading information:
+</p>
+<div class="example">
+<pre class="example-preformatted">Annotations for myfile.txt:
+Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+
+myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
+┌─ THREAD ─┐
+│ 💬 james dyer (06/19 09:49):
+│   This needs review before release
+│ ↳ jane smith (06/19 10:15):
+│   I'll check this today
+└───────────┘
+Source: function calculateTotal()
+</pre></div>
+
+<p>The enhanced listing includes:
 </p><ul class="itemize mark-bullet">
-<li>Line numbers for each annotation
-</li><li>The annotated text content
-</li><li>The annotation text itself
-</li><li>Clickable links to jump to each annotation
+<li>Summary statistics (total, threads vs simple, open vs resolved)
+</li><li>Status and priority indicators for each annotation
+</li><li>Comment counts for threaded annotations
+</li><li>Visual thread display with author names and timestamps
+</li><li>Tag display with hashtag formatting
+</li><li>Color coding for different statuses and priorities
 </li></ul>
 
 </div>
 <div class="section-level-extent" id="Cross_002dfile-Annotation-Browsing">
-<h3 class="section"><span>6.2 Cross-file Annotation Browsing<a class="copiable-link" href="#Cross_002dfile-Annotation-Browsing"> &para;</a></span></h3>
+<h3 class="section"><span>8.2 Cross-file Annotation Browsing<a class="copiable-link" href="#Cross_002dfile-Annotation-Browsing"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dshow_002dall"></a>
 <p>To browse annotations across all files:
@@ -419,26 +886,143 @@ Next: <a href="#Key-Bindings" accesskey="n" rel="next">Key Bindings</a>, Previou
 <pre class="example-preformatted">M-s 0
 </pre></div>
 
-<p>This command:
+<p>This command now shows:
 </p><ul class="itemize mark-bullet">
-<li>Shows a completion list of all files with annotations
-</li><li>Displays the annotation count for each file
-</li><li>Opens the selected file and shows its annotations
-</li><li>Uses grep-mode format for easy navigation
+<li>Completion list with annotation counts per file
+</li><li>Thread and status statistics for each file
+</li><li>Enhanced grep-mode display with threading information
+</li><li>Color-coded status indicators
+</li><li>Author information for collaborative workflows
 </li></ul>
 
 </div>
 <div class="section-level-extent" id="Annotation-Buffer-Features">
-<h3 class="section"><span>6.3 Annotation Buffer Features<a class="copiable-link" href="#Annotation-Buffer-Features"> &para;</a></span></h3>
+<h3 class="section"><span>8.3 Annotation Buffer Features<a class="copiable-link" href="#Annotation-Buffer-Features"> &para;</a></span></h3>
 
-<p>The annotation buffer provides a rich editing environment:
+<p>The annotation buffer provides a rich editing environment with threading support:
 </p>
 <ul class="itemize mark-bullet">
-<li>Shows annotation position and count
-</li><li>Displays source file and line number information
+<li>Shows helpful instructions with threading commands in the header
+</li><li>Displays thread information, status, and priority
+</li><li>Shows complete conversation thread with replies
+</li><li>Access to threading commands (<kbd class="kbd">C-c r</kbd>, <kbd class="kbd">C-c s</kbd>, <kbd class="kbd">C-c p</kbd>, <kbd class="kbd">C-c t</kbd>)
 </li><li>Supports multi-line annotations with full editing capabilities
-</li><li>Provides save and cancel operations
-</li><li>Automatically formats and displays content
+</li><li>Starts in edit mode for immediate typing
+</li><li>Provides save (<kbd class="kbd">C-c C-c</kbd>) and cancel (<kbd class="kbd">C-c C-k</kbd>) operations
+</li><li>Automatically handles empty annotations (removes them)
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Header_002dline-Integration">
+<h3 class="section"><span>8.4 Header-line Integration<a class="copiable-link" href="#Header_002dline-Integration"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-header_002dline"></a>
+<a class="index-entry-id" id="index-status-display"></a>
+
+<p>The header-line provides real-time information with threading support:
+</p>
+<ul class="itemize mark-bullet">
+<li>Current annotation position (e.g., &quot;2/5&quot;)
+</li><li>Thread status and priority (e.g., <code class="code">[OPEN/HIGH:3]</code>)
+</li><li>Total annotation count
+</li><li>Enhanced keybinding help including threading commands
+</li><li>Context-sensitive help text
+</li><li>Automatic updates when annotations or threads change
+</li></ul>
+
+<hr>
+</div>
+</div>
+<div class="chapter-level-extent" id="Org_002dmode-Integration">
+<div class="nav-panel">
+<p>
+Next: <a href="#Key-Bindings" accesskey="n" rel="next">Key Bindings</a>, Previous: <a href="#Advanced-Features" accesskey="p" rel="prev">Advanced Features</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+</div>
+<h2 class="chapter" id="Org_002dmode-Integration-1"><span>9 Org-mode Integration<a class="copiable-link" href="#Org_002dmode-Integration-1"> &para;</a></span></h2>
+
+<p>Simply Annotate can export annotation threads to
+org-mode files for further processing, documentation, or meeting preparation.
+</p>
+<ul class="mini-toc">
+<li><a href="#Exporting-Annotations" accesskey="1">Exporting Annotations</a></li>
+<li><a href="#Export-Format" accesskey="2">Export Format</a></li>
+<li><a href="#Use-Cases-for-Export" accesskey="3">Use Cases for Export</a></li>
+<li><a href="#Integration-with-Org-Workflows" accesskey="4">Integration with Org Workflows</a></li>
+</ul>
+<div class="section-level-extent" id="Exporting-Annotations">
+<h3 class="section"><span>9.1 Exporting Annotations<a class="copiable-link" href="#Exporting-Annotations"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"></a>
+
+<p>To export current buffer annotations to org-mode:
+</p>
+<div class="example">
+<pre class="example-preformatted">M-s o
+</pre></div>
+
+<p>This prompts for a filename and creates a structured org-mode file with:
+</p>
+<ul class="itemize mark-bullet">
+<li>Each annotation thread as a TODO item
+</li><li>Complete metadata preserved in properties
+</li><li>Replies as sub-entries under the main annotation
+</li><li>Status, priority, tags, and timestamps included
+</li><li>Author information for each comment and reply
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Export-Format">
+<h3 class="section"><span>9.2 Export Format<a class="copiable-link" href="#Export-Format"> &para;</a></span></h3>
+
+<p>The exported org-mode structure looks like:
+</p>
+<div class="example">
+<pre class="example-preformatted">#+TITLE: Annotations for myfile.el
+#+DATE: 2025-06-19
+
+* TODO This needs review before release
+:PROPERTIES:
+:ID: thread-123456
+:STATUS: open
+:PRIORITY: high
+:TAGS: review urgent
+:CREATED: 2025-06-19T09:49:03
+:AUTHOR: John Doe
+:END:
+
+The current implementation has potential security issues.
+
+** Reply by Jane Smith (2025-06-19T10:15:00)
+I'll check this today and provide feedback.
+
+** Reply by Bob Wilson (2025-06-19T11:30:00)
+Security audit completed. Issues documented in SECURITY.md
+</pre></div>
+
+</div>
+<div class="section-level-extent" id="Use-Cases-for-Export">
+<h3 class="section"><span>9.3 Use Cases for Export<a class="copiable-link" href="#Use-Cases-for-Export"> &para;</a></span></h3>
+
+<ul class="itemize mark-bullet">
+<li><strong class="strong">Code review meetings</strong>: Export all review comments for discussion
+</li><li><strong class="strong">Documentation</strong>: Convert important annotations to permanent docs
+</li><li><strong class="strong">Issue tracking</strong>: Import into org-mode TODO systems
+</li><li><strong class="strong">Project planning</strong>: Use annotation threads as input for planning
+</li><li><strong class="strong">Knowledge base</strong>: Build searchable knowledge from annotation discussions
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Integration-with-Org-Workflows">
+<h3 class="section"><span>9.4 Integration with Org Workflows<a class="copiable-link" href="#Integration-with-Org-Workflows"> &para;</a></span></h3>
+
+<p>The exported files work seamlessly with:
+</p>
+<ul class="itemize mark-bullet">
+<li><code class="code">org-agenda</code> for tracking annotation TODOs
+</li><li><code class="code">org-capture</code> for further processing
+</li><li><code class="code">org-babel</code> for executable code examples
+</li><li><code class="code">org-export</code> for publishing to other formats
+</li><li>Version control for tracking annotation history
 </li></ul>
 
 <hr>
@@ -447,41 +1031,70 @@ Next: <a href="#Key-Bindings" accesskey="n" rel="next">Key Bindings</a>, Previou
 <div class="chapter-level-extent" id="Key-Bindings">
 <div class="nav-panel">
 <p>
-Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previous: <a href="#Advanced-Features" accesskey="p" rel="prev">Advanced Features</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
+Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previous: <a href="#Org_002dmode-Integration" accesskey="p" rel="prev">Org-mode Integration</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
-<h2 class="chapter" id="Key-Bindings-1"><span>7 Key Bindings<a class="copiable-link" href="#Key-Bindings-1"> &para;</a></span></h2>
+<h2 class="chapter" id="Key-Bindings-1"><span>10 Key Bindings<a class="copiable-link" href="#Key-Bindings-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
 <li><a href="#Main-Mode-Bindings" accesskey="1">Main Mode Bindings</a></li>
 <li><a href="#Annotation-Buffer-Bindings" accesskey="2">Annotation Buffer Bindings</a></li>
+<li><a href="#Smart-Action-Behavior" accesskey="3">Smart Action Behavior</a></li>
 </ul>
 <div class="section-level-extent" id="Main-Mode-Bindings">
-<h3 class="section"><span>7.1 Main Mode Bindings<a class="copiable-link" href="#Main-Mode-Bindings"> &para;</a></span></h3>
+<h3 class="section"><span>10.1 Main Mode Bindings<a class="copiable-link" href="#Main-Mode-Bindings"> &para;</a></span></h3>
 
 <p>When <code class="code">simply-annotate-mode</code> is enabled:
 </p>
 <table class="multitable">
-<thead><tr><th width="20%">Key Binding</th><th width="30%">Command</th><th width="50%">Description</th></tr></thead>
-<tbody><tr><td width="20%"><kbd class="kbd">M-s SPC</kbd></td><td width="30%"><code class="code">simply-annotate-smart-action</code></td><td width="50%">Create/view/edit annotation</td></tr>
-<tr><td width="20%"><kbd class="kbd">M-s -</kbd></td><td width="30%"><code class="code">simply-annotate-remove</code></td><td width="50%">Delete annotation at point</td></tr>
-<tr><td width="20%"><kbd class="kbd">M-s l</kbd></td><td width="30%"><code class="code">simply-annotate-list</code></td><td width="50%">List all annotations in current file</td></tr>
-<tr><td width="20%"><kbd class="kbd">M-s 0</kbd></td><td width="30%"><code class="code">simply-annotate-show-all</code></td><td width="50%">Browse annotations across all files</td></tr>
-<tr><td width="20%"><kbd class="kbd">M-n</kbd></td><td width="30%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
-<tr><td width="20%"><kbd class="kbd">M-p</kbd></td><td width="30%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
+<thead><tr><th width="15%">Key</th><th width="35%">Command</th><th width="50%">Description</th></tr></thead>
+<tbody><tr><td width="15%"><kbd class="kbd">M-s j</kbd></td><td width="35%"><code class="code">simply-annotate-smart-action</code></td><td width="50%">Smart create/view/edit annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s r</kbd></td><td width="35%"><code class="code">simply-annotate-reply-to-annotation</code></td><td width="50%"><strong class="strong">New:</strong> Add reply to annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s s</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="50%"><strong class="strong">New:</strong> Set status (open/resolved)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="50%"><strong class="strong">New:</strong> Set priority (low/high)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="35%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="50%"><strong class="strong">New:</strong> Add tag (#review, #bug)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s a</kbd></td><td width="35%"><code class="code">simply-annotate-change-annotation-author</code></td><td width="50%"><strong class="strong">New:</strong> Change author</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s A</kbd></td><td width="35%"><code class="code">simply-annotate-reset-session-author</code></td><td width="50%"><strong class="strong">New:</strong> Reset session author</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="35%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="50%"><strong class="strong">New:</strong> Export to org-mode</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s -</kbd></td><td width="35%"><code class="code">simply-annotate-remove</code></td><td width="50%">Delete annotation at point</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s l</kbd></td><td width="35%"><code class="code">simply-annotate-list</code></td><td width="50%">List all annotations in current file</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s 0</kbd></td><td width="35%"><code class="code">simply-annotate-show-all</code></td><td width="50%">Browse annotations across all files</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s ]</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-display-style</code></td><td width="50%">Cycle through display styles</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-p</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
 </tbody>
 </table>
 
 </div>
 <div class="section-level-extent" id="Annotation-Buffer-Bindings">
-<h3 class="section"><span>7.2 Annotation Buffer Bindings<a class="copiable-link" href="#Annotation-Buffer-Bindings"> &para;</a></span></h3>
+<h3 class="section"><span>10.2 Annotation Buffer Bindings<a class="copiable-link" href="#Annotation-Buffer-Bindings"> &para;</a></span></h3>
 
 <p>In the annotation buffer:
 </p>
 <table class="multitable">
-<thead><tr><th width="20%">Key Binding</th><th width="40%">Command</th><th width="40%">Description</th></tr></thead>
-<tbody><tr><td width="20%"><kbd class="kbd">C-c C-c</kbd></td><td width="40%"><code class="code">simply-annotate-save-annotation-buffer</code></td><td width="40%">Save changes</td></tr>
-<tr><td width="20%"><kbd class="kbd">C-c C-k</kbd></td><td width="40%"><code class="code">simply-annotate-cancel-edit</code></td><td width="40%">Cancel editing</td></tr>
-<tr><td width="20%"><kbd class="kbd">C-x C-q</kbd></td><td width="40%"><code class="code">toggle-read-only</code></td><td width="40%">Enter/exit edit mode</td></tr>
+<thead><tr><th width="15%">Key</th><th width="40%">Command</th><th width="45%">Description</th></tr></thead>
+<tbody><tr><td width="15%"><kbd class="kbd">C-c C-c</kbd></td><td width="40%"><code class="code">simply-annotate-save-annotation-buffer</code></td><td width="45%">Save changes</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-c C-k</kbd></td><td width="40%"><code class="code">simply-annotate-cancel-edit</code></td><td width="45%">Cancel editing</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-g</kbd></td><td width="40%"><code class="code">simply-annotate-cancel-edit</code></td><td width="45%">Cancel editing (alternative)</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-c r</kbd></td><td width="40%"><code class="code">simply-annotate-reply-to-annotation</code></td><td width="45%"><strong class="strong">New:</strong> Add reply</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-c s</kbd></td><td width="40%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="45%"><strong class="strong">New:</strong> Set status</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-c p</kbd></td><td width="40%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="45%"><strong class="strong">New:</strong> Set priority</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-c t</kbd></td><td width="40%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="45%"><strong class="strong">New:</strong> Add tag</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-c o</kbd></td><td width="40%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="45%"><strong class="strong">New:</strong> Export to org-mode</td></tr>
+</tbody>
+</table>
+
+</div>
+<div class="section-level-extent" id="Smart-Action-Behavior">
+<h3 class="section"><span>10.3 Smart Action Behavior<a class="copiable-link" href="#Smart-Action-Behavior"> &para;</a></span></h3>
+
+<p>The <kbd class="kbd">M-s j</kbd> key binding changes behavior based on context:
+</p>
+<table class="multitable">
+<thead><tr><th width="30%">Context</th><th width="70%">Behavior</th></tr></thead>
+<tbody><tr><td width="30%">Region selected</td><td width="70%">Create new annotation or edit existing</td></tr>
+<tr><td width="30%">On annotation (no region)</td><td width="70%">Toggle annotation buffer visibility</td></tr>
+<tr><td width="30%"><kbd class="kbd">C-u M-s j</kbd> on annotation</td><td width="70%">Force edit mode</td></tr>
+<tr><td width="30%">Elsewhere</td><td width="70%">Create annotation for current line</td></tr>
 </tbody>
 </table>
 
@@ -493,37 +1106,107 @@ Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previ
 <p>
 Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previous: <a href="#Key-Bindings" accesskey="p" rel="prev">Key Bindings</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
-<h2 class="chapter" id="Customization-1"><span>8 Customization<a class="copiable-link" href="#Customization-1"> &para;</a></span></h2>
+<h2 class="chapter" id="Customization-1"><span>11 Customization<a class="copiable-link" href="#Customization-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
 <li><a href="#Basic-Configuration" accesskey="1">Basic Configuration</a></li>
-<li><a href="#Customization-Variables" accesskey="2">Customization Variables</a></li>
-<li><a href="#Custom-Faces" accesskey="3">Custom Faces</a></li>
+<li><a href="#Threading-and-Collaboration-Configuration" accesskey="2">Threading and Collaboration Configuration</a></li>
+<li><a href="#Configuration-Examples" accesskey="3">Configuration Examples</a></li>
+<li><a href="#Core-Customization-Variables" accesskey="4">Core Customization Variables</a></li>
+<li><a href="#Threading-and-Collaboration-Variables" accesskey="5">Threading and Collaboration Variables</a></li>
+<li><a href="#Display-Style-Configuration" accesskey="6">Display Style Configuration</a></li>
+<li><a href="#Advanced-Customization" accesskey="7">Advanced Customization</a></li>
 </ul>
 <div class="section-level-extent" id="Basic-Configuration">
-<h3 class="section"><span>8.1 Basic Configuration<a class="copiable-link" href="#Basic-Configuration"> &para;</a></span></h3>
+<h3 class="section"><span>11.1 Basic Configuration<a class="copiable-link" href="#Basic-Configuration"> &para;</a></span></h3>
 
 <div class="example lisp">
 <pre class="lisp-preformatted">(use-package simply-annotate
   :ensure t
-  :config
+  :custom
+  ;; Choose display style
+  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  
   ;; Customize the highlight face
-  (setq simply-annotate-highlight-face 'highlight)
+  (simply-annotate-highlight-face '(:background &quot;lightblue&quot; :foreground &quot;darkblue&quot;))
   
   ;; Customize storage location
-  (setq simply-annotate-file 
-        (expand-file-name &quot;my-annotations.el&quot; user-emacs-directory))
+  (simply-annotate-file &quot;~/my-annotations.el&quot;)
   
   ;; Customize annotation buffer height
-  (setq simply-annotate-buffer-height 0.4)
+  (simply-annotate-buffer-height 0.25)
+  
+  ;; Fringe indicator settings
+  (simply-annotate-fringe-indicator 'right-triangle)
+  (simply-annotate-fringe-face 'simply-annotate-fringe-face)
   
   :bind 
   (&quot;C-c A&quot; . simply-annotate-mode))
 </pre></div>
 
 </div>
-<div class="section-level-extent" id="Customization-Variables">
-<h3 class="section"><span>8.2 Customization Variables<a class="copiable-link" href="#Customization-Variables"> &para;</a></span></h3>
+<div class="section-level-extent" id="Threading-and-Collaboration-Configuration">
+<h3 class="section"><span>11.2 Threading and Collaboration Configuration<a class="copiable-link" href="#Threading-and-Collaboration-Configuration"> &para;</a></span></h3>
+
+<p>Configure team collaboration and threading features:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">(use-package simply-annotate
+  :custom
+  ;; Author configuration
+  (simply-annotate-author-list '(&quot;John Doe&quot; &quot;Jane Smith&quot; &quot;Bob Wilson&quot; &quot;Alice Chen&quot;))
+  (simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
+  (simply-annotate-remember-author-per-file t)       ; Remember per file
+  
+  ;; Customize available statuses and priorities
+  (simply-annotate-thread-statuses '(&quot;open&quot; &quot;in-progress&quot; &quot;resolved&quot; &quot;closed&quot;))
+  (simply-annotate-priority-levels '(&quot;low&quot; &quot;normal&quot; &quot;high&quot; &quot;critical&quot;))
+  
+  :bind
+  (&quot;C-c A&quot; . simply-annotate-mode)
+  (&quot;C-c 0&quot; . simply-annotate-show-all))
+</pre></div>
+
+</div>
+<div class="section-level-extent" id="Configuration-Examples">
+<h3 class="section"><span>11.3 Configuration Examples<a class="copiable-link" href="#Configuration-Examples"> &para;</a></span></h3>
+
+<ul class="mini-toc">
+<li><a href="#Single-User-_0028Default_0029" accesskey="1">Single User (Default)</a></li>
+<li><a href="#Code-Review-Team" accesskey="2">Code Review Team</a></li>
+<li><a href="#Multi_002dProject-Consultant" accesskey="3">Multi-Project Consultant</a></li>
+</ul>
+<div class="subsection-level-extent" id="Single-User-_0028Default_0029">
+<h4 class="subsection"><span>11.3.1 Single User (Default)<a class="copiable-link" href="#Single-User-_0028Default_0029"> &para;</a></span></h4>
+<div class="example lisp">
+<pre class="lisp-preformatted">;; Minimal setup - works like original simply-annotate
+(setq simply-annotate-prompt-for-author nil)
+</pre></div>
+
+</div>
+<div class="subsection-level-extent" id="Code-Review-Team">
+<h4 class="subsection"><span>11.3.2 Code Review Team<a class="copiable-link" href="#Code-Review-Team"> &para;</a></span></h4>
+<div class="example lisp">
+<pre class="lisp-preformatted">;; Review team setup
+(setq simply-annotate-author-list '(&quot;John Reviewer&quot; &quot;Jane Developer&quot; &quot;Bob QA&quot;))
+(setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt for replies only
+(setq simply-annotate-remember-author-per-file t)       ; Different authors per file
+</pre></div>
+
+</div>
+<div class="subsection-level-extent" id="Multi_002dProject-Consultant">
+<h4 class="subsection"><span>11.3.3 Multi-Project Consultant<a class="copiable-link" href="#Multi_002dProject-Consultant"> &para;</a></span></h4>
+<div class="example lisp">
+<pre class="lisp-preformatted">;; Different clients/contexts
+(setq simply-annotate-author-list '(&quot;John (Client A)&quot; &quot;John (Client B)&quot; &quot;John (Internal)&quot;))
+(setq simply-annotate-prompt-for-author 'first-only)    ; Prompt once per session
+(setq simply-annotate-remember-author-per-file t)       ; Remember per project
+</pre></div>
+
+</div>
+</div>
+<div class="section-level-extent" id="Core-Customization-Variables">
+<h3 class="section"><span>11.4 Core Customization Variables<a class="copiable-link" href="#Core-Customization-Variables"> &para;</a></span></h3>
 
 <dl class="vtable">
 <dt><a id="index-simply_002dannotate_002dfile"></a><span><code class="code">simply-annotate-file</code><a class="copiable-link" href="#index-simply_002dannotate_002dfile"> &para;</a></span></dt>
@@ -533,7 +1216,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 </dd>
 <dt><a id="index-simply_002dannotate_002dhighlight_002dface"></a><span><code class="code">simply-annotate-highlight-face</code><a class="copiable-link" href="#index-simply_002dannotate_002dhighlight_002dface"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dhighlight_002dface-1"></a>
-<p>Face for highlighted annotated text. Default: <code class="code">'highlight</code>
+<p>Face for highlighted annotated text. Default: <code class="code">'(:inherit highlight)</code>
 </p>
 </dd>
 <dt><a id="index-simply_002dannotate_002dbuffer_002dname"></a><span><code class="code">simply-annotate-buffer-name</code><a class="copiable-link" href="#index-simply_002dannotate_002dbuffer_002dname"> &para;</a></span></dt>
@@ -544,15 +1227,28 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 <dt><a id="index-simply_002dannotate_002dbuffer_002dheight"></a><span><code class="code">simply-annotate-buffer-height</code><a class="copiable-link" href="#index-simply_002dannotate_002dbuffer_002dheight"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dbuffer_002dheight-1"></a>
 <p>Height of annotation buffer as fraction of frame height. Default: <code class="code">0.3</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002ddisplay_002dstyle-1"></a><span><code class="code">simply-annotate-display-style</code><a class="copiable-link" href="#index-simply_002dannotate_002ddisplay_002dstyle-1"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002ddisplay_002dstyle-2"></a>
+<p>How to display annotations. Options: <code class="code">'highlight</code>, <code class="code">'fringe</code>, <code class="code">'both</code>. Default: <code class="code">'fringe</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dfringe_002dindicator-1"></a><span><code class="code">simply-annotate-fringe-indicator</code><a class="copiable-link" href="#index-simply_002dannotate_002dfringe_002dindicator-1"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dindicator-2"></a>
+<p>Symbol for fringe indicators. Options: <code class="code">'left-triangle</code>, <code class="code">'right-triangle</code>, <code class="code">'filled-rectangle</code>, <code class="code">'custom</code>. Default: <code class="code">'right-triangle</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dfringe_002dface-1"></a><span><code class="code">simply-annotate-fringe-face</code><a class="copiable-link" href="#index-simply_002dannotate_002dfringe_002dface-1"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dface-2"></a>
+<p>Face for fringe indicators. Default: <code class="code">'simply-annotate-fringe-face</code>
 </p></dd>
 </dl>
 
 </div>
-<div class="section-level-extent" id="Custom-Faces">
-<h3 class="section"><span>8.3 Custom Faces<a class="copiable-link" href="#Custom-Faces"> &para;</a></span></h3>
+<div class="section-level-extent" id="Threading-and-Collaboration-Variables">
+<h3 class="section"><span>11.5 Threading and Collaboration Variables<a class="copiable-link" href="#Threading-and-Collaboration-Variables"> &para;</a></span></h3>
 
-<p>You can define custom faces for annotation highlights:
-</p>
 <div class="example lisp">
 <pre class="lisp-preformatted">;; Custom highlight face for annotations
 (defface my-annotation-face
@@ -560,9 +1256,79 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
   &quot;Face for annotation highlights&quot;)
 
 (setq simply-annotate-highlight-face 'my-annotation-face)
+
+;; Custom fringe face
+(defface my-fringe-face
+  '((t :foreground &quot;red&quot; :background nil))
+  &quot;Face for fringe annotation indicators&quot;)
+
+(setq simply-annotate-fringe-face 'my-fringe-face)
+</pre></div>
+
+</div>
+<div class="section-level-extent" id="Display-Style-Configuration">
+<h3 class="section"><span>11.6 Display Style Configuration<a class="copiable-link" href="#Display-Style-Configuration"> &para;</a></span></h3>
+
+<div class="example lisp">
+<pre class="lisp-preformatted">;; Use only fringe indicators (minimal visual impact)
+(setq simply-annotate-display-style 'fringe)
+
+;; Use traditional highlighting
+(setq simply-annotate-display-style 'highlight)
+
+;; Use both for maximum visibility
+(setq simply-annotate-display-style 'both)
+
+;; Customize fringe indicators
+(setq simply-annotate-fringe-indicator 'left-triangle)
+</pre></div>
+
+</div>
+<div class="section-level-extent" id="Advanced-Customization">
+<h3 class="section"><span>11.7 Advanced Customization<a class="copiable-link" href="#Advanced-Customization"> &para;</a></span></h3>
+
+<ul class="mini-toc">
+<li><a href="#Custom-Fringe-Bitmaps" accesskey="1">Custom Fringe Bitmaps</a></li>
+<li><a href="#Global-Mode-Setup" accesskey="2">Global Mode Setup</a></li>
+</ul>
+<div class="subsection-level-extent" id="Custom-Fringe-Bitmaps">
+<h4 class="subsection"><span>11.7.1 Custom Fringe Bitmaps<a class="copiable-link" href="#Custom-Fringe-Bitmaps"> &para;</a></span></h4>
+
+<p>You can define custom fringe bitmaps:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">(when (fboundp 'define-fringe-bitmap)
+  (define-fringe-bitmap 'my-annotation-bitmap
+    [#b00000000
+     #b00011000
+     #b00111100
+     #b01111110
+     #b11111111
+     #b01111110
+     #b00111100
+     #b00011000]
+    nil nil 'center))
+
+(setq simply-annotate-fringe-indicator 'custom)
+</pre></div>
+
+</div>
+<div class="subsection-level-extent" id="Global-Mode-Setup">
+<h4 class="subsection"><span>11.7.2 Global Mode Setup<a class="copiable-link" href="#Global-Mode-Setup"> &para;</a></span></h4>
+
+<p>To enable annotation mode automatically:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">(use-package simply-annotate
+  :hook
+  (find-file-hook . simply-annotate-mode)
+  :bind
+  (&quot;C-c A&quot; . simply-annotate-mode)
+  (&quot;C-c 0&quot; . simply-annotate-show-all))
 </pre></div>
 
 <hr>
+</div>
 </div>
 </div>
 <div class="chapter-level-extent" id="Data-Storage">
@@ -570,15 +1336,16 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 <p>
 Next: <a href="#Troubleshooting" accesskey="n" rel="next">Troubleshooting</a>, Previous: <a href="#Customization" accesskey="p" rel="prev">Customization</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
-<h2 class="chapter" id="Data-Storage-1"><span>9 Data Storage<a class="copiable-link" href="#Data-Storage-1"> &para;</a></span></h2>
+<h2 class="chapter" id="Data-Storage-1"><span>12 Data Storage<a class="copiable-link" href="#Data-Storage-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
 <li><a href="#Storage-Format" accesskey="1">Storage Format</a></li>
 <li><a href="#Sample-Storage-Format" accesskey="2">Sample Storage Format</a></li>
 <li><a href="#Data-Management" accesskey="3">Data Management</a></li>
+<li><a href="#File-Key-System" accesskey="4">File Key System</a></li>
 </ul>
 <div class="section-level-extent" id="Storage-Format">
-<h3 class="section"><span>9.1 Storage Format<a class="copiable-link" href="#Storage-Format"> &para;</a></span></h3>
+<h3 class="section"><span>12.1 Storage Format<a class="copiable-link" href="#Storage-Format"> &para;</a></span></h3>
 
 <p>Annotations are stored in a single Emacs Lisp file (by default
 <samp class="file">~/.emacs.d/simply-annotations.el</samp>). The format is human-readable
@@ -586,7 +1353,7 @@ and can be version controlled if desired.
 </p>
 </div>
 <div class="section-level-extent" id="Sample-Storage-Format">
-<h3 class="section"><span>9.2 Sample Storage Format<a class="copiable-link" href="#Sample-Storage-Format"> &para;</a></span></h3>
+<h3 class="section"><span>12.2 Sample Storage Format<a class="copiable-link" href="#Sample-Storage-Format"> &para;</a></span></h3>
 
 <div class="example lisp">
 <pre class="lisp-preformatted">;;; Simply Annotate Database
@@ -601,13 +1368,26 @@ and can be version controlled if desired.
 
 </div>
 <div class="section-level-extent" id="Data-Management">
-<h3 class="section"><span>9.3 Data Management<a class="copiable-link" href="#Data-Management"> &para;</a></span></h3>
+<h3 class="section"><span>12.3 Data Management<a class="copiable-link" href="#Data-Management"> &para;</a></span></h3>
 
 <ul class="itemize mark-bullet">
 <li>The database file is automatically created when first needed
 </li><li>Annotations are saved automatically when buffers are saved or killed
-</li><li>The file uses a namespace prefix to avoid conflicts
+</li><li>The file uses a file key system to track annotations per file
 </li><li>Empty databases are automatically cleaned up
+</li><li>Only saves when there are actual changes to annotations
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="File-Key-System">
+<h3 class="section"><span>12.4 File Key System<a class="copiable-link" href="#File-Key-System"> &para;</a></span></h3>
+
+<p>Each file is identified by a unique key:
+</p><ul class="itemize mark-bullet">
+<li>Uses the full file path for file-visiting buffers
+</li><li>Uses the buffer name for non-file buffers
+</li><li>Ensures annotations persist across Emacs sessions
+</li><li>Supports moving files (annotations follow the buffer name)
 </li></ul>
 
 <hr>
@@ -618,16 +1398,19 @@ and can be version controlled if desired.
 <p>
 Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Previous: <a href="#Data-Storage" accesskey="p" rel="prev">Data Storage</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
 </div>
-<h2 class="chapter" id="Troubleshooting-1"><span>10 Troubleshooting<a class="copiable-link" href="#Troubleshooting-1"> &para;</a></span></h2>
+<h2 class="chapter" id="Troubleshooting-1"><span>13 Troubleshooting<a class="copiable-link" href="#Troubleshooting-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
 <li><a href="#Annotations-Not-Persisting" accesskey="1">Annotations Not Persisting</a></li>
-<li><a href="#Performance-with-Large-Files" accesskey="2">Performance with Large Files</a></li>
-<li><a href="#Integration-Issues" accesskey="3">Integration Issues</a></li>
-<li><a href="#Common-Error-Messages" accesskey="4">Common Error Messages</a></li>
+<li><a href="#Display-Issues" accesskey="2">Display Issues</a></li>
+<li><a href="#Smart-Action-Issues" accesskey="3">Smart Action Issues</a></li>
+<li><a href="#Performance-with-Large-Files" accesskey="4">Performance with Large Files</a></li>
+<li><a href="#Integration-Issues" accesskey="5">Integration Issues</a></li>
+<li><a href="#Common-Error-Messages" accesskey="6">Common Error Messages</a></li>
+<li><a href="#Getting-Help" accesskey="7">Getting Help</a></li>
 </ul>
 <div class="section-level-extent" id="Annotations-Not-Persisting">
-<h3 class="section"><span>10.1 Annotations Not Persisting<a class="copiable-link" href="#Annotations-Not-Persisting"> &para;</a></span></h3>
+<h3 class="section"><span>13.1 Annotations Not Persisting<a class="copiable-link" href="#Annotations-Not-Persisting"> &para;</a></span></h3>
 
 <p>If your annotations aren&rsquo;t being saved between sessions:
 </p>
@@ -636,49 +1419,112 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 </li><li>Ensure annotation mode is properly enabled
 </li><li>Verify that hooks are installed correctly
 </li><li>Check file permissions on the storage directory
+</li><li>Look for error messages in the <code class="code">*Messages*</code> buffer
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Display-Issues">
+<h3 class="section"><span>13.2 Display Issues<a class="copiable-link" href="#Display-Issues"> &para;</a></span></h3>
+
+<ul class="mini-toc">
+<li><a href="#Highlighting-Not-Visible" accesskey="1">Highlighting Not Visible</a></li>
+<li><a href="#Fringe-Indicators-Not-Showing" accesskey="2">Fringe Indicators Not Showing</a></li>
+</ul>
+<div class="subsection-level-extent" id="Highlighting-Not-Visible">
+<h4 class="subsection"><span>13.2.1 Highlighting Not Visible<a class="copiable-link" href="#Highlighting-Not-Visible"> &para;</a></span></h4>
+
+<ul class="itemize mark-bullet">
+<li>Customize <code class="code">simply-annotate-highlight-face</code> for your color theme
+</li><li>Check for conflicting overlays from other packages
+</li><li>Try switching to fringe mode: <code class="code">(setq simply-annotate-display-style 'fringe)</code>
+</li><li>Verify the face definition with <kbd class="kbd">M-x describe-face</kbd>
+</li></ul>
+
+</div>
+<div class="subsection-level-extent" id="Fringe-Indicators-Not-Showing">
+<h4 class="subsection"><span>13.2.2 Fringe Indicators Not Showing<a class="copiable-link" href="#Fringe-Indicators-Not-Showing"> &para;</a></span></h4>
+
+<ul class="itemize mark-bullet">
+<li>Ensure your Emacs build supports fringe bitmaps
+</li><li>Check that fringe is visible: <code class="code">(set-window-fringes nil 8 8)</code>
+</li><li>Try a different fringe indicator: <code class="code">(setq simply-annotate-fringe-indicator 'left-triangle)</code>
+</li><li>Verify fringe face colors are visible against your theme
+</li></ul>
+
+</div>
+</div>
+<div class="section-level-extent" id="Smart-Action-Issues">
+<h3 class="section"><span>13.3 Smart Action Issues<a class="copiable-link" href="#Smart-Action-Issues"> &para;</a></span></h3>
+
+<ul class="itemize mark-bullet">
+<li>Remember the command is context-sensitive - behavior changes based on region selection and cursor position
+</li><li>Use <kbd class="kbd">C-u M-s j</kbd> to force edit mode on existing annotations
+</li><li>Check if you&rsquo;re properly positioned on annotated text (especially in fringe mode)
+</li><li>Verify the annotation buffer is responding to <kbd class="kbd">C-c C-c</kbd> and <kbd class="kbd">C-c C-k</kbd>
 </li></ul>
 
 </div>
 <div class="section-level-extent" id="Performance-with-Large-Files">
-<h3 class="section"><span>10.2 Performance with Large Files<a class="copiable-link" href="#Performance-with-Large-Files"> &para;</a></span></h3>
+<h3 class="section"><span>13.4 Performance with Large Files<a class="copiable-link" href="#Performance-with-Large-Files"> &para;</a></span></h3>
 
 <p>Simply Annotate is designed to be lightweight:
 </p>
 <ul class="itemize mark-bullet">
 <li>Annotations use lightweight overlays
 </li><li>No performance impact on file operations
+</li><li>Fringe mode generally has better performance than highlight mode
 </li><li>Consider splitting very large annotation sets across multiple files
 </li></ul>
 
 </div>
 <div class="section-level-extent" id="Integration-Issues">
-<h3 class="section"><span>10.3 Integration Issues<a class="copiable-link" href="#Integration-Issues"> &para;</a></span></h3>
+<h3 class="section"><span>13.5 Integration Issues<a class="copiable-link" href="#Integration-Issues"> &para;</a></span></h3>
 
 <ul class="itemize mark-bullet">
 <li>Annotations work with most major modes
 </li><li>Compatible with <code class="code">lsp-mode</code>, <code class="code">flycheck</code>, and other packages
 </li><li>May need customization for exotic display modes
-</li><li>Check for conflicting key bindings
+</li><li>Check for conflicting key bindings with <kbd class="kbd">C-h k</kbd>
+</li><li>Fringe indicators work well with line number modes
 </li></ul>
 
 </div>
 <div class="section-level-extent" id="Common-Error-Messages">
-<h3 class="section"><span>10.4 Common Error Messages<a class="copiable-link" href="#Common-Error-Messages"> &para;</a></span></h3>
+<h3 class="section"><span>13.6 Common Error Messages<a class="copiable-link" href="#Common-Error-Messages"> &para;</a></span></h3>
 
 <dl class="table">
 <dt><strong class="strong">&quot;No annotation at point&quot;</strong></dt>
 <dd><p>You&rsquo;re trying to edit or remove an annotation, but the cursor isn&rsquo;t
-positioned on annotated text.
+positioned on annotated text. In fringe mode, make sure you&rsquo;re on the correct line.
 </p>
 </dd>
 <dt><strong class="strong">&quot;Annotation cancelled/removed&quot;</strong></dt>
 <dd><p>You saved an empty annotation, which automatically removes it.
 </p>
 </dd>
+<dt><strong class="strong">&quot;No annotations in buffer&quot;</strong></dt>
+<dd><p>The current buffer has no annotations to navigate or list.
+</p>
+</dd>
+<dt><strong class="strong">&quot;No annotations database found&quot;</strong></dt>
+<dd><p>No annotation file exists yet. Create your first annotation to initialize the database.
+</p>
+</dd>
 <dt><strong class="strong">Database file errors</strong></dt>
 <dd><p>Check permissions and disk space for the storage file location.
 </p></dd>
 </dl>
+
+</div>
+<div class="section-level-extent" id="Getting-Help">
+<h3 class="section"><span>13.7 Getting Help<a class="copiable-link" href="#Getting-Help"> &para;</a></span></h3>
+
+<ul class="itemize mark-bullet">
+<li>Use <kbd class="kbd">C-h k</kbd> followed by a key binding to see what command it runs
+</li><li>Check the <code class="code">*Messages*</code> buffer for error messages
+</li><li>Use <kbd class="kbd">M-x describe-mode</kbd> in an annotation buffer for mode-specific help
+</li><li>The header-line always shows available commands and current status
+</li></ul>
 
 <hr>
 </div>
@@ -695,15 +1541,24 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Function-Index_fn_letter-S">S</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dadd_002dannotation_002dtag"><code>simply-annotate-add-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcancel_002dedit"><code>simply-annotate-cancel-edit</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dchange_002dannotation_002dauthor"><code>simply-annotate-change-annotation-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"><code>simply-annotate-cycle-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"><code>simply-annotate-export-to-org-file</code></a></td><td class="printindex-index-section"><a href="#Org_002dmode-Integration">Org-mode Integration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist"><code>simply-annotate-list</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmode"><code>simply-annotate-mode</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dnext"><code>simply-annotate-next</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprevious"><code>simply-annotate-previous</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove"><code>simply-annotate-remove</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreply_002dto_002dannotation"><code>simply-annotate-reply-to-annotation</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreset_002dsession_002dauthor"><code>simply-annotate-reset-session-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsave_002dannotation_002dbuffer"><code>simply-annotate-save-annotation-buffer</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dpriority"><code>simply-annotate-set-annotation-priority</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dstatus"><code>simply-annotate-set-annotation-status</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow"><code>simply-annotate-show</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow_002dall"><code>simply-annotate-show-all</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsmart_002daction"><code>simply-annotate-smart-action</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 </table>
 </div>
@@ -722,14 +1577,27 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Variable-Index_vr_letter-S">S</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight-1"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname-1"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle-1"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle-2"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfile"><code>simply-annotate-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfile-1"><code>simply-annotate-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface-1"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface-2"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-1"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-2"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface-1"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 </table>
 </div>
@@ -743,6 +1611,81 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 </div>
 <h2 class="unnumbered" id="Concept-Index-1"><span>Concept Index<a class="copiable-link" href="#Concept-Index-1"> &para;</a></span></h2>
 
+<div class="printindex cp-printindex">
+<table class="cp-letters-header-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Concept-Index_cp_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-H"><b>H</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-O"><b>O</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-T"><b>T</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+<table class="cp-entries-printindex">
+<tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-A">A</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-authors">authors</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-C">C</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-collaboration">collaboration</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-conversations">conversations</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-H">H</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-header_002dline">header-line</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-O">O</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-organization">organization</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-P">P</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-priority">priority</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-R">R</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-replies">replies</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-S">S</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-status">status</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-status-display">status display</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-T">T</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-tags">tags</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-team">team</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-threading">threading</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-W">W</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-workflow">workflow</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+</table>
+<table class="cp-letters-footer-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Concept-Index_cp_letter-A"><b>A</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-C"><b>C</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-H"><b>H</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-O"><b>O</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-P"><b>P</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-R"><b>R</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-S"><b>S</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-T"><b>T</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-W"><b>W</b></a>
+ &nbsp; 
+</td></tr></table>
+</div>
 
 </div>
 </div>
