@@ -712,17 +712,17 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
         (if (simply-annotate-is-thread-p annotation-data)
             ;; Thread display
             (progn
-              (insert (propertize
-                       commands
-                       'face 'italic))
+              ;; (insert (propertize
+              ;;          commands
+              ;;          'face 'italic))
               (insert (make-string (1- (length commands)) ?-) "\n")
               (setq simply-annotate-header-end-pos (point))
               (insert (simply-annotate-format-thread-full annotation-data)))
           ;; Simple string display (original behavior)
           (progn
-            (insert (propertize
-                     commands
-                     'face 'italic))
+            ;; (insert (propertize
+            ;;          commands
+            ;;          'face 'italic))
             (insert (make-string (1- (length commands)) ?-) "\n")
             (setq simply-annotate-header-end-pos (point))
             (insert (simply-annotate-get-annotation-text annotation-data))))
@@ -869,38 +869,39 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-format-header (&optional text)
   "Enhanced header format that shows thread information."
   (let ((count (length simply-annotate-overlays)))
-    (concat
-     ;; Annotation count: e.g., " [1/5] "
-     (propertize (format " ANNOTATION %s/%d"
-                         (if-let ((overlay (simply-annotate-overlay-at-point)))
-                             (simply-annotate-get-annotation-number overlay)
-                           "")
-                         count)
-                 'face '(bold :height 0.9 :box nil))
-     " " ; Separator
+    (when (> count 0)
+      (concat
+       ;; Annotation count: e.g., " [1/5] "
+       (propertize (format " ANNOTATION %s/%d"
+                           (if-let ((overlay (simply-annotate-overlay-at-point)))
+                               (simply-annotate-get-annotation-number overlay)
+                             "")
+                           count)
+                   'face '(bold :height 0.9 :box nil))
+       " " ; Separator
 
-     ;; Thread status info (conditional): e.g., "[O/N:3] " (Open/Normal:3 comments)
-     (if-let* ((overlay (simply-annotate-overlay-at-point))
-               (annotation-data (overlay-get overlay 'simply-annotation))
-               (thread (and (simply-annotate-is-thread-p annotation-data) annotation-data)))
-         (let ((status (alist-get 'status thread))
-               (priority (alist-get 'priority thread))
-               (comment-count (length (alist-get 'comments thread))))
-           (propertize
-            (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
-            'face '(:height 0.9))
-           )
-       "") ; Empty string if no thread status
+       ;; Thread status info (conditional): e.g., "[O/N:3] " (Open/Normal:3 comments)
+       (if-let* ((overlay (simply-annotate-overlay-at-point))
+                 (annotation-data (overlay-get overlay 'simply-annotation))
+                 (thread (and (simply-annotate-is-thread-p annotation-data) annotation-data)))
+           (let ((status (alist-get 'status thread))
+                 (priority (alist-get 'priority thread))
+                 (comment-count (length (alist-get 'comments thread))))
+             (propertize
+              (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
+              'face '(:height 0.9))
+             )
+         "") ; Empty string if no thread status
 
-     ;; Optional custom text (e.g., "EDITING")
-     (if text (concat text " ") "")
+       ;; Optional custom text (e.g., "EDITING")
+       (if text (concat text " ") "")
 
-     ;; Keybinding hints: "n p" for M-n/M-p, then "|" separator, then "j r s - a l p t o ]" for M-s commands
-     ;; This is the most compact representation using just the key characters.
-     (propertize " M- " 'face '(bold :height 0.9 :box t))
-     (propertize " n p " 'face '(:height 0.9)) ; Navigation: M-n (Next), M-p (Previous)
-     (propertize " M-s " 'face '(bold :height 0.9 :box t))
-     (propertize " j r s - a l p t o ]" 'face '(:height 0.9 :box nil)))))
+       ;; Keybinding hints: "n p" for M-n/M-p, then "|" separator, then "j r s - a l p t o ]" for M-s commands
+       ;; This is the most compact representation using just the key characters.
+       (propertize " M- " 'face '(bold :height 0.9 :box t))
+       (propertize " n p " 'face '(:height 0.9)) ; Navigation: M-n (Next), M-p (Previous)
+       (propertize " M-s " 'face '(bold :height 0.9 :box t))
+       (propertize " j r s - a l p t o ]" 'face '(:height 0.9 :box nil))))))
 
 (defun simply-annotate-update-header (&optional text)
   "Enhanced header update that handles threading information."
@@ -1053,7 +1054,7 @@ Optional argument WRAP ."
               (pop-to-buffer (simply-annotate-get-annotation-buffer))
               ;; Enter edit mode immediately
               (goto-char simply-annotate-header-end-pos)
-              (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel)")))
+              (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
         
         ;; Create new annotation with author selection
         (let ((draft-overlay (simply-annotate-create-overlay start end "")))
@@ -1068,7 +1069,7 @@ Optional argument WRAP ."
           
           ;; Enter edit mode immediately
           (goto-char simply-annotate-header-end-pos)
-          (message "Enter annotation text (C-c C-c to save, C-c C-k to cancel)")))
+          (message "Enter annotation text (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
       
       (deactivate-mark)))
    
