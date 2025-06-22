@@ -519,7 +519,7 @@ Optional argument POS specifies the line to check (defaults to current point)."
          (comment-count (length comments))
          (first-comment (car comments))
          (preview (truncate-string-to-width 
-                  (alist-get 'text first-comment) 40 nil nil "...")))
+                   (alist-get 'text first-comment) 40 nil nil "...")))
     (format "[%s/%s] %s (%d comment%s)"
             (upcase status)
             (upcase priority)
@@ -815,11 +815,11 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
               (simply-annotate-update-header "SAVED")
               (simply-annotate-hide-annotation-buffer)
               (when (use-region-p) (deactivate-mark)))
-        
-        (let ((author (if (simply-annotate-is-thread-p final-data)
-                          (alist-get 'author (car (alist-get 'comments final-data)))
-                        simply-annotate-default-author)))
-          (message "Annotation saved by %s" author))))))))
+            
+            (let ((author (if (simply-annotate-is-thread-p final-data)
+                              (alist-get 'author (car (alist-get 'comments final-data)))
+                            simply-annotate-default-author)))
+              (message "Annotation saved by %s" author))))))))
 
 (defun simply-annotate-cancel-edit ()
   "Cancel editing and restore read-only mode."
@@ -869,35 +869,38 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-format-header (&optional text)
   "Enhanced header format that shows thread information."
   (let ((count (length simply-annotate-overlays)))
-    (when (> count 0)
-      (let* ((overlay (simply-annotate-overlay-at-point))
-             (annotation-data (when overlay (overlay-get overlay 'simply-annotation)))
-             (status-info (when (and overlay (simply-annotate-is-thread-p annotation-data))
-                            (let* ((thread annotation-data)
-                                   (status (alist-get 'status thread))
-                                   (priority (alist-get 'priority thread))
-                                   (comment-count (length (alist-get 'comments thread))))
-                              (format "[%s/%s:%d]" 
-                                      (upcase status) 
-                                      (upcase priority)
-                                      comment-count)))))
-        (propertize
-         (concat
-          (propertize
-           (format " %s/%d"
-                   (if overlay
-                       (simply-annotate-get-annotation-number overlay)
-                     "")
-                   count)
-           'face '(:box t :height 0.8))
-          ;; (or status-info " ")
-          (if text (concat text " ") " ")
-          (format "%s %s %s %s"
-                  (propertize "M-" 'face '(:box t :height 0.8))
-                  (propertize "Prev(p) Next(n)" 'face '(bold :height 0.8))
-                  (propertize "M-s" 'face '(:box t :height 0.8))
-                  (propertize "Act(j) Rep(r) Sta(s) Del(-) Aut(a) Lis(l) Pri(p) Tag(t) Org(o) Cyc(])" 'face '(bold :height 0.8))))
-         'face '(:height 0.8))))))
+    (concat
+     ;; Annotation count: e.g., " [1/5] "
+     (propertize (format " ANNOTATION %s/%d "
+                         (if-let ((overlay (simply-annotate-overlay-at-point)))
+                             (simply-annotate-get-annotation-number overlay)
+                           "")
+                         count)
+                 'face '(bold :height 0.9 :box t))
+     " " ; Separator
+
+     ;; Thread status info (conditional): e.g., "[O/N:3] " (Open/Normal:3 comments)
+     (if-let* ((overlay (simply-annotate-overlay-at-point))
+               (annotation-data (overlay-get overlay 'simply-annotation))
+               (thread (and (simply-annotate-is-thread-p annotation-data) annotation-data)))
+         (let ((status (alist-get 'status thread))
+               (priority (alist-get 'priority thread))
+               (comment-count (length (alist-get 'comments thread))))
+           (propertize
+            (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
+            'face '(:height 0.9))
+           )
+       "") ; Empty string if no thread status
+
+     ;; Optional custom text (e.g., "EDITING")
+     (if text (concat text " ") "")
+
+     ;; Keybinding hints: "n p" for M-n/M-p, then "|" separator, then "j r s - a l p t o ]" for M-s commands
+     ;; This is the most compact representation using just the key characters.
+     (propertize " M- " 'face '(bold :height 0.9 :box t))
+     (propertize " n p " 'face '(:height 0.9)) ; Navigation: M-n (Next), M-p (Previous)
+     (propertize " M-s " 'face '(bold :height 0.9 :box t))
+     (propertize " j r s - a l p t o ]" 'face '(:height 0.9 :box nil)))))
 
 (defun simply-annotate-update-header (&optional text)
   "Enhanced header update that handles threading information."
