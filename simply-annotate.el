@@ -871,12 +871,12 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
   (let ((count (length simply-annotate-overlays)))
     (concat
      ;; Annotation count: e.g., " [1/5] "
-     (propertize (format " ANNOTATION %s/%d "
+     (propertize (format " ANNOTATION %s/%d"
                          (if-let ((overlay (simply-annotate-overlay-at-point)))
                              (simply-annotate-get-annotation-number overlay)
                            "")
                          count)
-                 'face '(bold :height 0.9 :box t))
+                 'face '(bold :height 0.9 :box nil))
      " " ; Separator
 
      ;; Thread status info (conditional): e.g., "[O/N:3] " (Open/Normal:3 comments)
