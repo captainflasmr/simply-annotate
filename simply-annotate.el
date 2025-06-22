@@ -1006,17 +1006,29 @@ Optional argument WRAP ."
 (defun simply-annotate-next ()
   "Navigate to next annotation."
   (interactive)
-  (if-let ((next-overlay (simply-annotate-find-annotation t t)))
-      (simply-annotate--navigate-to-overlay next-overlay)
-    (message "No annotations in buffer")))
+  (let ((source-buffer (if (string= (buffer-name) simply-annotate-buffer-name)
+                           simply-annotate-source-buffer
+                         (current-buffer))))
+    (if (and source-buffer (buffer-live-p source-buffer))
+        (with-current-buffer source-buffer
+          (if-let ((next-overlay (simply-annotate-find-annotation t t)))
+              (simply-annotate--navigate-to-overlay next-overlay)
+            (message "No more annotations in buffer")))
+      (message "Source buffer not available"))))
 
 ;;;###autoload
 (defun simply-annotate-previous ()
   "Navigate to previous annotation."
   (interactive)
-  (if-let ((prev-overlay (simply-annotate-find-annotation nil t)))
-      (simply-annotate--navigate-to-overlay prev-overlay)
-    (message "No annotations in buffer")))
+  (let ((source-buffer (if (string= (buffer-name) simply-annotate-buffer-name)
+                           simply-annotate-source-buffer
+                         (current-buffer))))
+    (if (and source-buffer (buffer-live-p source-buffer))
+        (with-current-buffer source-buffer
+          (if-let ((prev-overlay (simply-annotate-find-annotation nil t)))
+              (simply-annotate--navigate-to-overlay prev-overlay)
+            (message "No more annotations in buffer")))
+      (message "Source buffer not available"))))
 
 ;;; Interactive Commands
 
@@ -1577,6 +1589,8 @@ Optional argument WRAP ."
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
+    (define-key map (kbd "M-p") #'simply-annotate-previous)
+    (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
   "Keymap for simply-annotate annotation buffer.")
 
