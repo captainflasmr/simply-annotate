@@ -718,7 +718,7 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
             ;; Thread display
             (progn
               (insert (propertize
-                       "Commands: C-c C-c (save) C-c C-k (cancel) C-c r (reply) C-c s (status) C-c p (priority) C-c t (tag)\n"
+                       "Commands: C-c C-c (save) C-c C-k (cancel) M-s r (reply) M-s s (status) M-s p (priority) M-s t (tag)\n"
                        'face 'italic))
               (insert (make-string 80 ?-) "\n")
               (setq simply-annotate-header-end-pos (point))
@@ -1131,78 +1131,109 @@ Optional argument WRAP ."
 (defun simply-annotate-reply-to-annotation ()
   "Enhanced reply function with author selection."
   (interactive)
-  (if-let ((overlay (simply-annotate-overlay-at-point)))
-      (let* ((current-data (overlay-get overlay 'simply-annotation))
-             (thread (if (simply-annotate-is-thread-p current-data) 
-                        current-data  ; Already a thread
-                      (simply-annotate-create-thread-with-author current-data)))
-             (reply-text (read-string "Reply: " nil nil nil t)))
-        (when (and reply-text (not (string-empty-p reply-text)))
-          (simply-annotate-add-reply-with-author thread reply-text)
+  (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
+                     simply-annotate-current-overlay
+                   (simply-annotate-overlay-at-point))))
+    (if overlay
+        (let* ((current-data (overlay-get overlay 'simply-annotation))
+               (thread (if (simply-annotate-is-thread-p current-data) 
+                           current-data  ; Already a thread
+                         (simply-annotate-create-thread-with-author current-data)))
+               (reply-text (read-string "Reply: " nil nil nil t)))
+          (when (and reply-text (not (string-empty-p reply-text)))
+            (simply-annotate-add-reply-with-author thread reply-text)
+            (overlay-put overlay 'simply-annotation thread)
+            (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
+            (simply-annotate-save-annotations)
+            (simply-annotate-update-header "REPLY ADDED")
+            
+            ;; If annotation buffer is open, refresh it
+            (when (get-buffer-window simply-annotate-buffer-name)
+              (simply-annotate-update-annotation-buffer thread overlay)
+              (simply-annotate-show-annotation-buffer))
+            
+            (let ((author (alist-get 'author (car (last (alist-get 'comments thread))))))
+              (message "Reply added by %s" author))))
+      (message "No annotation at point"))))
+
+(defun simply-annotate-set-annotation-status ()
+  "Set the status of annotation at point."
+  (interactive)
+  (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
+                     simply-annotate-current-overlay
+                   (simply-annotate-overlay-at-point))))
+    (if overlay
+        (let* ((current-data (overlay-get overlay 'simply-annotation))
+               (thread (if (simply-annotate-is-thread-p current-data)
+                           current-data
+                         (simply-annotate-create-thread-with-author current-data)))
+               (status (completing-read "Status: " simply-annotate-thread-statuses)))
+          (simply-annotate-set-thread-status thread status)
           (overlay-put overlay 'simply-annotation thread)
           (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
           (simply-annotate-save-annotations)
-          (simply-annotate-update-header "REPLY ADDED")
+          (simply-annotate-update-header)
           
           ;; If annotation buffer is open, refresh it
           (when (get-buffer-window simply-annotate-buffer-name)
             (simply-annotate-update-annotation-buffer thread overlay)
             (simply-annotate-show-annotation-buffer))
-          
-          (let ((author (alist-get 'author (car (last (alist-get 'comments thread))))))
-            (message "Reply added by %s" author))))
-    (message "No annotation at point")))
 
-(defun simply-annotate-set-annotation-status ()
-  "Set the status of annotation at point."
-  (interactive)
-  (if-let ((overlay (simply-annotate-overlay-at-point)))
-      (let* ((current-data (overlay-get overlay 'simply-annotation))
-             (thread (if (simply-annotate-is-thread-p current-data)
-                        current-data
-                      (simply-annotate-create-thread-with-author current-data)))
-             (status (completing-read "Status: " simply-annotate-thread-statuses)))
-        (simply-annotate-set-thread-status thread status)
-        (overlay-put overlay 'simply-annotation thread)
-        (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
-        (simply-annotate-save-annotations)
-        (simply-annotate-update-header)
-        (message "Status set to: %s" status))
-    (message "No annotation at point")))
+          (message "Status set to: %s" status))
+      (message "No annotation at point"))))
 
 (defun simply-annotate-set-annotation-priority ()
   "Set the priority of annotation at point."
   (interactive)
-  (if-let ((overlay (simply-annotate-overlay-at-point)))
-      (let* ((current-data (overlay-get overlay 'simply-annotation))
-             (thread (if (simply-annotate-is-thread-p current-data)
-                        current-data
-                      (simply-annotate-create-thread-with-author current-data)))
-             (priority (completing-read "Priority: " simply-annotate-priority-levels)))
-        (simply-annotate-set-thread-priority thread priority)
-        (overlay-put overlay 'simply-annotation thread)
-        (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
-        (simply-annotate-save-annotations)
-        (simply-annotate-update-header)
-        (message "Priority set to: %s" priority))
-    (message "No annotation at point")))
+  (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
+                     simply-annotate-current-overlay
+                   (simply-annotate-overlay-at-point))))
+    (if overlay
+        (let* ((current-data (overlay-get overlay 'simply-annotation))
+               (thread (if (simply-annotate-is-thread-p current-data)
+                           current-data
+                         (simply-annotate-create-thread-with-author current-data)))
+               (priority (completing-read "Priority: " simply-annotate-priority-levels)))
+          (simply-annotate-set-thread-priority thread priority)
+          (overlay-put overlay 'simply-annotation thread)
+          (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
+          (simply-annotate-save-annotations)
+          (simply-annotate-update-header)
+
+          ;; If annotation buffer is open, refresh it
+          (when (get-buffer-window simply-annotate-buffer-name)
+            (simply-annotate-update-annotation-buffer thread overlay)
+            (simply-annotate-show-annotation-buffer))
+
+          (message "Priority set to: %s" priority))
+      (message "No annotation at point"))))
 
 (defun simply-annotate-add-annotation-tag ()
   "Add a tag to annotation at point."
   (interactive)
-  (if-let ((overlay (simply-annotate-overlay-at-point)))
-      (let* ((current-data (overlay-get overlay 'simply-annotation))
-             (thread (if (simply-annotate-is-thread-p current-data)
-                        current-data
-                      (simply-annotate-create-thread-with-author current-data)))
-             (tag (read-string "Tag: ")))
-        (when (not (string-empty-p tag))
-          (simply-annotate-add-thread-tag thread tag)
-          (overlay-put overlay 'simply-annotation thread)
-          (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
-          (simply-annotate-save-annotations)
-          (message "Tag '%s' added" tag)))
-    (message "No annotation at point")))
+  (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
+                     simply-annotate-current-overlay
+                   (simply-annotate-overlay-at-point))))
+    (if overlay
+        (let* ((current-data (overlay-get overlay 'simply-annotation))
+               (thread (if (simply-annotate-is-thread-p current-data)
+                           current-data
+                         (simply-annotate-create-thread-with-author current-data)))
+               (tag (read-string "Tag: ")))
+          (when (not (string-empty-p tag))
+            (simply-annotate-add-thread-tag thread tag)
+            (overlay-put overlay 'simply-annotation thread)
+            (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
+            (simply-annotate-save-annotations)
+            (simply-annotate-update-header)
+
+            ;; If annotation buffer is open, refresh it
+            (when (get-buffer-window simply-annotate-buffer-name)
+              (simply-annotate-update-annotation-buffer thread overlay)
+              (simply-annotate-show-annotation-buffer))
+            
+            (message "Tag '%s' added" tag)))
+      (message "No annotation at point"))))
 
 (defun simply-annotate-change-annotation-author ()
   "Change the author of the current annotation or specific comment in a thread."
@@ -1541,11 +1572,11 @@ Optional argument WRAP ."
     (define-key map (kbd "C-c C-c") #'simply-annotate-save-annotation-buffer)
     (define-key map (kbd "C-c C-k") #'simply-annotate-cancel-edit)
     (define-key map (kbd "C-g") #'simply-annotate-cancel-edit)
-    (define-key map (kbd "C-c r") #'simply-annotate-reply-to-annotation)
-    (define-key map (kbd "C-c s") #'simply-annotate-set-annotation-status)
-    (define-key map (kbd "C-c p") #'simply-annotate-set-annotation-priority)
-    (define-key map (kbd "C-c t") #'simply-annotate-add-annotation-tag)
-    (define-key map (kbd "C-c o") #'simply-annotate-export-to-org-file)
+    (define-key map (kbd "M-s r") #'simply-annotate-reply-to-annotation)
+    (define-key map (kbd "M-s s") #'simply-annotate-set-annotation-status)
+    (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
+    (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
+    (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     map)
   "Keymap for simply-annotate annotation buffer.")
 
