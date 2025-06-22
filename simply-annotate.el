@@ -631,12 +631,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
     (let ((file-key (simply-annotate-file-key)))
       (setf (alist-get file-key simply-annotate-file-authors nil nil #'string=) author))))
 
-(defun simply-annotate-reset-session-author ()
-  "Reset the session author (useful when switching contexts)."
-  (interactive)
-  (setq simply-annotate-session-author nil)
-  (message "Session author reset. Next annotation will prompt for author."))
-
 ;;; Serialization Functions
 
 (defun simply-annotate-serialize-annotations ()
@@ -883,25 +877,27 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
                                    (status (alist-get 'status thread))
                                    (priority (alist-get 'priority thread))
                                    (comment-count (length (alist-get 'comments thread))))
-                              (format " [%s/%s:%d] " 
+                              (format "[%s/%s:%d]" 
                                       (upcase status) 
                                       (upcase priority)
                                       comment-count)))))
-        (concat
-         (propertize
-          (format " %s/%d "
-                  (if overlay
-                      (simply-annotate-get-annotation-number overlay)
-                    "")
-                  count)
-          'face '(:box t))
-         (or status-info " ")
-         (if text (concat text " ") " ")
-         (format "%s %s %s %s"
-                 (propertize " M- " 'face '(:box t))
-                 (propertize "Prev(p) Next(n)" 'face 'bold)
-                 (propertize " M-s " 'face '(:box t))
-                 (propertize "Action(j) Reply(r) Status(s) Delete(-) List(l)" 'face 'bold)))))))
+        (propertize
+         (concat
+          (propertize
+           (format " %s/%d"
+                   (if overlay
+                       (simply-annotate-get-annotation-number overlay)
+                     "")
+                   count)
+           'face '(:box t :height 0.8))
+          ;; (or status-info " ")
+          (if text (concat text " ") " ")
+          (format "%s %s %s %s"
+                  (propertize "M-" 'face '(:box t :height 0.8))
+                  (propertize "Prev(p) Next(n)" 'face '(bold :height 0.8))
+                  (propertize "M-s" 'face '(:box t :height 0.8))
+                  (propertize "Act(j) Rep(r) Sta(s) Del(-) Aut(a) Lis(l) Pri(p) Tag(t) Org(o) Cyc(])" 'face '(bold :height 0.8))))
+         'face '(:height 0.8))))))
 
 (defun simply-annotate-update-header (&optional text)
   "Enhanced header update that handles threading information."
@@ -1603,16 +1599,17 @@ Optional argument WRAP ."
 
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "M-s -") #'simply-annotate-remove)
-    (define-key map (kbd "M-s l") #'simply-annotate-list)
-    (define-key map (kbd "M-s 0") #'simply-annotate-show-all)
     (define-key map (kbd "M-s j") #'simply-annotate-smart-action)
     (define-key map (kbd "M-s r") #'simply-annotate-reply-to-annotation)
     (define-key map (kbd "M-s s") #'simply-annotate-set-annotation-status)
+    (define-key map (kbd "M-s -") #'simply-annotate-remove)
+    (define-key map (kbd "M-s a") #'simply-annotate-change-annotation-author)
+    (define-key map (kbd "M-s l") #'simply-annotate-list)
+    
+    (define-key map (kbd "M-s 0") #'simply-annotate-show-all)
+    
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
-    (define-key map (kbd "M-s a") #'simply-annotate-change-annotation-author)
-    (define-key map (kbd "M-s A") #'simply-annotate-reset-session-author)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s ]") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
