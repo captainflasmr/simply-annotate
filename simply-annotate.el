@@ -708,7 +708,8 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-update-annotation-buffer (annotation-data overlay)
   "Update annotation buffer with compatibility for threads and strings."
   (let ((buffer (simply-annotate-get-annotation-buffer))
-        (source-buf (current-buffer)))
+        (source-buf (current-buffer))
+        (commands "Commands: C-c C-c (save) C-c C-k (cancel), C-g to quit\n"))
     
     (with-current-buffer buffer
       (let ((inhibit-read-only t))
@@ -718,17 +719,17 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
             ;; Thread display
             (progn
               (insert (propertize
-                       "Commands: C-c C-c (save) C-c C-k (cancel) M-s r (reply) M-s s (status) M-s p (priority) M-s t (tag)\n"
+                       commands
                        'face 'italic))
-              (insert (make-string 80 ?-) "\n")
+              (insert (make-string (1- (length commands)) ?-) "\n")
               (setq simply-annotate-header-end-pos (point))
               (insert (simply-annotate-format-thread-full annotation-data)))
           ;; Simple string display (original behavior)
           (progn
             (insert (propertize
-                     "Press C-c C-c to save changes, C-c C-k to cancel, C-g to quit\n"
+                     commands
                      'face 'italic))
-            (insert (make-string 61 ?-) "\n")
+            (insert (make-string (1- (length commands)) ?-) "\n")
             (setq simply-annotate-header-end-pos (point))
             (insert (simply-annotate-get-annotation-text annotation-data))))
         
