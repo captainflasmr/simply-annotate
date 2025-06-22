@@ -99,7 +99,7 @@
   :type 'float
   :group 'simply-annotate)
 
-(defcustom simply-annotate-display-style 'both
+(defcustom simply-annotate-display-style 'fringe
   "How to display annotated text.
 - 'highlight: Highlight the annotated text (default behavior)
 - 'fringe: Show indicators in the fringe
