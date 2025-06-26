@@ -212,28 +212,28 @@ When enabled, the package remembers the last author used for each file."
 (defvar simply-annotate-mode nil
   "Non-nil if Simply-Annotate mode is enabled.")
 
-(defvar-local simply-annotate-draft-overlay nil
+(defvar simply-annotate-draft-overlay nil
   "Overlay for draft annotation being created.")
 
-(defvar-local simply-annotate-overlays nil
+(defvar simply-annotate-overlays nil
   "List of annotation overlays in current buffer.")
 
-(defvar-local simply-annotate-original-header-line nil
+(defvar simply-annotate-original-header-line nil
   "Original `header-line-format' before annotation mode.")
 
-(defvar-local simply-annotate-current-annotation nil
+(defvar simply-annotate-current-annotation nil
   "Current annotation text being displayed in header.")
 
-(defvar-local simply-annotate-current-overlay nil
+(defvar simply-annotate-current-overlay nil
   "Current overlay being displayed/edited in annotation buffer.")
 
-(defvar-local simply-annotate-source-buffer nil
+(defvar simply-annotate-source-buffer nil
   "Source buffer for annotation display.")
 
-(defvar-local simply-annotate-header-end-pos nil
+(defvar simply-annotate-header-end-pos nil
   "Position where the annotation content starts (after header).")
 
-(defvar-local simply-annotate-editing-annotation-sexp nil
+(defvar simply-annotate-editing-annotation-sexp nil
   "Non-nil if the *Annotation* buffer is currently displaying the raw sexp for editing.")
 
 ;; Threading Variables
@@ -855,6 +855,9 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-cancel-edit ()
   "Cancel editing and restore read-only mode or clean up draft."
   (interactive)
+  ;; (prin1 simply-annotate-current-overlay)
+  ;; (prin1 simply-annotate-source-buffer)
+  ;; (revert-buffer)
   (when (and simply-annotate-current-overlay
              simply-annotate-source-buffer
              (buffer-live-p simply-annotate-source-buffer))
