@@ -45,6 +45,7 @@ for Emacs with threading and collaboration features.
 * Installation::                How to install Simply Annotate
 * Quick Start::                 Getting started quickly
 * Basic Usage::                 Creating and managing annotations
+* Advanced Editing::            Raw sexp editing and data structure control
 * Threading and Collaboration:: Replies, status, and multi-author support
 * Display Styles::              Different ways to show annotations
 * Navigation::                  Moving between annotations
@@ -81,6 +82,8 @@ and documentation and includes threading and collaboration features.
      critical)
    • *Tag system*: Categorize with hashtags (‘#review’, ‘#bug’,
      ‘#question’)
+   • *Raw sexp editing*: Direct access to annotation data structures for
+     power users
    • *Multiple display styles*: Choose between highlighting, fringe
      indicators, or both
    • *Smart action*: Context-aware command that adapts to the situation
@@ -135,10 +138,11 @@ Here's how to get started with Simply Annotate:
   6. Press ‘M-s ]’ to cycle through different display styles
   7. Press ‘M-s r’ to add a reply to any annotation
   8. Press ‘M-s s’ to set status (open, resolved, etc.)
-  9. Press ‘M-s o’ to export annotations to org-mode
+  9. Press ‘M-s e’ to edit annotation data structure directly
+  10. Press ‘M-s o’ to export annotations to org-mode
 
 
-File: simply-annotate.info,  Node: Basic Usage,  Next: Threading and Collaboration,  Prev: Quick Start,  Up: Top
+File: simply-annotate.info,  Node: Basic Usage,  Next: Advanced Editing,  Prev: Quick Start,  Up: Top
 
 4 Basic Usage
 *************
@@ -228,21 +232,129 @@ To remove an annotation:
 save with ‘C-c C-c’ to remove it.
 
 
-File: simply-annotate.info,  Node: Threading and Collaboration,  Next: Display Styles,  Prev: Basic Usage,  Up: Top
+File: simply-annotate.info,  Node: Advanced Editing,  Next: Threading and Collaboration,  Prev: Basic Usage,  Up: Top
 
-5 Threading and Collaboration
+5 Advanced Editing
+******************
+
+5.1 Raw Sexp Editing
+====================
+
+For complete control over annotation data structures, Simply Annotate
+provides raw sexp editing capabilities.  This allows power users to
+directly manipulate the underlying Elisp data structure that stores
+annotation information.
+
+5.1.1 Entering Sexp Edit Mode
+-----------------------------
+
+To edit an annotation's raw data structure:
+
+  1. Place cursor on any annotation
+  2. Press ‘M-s e’ to open the raw sexp editor
+  3. Edit the Elisp data structure directly
+  4. Save with ‘C-c C-c’ or cancel with ‘C-c C-k’
+
+5.1.2 Sexp Structure
+--------------------
+
+Annotations are stored as Elisp association lists with the following
+structure:
+
+     ((id . "thread-123456")
+      (created . "2025-06-29T10:30:00")
+      (status . "open")
+      (priority . "high")
+      (tags . ("bug" "critical"))
+      (comments . (((author . "John Doe")
+                    (timestamp . "2025-06-29T10:30:00")
+                    (text . "Found a critical bug here")
+                    (type . "comment"))
+                   ((author . "Jane Smith")
+                    (timestamp . "2025-06-29T11:15:00")
+                    (text . "I can reproduce this issue")
+                    (type . "reply")))))
+
+5.1.3 Required Fields
+---------------------
+
+‘id’
+     Unique identifier for the thread (string)
+‘created’
+     ISO timestamp when thread was created
+‘status’
+     Current status (‘"open"’, ‘"in-progress"’, ‘"resolved"’,
+     ‘"closed"’)
+‘priority’
+     Priority level (‘"low"’, ‘"normal"’, ‘"high"’, ‘"critical"’)
+‘tags’
+     List of tag strings (can be empty list)
+‘comments’
+     List of comment/reply objects
+
+5.1.4 Comment Structure
+-----------------------
+
+Each comment in the ‘comments’ list must have:
+
+‘author’
+     Author name (string)
+‘timestamp’
+     ISO timestamp when comment was created
+‘text’
+     The actual comment text content
+‘type’
+     Either ‘"comment"’ (original) or ‘"reply"’
+
+5.1.5 Sexp Editing Features
+---------------------------
+
+The sexp editor provides:
+
+   • *Syntax highlighting*: Key fields and values are highlighted
+   • *Helpful comments*: Guidance about structure and valid values
+   • *Validation*: Ensures required fields are present when saving
+   • *Error handling*: Clear error messages for invalid structures
+   • *Auto-completion*: Missing fields are added with defaults
+
+5.1.6 Use Cases for Sexp Editing
+--------------------------------
+
+   • *Bulk operations*: Modify multiple comments at once
+   • *Data migration*: Copy annotation structures between files
+   • *Precision control*: Manually adjust timestamps or IDs
+   • *Complex threading*: Create reply structures not possible through
+     UI
+   • *Metadata manipulation*: Bulk change authors, statuses, or
+     priorities
+   • *Import/export*: Transform annotations for external tools
+
+5.1.7 Safety and Best Practices
+-------------------------------
+
+   • Always use ‘C-c C-k’ to cancel if unsure about changes
+   • Ensure proper Elisp syntax with balanced parentheses
+   • Use ISO timestamp format: ‘"2025-06-29T10:30:00"’
+   • Keep ‘type’ field as ‘"comment"’ or ‘"reply"’
+   • Preserve required fields (‘id’, ‘comments’, etc.)
+   • Test complex changes on a backup first
+
+
+File: simply-annotate.info,  Node: Threading and Collaboration,  Next: Display Styles,  Prev: Advanced Editing,  Up: Top
+
+6 Threading and Collaboration
 *****************************
 
 Lets create a thread!, reply and add in authors
 
-5.1 Threading System
+6.1 Threading System
 ====================
 
 Each annotation can become a threaded conversation with multiple
 replies.  This is perfect for code reviews, collaborative editing, and
 ongoing discussions about specific parts of your code or documents.
 
-5.1.1 Adding Replies
+6.1.1 Adding Replies
 --------------------
 
 To add a reply to any annotation:
@@ -252,7 +364,7 @@ To add a reply to any annotation:
   3. Enter your reply text
   4. The annotation automatically becomes a threaded conversation
 
-5.1.2 Thread Display
+6.1.2 Thread Display
 --------------------
 
 Threaded annotations are displayed with rich formatting:
@@ -266,10 +378,10 @@ Threaded annotations are displayed with rich formatting:
      │   Looks good to me, approved
      └─────
 
-5.2 Status Management
+6.2 Status Management
 =====================
 
-5.2.1 Setting Status
+6.2.1 Setting Status
 --------------------
 
 Track the lifecycle of your annotations:
@@ -281,7 +393,7 @@ Track the lifecycle of your annotations:
    The default statuses can be customized via
 ‘simply-annotate-thread-statuses’.
 
-5.2.2 Setting Priority
+6.2.2 Setting Priority
 ----------------------
 
 Organize annotations by importance:
@@ -290,7 +402,7 @@ Organize annotations by importance:
   2. Press ‘M-s p’ to set priority
   3. Choose from: ‘low’, ‘normal’, ‘high’, ‘critical’
 
-5.2.3 Adding Tags
+6.2.3 Adding Tags
 -----------------
 
 Categorize your annotations with tags:
@@ -300,10 +412,10 @@ Categorize your annotations with tags:
   3. Enter a tag like ‘review’, ‘bug’, ‘question’, etc.
   4. Tags appear as ‘#review #bug’ in the annotation display
 
-5.3 Multi-Author Support
+6.3 Multi-Author Support
 ========================
 
-5.3.1 Author Configuration
+6.3.1 Author Configuration
 --------------------------
 
 Configure team members and prompting behavior:
@@ -316,7 +428,7 @@ Configure team members and prompting behavior:
      (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt only for replies
      (setq simply-annotate-remember-author-per-file t)       ; Remember per file
 
-5.3.2 Prompting Modes
+6.3.2 Prompting Modes
 ---------------------
 
 ‘nil’
@@ -328,7 +440,7 @@ Configure team members and prompting behavior:
 ‘'threads-only’
      Prompt only when adding replies (great for code reviews)
 
-5.3.3 Author Management Commands
+6.3.3 Author Management Commands
 --------------------------------
 
 ‘M-s a’
@@ -338,10 +450,10 @@ Configure team members and prompting behavior:
      ‘simply-annotate-reset-session-author’ - Reset session author
      (forces prompt on next annotation)
 
-5.4 Collaboration Workflows
+6.4 Collaboration Workflows
 ===========================
 
-5.4.1 Code Review Workflow
+6.4.1 Code Review Workflow
 --------------------------
 
   1. *Reviewer* creates annotations on problematic code sections
@@ -354,7 +466,7 @@ Configure team members and prompting behavior:
   6. Mark as resolved with ‘M-s s’ when fixed
   7. Export final review with ‘M-s o’ to org-mode for documentation
 
-5.4.2 Document Collaboration
+6.4.2 Document Collaboration
 ----------------------------
 
   1. *Author* writes draft document
@@ -368,13 +480,13 @@ Configure team members and prompting behavior:
 
 File: simply-annotate.info,  Node: Display Styles,  Next: Navigation,  Prev: Threading and Collaboration,  Up: Top
 
-6 Display Styles
+7 Display Styles
 ****************
 
 Simply Annotate supports three different ways to display annotations,
 allowing you to choose the visual style that best fits your workflow.
 
-6.1 Available Styles
+7.1 Available Styles
 ====================
 
 ‘highlight’
@@ -386,7 +498,7 @@ allowing you to choose the visual style that best fits your workflow.
      Combines both highlighting and fringe indicators (maximum
      visibility)
 
-6.2 Changing Display Styles
+7.2 Changing Display Styles
 ===========================
 
 You can change the display style in several ways:
@@ -396,7 +508,7 @@ You can change the display style in several ways:
    • Use ‘simply-annotate-update-display-style’ to refresh existing
      annotations
 
-6.3 Style Recommendations
+7.3 Style Recommendations
 =========================
 
 *Code Review*
@@ -409,7 +521,7 @@ You can change the display style in several ways:
      All styles work well with threaded annotations and status
      indicators
 
-6.4 Fringe Customization
+7.4 Fringe Customization
 ========================
 
 The fringe display can be customized:
@@ -422,10 +534,10 @@ The fringe display can be customized:
 
 File: simply-annotate.info,  Node: Navigation,  Next: Advanced Features,  Prev: Display Styles,  Up: Top
 
-7 Navigation
+8 Navigation
 ************
 
-7.1 Moving Between Annotations
+8.1 Moving Between Annotations
 ==============================
 
 Simply Annotate provides convenient commands for navigation:
@@ -439,7 +551,7 @@ Simply Annotate provides convenient commands for navigation:
 navigate through all annotations in a buffer.  When you arrive at an
 annotation, the text is briefly highlighted with a pulse effect.
 
-7.2 Viewing Current Annotation
+8.2 Viewing Current Annotation
 ==============================
 
 When you're on an annotated region, you can:
@@ -452,7 +564,7 @@ When you're on an annotated region, you can:
      line
    • View available keybindings in the header line
 
-7.3 Smart Navigation
+8.3 Smart Navigation
 ====================
 
 The navigation commands work intelligently with different display styles
@@ -467,10 +579,10 @@ and threading:
 
 File: simply-annotate.info,  Node: Advanced Features,  Next: Org-mode Integration,  Prev: Navigation,  Up: Top
 
-8 Advanced Features
+9 Advanced Features
 *******************
 
-8.1 Listing All Annotations
+9.1 Listing All Annotations
 ===========================
 
 To see an overview of all annotations in the current buffer:
@@ -499,7 +611,7 @@ To see an overview of all annotations in the current buffer:
    • Tag display with hashtag formatting
    • Color coding for different statuses and priorities
 
-8.2 Cross-file Annotation Browsing
+9.2 Cross-file Annotation Browsing
 ==================================
 
 To browse annotations across all files:
@@ -513,7 +625,7 @@ To browse annotations across all files:
    • Color-coded status indicators
    • Author information for collaborative workflows
 
-8.3 Annotation Buffer Features
+9.3 Annotation Buffer Features
 ==============================
 
 The annotation buffer provides a rich editing environment with threading
@@ -522,13 +634,14 @@ support:
    • Shows helpful instructions with threading commands in the header
    • Displays thread information, status, and priority
    • Shows complete conversation thread with replies
-   • Access to threading commands (‘C-c r’, ‘C-c s’, ‘C-c p’, ‘C-c t’)
+   • Access to threading commands (‘M-s r’, ‘M-s s’, ‘M-s p’, ‘M-s t’)
+   • Access to advanced sexp editing with ‘M-s e’
    • Supports multi-line annotations with full editing capabilities
    • Starts in edit mode for immediate typing
    • Provides save (‘C-c C-c’) and cancel (‘C-c C-k’) operations
    • Automatically handles empty annotations (removes them)
 
-8.4 Header-line Integration
+9.4 Header-line Integration
 ===========================
 
 The header-line provides real-time information with threading support:
@@ -543,14 +656,14 @@ The header-line provides real-time information with threading support:
 
 File: simply-annotate.info,  Node: Org-mode Integration,  Next: Key Bindings,  Prev: Advanced Features,  Up: Top
 
-9 Org-mode Integration
-**********************
+10 Org-mode Integration
+***********************
 
 Simply Annotate can export annotation threads to org-mode files for
 further processing, documentation, or meeting preparation.
 
-9.1 Exporting Annotations
-=========================
+10.1 Exporting Annotations
+==========================
 
 To export current buffer annotations to org-mode:
 
@@ -565,8 +678,8 @@ with:
    • Status, priority, tags, and timestamps included
    • Author information for each comment and reply
 
-9.2 Export Format
-=================
+10.2 Export Format
+==================
 
 The exported org-mode structure looks like:
 
@@ -591,8 +704,8 @@ The exported org-mode structure looks like:
      ** Reply by Bob Wilson (2025-06-19T11:30:00)
      Security audit completed. Issues documented in SECURITY.md
 
-9.3 Use Cases for Export
-========================
+10.3 Use Cases for Export
+=========================
 
    • *Code review meetings*: Export all review comments for discussion
    • *Documentation*: Convert important annotations to permanent docs
@@ -601,8 +714,8 @@ The exported org-mode structure looks like:
    • *Knowledge base*: Build searchable knowledge from annotation
      discussions
 
-9.4 Integration with Org Workflows
-==================================
+10.4 Integration with Org Workflows
+===================================
 
 The exported files work seamlessly with:
 
@@ -615,10 +728,10 @@ The exported files work seamlessly with:
 
 File: simply-annotate.info,  Node: Key Bindings,  Next: Customization,  Prev: Org-mode Integration,  Up: Top
 
-10 Key Bindings
+11 Key Bindings
 ***************
 
-10.1 Main Mode Bindings
+11.1 Main Mode Bindings
 =======================
 
 When ‘simply-annotate-mode’ is enabled:
@@ -626,13 +739,15 @@ When ‘simply-annotate-mode’ is enabled:
 Key         Command                   Description
 ---------------------------------------------------------------------------
 ‘M-s j’     ‘simply-annotate-smart-action’Smart create/view/edit annotation
-‘M-s r’     ‘simply-annotate-reply-to-annotation’*New:* Add reply to annotation
-‘M-s s’     ‘simply-annotate-set-annotation-status’*New:* Set status (open/resolved)
-‘M-s p’     ‘simply-annotate-set-annotation-priority’*New:* Set priority (low/high)
-‘M-s t’     ‘simply-annotate-add-annotation-tag’*New:* Add tag (#review, #bug)
-‘M-s a’     ‘simply-annotate-change-annotation-author’*New:* Change author
-‘M-s A’     ‘simply-annotate-reset-session-author’*New:* Reset session author
-‘M-s o’     ‘simply-annotate-export-to-org-file’*New:* Export to org-mode
+‘M-s e’     ‘simply-annotate-edit-sexp’*New:* Edit annotation as raw
+                                      Elisp sexp
+‘M-s r’     ‘simply-annotate-reply-to-annotation’Add reply to annotation
+‘M-s s’     ‘simply-annotate-set-annotation-status’Set status (open/resolved)
+‘M-s p’     ‘simply-annotate-set-annotation-priority’Set priority (low/high)
+‘M-s t’     ‘simply-annotate-add-annotation-tag’Add tag (#review, #bug)
+‘M-s a’     ‘simply-annotate-change-annotation-author’Change author
+‘M-s A’     ‘simply-annotate-reset-session-author’Reset session author
+‘M-s o’     ‘simply-annotate-export-to-org-file’Export to org-mode
 ‘M-s -’     ‘simply-annotate-remove’  Delete annotation at point
 ‘M-s l’     ‘simply-annotate-list’    List all annotations in current
                                       file
@@ -642,7 +757,7 @@ Key         Command                   Description
 ‘M-n’       ‘simply-annotate-next’    Jump to next annotation
 ‘M-p’       ‘simply-annotate-previous’Jump to previous annotation
 
-10.2 Annotation Buffer Bindings
+11.2 Annotation Buffer Bindings
 ===============================
 
 In the annotation buffer:
@@ -652,13 +767,15 @@ Key         Command                       Description
 ‘C-c C-c’   ‘simply-annotate-save-annotation-buffer’Save changes
 ‘C-c C-k’   ‘simply-annotate-cancel-edit’ Cancel editing
 ‘C-g’       ‘simply-annotate-cancel-edit’ Cancel editing (alternative)
-‘C-c r’     ‘simply-annotate-reply-to-annotation’*New:* Add reply
-‘C-c s’     ‘simply-annotate-set-annotation-status’*New:* Set status
-‘C-c p’     ‘simply-annotate-set-annotation-priority’*New:* Set priority
-‘C-c t’     ‘simply-annotate-add-annotation-tag’*New:* Add tag
-‘C-c o’     ‘simply-annotate-export-to-org-file’*New:* Export to org-mode
+‘M-s e’     ‘simply-annotate-edit-sexp’   *New:* Switch to sexp editing
+                                          mode
+‘M-s r’     ‘simply-annotate-reply-to-annotation’Add reply
+‘M-s s’     ‘simply-annotate-set-annotation-status’Set status
+‘M-s p’     ‘simply-annotate-set-annotation-priority’Set priority
+‘M-s t’     ‘simply-annotate-add-annotation-tag’Add tag
+‘M-s o’     ‘simply-annotate-export-to-org-file’Export to org-mode
 
-10.3 Smart Action Behavior
+11.3 Smart Action Behavior
 ==========================
 
 The ‘M-s j’ key binding changes behavior based on context:
@@ -672,13 +789,31 @@ region)
 annotation
 Elsewhere              Create annotation for current line
 
+11.4 Sexp Editing Mode
+======================
+
+When in sexp editing mode (after ‘M-s e’):
+
+Key         Command                       Description
+---------------------------------------------------------------------------
+‘C-c C-c’   ‘simply-annotate-save-annotation-buffer’Parse and save sexp
+‘C-c C-k’   ‘simply-annotate-cancel-edit’ Cancel sexp editing
+‘C-g’       ‘simply-annotate-cancel-edit’ Cancel sexp editing
+                                          (alternative)
+
+   The sexp editing buffer provides:
+   • Emacs Lisp mode for syntax highlighting
+   • Helpful comments explaining the data structure
+   • Pretty-printed formatting for readability
+   • Validation when saving to ensure data integrity
+
 
 File: simply-annotate.info,  Node: Customization,  Next: Data Storage,  Prev: Key Bindings,  Up: Top
 
-11 Customization
+12 Customization
 ****************
 
-11.1 Basic Configuration
+12.1 Basic Configuration
 ========================
 
      (use-package simply-annotate
@@ -703,7 +838,7 @@ File: simply-annotate.info,  Node: Customization,  Next: Data Storage,  Prev: Ke
        :bind
        ("C-c A" . simply-annotate-mode))
 
-11.2 Threading and Collaboration Configuration
+12.2 Threading and Collaboration Configuration
 ==============================================
 
 Configure team collaboration and threading features:
@@ -723,16 +858,16 @@ Configure team collaboration and threading features:
        ("C-c A" . simply-annotate-mode)
        ("C-c 0" . simply-annotate-show-all))
 
-11.3 Configuration Examples
+12.3 Configuration Examples
 ===========================
 
-11.3.1 Single User (Default)
+12.3.1 Single User (Default)
 ----------------------------
 
      ;; Minimal setup - works like original simply-annotate
      (setq simply-annotate-prompt-for-author nil)
 
-11.3.2 Code Review Team
+12.3.2 Code Review Team
 -----------------------
 
      ;; Review team setup
@@ -740,7 +875,7 @@ Configure team collaboration and threading features:
      (setq simply-annotate-prompt-for-author 'threads-only)  ; Prompt for replies only
      (setq simply-annotate-remember-author-per-file t)       ; Different authors per file
 
-11.3.3 Multi-Project Consultant
+12.3.3 Multi-Project Consultant
 -------------------------------
 
      ;; Different clients/contexts
@@ -748,7 +883,7 @@ Configure team collaboration and threading features:
      (setq simply-annotate-prompt-for-author 'first-only)    ; Prompt once per session
      (setq simply-annotate-remember-author-per-file t)       ; Remember per project
 
-11.4 Core Customization Variables
+12.4 Core Customization Variables
 =================================
 
 ‘simply-annotate-file’
@@ -779,8 +914,30 @@ Configure team collaboration and threading features:
      Face for fringe indicators.  Default:
      ‘'simply-annotate-fringe-face’
 
-11.5 Threading and Collaboration Variables
+12.5 Threading and Collaboration Variables
 ==========================================
+
+‘simply-annotate-author-list’
+     List of available authors for annotations.  Default: ‘(list
+     user-full-name)’
+
+‘simply-annotate-prompt-for-author’
+     When to prompt for author selection.  Options: ‘nil’,
+     ‘'first-only’, ‘'always’, ‘'threads-only’.  Default: ‘nil’
+
+‘simply-annotate-remember-author-per-file’
+     Whether to remember author choice per file.  Default: ‘nil’
+
+‘simply-annotate-thread-statuses’
+     Available status values for annotation threads.  Default: ‘'("open"
+     "in-progress" "resolved" "closed")’
+
+‘simply-annotate-priority-levels’
+     Available priority levels for annotations.  Default: ‘'("low"
+     "normal" "high" "critical")’
+
+12.6 Custom Faces
+=================
 
      ;; Custom highlight face for annotations
      (defface my-annotation-face
@@ -796,7 +953,7 @@ Configure team collaboration and threading features:
 
      (setq simply-annotate-fringe-face 'my-fringe-face)
 
-11.6 Display Style Configuration
+12.7 Display Style Configuration
 ================================
 
      ;; Use only fringe indicators (minimal visual impact)
@@ -811,10 +968,10 @@ Configure team collaboration and threading features:
      ;; Customize fringe indicators
      (setq simply-annotate-fringe-indicator 'left-triangle)
 
-11.7 Advanced Customization
+12.8 Advanced Customization
 ===========================
 
-11.7.1 Custom Fringe Bitmaps
+12.8.1 Custom Fringe Bitmaps
 ----------------------------
 
 You can define custom fringe bitmaps:
@@ -833,7 +990,7 @@ You can define custom fringe bitmaps:
 
      (setq simply-annotate-fringe-indicator 'custom)
 
-11.7.2 Global Mode Setup
+12.8.2 Global Mode Setup
 ------------------------
 
 To enable annotation mode automatically:
@@ -848,29 +1005,62 @@ To enable annotation mode automatically:
 
 File: simply-annotate.info,  Node: Data Storage,  Next: Troubleshooting,  Prev: Customization,  Up: Top
 
-12 Data Storage
+13 Data Storage
 ***************
 
-12.1 Storage Format
+13.1 Storage Format
 ===================
 
 Annotations are stored in a single Emacs Lisp file (by default
 ‘~/.emacs.d/simply-annotations.el’).  The format is human-readable and
 can be version controlled if desired.
 
-12.2 Sample Storage Format
+13.2 Sample Storage Format
 ==========================
+
+With threading support, the storage format includes complete thread
+structures:
 
      ;;; Simply Annotate Database
      ;;; This file is auto-generated. Do not edit manually.
 
      (("simply-annotate:/path/to/file.el"
-       ((start . 1250) (end . 1300) (text . "This needs refactoring"))
-       ((start . 2100) (end . 2150) (text . "Add error handling here")))
+       ((start . 1250) (end . 1300)
+        (text . ((id . "thread-123456")
+                 (created . "2025-06-29T10:30:00")
+                 (status . "open")
+                 (priority . "high")
+                 (tags . ("review" "urgent"))
+                 (comments . (((author . "John Doe")
+                               (timestamp . "2025-06-29T10:30:00")
+                               (text . "This needs refactoring")
+                               (type . "comment"))
+                              ((author . "Jane Smith")
+                               (timestamp . "2025-06-29T10:45:00")
+                               (text . "I agree, will fix this")
+                               (type . "reply")))))))
+       ((start . 2100) (end . 2150)
+        (text . "Add error handling here")))
       ("simply-annotate:/path/to/other-file.py"
-       ((start . 450) (end . 500) (text . "Performance bottleneck"))))
+       ((start . 450) (end . 500)
+        (text . "Performance bottleneck"))))
 
-12.3 Data Management
+13.3 Data Structure Evolution
+=============================
+
+Simply Annotate supports both legacy string annotations and new thread
+structures:
+
+   • *Legacy format*: Simple strings are automatically converted to
+     thread structures when edited
+   • *Thread format*: Complete data structures with metadata and
+     conversation history
+   • *Backward compatibility*: Old annotations continue to work
+     seamlessly
+   • *Migration*: Annotations are upgraded to thread format when
+     modified
+
+13.4 Data Management
 ====================
 
    • The database file is automatically created when first needed
@@ -879,8 +1069,9 @@ can be version controlled if desired.
    • The file uses a file key system to track annotations per file
    • Empty databases are automatically cleaned up
    • Only saves when there are actual changes to annotations
+   • Thread structures are validated when saving to prevent corruption
 
-12.4 File Key System
+13.5 File Key System
 ====================
 
 Each file is identified by a unique key:
@@ -889,13 +1080,24 @@ Each file is identified by a unique key:
    • Ensures annotations persist across Emacs sessions
    • Supports moving files (annotations follow the buffer name)
 
+13.6 Sexp Editing and Data Integrity
+====================================
+
+When using sexp editing mode:
+
+   • Data structures are validated before saving
+   • Required fields are automatically added if missing
+   • Malformed structures are rejected with helpful error messages
+   • Backup functionality preserves data before dangerous operations
+   • Thread IDs and timestamps are preserved across edits
+
 
 File: simply-annotate.info,  Node: Troubleshooting,  Next: Function Index,  Prev: Data Storage,  Up: Top
 
-13 Troubleshooting
+14 Troubleshooting
 ******************
 
-13.1 Annotations Not Persisting
+14.1 Annotations Not Persisting
 ===============================
 
 If your annotations aren't being saved between sessions:
@@ -905,11 +1107,12 @@ If your annotations aren't being saved between sessions:
    • Verify that hooks are installed correctly
    • Check file permissions on the storage directory
    • Look for error messages in the ‘*Messages*’ buffer
+   • Verify threading data structure isn't corrupted
 
-13.2 Display Issues
+14.2 Display Issues
 ===================
 
-13.2.1 Highlighting Not Visible
+14.2.1 Highlighting Not Visible
 -------------------------------
 
    • Customize ‘simply-annotate-highlight-face’ for your color theme
@@ -918,7 +1121,7 @@ If your annotations aren't being saved between sessions:
      'fringe)’
    • Verify the face definition with ‘M-x describe-face’
 
-13.2.2 Fringe Indicators Not Showing
+14.2.2 Fringe Indicators Not Showing
 ------------------------------------
 
    • Ensure your Emacs build supports fringe bitmaps
@@ -927,7 +1130,7 @@ If your annotations aren't being saved between sessions:
      simply-annotate-fringe-indicator 'left-triangle)’
    • Verify fringe face colors are visible against your theme
 
-13.3 Smart Action Issues
+14.3 Smart Action Issues
 ========================
 
    • Remember the command is context-sensitive - behavior changes based
@@ -938,7 +1141,61 @@ If your annotations aren't being saved between sessions:
    • Verify the annotation buffer is responding to ‘C-c C-c’ and ‘C-c
      C-k’
 
-13.4 Performance with Large Files
+14.4 Threading Issues
+=====================
+
+14.4.1 Author Prompting Problems
+--------------------------------
+
+   • Check ‘simply-annotate-prompt-for-author’ setting
+   • Verify ‘simply-annotate-author-list’ contains valid names
+   • Use ‘M-s A’ to reset session author if stuck
+   • Check that prompting mode matches your workflow needs
+
+14.4.2 Thread Display Corruption
+--------------------------------
+
+   • Try ‘M-s ]’ to refresh display style
+   • Check for malformed thread data structures
+   • Use sexp editing mode to inspect and fix thread structure
+   • Verify all required fields are present in thread data
+
+14.4.3 Reply Issues
+-------------------
+
+   • Ensure you're using ‘C-c C-c’ to save replies properly
+   • Check that ‘M-s r’ is working on existing annotations
+   • Verify author configuration for multi-user workflows
+   • Look for timestamp or author field corruption
+
+14.5 Sexp Editing Issues
+========================
+
+14.5.1 Parsing Errors
+---------------------
+
+   • Ensure proper Elisp syntax with balanced parentheses
+   • Check that all strings are properly quoted
+   • Verify required fields (id, comments) are present
+   • Use ‘C-c C-k’ to cancel if unsure about changes
+
+14.5.2 Data Structure Problems
+------------------------------
+
+   • Check timestamp format: use ISO format ‘"2025-06-29T10:30:00"’
+   • Ensure comment ‘type’ field is ‘"comment"’ or ‘"reply"’
+   • Verify ‘status’ and ‘priority’ values are from allowed lists
+   • Confirm ‘tags’ field is a list, even if empty: ‘()’
+
+14.5.3 Validation Failures
+--------------------------
+
+   • Thread structure must be an association list with required keys
+   • ‘comments’ field must be a list of comment objects
+   • Each comment must have ‘author’, ‘timestamp’, ‘text’, and ‘type’
+   • Use the helpful comments in sexp editing mode as a guide
+
+14.6 Performance with Large Files
 =================================
 
 Simply Annotate is designed to be lightweight:
@@ -946,9 +1203,10 @@ Simply Annotate is designed to be lightweight:
    • Annotations use lightweight overlays
    • No performance impact on file operations
    • Fringe mode generally has better performance than highlight mode
+   • Sexp editing may be slower with very large annotation structures
    • Consider splitting very large annotation sets across multiple files
 
-13.5 Integration Issues
+14.7 Integration Issues
 =======================
 
    • Annotations work with most major modes
@@ -956,8 +1214,19 @@ Simply Annotate is designed to be lightweight:
    • May need customization for exotic display modes
    • Check for conflicting key bindings with ‘C-h k’
    • Fringe indicators work well with line number modes
+   • Sexp editing works in any buffer that supports Emacs Lisp editing
 
-13.6 Common Error Messages
+14.8 Buffer-Local Variable Issues
+=================================
+
+If annotations disappear when opening new files:
+
+   • Ensure buffer-local variables are properly declared
+   • Check that ‘simply-annotate-overlays’ is buffer-local
+   • Verify mode activation is working correctly per buffer
+   • Use debug functions to check overlay state
+
+14.9 Common Error Messages
 ==========================
 
 *"No annotation at point"*
@@ -975,17 +1244,29 @@ Simply Annotate is designed to be lightweight:
      No annotation file exists yet.  Create your first annotation to
      initialize the database.
 
+*"Invalid annotation format: must be a thread alist"*
+     Sexp editing validation failed.  Check the data structure format
+     and required fields.
+
+*"Error parsing sexp"*
+     The Elisp syntax in sexp editing mode is invalid.  Check for
+     balanced parentheses and proper quoting.
+
 *Database file errors*
      Check permissions and disk space for the storage file location.
 
-13.7 Getting Help
-=================
+14.10 Getting Help
+==================
 
    • Use ‘C-h k’ followed by a key binding to see what command it runs
    • Check the ‘*Messages*’ buffer for error messages
    • Use ‘M-x describe-mode’ in an annotation buffer for mode-specific
      help
    • The header-line always shows available commands and current status
+   • Use sexp editing mode to inspect annotation data structures
+     directly
+   • Check threading information in the annotation list (‘M-s l’) for
+     debugging
 
 
 File: simply-annotate.info,  Node: Function Index,  Next: Variable Index,  Prev: Troubleshooting,  Up: Top
@@ -1002,6 +1283,7 @@ Function Index
 * simply-annotate-change-annotation-author: Threading and Collaboration.
                                                               (line 104)
 * simply-annotate-cycle-display-style:   Display Styles.      (line  24)
+* simply-annotate-edit-sexp:             Advanced Editing.    (line  13)
 * simply-annotate-export-to-org-file:    Org-mode Integration.
                                                               (line  12)
 * simply-annotate-list:                  Advanced Features.   (line   9)
@@ -1031,8 +1313,15 @@ Variable Index
  [index ]
 * Menu:
 
+* author:                                Advanced Editing.    (line  66)
+* comments:                              Advanced Editing.    (line  58)
+* created:                               Advanced Editing.    (line  49)
+* id:                                    Advanced Editing.    (line  47)
+* priority:                              Advanced Editing.    (line  54)
 * simply-annotate-author-list:           Threading and Collaboration.
                                                               (line  79)
+* simply-annotate-author-list <1>:       Customization.       (line 110)
+* simply-annotate-author-list <2>:       Customization.       (line 111)
 * simply-annotate-buffer-height:         Customization.       (line  90)
 * simply-annotate-buffer-height <1>:     Customization.       (line  91)
 * simply-annotate-buffer-name:           Customization.       (line  87)
@@ -1052,10 +1341,24 @@ Variable Index
 * simply-annotate-highlight-face <1>:    Customization.       (line  84)
 * simply-annotate-priority-levels:       Threading and Collaboration.
                                                               (line  57)
+* simply-annotate-priority-levels <1>:   Customization.       (line 125)
+* simply-annotate-priority-levels <2>:   Customization.       (line 126)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
                                                               (line  79)
+* simply-annotate-prompt-for-author <1>: Customization.       (line 114)
+* simply-annotate-prompt-for-author <2>: Customization.       (line 115)
+* simply-annotate-remember-author-per-file: Customization.    (line 118)
+* simply-annotate-remember-author-per-file <1>: Customization.
+                                                              (line 119)
 * simply-annotate-thread-statuses:       Threading and Collaboration.
                                                               (line  45)
+* simply-annotate-thread-statuses <1>:   Customization.       (line 121)
+* simply-annotate-thread-statuses <2>:   Customization.       (line 122)
+* status:                                Advanced Editing.    (line  51)
+* tags:                                  Advanced Editing.    (line  56)
+* text:                                  Advanced Editing.    (line  70)
+* timestamp:                             Advanced Editing.    (line  68)
+* type:                                  Advanced Editing.    (line  72)
 
 
 File: simply-annotate.info,  Node: Concept Index,  Prev: Variable Index,  Up: Top
@@ -1066,50 +1369,56 @@ Concept Index
  [index ]
 * Menu:
 
+* advanced editing:                      Advanced Editing.    (line   9)
 * authors:                               Threading and Collaboration.
-                                                               (line 76)
+                                                              (line  76)
+* buffer-local variables:                Troubleshooting.     (line 128)
 * collaboration:                         Threading and Collaboration.
-                                                               (line 76)
+                                                              (line  76)
 * conversations:                         Threading and Collaboration.
-                                                               (line 11)
-* header-line:                           Advanced Features.    (line 67)
+                                                              (line  11)
+* data structure editing:                Advanced Editing.    (line   9)
+* header-line:                           Advanced Features.   (line  68)
 * organization:                          Threading and Collaboration.
-                                                               (line 66)
+                                                              (line  66)
+* overlay persistence:                   Troubleshooting.     (line 128)
 * priority:                              Threading and Collaboration.
-                                                               (line 42)
+                                                              (line  42)
 * replies:                               Threading and Collaboration.
-                                                               (line 11)
+                                                              (line  11)
+* sexp editing:                          Advanced Editing.    (line   9)
 * status:                                Threading and Collaboration.
-                                                               (line 42)
-* status display:                        Advanced Features.    (line 67)
+                                                              (line  42)
+* status display:                        Advanced Features.   (line  68)
 * tags:                                  Threading and Collaboration.
-                                                               (line 66)
+                                                              (line  66)
 * team:                                  Threading and Collaboration.
-                                                               (line 75)
+                                                              (line  75)
 * threading:                             Threading and Collaboration.
-                                                               (line 11)
+                                                              (line  11)
 * workflow:                              Threading and Collaboration.
-                                                               (line 41)
+                                                              (line  41)
 
 
 Tag Table:
 Node: Top792
-Node: Introduction2622
-Node: Installation4173
-Node: Quick Start4781
-Node: Basic Usage5487
-Node: Threading and Collaboration8111
-Node: Display Styles12291
-Node: Navigation13976
-Node: Advanced Features15502
-Node: Org-mode Integration18150
-Node: Key Bindings20334
-Node: Customization23232
-Node: Data Storage28662
-Node: Troubleshooting30167
-Node: Function Index33615
-Node: Variable Index35580
-Node: Concept Index37554
+Node: Introduction2698
+Node: Installation4341
+Node: Quick Start4949
+Node: Basic Usage5722
+Node: Advanced Editing8335
+Node: Threading and Collaboration11860
+Node: Display Styles16045
+Node: Navigation17730
+Node: Advanced Features19256
+Node: Org-mode Integration21960
+Node: Key Bindings24154
+Node: Customization27966
+Node: Data Storage34161
+Node: Troubleshooting37410
+Node: Function Index43833
+Node: Variable Index45871
+Node: Concept Index49368
 
 End Tag Table
 

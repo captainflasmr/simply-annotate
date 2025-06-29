@@ -50,77 +50,101 @@ Documentation License”.
   - [[#Viewing-Annotations][4.3 Viewing Annotations]]
   - [[#Editing-Annotations][4.4 Editing Annotations]]
   - [[#Deleting-Annotations][4.5 Deleting Annotations]]
-- [[#Threading-and-Collaboration][5 Threading and Collaboration]]
-  - [[#Threading-System][5.1 Threading System]]
-    - [[#Adding-Replies][5.1.1 Adding Replies]]
-    - [[#Thread-Display][5.1.2 Thread Display]]
-  - [[#Status-Management][5.2 Status Management]]
-    - [[#Setting-Status][5.2.1 Setting Status]]
-    - [[#Setting-Priority][5.2.2 Setting Priority]]
-    - [[#Adding-Tags][5.2.3 Adding Tags]]
-  - [[#Multi_002dAuthor-Support][5.3 Multi-Author Support]]
-    - [[#Author-Configuration][5.3.1 Author Configuration]]
-    - [[#Prompting-Modes][5.3.2 Prompting Modes]]
-    - [[#Author-Management-Commands][5.3.3 Author Management Commands]]
-  - [[#Collaboration-Workflows][5.4 Collaboration Workflows]]
-    - [[#Code-Review-Workflow][5.4.1 Code Review Workflow]]
-    - [[#Document-Collaboration][5.4.2 Document Collaboration]]
-- [[#Display-Styles][6 Display Styles]]
-  - [[#Available-Styles][6.1 Available Styles]]
-  - [[#Changing-Display-Styles][6.2 Changing Display Styles]]
-  - [[#Style-Recommendations][6.3 Style Recommendations]]
-  - [[#Fringe-Customization][6.4 Fringe Customization]]
-- [[#Navigation][7 Navigation]]
-  - [[#Moving-Between-Annotations][7.1 Moving Between Annotations]]
-  - [[#Viewing-Current-Annotation][7.2 Viewing Current Annotation]]
-  - [[#Smart-Navigation][7.3 Smart Navigation]]
-- [[#Advanced-Features][8 Advanced Features]]
-  - [[#Listing-All-Annotations][8.1 Listing All Annotations]]
-  - [[#Cross_002dfile-Annotation-Browsing][8.2 Cross-file Annotation
+- [[#Advanced-Editing][5 Advanced Editing]]
+  - [[#Raw-Sexp-Editing][5.1 Raw Sexp Editing]]
+    - [[#Entering-Sexp-Edit-Mode][5.1.1 Entering Sexp Edit Mode]]
+    - [[#Sexp-Structure][5.1.2 Sexp Structure]]
+    - [[#Required-Fields][5.1.3 Required Fields]]
+    - [[#Comment-Structure][5.1.4 Comment Structure]]
+    - [[#Sexp-Editing-Features][5.1.5 Sexp Editing Features]]
+    - [[#Use-Cases-for-Sexp-Editing][5.1.6 Use Cases for Sexp Editing]]
+    - [[#Safety-and-Best-Practices][5.1.7 Safety and Best Practices]]
+- [[#Threading-and-Collaboration][6 Threading and Collaboration]]
+  - [[#Threading-System][6.1 Threading System]]
+    - [[#Adding-Replies][6.1.1 Adding Replies]]
+    - [[#Thread-Display][6.1.2 Thread Display]]
+  - [[#Status-Management][6.2 Status Management]]
+    - [[#Setting-Status][6.2.1 Setting Status]]
+    - [[#Setting-Priority][6.2.2 Setting Priority]]
+    - [[#Adding-Tags][6.2.3 Adding Tags]]
+  - [[#Multi_002dAuthor-Support][6.3 Multi-Author Support]]
+    - [[#Author-Configuration][6.3.1 Author Configuration]]
+    - [[#Prompting-Modes][6.3.2 Prompting Modes]]
+    - [[#Author-Management-Commands][6.3.3 Author Management Commands]]
+  - [[#Collaboration-Workflows][6.4 Collaboration Workflows]]
+    - [[#Code-Review-Workflow][6.4.1 Code Review Workflow]]
+    - [[#Document-Collaboration][6.4.2 Document Collaboration]]
+- [[#Display-Styles][7 Display Styles]]
+  - [[#Available-Styles][7.1 Available Styles]]
+  - [[#Changing-Display-Styles][7.2 Changing Display Styles]]
+  - [[#Style-Recommendations][7.3 Style Recommendations]]
+  - [[#Fringe-Customization][7.4 Fringe Customization]]
+- [[#Navigation][8 Navigation]]
+  - [[#Moving-Between-Annotations][8.1 Moving Between Annotations]]
+  - [[#Viewing-Current-Annotation][8.2 Viewing Current Annotation]]
+  - [[#Smart-Navigation][8.3 Smart Navigation]]
+- [[#Advanced-Features][9 Advanced Features]]
+  - [[#Listing-All-Annotations][9.1 Listing All Annotations]]
+  - [[#Cross_002dfile-Annotation-Browsing][9.2 Cross-file Annotation
     Browsing]]
-  - [[#Annotation-Buffer-Features][8.3 Annotation Buffer Features]]
-  - [[#Header_002dline-Integration][8.4 Header-line Integration]]
-- [[#Org_002dmode-Integration][9 Org-mode Integration]]
-  - [[#Exporting-Annotations][9.1 Exporting Annotations]]
-  - [[#Export-Format][9.2 Export Format]]
-  - [[#Use-Cases-for-Export][9.3 Use Cases for Export]]
-  - [[#Integration-with-Org-Workflows][9.4 Integration with Org
+  - [[#Annotation-Buffer-Features][9.3 Annotation Buffer Features]]
+  - [[#Header_002dline-Integration][9.4 Header-line Integration]]
+- [[#Org_002dmode-Integration][10 Org-mode Integration]]
+  - [[#Exporting-Annotations][10.1 Exporting Annotations]]
+  - [[#Export-Format][10.2 Export Format]]
+  - [[#Use-Cases-for-Export][10.3 Use Cases for Export]]
+  - [[#Integration-with-Org-Workflows][10.4 Integration with Org
     Workflows]]
-- [[#Key-Bindings][10 Key Bindings]]
-  - [[#Main-Mode-Bindings][10.1 Main Mode Bindings]]
-  - [[#Annotation-Buffer-Bindings][10.2 Annotation Buffer Bindings]]
-  - [[#Smart-Action-Behavior][10.3 Smart Action Behavior]]
-- [[#Customization][11 Customization]]
-  - [[#Basic-Configuration][11.1 Basic Configuration]]
-  - [[#Threading-and-Collaboration-Configuration][11.2 Threading and
+- [[#Key-Bindings][11 Key Bindings]]
+  - [[#Main-Mode-Bindings][11.1 Main Mode Bindings]]
+  - [[#Annotation-Buffer-Bindings][11.2 Annotation Buffer Bindings]]
+  - [[#Smart-Action-Behavior][11.3 Smart Action Behavior]]
+  - [[#Sexp-Editing-Mode][11.4 Sexp Editing Mode]]
+- [[#Customization][12 Customization]]
+  - [[#Basic-Configuration][12.1 Basic Configuration]]
+  - [[#Threading-and-Collaboration-Configuration][12.2 Threading and
     Collaboration Configuration]]
-  - [[#Configuration-Examples][11.3 Configuration Examples]]
-    - [[#Single-User-_0028Default_0029][11.3.1 Single User (Default)]]
-    - [[#Code-Review-Team][11.3.2 Code Review Team]]
-    - [[#Multi_002dProject-Consultant][11.3.3 Multi-Project Consultant]]
-  - [[#Core-Customization-Variables][11.4 Core Customization Variables]]
-  - [[#Threading-and-Collaboration-Variables][11.5 Threading and
+  - [[#Configuration-Examples][12.3 Configuration Examples]]
+    - [[#Single-User-_0028Default_0029][12.3.1 Single User (Default)]]
+    - [[#Code-Review-Team][12.3.2 Code Review Team]]
+    - [[#Multi_002dProject-Consultant][12.3.3 Multi-Project Consultant]]
+  - [[#Core-Customization-Variables][12.4 Core Customization Variables]]
+  - [[#Threading-and-Collaboration-Variables][12.5 Threading and
     Collaboration Variables]]
-  - [[#Display-Style-Configuration][11.6 Display Style Configuration]]
-  - [[#Advanced-Customization][11.7 Advanced Customization]]
-    - [[#Custom-Fringe-Bitmaps][11.7.1 Custom Fringe Bitmaps]]
-    - [[#Global-Mode-Setup][11.7.2 Global Mode Setup]]
-- [[#Data-Storage][12 Data Storage]]
-  - [[#Storage-Format][12.1 Storage Format]]
-  - [[#Sample-Storage-Format][12.2 Sample Storage Format]]
-  - [[#Data-Management][12.3 Data Management]]
-  - [[#File-Key-System][12.4 File Key System]]
-- [[#Troubleshooting][13 Troubleshooting]]
-  - [[#Annotations-Not-Persisting][13.1 Annotations Not Persisting]]
-  - [[#Display-Issues][13.2 Display Issues]]
-    - [[#Highlighting-Not-Visible][13.2.1 Highlighting Not Visible]]
-    - [[#Fringe-Indicators-Not-Showing][13.2.2 Fringe Indicators Not
+  - [[#Custom-Faces][12.6 Custom Faces]]
+  - [[#Display-Style-Configuration][12.7 Display Style Configuration]]
+  - [[#Advanced-Customization][12.8 Advanced Customization]]
+    - [[#Custom-Fringe-Bitmaps][12.8.1 Custom Fringe Bitmaps]]
+    - [[#Global-Mode-Setup][12.8.2 Global Mode Setup]]
+- [[#Data-Storage][13 Data Storage]]
+  - [[#Storage-Format][13.1 Storage Format]]
+  - [[#Sample-Storage-Format][13.2 Sample Storage Format]]
+  - [[#Data-Structure-Evolution][13.3 Data Structure Evolution]]
+  - [[#Data-Management][13.4 Data Management]]
+  - [[#File-Key-System][13.5 File Key System]]
+  - [[#Sexp-Editing-and-Data-Integrity][13.6 Sexp Editing and Data
+    Integrity]]
+- [[#Troubleshooting][14 Troubleshooting]]
+  - [[#Annotations-Not-Persisting][14.1 Annotations Not Persisting]]
+  - [[#Display-Issues][14.2 Display Issues]]
+    - [[#Highlighting-Not-Visible][14.2.1 Highlighting Not Visible]]
+    - [[#Fringe-Indicators-Not-Showing][14.2.2 Fringe Indicators Not
       Showing]]
-  - [[#Smart-Action-Issues][13.3 Smart Action Issues]]
-  - [[#Performance-with-Large-Files][13.4 Performance with Large Files]]
-  - [[#Integration-Issues][13.5 Integration Issues]]
-  - [[#Common-Error-Messages][13.6 Common Error Messages]]
-  - [[#Getting-Help][13.7 Getting Help]]
+  - [[#Smart-Action-Issues][14.3 Smart Action Issues]]
+  - [[#Threading-Issues][14.4 Threading Issues]]
+    - [[#Author-Prompting-Problems][14.4.1 Author Prompting Problems]]
+    - [[#Thread-Display-Corruption][14.4.2 Thread Display Corruption]]
+    - [[#Reply-Issues][14.4.3 Reply Issues]]
+  - [[#Sexp-Editing-Issues][14.5 Sexp Editing Issues]]
+    - [[#Parsing-Errors][14.5.1 Parsing Errors]]
+    - [[#Data-Structure-Problems][14.5.2 Data Structure Problems]]
+    - [[#Validation-Failures][14.5.3 Validation Failures]]
+  - [[#Performance-with-Large-Files][14.6 Performance with Large Files]]
+  - [[#Integration-Issues][14.7 Integration Issues]]
+  - [[#Buffer_002dLocal-Variable-Issues][14.8 Buffer-Local Variable
+    Issues]]
+  - [[#Common-Error-Messages][14.9 Common Error Messages]]
+  - [[#Getting-Help][14.10 Getting Help]]
 - [[#Function-Index][Function Index]]
 - [[#Variable-Index][Variable Index]]
 - [[#Concept-Index][Concept Index]]
@@ -160,6 +184,8 @@ and documentation and includes threading and collaboration features.
   critical)
 - *Tag system*: Categorize with hashtags (=#review=, =#bug=,
   =#question=)
+- *Raw sexp editing*: Direct access to annotation data structures for
+  power users
 - *Multiple display styles*: Choose between highlighting, fringe
   indicators, or both
 - *Smart action*: Context-aware command that adapts to the situation
@@ -240,14 +266,15 @@ Here's how to get started with Simply Annotate:
 6. Press M-s ] to cycle through different display styles
 7. Press M-s r to add a reply to any annotation
 8. Press M-s s to set status (open, resolved, etc.)
-9. Press M-s o to export annotations to org-mode
+9. Press M-s e to edit annotation data structure directly
+10. Press M-s o to export annotations to org-mode
 
 --------------
 
 <<Basic-Usage>>
 
-Next: [[#Threading-and-Collaboration][Threading and Collaboration]],
-Previous: [[#Quick-Start][Quick Start]], Up: [[#Top][Simply Annotate]]  
+Next: [[#Advanced-Editing][Advanced Editing]], Previous:
+[[#Quick-Start][Quick Start]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 ** 4 Basic Usage [[#Basic-Usage-1][¶]]
@@ -381,13 +408,168 @@ save with C-c C-c to remove it.
 
 --------------
 
+<<Advanced-Editing>>
+
+Next: [[#Threading-and-Collaboration][Threading and Collaboration]],
+Previous: [[#Basic-Usage][Basic Usage]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+
+** 5 Advanced Editing [[#Advanced-Editing-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Advanced-Editing-1
+:CLASS: chapter
+:END:
+- [[#Raw-Sexp-Editing][Raw Sexp Editing]]
+
+<<Raw-Sexp-Editing>>
+*** 5.1 Raw Sexp Editing [[#Raw-Sexp-Editing][¶]]
+:PROPERTIES:
+:CUSTOM_ID: raw-sexp-editing
+:CLASS: section
+:END:
+For complete control over annotation data structures, Simply Annotate
+provides raw sexp editing capabilities. This allows power users to
+directly manipulate the underlying Elisp data structure that stores
+annotation information.
+
+- [[#Entering-Sexp-Edit-Mode][Entering Sexp Edit Mode]]
+- [[#Sexp-Structure][Sexp Structure]]
+- [[#Required-Fields][Required Fields]]
+- [[#Comment-Structure][Comment Structure]]
+- [[#Sexp-Editing-Features][Sexp Editing Features]]
+- [[#Use-Cases-for-Sexp-Editing][Use Cases for Sexp Editing]]
+- [[#Safety-and-Best-Practices][Safety and Best Practices]]
+
+<<Entering-Sexp-Edit-Mode>>
+**** 5.1.1 Entering Sexp Edit Mode [[#Entering-Sexp-Edit-Mode][¶]]
+:PROPERTIES:
+:CUSTOM_ID: entering-sexp-edit-mode
+:CLASS: subsection
+:END:
+To edit an annotation's raw data structure:
+
+1. Place cursor on any annotation
+2. Press M-s e to open the raw sexp editor
+3. Edit the Elisp data structure directly
+4. Save with C-c C-c or cancel with C-c C-k
+
+<<Sexp-Structure>>
+**** 5.1.2 Sexp Structure [[#Sexp-Structure][¶]]
+:PROPERTIES:
+:CUSTOM_ID: sexp-structure
+:CLASS: subsection
+:END:
+Annotations are stored as Elisp association lists with the following
+structure:
+
+#+begin_src lisp-preformatted
+((id . "thread-123456")
+ (created . "2025-06-29T10:30:00")
+ (status . "open")
+ (priority . "high")
+ (tags . ("bug" "critical"))
+ (comments . (((author . "John Doe")
+               (timestamp . "2025-06-29T10:30:00")
+               (text . "Found a critical bug here")
+               (type . "comment"))
+              ((author . "Jane Smith")
+               (timestamp . "2025-06-29T11:15:00")
+               (text . "I can reproduce this issue")
+               (type . "reply")))))
+#+end_src
+
+<<Required-Fields>>
+**** 5.1.3 Required Fields [[#Required-Fields][¶]]
+:PROPERTIES:
+:CUSTOM_ID: required-fields
+:CLASS: subsection
+:END:
+- <<index-id>>=id= [[#index-id][¶]] :: Unique identifier for the thread
+  (string)
+
+- <<index-created>>=created= [[#index-created][¶]] :: ISO timestamp when
+  thread was created
+
+- <<index-status-1>>=status= [[#index-status-1][¶]] :: Current status
+  (="open"=, ="in-progress"=, ="resolved"=, ="closed"=)
+
+- <<index-priority-1>>=priority= [[#index-priority-1][¶]] :: Priority
+  level (="low"=, ="normal"=, ="high"=, ="critical"=)
+
+- <<index-tags-1>>=tags= [[#index-tags-1][¶]] :: List of tag strings
+  (can be empty list)
+
+- <<index-comments>>=comments= [[#index-comments][¶]] :: List of
+  comment/reply objects
+
+<<Comment-Structure>>
+**** 5.1.4 Comment Structure [[#Comment-Structure][¶]]
+:PROPERTIES:
+:CUSTOM_ID: comment-structure
+:CLASS: subsection
+:END:
+Each comment in the =comments= list must have:
+
+- <<index-author>>=author= [[#index-author][¶]] :: Author name (string)
+
+- <<index-timestamp>>=timestamp= [[#index-timestamp][¶]] :: ISO
+  timestamp when comment was created
+
+- <<index-text>>=text= [[#index-text][¶]] :: The actual comment text
+  content
+
+- <<index-type>>=type= [[#index-type][¶]] :: Either ="comment"=
+  (original) or ="reply"=
+
+<<Sexp-Editing-Features>>
+**** 5.1.5 Sexp Editing Features [[#Sexp-Editing-Features][¶]]
+:PROPERTIES:
+:CUSTOM_ID: sexp-editing-features
+:CLASS: subsection
+:END:
+The sexp editor provides:
+
+- *Syntax highlighting*: Key fields and values are highlighted
+- *Helpful comments*: Guidance about structure and valid values
+- *Validation*: Ensures required fields are present when saving
+- *Error handling*: Clear error messages for invalid structures
+- *Auto-completion*: Missing fields are added with defaults
+
+<<Use-Cases-for-Sexp-Editing>>
+**** 5.1.6 Use Cases for Sexp Editing [[#Use-Cases-for-Sexp-Editing][¶]]
+:PROPERTIES:
+:CUSTOM_ID: use-cases-for-sexp-editing
+:CLASS: subsection
+:END:
+- *Bulk operations*: Modify multiple comments at once
+- *Data migration*: Copy annotation structures between files
+- *Precision control*: Manually adjust timestamps or IDs
+- *Complex threading*: Create reply structures not possible through UI
+- *Metadata manipulation*: Bulk change authors, statuses, or priorities
+- *Import/export*: Transform annotations for external tools
+
+<<Safety-and-Best-Practices>>
+**** 5.1.7 Safety and Best Practices [[#Safety-and-Best-Practices][¶]]
+:PROPERTIES:
+:CUSTOM_ID: safety-and-best-practices
+:CLASS: subsection
+:END:
+- Always use C-c C-k to cancel if unsure about changes
+- Ensure proper Elisp syntax with balanced parentheses
+- Use ISO timestamp format: ="2025-06-29T10:30:00"=
+- Keep =type= field as ="comment"= or ="reply"=
+- Preserve required fields (=id=, =comments=, etc.)
+- Test complex changes on a backup first
+
+--------------
+
 <<Threading-and-Collaboration>>
 
 Next: [[#Display-Styles][Display Styles]], Previous:
-[[#Basic-Usage][Basic Usage]], Up: [[#Top][Simply Annotate]]  
+[[#Advanced-Editing][Advanced Editing]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 5 Threading and Collaboration [[#Threading-and-Collaboration-1][¶]]
+** 6 Threading and Collaboration [[#Threading-and-Collaboration-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Threading-and-Collaboration-1
 :CLASS: chapter
@@ -400,7 +582,7 @@ Lets create a thread!, reply and add in authors
 - [[#Collaboration-Workflows][Collaboration Workflows]]
 
 <<Threading-System>>
-*** 5.1 Threading System [[#Threading-System][¶]]
+*** 6.1 Threading System [[#Threading-System][¶]]
 :PROPERTIES:
 :CUSTOM_ID: threading-system
 :CLASS: section
@@ -413,7 +595,7 @@ ongoing discussions about specific parts of your code or documents.
 - [[#Thread-Display][Thread Display]]
 
 <<Adding-Replies>>
-**** 5.1.1 Adding Replies [[#Adding-Replies][¶]]
+**** 6.1.1 Adding Replies [[#Adding-Replies][¶]]
 :PROPERTIES:
 :CUSTOM_ID: adding-replies
 :CLASS: subsection
@@ -426,7 +608,7 @@ To add a reply to any annotation:
 4. The annotation automatically becomes a threaded conversation
 
 <<Thread-Display>>
-**** 5.1.2 Thread Display [[#Thread-Display][¶]]
+**** 6.1.2 Thread Display [[#Thread-Display][¶]]
 :PROPERTIES:
 :CUSTOM_ID: thread-display
 :CLASS: subsection
@@ -445,7 +627,7 @@ Threaded annotations are displayed with rich formatting:
 #+end_src
 
 <<Status-Management>>
-*** 5.2 Status Management [[#Status-Management][¶]]
+*** 6.2 Status Management [[#Status-Management][¶]]
 :PROPERTIES:
 :CUSTOM_ID: status-management
 :CLASS: section
@@ -455,7 +637,7 @@ Threaded annotations are displayed with rich formatting:
 - [[#Adding-Tags][Adding Tags]]
 
 <<Setting-Status>>
-**** 5.2.1 Setting Status [[#Setting-Status][¶]]
+**** 6.2.1 Setting Status [[#Setting-Status][¶]]
 :PROPERTIES:
 :CUSTOM_ID: setting-status
 :CLASS: subsection
@@ -470,7 +652,7 @@ The default statuses can be customized via
 =simply-annotate-thread-statuses=.
 
 <<Setting-Priority>>
-**** 5.2.2 Setting Priority [[#Setting-Priority][¶]]
+**** 6.2.2 Setting Priority [[#Setting-Priority][¶]]
 :PROPERTIES:
 :CUSTOM_ID: setting-priority
 :CLASS: subsection
@@ -482,7 +664,7 @@ Organize annotations by importance:
 3. Choose from: =low=, =normal=, =high=, =critical=
 
 <<Adding-Tags>>
-**** 5.2.3 Adding Tags [[#Adding-Tags][¶]]
+**** 6.2.3 Adding Tags [[#Adding-Tags][¶]]
 :PROPERTIES:
 :CUSTOM_ID: adding-tags
 :CLASS: subsection
@@ -495,7 +677,7 @@ Categorize your annotations with tags:
 4. Tags appear as =#review #bug= in the annotation display
 
 <<Multi_002dAuthor-Support>>
-*** 5.3 Multi-Author Support [[#Multi_002dAuthor-Support][¶]]
+*** 6.3 Multi-Author Support [[#Multi_002dAuthor-Support][¶]]
 :PROPERTIES:
 :CUSTOM_ID: multi-author-support
 :CLASS: section
@@ -505,7 +687,7 @@ Categorize your annotations with tags:
 - [[#Author-Management-Commands][Author Management Commands]]
 
 <<Author-Configuration>>
-**** 5.3.1 Author Configuration [[#Author-Configuration][¶]]
+**** 6.3.1 Author Configuration [[#Author-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: author-configuration
 :CLASS: subsection
@@ -523,7 +705,7 @@ Configure team members and prompting behavior:
 #+end_src
 
 <<Prompting-Modes>>
-**** 5.3.2 Prompting Modes [[#Prompting-Modes][¶]]
+**** 6.3.2 Prompting Modes [[#Prompting-Modes][¶]]
 :PROPERTIES:
 :CUSTOM_ID: prompting-modes
 :CLASS: subsection
@@ -538,7 +720,7 @@ Configure team members and prompting behavior:
   reviews)
 
 <<Author-Management-Commands>>
-**** 5.3.3 Author Management Commands [[#Author-Management-Commands][¶]]
+**** 6.3.3 Author Management Commands [[#Author-Management-Commands][¶]]
 :PROPERTIES:
 :CUSTOM_ID: author-management-commands
 :CLASS: subsection
@@ -550,7 +732,7 @@ Configure team members and prompting behavior:
   (forces prompt on next annotation)
 
 <<Collaboration-Workflows>>
-*** 5.4 Collaboration Workflows [[#Collaboration-Workflows][¶]]
+*** 6.4 Collaboration Workflows [[#Collaboration-Workflows][¶]]
 :PROPERTIES:
 :CUSTOM_ID: collaboration-workflows
 :CLASS: section
@@ -559,7 +741,7 @@ Configure team members and prompting behavior:
 - [[#Document-Collaboration][Document Collaboration]]
 
 <<Code-Review-Workflow>>
-**** 5.4.1 Code Review Workflow [[#Code-Review-Workflow][¶]]
+**** 6.4.1 Code Review Workflow [[#Code-Review-Workflow][¶]]
 :PROPERTIES:
 :CUSTOM_ID: code-review-workflow
 :CLASS: subsection
@@ -573,7 +755,7 @@ Configure team members and prompting behavior:
 7. Export final review with M-s o to org-mode for documentation
 
 <<Document-Collaboration>>
-**** 5.4.2 Document Collaboration [[#Document-Collaboration][¶]]
+**** 6.4.2 Document Collaboration [[#Document-Collaboration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: document-collaboration
 :CLASS: subsection
@@ -595,7 +777,7 @@ Next: [[#Navigation][Navigation]], Previous:
 [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 6 Display Styles [[#Display-Styles-1][¶]]
+** 7 Display Styles [[#Display-Styles-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Display-Styles-1
 :CLASS: chapter
@@ -609,7 +791,7 @@ allowing you to choose the visual style that best fits your workflow.
 - [[#Fringe-Customization][Fringe Customization]]
 
 <<Available-Styles>>
-*** 6.1 Available Styles [[#Available-Styles][¶]]
+*** 7.1 Available Styles [[#Available-Styles][¶]]
 :PROPERTIES:
 :CUSTOM_ID: available-styles
 :CLASS: section
@@ -624,7 +806,7 @@ allowing you to choose the visual style that best fits your workflow.
   visibility)
 
 <<Changing-Display-Styles>>
-*** 6.2 Changing Display Styles [[#Changing-Display-Styles][¶]]
+*** 7.2 Changing Display Styles [[#Changing-Display-Styles][¶]]
 :PROPERTIES:
 :CUSTOM_ID: changing-display-styles
 :CLASS: section
@@ -637,7 +819,7 @@ You can change the display style in several ways:
   annotations
 
 <<Style-Recommendations>>
-*** 6.3 Style Recommendations [[#Style-Recommendations][¶]]
+*** 7.3 Style Recommendations [[#Style-Recommendations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: style-recommendations
 :CLASS: section
@@ -655,7 +837,7 @@ You can change the display style in several ways:
   and status indicators
 
 <<Fringe-Customization>>
-*** 6.4 Fringe Customization [[#Fringe-Customization][¶]]
+*** 7.4 Fringe Customization [[#Fringe-Customization][¶]]
 :PROPERTIES:
 :CUSTOM_ID: fringe-customization
 :CLASS: section
@@ -675,7 +857,7 @@ Next: [[#Advanced-Features][Advanced Features]], Previous:
 [[#Display-Styles][Display Styles]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 7 Navigation [[#Navigation-1][¶]]
+** 8 Navigation [[#Navigation-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Navigation-1
 :CLASS: chapter
@@ -685,7 +867,7 @@ Next: [[#Advanced-Features][Advanced Features]], Previous:
 - [[#Smart-Navigation][Smart Navigation]]
 
 <<Moving-Between-Annotations>>
-*** 7.1 Moving Between Annotations [[#Moving-Between-Annotations][¶]]
+*** 8.1 Moving Between Annotations [[#Moving-Between-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: moving-between-annotations
 :CLASS: section
@@ -701,7 +883,7 @@ navigate through all annotations in a buffer. When you arrive at an
 annotation, the text is briefly highlighted with a pulse effect.
 
 <<Viewing-Current-Annotation>>
-*** 7.2 Viewing Current Annotation [[#Viewing-Current-Annotation][¶]]
+*** 8.2 Viewing Current Annotation [[#Viewing-Current-Annotation][¶]]
 :PROPERTIES:
 :CUSTOM_ID: viewing-current-annotation
 :CLASS: section
@@ -715,7 +897,7 @@ When you're on an annotated region, you can:
 - View available keybindings in the header line
 
 <<Smart-Navigation>>
-*** 7.3 Smart Navigation [[#Smart-Navigation][¶]]
+*** 8.3 Smart Navigation [[#Smart-Navigation][¶]]
 :PROPERTIES:
 :CUSTOM_ID: smart-navigation
 :CLASS: section
@@ -737,7 +919,7 @@ Next: [[#Org_002dmode-Integration][Org-mode Integration]], Previous:
 [[#Navigation][Navigation]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 8 Advanced Features [[#Advanced-Features-1][¶]]
+** 9 Advanced Features [[#Advanced-Features-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Advanced-Features-1
 :CLASS: chapter
@@ -749,7 +931,7 @@ Next: [[#Org_002dmode-Integration][Org-mode Integration]], Previous:
 - [[#Header_002dline-Integration][Header-line Integration]]
 
 <<Listing-All-Annotations>>
-*** 8.1 Listing All Annotations [[#Listing-All-Annotations][¶]]
+*** 9.1 Listing All Annotations [[#Listing-All-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: listing-all-annotations
 :CLASS: section
@@ -786,7 +968,7 @@ The enhanced listing includes:
 - Color coding for different statuses and priorities
 
 <<Cross_002dfile-Annotation-Browsing>>
-*** 8.2 Cross-file Annotation Browsing [[#Cross_002dfile-Annotation-Browsing][¶]]
+*** 9.2 Cross-file Annotation Browsing [[#Cross_002dfile-Annotation-Browsing][¶]]
 :PROPERTIES:
 :CUSTOM_ID: cross-file-annotation-browsing
 :CLASS: section
@@ -806,7 +988,7 @@ This command now shows:
 - Author information for collaborative workflows
 
 <<Annotation-Buffer-Features>>
-*** 8.3 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
+*** 9.3 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-features
 :CLASS: section
@@ -817,14 +999,15 @@ support:
 - Shows helpful instructions with threading commands in the header
 - Displays thread information, status, and priority
 - Shows complete conversation thread with replies
-- Access to threading commands (C-c r, C-c s, C-c p, C-c t)
+- Access to threading commands (M-s r, M-s s, M-s p, M-s t)
+- Access to advanced sexp editing with M-s e
 - Supports multi-line annotations with full editing capabilities
 - Starts in edit mode for immediate typing
 - Provides save (C-c C-c) and cancel (C-c C-k) operations
 - Automatically handles empty annotations (removes them)
 
 <<Header_002dline-Integration>>
-*** 8.4 Header-line Integration [[#Header_002dline-Integration][¶]]
+*** 9.4 Header-line Integration [[#Header_002dline-Integration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: header-line-integration
 :CLASS: section
@@ -846,7 +1029,7 @@ Next: [[#Key-Bindings][Key Bindings]], Previous:
 [[#Advanced-Features][Advanced Features]], Up: [[#Top][Simply Annotate]]
   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 9 Org-mode Integration [[#Org_002dmode-Integration-1][¶]]
+** 10 Org-mode Integration [[#Org_002dmode-Integration-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Org_002dmode-Integration-1
 :CLASS: chapter
@@ -860,7 +1043,7 @@ further processing, documentation, or meeting preparation.
 - [[#Integration-with-Org-Workflows][Integration with Org Workflows]]
 
 <<Exporting-Annotations>>
-*** 9.1 Exporting Annotations [[#Exporting-Annotations][¶]]
+*** 10.1 Exporting Annotations [[#Exporting-Annotations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: exporting-annotations
 :CLASS: section
@@ -880,7 +1063,7 @@ This prompts for a filename and creates a structured org-mode file with:
 - Author information for each comment and reply
 
 <<Export-Format>>
-*** 9.2 Export Format [[#Export-Format][¶]]
+*** 10.2 Export Format [[#Export-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: export-format
 :CLASS: section
@@ -911,7 +1094,7 @@ Security audit completed. Issues documented in SECURITY.md
 #+end_src
 
 <<Use-Cases-for-Export>>
-*** 9.3 Use Cases for Export [[#Use-Cases-for-Export][¶]]
+*** 10.3 Use Cases for Export [[#Use-Cases-for-Export][¶]]
 :PROPERTIES:
 :CUSTOM_ID: use-cases-for-export
 :CLASS: section
@@ -924,7 +1107,7 @@ Security audit completed. Issues documented in SECURITY.md
   discussions
 
 <<Integration-with-Org-Workflows>>
-*** 9.4 Integration with Org Workflows [[#Integration-with-Org-Workflows][¶]]
+*** 10.4 Integration with Org Workflows [[#Integration-with-Org-Workflows][¶]]
 :PROPERTIES:
 :CUSTOM_ID: integration-with-org-workflows
 :CLASS: section
@@ -945,7 +1128,7 @@ Next: [[#Customization][Customization]], Previous:
 [[#Org_002dmode-Integration][Org-mode Integration]], Up: [[#Top][Simply
 Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 10 Key Bindings [[#Key-Bindings-1][¶]]
+** 11 Key Bindings [[#Key-Bindings-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Key-Bindings-1
 :CLASS: chapter
@@ -953,53 +1136,56 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 - [[#Main-Mode-Bindings][Main Mode Bindings]]
 - [[#Annotation-Buffer-Bindings][Annotation Buffer Bindings]]
 - [[#Smart-Action-Behavior][Smart Action Behavior]]
+- [[#Sexp-Editing-Mode][Sexp Editing Mode]]
 
 <<Main-Mode-Bindings>>
-*** 10.1 Main Mode Bindings [[#Main-Mode-Bindings][¶]]
+*** 11.1 Main Mode Bindings [[#Main-Mode-Bindings][¶]]
 :PROPERTIES:
 :CUSTOM_ID: main-mode-bindings
 :CLASS: section
 :END:
 When =simply-annotate-mode= is enabled:
 
-| Key   | Command                                    | Description                          |
-|-------+--------------------------------------------+--------------------------------------|
-| M-s j | =simply-annotate-smart-action=             | Smart create/view/edit annotation    |
-| M-s r | =simply-annotate-reply-to-annotation=      | *New:* Add reply to annotation       |
-| M-s s | =simply-annotate-set-annotation-status=    | *New:* Set status (open/resolved)    |
-| M-s p | =simply-annotate-set-annotation-priority=  | *New:* Set priority (low/high)       |
-| M-s t | =simply-annotate-add-annotation-tag=       | *New:* Add tag (#review, #bug)       |
-| M-s a | =simply-annotate-change-annotation-author= | *New:* Change author                 |
-| M-s A | =simply-annotate-reset-session-author=     | *New:* Reset session author          |
-| M-s o | =simply-annotate-export-to-org-file=       | *New:* Export to org-mode            |
-| M-s - | =simply-annotate-remove=                   | Delete annotation at point           |
-| M-s l | =simply-annotate-list=                     | List all annotations in current file |
-| M-s 0 | =simply-annotate-show-all=                 | Browse annotations across all files  |
-| M-s ] | =simply-annotate-cycle-display-style=      | Cycle through display styles         |
-| M-n   | =simply-annotate-next=                     | Jump to next annotation              |
-| M-p   | =simply-annotate-previous=                 | Jump to previous annotation          |
+| Key   | Command                                    | Description                              |
+|-------+--------------------------------------------+------------------------------------------|
+| M-s j | =simply-annotate-smart-action=             | Smart create/view/edit annotation        |
+| M-s e | =simply-annotate-edit-sexp=                | *New:* Edit annotation as raw Elisp sexp |
+| M-s r | =simply-annotate-reply-to-annotation=      | Add reply to annotation                  |
+| M-s s | =simply-annotate-set-annotation-status=    | Set status (open/resolved)               |
+| M-s p | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                  |
+| M-s t | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)                  |
+| M-s a | =simply-annotate-change-annotation-author= | Change author                            |
+| M-s A | =simply-annotate-reset-session-author=     | Reset session author                     |
+| M-s o | =simply-annotate-export-to-org-file=       | Export to org-mode                       |
+| M-s - | =simply-annotate-remove=                   | Delete annotation at point               |
+| M-s l | =simply-annotate-list=                     | List all annotations in current file     |
+| M-s 0 | =simply-annotate-show-all=                 | Browse annotations across all files      |
+| M-s ] | =simply-annotate-cycle-display-style=      | Cycle through display styles             |
+| M-n   | =simply-annotate-next=                     | Jump to next annotation                  |
+| M-p   | =simply-annotate-previous=                 | Jump to previous annotation              |
 
 <<Annotation-Buffer-Bindings>>
-*** 10.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
+*** 11.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-bindings
 :CLASS: section
 :END:
 In the annotation buffer:
 
-| Key     | Command                                   | Description                  |
-|---------+-------------------------------------------+------------------------------|
-| C-c C-c | =simply-annotate-save-annotation-buffer=  | Save changes                 |
-| C-c C-k | =simply-annotate-cancel-edit=             | Cancel editing               |
-| C-g     | =simply-annotate-cancel-edit=             | Cancel editing (alternative) |
-| C-c r   | =simply-annotate-reply-to-annotation=     | *New:* Add reply             |
-| C-c s   | =simply-annotate-set-annotation-status=   | *New:* Set status            |
-| C-c p   | =simply-annotate-set-annotation-priority= | *New:* Set priority          |
-| C-c t   | =simply-annotate-add-annotation-tag=      | *New:* Add tag               |
-| C-c o   | =simply-annotate-export-to-org-file=      | *New:* Export to org-mode    |
+| Key     | Command                                   | Description                        |
+|---------+-------------------------------------------+------------------------------------|
+| C-c C-c | =simply-annotate-save-annotation-buffer=  | Save changes                       |
+| C-c C-k | =simply-annotate-cancel-edit=             | Cancel editing                     |
+| C-g     | =simply-annotate-cancel-edit=             | Cancel editing (alternative)       |
+| M-s e   | =simply-annotate-edit-sexp=               | *New:* Switch to sexp editing mode |
+| M-s r   | =simply-annotate-reply-to-annotation=     | Add reply                          |
+| M-s s   | =simply-annotate-set-annotation-status=   | Set status                         |
+| M-s p   | =simply-annotate-set-annotation-priority= | Set priority                       |
+| M-s t   | =simply-annotate-add-annotation-tag=      | Add tag                            |
+| M-s o   | =simply-annotate-export-to-org-file=      | Export to org-mode                 |
 
 <<Smart-Action-Behavior>>
-*** 10.3 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
+*** 11.3 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
 :PROPERTIES:
 :CUSTOM_ID: smart-action-behavior
 :CLASS: section
@@ -1013,6 +1199,27 @@ The M-s j key binding changes behavior based on context:
 | C-u M-s j on annotation   | Force edit mode                        |
 | Elsewhere                 | Create annotation for current line     |
 
+<<Sexp-Editing-Mode>>
+*** 11.4 Sexp Editing Mode [[#Sexp-Editing-Mode][¶]]
+:PROPERTIES:
+:CUSTOM_ID: sexp-editing-mode
+:CLASS: section
+:END:
+When in sexp editing mode (after M-s e):
+
+| Key     | Command                                  | Description                       |
+|---------+------------------------------------------+-----------------------------------|
+| C-c C-c | =simply-annotate-save-annotation-buffer= | Parse and save sexp               |
+| C-c C-k | =simply-annotate-cancel-edit=            | Cancel sexp editing               |
+| C-g     | =simply-annotate-cancel-edit=            | Cancel sexp editing (alternative) |
+
+The sexp editing buffer provides:
+
+- Emacs Lisp mode for syntax highlighting
+- Helpful comments explaining the data structure
+- Pretty-printed formatting for readability
+- Validation when saving to ensure data integrity
+
 --------------
 
 <<Customization>>
@@ -1021,7 +1228,7 @@ Next: [[#Data-Storage][Data Storage]], Previous: [[#Key-Bindings][Key
 Bindings]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 11 Customization [[#Customization-1][¶]]
+** 12 Customization [[#Customization-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Customization-1
 :CLASS: chapter
@@ -1033,11 +1240,12 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
 - [[#Core-Customization-Variables][Core Customization Variables]]
 - [[#Threading-and-Collaboration-Variables][Threading and Collaboration
   Variables]]
+- [[#Custom-Faces][Custom Faces]]
 - [[#Display-Style-Configuration][Display Style Configuration]]
 - [[#Advanced-Customization][Advanced Customization]]
 
 <<Basic-Configuration>>
-*** 11.1 Basic Configuration [[#Basic-Configuration][¶]]
+*** 12.1 Basic Configuration [[#Basic-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: basic-configuration
 :CLASS: section
@@ -1068,7 +1276,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
 #+end_src
 
 <<Threading-and-Collaboration-Configuration>>
-*** 11.2 Threading and Collaboration Configuration [[#Threading-and-Collaboration-Configuration][¶]]
+*** 12.2 Threading and Collaboration Configuration [[#Threading-and-Collaboration-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: threading-and-collaboration-configuration
 :CLASS: section
@@ -1093,7 +1301,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Configuration-Examples>>
-*** 11.3 Configuration Examples [[#Configuration-Examples][¶]]
+*** 12.3 Configuration Examples [[#Configuration-Examples][¶]]
 :PROPERTIES:
 :CUSTOM_ID: configuration-examples
 :CLASS: section
@@ -1103,7 +1311,7 @@ Configure team collaboration and threading features:
 - [[#Multi_002dProject-Consultant][Multi-Project Consultant]]
 
 <<Single-User-_0028Default_0029>>
-**** 11.3.1 Single User (Default) [[#Single-User-_0028Default_0029][¶]]
+**** 12.3.1 Single User (Default) [[#Single-User-_0028Default_0029][¶]]
 :PROPERTIES:
 :CUSTOM_ID: single-user-default
 :CLASS: subsection
@@ -1115,7 +1323,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Code-Review-Team>>
-**** 11.3.2 Code Review Team [[#Code-Review-Team][¶]]
+**** 12.3.2 Code Review Team [[#Code-Review-Team][¶]]
 :PROPERTIES:
 :CUSTOM_ID: code-review-team
 :CLASS: subsection
@@ -1129,7 +1337,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Multi_002dProject-Consultant>>
-**** 11.3.3 Multi-Project Consultant [[#Multi_002dProject-Consultant][¶]]
+**** 12.3.3 Multi-Project Consultant [[#Multi_002dProject-Consultant][¶]]
 :PROPERTIES:
 :CUSTOM_ID: multi-project-consultant
 :CLASS: subsection
@@ -1143,7 +1351,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Core-Customization-Variables>>
-*** 11.4 Core Customization Variables [[#Core-Customization-Variables][¶]]
+*** 12.4 Core Customization Variables [[#Core-Customization-Variables][¶]]
 :PROPERTIES:
 :CUSTOM_ID: core-customization-variables
 :CLASS: section
@@ -1188,9 +1396,44 @@ Configure team collaboration and threading features:
   Face for fringe indicators. Default: ='simply-annotate-fringe-face=
 
 <<Threading-and-Collaboration-Variables>>
-*** 11.5 Threading and Collaboration Variables [[#Threading-and-Collaboration-Variables][¶]]
+*** 12.5 Threading and Collaboration Variables [[#Threading-and-Collaboration-Variables][¶]]
 :PROPERTIES:
 :CUSTOM_ID: threading-and-collaboration-variables
+:CLASS: section
+:END:
+- <<index-simply_002dannotate_002dauthor_002dlist-1>>=simply-annotate-author-list=
+  [[#index-simply_002dannotate_002dauthor_002dlist-1][¶]] :: 
+
+  List of available authors for annotations. Default:
+  =(list user-full-name)=
+
+- <<index-simply_002dannotate_002dprompt_002dfor_002dauthor-1>>=simply-annotate-prompt-for-author=
+  [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-1][¶]] :: 
+
+  When to prompt for author selection. Options: =nil=, ='first-only=,
+  ='always=, ='threads-only=. Default: =nil=
+
+- <<index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile>>=simply-annotate-remember-author-per-file=
+  [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile][¶]] :: 
+
+  Whether to remember author choice per file. Default: =nil=
+
+- <<index-simply_002dannotate_002dthread_002dstatuses-1>>=simply-annotate-thread-statuses=
+  [[#index-simply_002dannotate_002dthread_002dstatuses-1][¶]] :: 
+
+  Available status values for annotation threads. Default:
+  ='("open" "in-progress" "resolved" "closed")=
+
+- <<index-simply_002dannotate_002dpriority_002dlevels-1>>=simply-annotate-priority-levels=
+  [[#index-simply_002dannotate_002dpriority_002dlevels-1][¶]] :: 
+
+  Available priority levels for annotations. Default:
+  ='("low" "normal" "high" "critical")=
+
+<<Custom-Faces>>
+*** 12.6 Custom Faces [[#Custom-Faces][¶]]
+:PROPERTIES:
+:CUSTOM_ID: custom-faces
 :CLASS: section
 :END:
 
@@ -1211,7 +1454,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Display-Style-Configuration>>
-*** 11.6 Display Style Configuration [[#Display-Style-Configuration][¶]]
+*** 12.7 Display Style Configuration [[#Display-Style-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: display-style-configuration
 :CLASS: section
@@ -1232,7 +1475,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Advanced-Customization>>
-*** 11.7 Advanced Customization [[#Advanced-Customization][¶]]
+*** 12.8 Advanced Customization [[#Advanced-Customization][¶]]
 :PROPERTIES:
 :CUSTOM_ID: advanced-customization
 :CLASS: section
@@ -1241,7 +1484,7 @@ Configure team collaboration and threading features:
 - [[#Global-Mode-Setup][Global Mode Setup]]
 
 <<Custom-Fringe-Bitmaps>>
-**** 11.7.1 Custom Fringe Bitmaps [[#Custom-Fringe-Bitmaps][¶]]
+**** 12.8.1 Custom Fringe Bitmaps [[#Custom-Fringe-Bitmaps][¶]]
 :PROPERTIES:
 :CUSTOM_ID: custom-fringe-bitmaps
 :CLASS: subsection
@@ -1265,7 +1508,7 @@ You can define custom fringe bitmaps:
 #+end_src
 
 <<Global-Mode-Setup>>
-**** 11.7.2 Global Mode Setup [[#Global-Mode-Setup][¶]]
+**** 12.8.2 Global Mode Setup [[#Global-Mode-Setup][¶]]
 :PROPERTIES:
 :CUSTOM_ID: global-mode-setup
 :CLASS: subsection
@@ -1289,18 +1532,20 @@ Next: [[#Troubleshooting][Troubleshooting]], Previous:
 [[#Customization][Customization]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 12 Data Storage [[#Data-Storage-1][¶]]
+** 13 Data Storage [[#Data-Storage-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Data-Storage-1
 :CLASS: chapter
 :END:
 - [[#Storage-Format][Storage Format]]
 - [[#Sample-Storage-Format][Sample Storage Format]]
+- [[#Data-Structure-Evolution][Data Structure Evolution]]
 - [[#Data-Management][Data Management]]
 - [[#File-Key-System][File Key System]]
+- [[#Sexp-Editing-and-Data-Integrity][Sexp Editing and Data Integrity]]
 
 <<Storage-Format>>
-*** 12.1 Storage Format [[#Storage-Format][¶]]
+*** 13.1 Storage Format [[#Storage-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: storage-format
 :CLASS: section
@@ -1310,25 +1555,58 @@ Annotations are stored in a single Emacs Lisp file (by default
 can be version controlled if desired.
 
 <<Sample-Storage-Format>>
-*** 12.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
+*** 13.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sample-storage-format
 :CLASS: section
 :END:
+With threading support, the storage format includes complete thread
+structures:
 
 #+begin_src lisp-preformatted
 ;;; Simply Annotate Database
 ;;; This file is auto-generated. Do not edit manually.
 
 (("simply-annotate:/path/to/file.el"
-  ((start . 1250) (end . 1300) (text . "This needs refactoring"))
-  ((start . 2100) (end . 2150) (text . "Add error handling here")))
+  ((start . 1250) (end . 1300) 
+   (text . ((id . "thread-123456")
+            (created . "2025-06-29T10:30:00")
+            (status . "open")
+            (priority . "high")
+            (tags . ("review" "urgent"))
+            (comments . (((author . "John Doe")
+                          (timestamp . "2025-06-29T10:30:00")
+                          (text . "This needs refactoring")
+                          (type . "comment"))
+                         ((author . "Jane Smith")
+                          (timestamp . "2025-06-29T10:45:00")
+                          (text . "I agree, will fix this")
+                          (type . "reply")))))))
+  ((start . 2100) (end . 2150) 
+   (text . "Add error handling here")))
  ("simply-annotate:/path/to/other-file.py"
-  ((start . 450) (end . 500) (text . "Performance bottleneck"))))
+  ((start . 450) (end . 500) 
+   (text . "Performance bottleneck"))))
 #+end_src
 
+<<Data-Structure-Evolution>>
+*** 13.3 Data Structure Evolution [[#Data-Structure-Evolution][¶]]
+:PROPERTIES:
+:CUSTOM_ID: data-structure-evolution
+:CLASS: section
+:END:
+Simply Annotate supports both legacy string annotations and new thread
+structures:
+
+- *Legacy format*: Simple strings are automatically converted to thread
+  structures when edited
+- *Thread format*: Complete data structures with metadata and
+  conversation history
+- *Backward compatibility*: Old annotations continue to work seamlessly
+- *Migration*: Annotations are upgraded to thread format when modified
+
 <<Data-Management>>
-*** 12.3 Data Management [[#Data-Management][¶]]
+*** 13.4 Data Management [[#Data-Management][¶]]
 :PROPERTIES:
 :CUSTOM_ID: data-management
 :CLASS: section
@@ -1338,9 +1616,10 @@ can be version controlled if desired.
 - The file uses a file key system to track annotations per file
 - Empty databases are automatically cleaned up
 - Only saves when there are actual changes to annotations
+- Thread structures are validated when saving to prevent corruption
 
 <<File-Key-System>>
-*** 12.4 File Key System [[#File-Key-System][¶]]
+*** 13.5 File Key System [[#File-Key-System][¶]]
 :PROPERTIES:
 :CUSTOM_ID: file-key-system
 :CLASS: section
@@ -1352,6 +1631,20 @@ Each file is identified by a unique key:
 - Ensures annotations persist across Emacs sessions
 - Supports moving files (annotations follow the buffer name)
 
+<<Sexp-Editing-and-Data-Integrity>>
+*** 13.6 Sexp Editing and Data Integrity [[#Sexp-Editing-and-Data-Integrity][¶]]
+:PROPERTIES:
+:CUSTOM_ID: sexp-editing-and-data-integrity
+:CLASS: section
+:END:
+When using sexp editing mode:
+
+- Data structures are validated before saving
+- Required fields are automatically added if missing
+- Malformed structures are rejected with helpful error messages
+- Backup functionality preserves data before dangerous operations
+- Thread IDs and timestamps are preserved across edits
+
 --------------
 
 <<Troubleshooting>>
@@ -1360,7 +1653,7 @@ Next: [[#Function-Index][Function Index]], Previous:
 [[#Data-Storage][Data Storage]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
-** 13 Troubleshooting [[#Troubleshooting-1][¶]]
+** 14 Troubleshooting [[#Troubleshooting-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Troubleshooting-1
 :CLASS: chapter
@@ -1368,13 +1661,16 @@ Next: [[#Function-Index][Function Index]], Previous:
 - [[#Annotations-Not-Persisting][Annotations Not Persisting]]
 - [[#Display-Issues][Display Issues]]
 - [[#Smart-Action-Issues][Smart Action Issues]]
+- [[#Threading-Issues][Threading Issues]]
+- [[#Sexp-Editing-Issues][Sexp Editing Issues]]
 - [[#Performance-with-Large-Files][Performance with Large Files]]
 - [[#Integration-Issues][Integration Issues]]
+- [[#Buffer_002dLocal-Variable-Issues][Buffer-Local Variable Issues]]
 - [[#Common-Error-Messages][Common Error Messages]]
 - [[#Getting-Help][Getting Help]]
 
 <<Annotations-Not-Persisting>>
-*** 13.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
+*** 14.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotations-not-persisting
 :CLASS: section
@@ -1386,9 +1682,10 @@ If your annotations aren't being saved between sessions:
 - Verify that hooks are installed correctly
 - Check file permissions on the storage directory
 - Look for error messages in the =*Messages*= buffer
+- Verify threading data structure isn't corrupted
 
 <<Display-Issues>>
-*** 13.2 Display Issues [[#Display-Issues][¶]]
+*** 14.2 Display Issues [[#Display-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: display-issues
 :CLASS: section
@@ -1397,7 +1694,7 @@ If your annotations aren't being saved between sessions:
 - [[#Fringe-Indicators-Not-Showing][Fringe Indicators Not Showing]]
 
 <<Highlighting-Not-Visible>>
-**** 13.2.1 Highlighting Not Visible [[#Highlighting-Not-Visible][¶]]
+**** 14.2.1 Highlighting Not Visible [[#Highlighting-Not-Visible][¶]]
 :PROPERTIES:
 :CUSTOM_ID: highlighting-not-visible
 :CLASS: subsection
@@ -1409,7 +1706,7 @@ If your annotations aren't being saved between sessions:
 - Verify the face definition with M-x describe-face
 
 <<Fringe-Indicators-Not-Showing>>
-**** 13.2.2 Fringe Indicators Not Showing [[#Fringe-Indicators-Not-Showing][¶]]
+**** 14.2.2 Fringe Indicators Not Showing [[#Fringe-Indicators-Not-Showing][¶]]
 :PROPERTIES:
 :CUSTOM_ID: fringe-indicators-not-showing
 :CLASS: subsection
@@ -1421,7 +1718,7 @@ If your annotations aren't being saved between sessions:
 - Verify fringe face colors are visible against your theme
 
 <<Smart-Action-Issues>>
-*** 13.3 Smart Action Issues [[#Smart-Action-Issues][¶]]
+*** 14.3 Smart Action Issues [[#Smart-Action-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: smart-action-issues
 :CLASS: section
@@ -1433,8 +1730,94 @@ If your annotations aren't being saved between sessions:
   fringe mode)
 - Verify the annotation buffer is responding to C-c C-c and C-c C-k
 
+<<Threading-Issues>>
+*** 14.4 Threading Issues [[#Threading-Issues][¶]]
+:PROPERTIES:
+:CUSTOM_ID: threading-issues
+:CLASS: section
+:END:
+- [[#Author-Prompting-Problems][Author Prompting Problems]]
+- [[#Thread-Display-Corruption][Thread Display Corruption]]
+- [[#Reply-Issues][Reply Issues]]
+
+<<Author-Prompting-Problems>>
+**** 14.4.1 Author Prompting Problems [[#Author-Prompting-Problems][¶]]
+:PROPERTIES:
+:CUSTOM_ID: author-prompting-problems
+:CLASS: subsection
+:END:
+- Check =simply-annotate-prompt-for-author= setting
+- Verify =simply-annotate-author-list= contains valid names
+- Use M-s A to reset session author if stuck
+- Check that prompting mode matches your workflow needs
+
+<<Thread-Display-Corruption>>
+**** 14.4.2 Thread Display Corruption [[#Thread-Display-Corruption][¶]]
+:PROPERTIES:
+:CUSTOM_ID: thread-display-corruption
+:CLASS: subsection
+:END:
+- Try M-s ] to refresh display style
+- Check for malformed thread data structures
+- Use sexp editing mode to inspect and fix thread structure
+- Verify all required fields are present in thread data
+
+<<Reply-Issues>>
+**** 14.4.3 Reply Issues [[#Reply-Issues][¶]]
+:PROPERTIES:
+:CUSTOM_ID: reply-issues
+:CLASS: subsection
+:END:
+- Ensure you're using C-c C-c to save replies properly
+- Check that M-s r is working on existing annotations
+- Verify author configuration for multi-user workflows
+- Look for timestamp or author field corruption
+
+<<Sexp-Editing-Issues>>
+*** 14.5 Sexp Editing Issues [[#Sexp-Editing-Issues][¶]]
+:PROPERTIES:
+:CUSTOM_ID: sexp-editing-issues
+:CLASS: section
+:END:
+- [[#Parsing-Errors][Parsing Errors]]
+- [[#Data-Structure-Problems][Data Structure Problems]]
+- [[#Validation-Failures][Validation Failures]]
+
+<<Parsing-Errors>>
+**** 14.5.1 Parsing Errors [[#Parsing-Errors][¶]]
+:PROPERTIES:
+:CUSTOM_ID: parsing-errors
+:CLASS: subsection
+:END:
+- Ensure proper Elisp syntax with balanced parentheses
+- Check that all strings are properly quoted
+- Verify required fields (id, comments) are present
+- Use C-c C-k to cancel if unsure about changes
+
+<<Data-Structure-Problems>>
+**** 14.5.2 Data Structure Problems [[#Data-Structure-Problems][¶]]
+:PROPERTIES:
+:CUSTOM_ID: data-structure-problems
+:CLASS: subsection
+:END:
+- Check timestamp format: use ISO format ="2025-06-29T10:30:00"=
+- Ensure comment =type= field is ="comment"= or ="reply"=
+- Verify =status= and =priority= values are from allowed lists
+- Confirm =tags= field is a list, even if empty: =()=
+
+<<Validation-Failures>>
+**** 14.5.3 Validation Failures [[#Validation-Failures][¶]]
+:PROPERTIES:
+:CUSTOM_ID: validation-failures
+:CLASS: subsection
+:END:
+- Thread structure must be an association list with required keys
+- =comments= field must be a list of comment objects
+- Each comment must have =author=, =timestamp=, =text=, and =type=
+- Use the helpful comments in sexp editing mode as a guide
+
 <<Performance-with-Large-Files>>
-*** 13.4 Performance with Large Files [[#Performance-with-Large-Files][¶]]
+*** 14.6 Performance with Large Files [[#Performance-with-Large-Files][¶]]
 :PROPERTIES:
 :CUSTOM_ID: performance-with-large-files
 :CLASS: section
@@ -1444,10 +1827,11 @@ Simply Annotate is designed to be lightweight:
 - Annotations use lightweight overlays
 - No performance impact on file operations
 - Fringe mode generally has better performance than highlight mode
+- Sexp editing may be slower with very large annotation structures
 - Consider splitting very large annotation sets across multiple files
 
 <<Integration-Issues>>
-*** 13.5 Integration Issues [[#Integration-Issues][¶]]
+*** 14.7 Integration Issues [[#Integration-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: integration-issues
 :CLASS: section
@@ -1457,9 +1841,23 @@ Simply Annotate is designed to be lightweight:
 - May need customization for exotic display modes
 - Check for conflicting key bindings with C-h k
 - Fringe indicators work well with line number modes
+- Sexp editing works in any buffer that supports Emacs Lisp editing
+
+<<Buffer_002dLocal-Variable-Issues>>
+*** 14.8 Buffer-Local Variable Issues [[#Buffer_002dLocal-Variable-Issues][¶]]
+:PROPERTIES:
+:CUSTOM_ID: buffer-local-variable-issues
+:CLASS: section
+:END:
+If annotations disappear when opening new files:
+
+- Ensure buffer-local variables are properly declared
+- Check that =simply-annotate-overlays= is buffer-local
+- Verify mode activation is working correctly per buffer
+- Use debug functions to check overlay state
 
 <<Common-Error-Messages>>
-*** 13.6 Common Error Messages [[#Common-Error-Messages][¶]]
+*** 14.9 Common Error Messages [[#Common-Error-Messages][¶]]
 :PROPERTIES:
 :CUSTOM_ID: common-error-messages
 :CLASS: section
@@ -1477,11 +1875,18 @@ Simply Annotate is designed to be lightweight:
 - *"No annotations database found"* :: No annotation file exists yet.
   Create your first annotation to initialize the database.
 
+- *"Invalid annotation format: must be a thread alist"* :: Sexp editing
+  validation failed. Check the data structure format and required
+  fields.
+
+- *"Error parsing sexp"* :: The Elisp syntax in sexp editing mode is
+  invalid. Check for balanced parentheses and proper quoting.
+
 - *Database file errors* :: Check permissions and disk space for the
   storage file location.
 
 <<Getting-Help>>
-*** 13.7 Getting Help [[#Getting-Help][¶]]
+*** 14.10 Getting Help [[#Getting-Help][¶]]
 :PROPERTIES:
 :CUSTOM_ID: getting-help
 :CLASS: section
@@ -1490,6 +1895,9 @@ Simply Annotate is designed to be lightweight:
 - Check the =*Messages*= buffer for error messages
 - Use M-x describe-mode in an annotation buffer for mode-specific help
 - The header-line always shows available commands and current status
+- Use sexp editing mode to inspect annotation data structures directly
+- Check threading information in the annotation list (M-s l) for
+  debugging
 
 --------------
 
@@ -1512,6 +1920,7 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                               | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dchange_002dannotation_002dauthor][=simply-annotate-change-annotation-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dedit_002dsexp][=simply-annotate-edit-sexp=]]                                   | [[#Advanced-Editing][Advanced Editing]]                       |
 |                | [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
 |                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
@@ -1542,31 +1951,65 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 :CLASS: unnumbered
 :END:
 
-|                | Index Entry                                                                                       | Section                                                       |
-| -------------- |                                                                                                   |                                                               |
-| S              |                                                                                                   |                                                               |
-|                | [[#index-simply_002dannotate_002dauthor_002dlist][=simply-annotate-author-list=]]                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]             | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddisplay_002dstyle][=simply-annotate-display-style=]]             | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-1][=simply-annotate-display-style=]]           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-2][=simply-annotate-display-style=]]           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dface][=simply-annotate-fringe-face=]]                 | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dfringe_002dface-1][=simply-annotate-fringe-face=]]               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dface-2][=simply-annotate-fringe-face=]]               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dindicator][=simply-annotate-fringe-indicator=]]       | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dfringe_002dindicator-1][=simply-annotate-fringe-indicator=]]     | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]     | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]         | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dpriority_002dlevels][=simply-annotate-priority-levels=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor][=simply-annotate-prompt-for-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dthread_002dstatuses][=simply-annotate-thread-statuses=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                                                                   |                                                               |
+| Jump to:   | [[#Variable-Index_vr_letter-A][*A*]]   [[#Variable-Index_vr_letter-C][*C*]]   [[#Variable-Index_vr_letter-I][*I*]]   [[#Variable-Index_vr_letter-P][*P*]]   [[#Variable-Index_vr_letter-S][*S*]]   [[#Variable-Index_vr_letter-T][*T*]]   |
+
+|                | Index Entry                                                                                                           | Section                                                       |
+| -------------- |                                                                                                                       |                                                               |
+| A              |                                                                                                                       |                                                               |
+|                | [[#index-author][=author=]]                                                                                           | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                                                                                       |                                                               |
+| C              |                                                                                                                       |                                                               |
+|                | [[#index-comments][=comments=]]                                                                                       | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-created][=created=]]                                                                                         | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                                                                                       |                                                               |
+| I              |                                                                                                                       |                                                               |
+|                | [[#index-id][=id=]]                                                                                                   | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                                                                                       |                                                               |
+| P              |                                                                                                                       |                                                               |
+|                | [[#index-priority-1][=priority=]]                                                                                     | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                                                                                       |                                                               |
+| S              |                                                                                                                       |                                                               |
+|                | [[#index-simply_002dannotate_002dauthor_002dlist][=simply-annotate-author-list=]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dauthor_002dlist-1][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dauthor_002dlist-2][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]                                 | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]                               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]                                     | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]                                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002ddisplay_002dstyle][=simply-annotate-display-style=]]                                 | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-1][=simply-annotate-display-style=]]                               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-2][=simply-annotate-display-style=]]                               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                                                       | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                                                     | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dface][=simply-annotate-fringe-face=]]                                     | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dfringe_002dface-1][=simply-annotate-fringe-face=]]                                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dface-2][=simply-annotate-fringe-face=]]                                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dindicator][=simply-annotate-fringe-indicator=]]                           | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dfringe_002dindicator-1][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]                               | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]                             | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dpriority_002dlevels][=simply-annotate-priority-levels=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dpriority_002dlevels-1][=simply-annotate-priority-levels=]]                           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dpriority_002dlevels-2][=simply-annotate-priority-levels=]]                           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor][=simply-annotate-prompt-for-author=]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-1][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile][=simply-annotate-remember-author-per-file=]]   | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1][=simply-annotate-remember-author-per-file=]] | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dthread_002dstatuses][=simply-annotate-thread-statuses=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dthread_002dstatuses-1][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dthread_002dstatuses-2][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
+|                | [[#index-status-1][=status=]]                                                                                         | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                                                                                       |                                                               |
+| T              |                                                                                                                       |                                                               |
+|                | [[#index-tags-1][=tags=]]                                                                                             | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-text][=text=]]                                                                                               | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-timestamp][=timestamp=]]                                                                                     | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-type][=type=]]                                                                                               | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                                                                                       |                                                               |
+
+| Jump to:   | [[#Variable-Index_vr_letter-A][*A*]]   [[#Variable-Index_vr_letter-C][*C*]]   [[#Variable-Index_vr_letter-I][*I*]]   [[#Variable-Index_vr_letter-P][*P*]]   [[#Variable-Index_vr_letter-S][*S*]]   [[#Variable-Index_vr_letter-T][*T*]]   |
 
 --------------
 
@@ -1581,40 +2024,49 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 :CLASS: unnumbered
 :END:
 
-| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
+| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
 
-|                | Index Entry                               | Section                                                       |
-| -------------- |                                           |                                                               |
-| A              |                                           |                                                               |
-|                | [[#index-authors][authors]]               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
-| C              |                                           |                                                               |
-|                | [[#index-collaboration][collaboration]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-conversations][conversations]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
-| H              |                                           |                                                               |
-|                | [[#index-header_002dline][header-line]]   | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                           |                                                               |
-| O              |                                           |                                                               |
-|                | [[#index-organization][organization]]     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
-| P              |                                           |                                                               |
-|                | [[#index-priority][priority]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
-| R              |                                           |                                                               |
-|                | [[#index-replies][replies]]               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
-| S              |                                           |                                                               |
-|                | [[#index-status][status]]                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-status-display][status display]] | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                           |                                                               |
-| T              |                                           |                                                               |
-|                | [[#index-tags][tags]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-team][team]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-threading][threading]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
-| W              |                                           |                                                               |
-|                | [[#index-workflow][workflow]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                           |                                                               |
+|                | Index Entry                                                   | Section                                                       |
+| -------------- |                                                               |                                                               |
+| A              |                                                               |                                                               |
+|                | [[#index-advanced-editing][advanced editing]]                 | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-authors][authors]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                               |                                                               |
+| B              |                                                               |                                                               |
+|                | [[#index-buffer_002dlocal-variables][buffer-local variables]] | [[#Troubleshooting][Troubleshooting]]                         |
+| -------------- |                                                               |                                                               |
+| C              |                                                               |                                                               |
+|                | [[#index-collaboration][collaboration]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-conversations][conversations]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                               |                                                               |
+| D              |                                                               |                                                               |
+|                | [[#index-data-structure-editing][data structure editing]]     | [[#Advanced-Editing][Advanced Editing]]                       |
+| -------------- |                                                               |                                                               |
+| H              |                                                               |                                                               |
+|                | [[#index-header_002dline][header-line]]                       | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                               |                                                               |
+| O              |                                                               |                                                               |
+|                | [[#index-organization][organization]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-overlay-persistence][overlay persistence]]           | [[#Troubleshooting][Troubleshooting]]                         |
+| -------------- |                                                               |                                                               |
+| P              |                                                               |                                                               |
+|                | [[#index-priority][priority]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                               |                                                               |
+| R              |                                                               |                                                               |
+|                | [[#index-replies][replies]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                               |                                                               |
+| S              |                                                               |                                                               |
+|                | [[#index-sexp-editing][sexp editing]]                         | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-status][status]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-status-display][status display]]                     | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                               |                                                               |
+| T              |                                                               |                                                               |
+|                | [[#index-tags][tags]]                                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-team][team]]                                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-threading][threading]]                               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                               |                                                               |
+| W              |                                                               |                                                               |
+|                | [[#index-workflow][workflow]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                               |                                                               |
 
-| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
+| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |

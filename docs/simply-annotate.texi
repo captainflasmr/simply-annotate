@@ -57,6 +57,7 @@ modifying the original content.
 * Installation::                How to install Simply Annotate
 * Quick Start::                 Getting started quickly
 * Basic Usage::                 Creating and managing annotations
+* Advanced Editing::            Raw sexp editing and data structure control
 * Threading and Collaboration:: Replies, status, and multi-author support
 * Display Styles::              Different ways to show annotations
 * Navigation::                  Moving between annotations
@@ -95,6 +96,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @strong{Priority levels}: Organize by importance (low, normal, high, critical)
 @item
 @strong{Tag system}: Categorize with hashtags (@code{#review}, @code{#bug}, @code{#question})
+@item
+@strong{Raw sexp editing}: Direct access to annotation data structures for power users
 @item
 @strong{Multiple display styles}: Choose between highlighting, fringe indicators, or both
 @item
@@ -164,6 +167,8 @@ Press @kbd{M-s ]} to cycle through different display styles
 Press @kbd{M-s r} to add a reply to any annotation
 @item
 Press @kbd{M-s s} to set status (open, resolved, etc.)
+@item
+Press @kbd{M-s e} to edit annotation data structure directly
 @item
 Press @kbd{M-s o} to export annotations to org-mode
 @end enumerate
@@ -285,6 +290,138 @@ Press @kbd{M-s -} to remove the annotation
 
 Alternatively, you can edit the annotation and delete all text, then save
 with @kbd{C-c C-c} to remove it.
+
+@node Advanced Editing
+@chapter Advanced Editing
+
+@section Raw Sexp Editing
+
+@cindex sexp editing
+@cindex data structure editing
+@cindex advanced editing
+
+For complete control over annotation data structures, Simply Annotate provides
+raw sexp editing capabilities. This allows power users to directly manipulate
+the underlying Elisp data structure that stores annotation information.
+
+@findex simply-annotate-edit-sexp
+@subsection Entering Sexp Edit Mode
+
+To edit an annotation's raw data structure:
+
+@enumerate
+@item
+Place cursor on any annotation
+@item
+Press @kbd{M-s e} to open the raw sexp editor
+@item
+Edit the Elisp data structure directly
+@item
+Save with @kbd{C-c C-c} or cancel with @kbd{C-c C-k}
+@end enumerate
+
+@subsection Sexp Structure
+
+Annotations are stored as Elisp association lists with the following structure:
+
+@lisp
+((id . "thread-123456")
+ (created . "2025-06-29T10:30:00")
+ (status . "open")
+ (priority . "high")
+ (tags . ("bug" "critical"))
+ (comments . (((author . "John Doe")
+               (timestamp . "2025-06-29T10:30:00")
+               (text . "Found a critical bug here")
+               (type . "comment"))
+              ((author . "Jane Smith")
+               (timestamp . "2025-06-29T11:15:00")
+               (text . "I can reproduce this issue")
+               (type . "reply")))))
+@end lisp
+
+@subsection Required Fields
+
+@vtable @code
+@item id
+Unique identifier for the thread (string)
+@item created
+ISO timestamp when thread was created
+@item status
+Current status (@code{"open"}, @code{"in-progress"}, @code{"resolved"}, @code{"closed"})
+@item priority
+Priority level (@code{"low"}, @code{"normal"}, @code{"high"}, @code{"critical"})
+@item tags
+List of tag strings (can be empty list)
+@item comments
+List of comment/reply objects
+@end vtable
+
+@subsection Comment Structure
+
+Each comment in the @code{comments} list must have:
+
+@vtable @code
+@item author
+Author name (string)
+@item timestamp
+ISO timestamp when comment was created
+@item text
+The actual comment text content
+@item type
+Either @code{"comment"} (original) or @code{"reply"}
+@end vtable
+
+@subsection Sexp Editing Features
+
+The sexp editor provides:
+
+@itemize @bullet
+@item
+@strong{Syntax highlighting}: Key fields and values are highlighted
+@item
+@strong{Helpful comments}: Guidance about structure and valid values
+@item
+@strong{Validation}: Ensures required fields are present when saving
+@item
+@strong{Error handling}: Clear error messages for invalid structures
+@item
+@strong{Auto-completion}: Missing fields are added with defaults
+@end itemize
+
+@subsection Use Cases for Sexp Editing
+
+@itemize @bullet
+@item
+@strong{Bulk operations}: Modify multiple comments at once
+@item
+@strong{Data migration}: Copy annotation structures between files
+@item
+@strong{Precision control}: Manually adjust timestamps or IDs
+@item
+@strong{Complex threading}: Create reply structures not possible through UI
+@item
+@strong{Metadata manipulation}: Bulk change authors, statuses, or priorities
+@item
+@strong{Import/export}: Transform annotations for external tools
+@end itemize
+
+@subsection Safety and Best Practices
+
+@itemize @bullet
+@item
+Always use @kbd{C-c C-k} to cancel if unsure about changes
+@item
+Ensure proper Elisp syntax with balanced parentheses
+@item
+Use ISO timestamp format: @code{"2025-06-29T10:30:00"}
+@item
+Keep @code{type} field as @code{"comment"} or @code{"reply"}
+@item
+Preserve required fields (@code{id}, @code{comments}, etc.)
+@item
+Test complex changes on a backup first
+@end itemize
 
 @node Threading and Collaboration
 @chapter Threading and Collaboration
@@ -674,7 +811,9 @@ Displays thread information, status, and priority
 @item
 Shows complete conversation thread with replies
 @item
-Access to threading commands (@kbd{C-c r}, @kbd{C-c s}, @kbd{C-c p}, @kbd{C-c t})
+Access to threading commands (@kbd{M-s r}, @kbd{M-s s}, @kbd{M-s p}, @kbd{M-s t})
+@item
+Access to advanced sexp editing with @kbd{M-s e}
 @item
 Supports multi-line annotations with full editing capabilities
 @item
@@ -807,13 +946,14 @@ When @code{simply-annotate-mode} is enabled:
 @multitable @columnfractions .15 .35 .5
 @headitem Key @tab Command @tab Description
 @item @kbd{M-s j} @tab @code{simply-annotate-smart-action} @tab Smart create/view/edit annotation
-@item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab @strong{New:} Add reply to annotation
-@item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab @strong{New:} Set status (open/resolved)
-@item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab @strong{New:} Set priority (low/high)
-@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab @strong{New:} Add tag (#review, #bug)
-@item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab @strong{New:} Change author
-@item @kbd{M-s A} @tab @code{simply-annotate-reset-session-author} @tab @strong{New:} Reset session author
-@item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab @strong{New:} Export to org-mode
+@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab @strong{New:} Edit annotation as raw Elisp sexp
+@item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply to annotation
+@item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status (open/resolved)
+@item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
+@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag (#review, #bug)
+@item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab Change author
+@item @kbd{M-s A} @tab @code{simply-annotate-reset-session-author} @tab Reset session author
+@item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
 @item @kbd{M-s 0} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
@@ -831,11 +971,12 @@ In the annotation buffer:
 @item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Save changes
 @item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing
 @item @kbd{C-g} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing (alternative)
-@item @kbd{C-c r} @tab @code{simply-annotate-reply-to-annotation} @tab @strong{New:} Add reply
-@item @kbd{C-c s} @tab @code{simply-annotate-set-annotation-status} @tab @strong{New:} Set status
-@item @kbd{C-c p} @tab @code{simply-annotate-set-annotation-priority} @tab @strong{New:} Set priority
-@item @kbd{C-c t} @tab @code{simply-annotate-add-annotation-tag} @tab @strong{New:} Add tag
-@item @kbd{C-c o} @tab @code{simply-annotate-export-to-org-file} @tab @strong{New:} Export to org-mode
+@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab @strong{New:} Switch to sexp editing mode
+@item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply
+@item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status
+@item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority
+@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag
+@item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @end multitable
 
 @section Smart Action Behavior
@@ -849,6 +990,29 @@ The @kbd{M-s j} key binding changes behavior based on context:
 @item @kbd{C-u M-s j} on annotation @tab Force edit mode
 @item Elsewhere @tab Create annotation for current line
 @end multitable
+
+@section Sexp Editing Mode
+
+When in sexp editing mode (after @kbd{M-s e}):
+
+@multitable @columnfractions .15 .4 .45
+@headitem Key @tab Command @tab Description
+@item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Parse and save sexp
+@item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel sexp editing
+@item @kbd{C-g} @tab @code{simply-annotate-cancel-edit} @tab Cancel sexp editing (alternative)
+@end multitable
+
+The sexp editing buffer provides:
+@itemize @bullet
+@item
+Emacs Lisp mode for syntax highlighting
+@item
+Helpful comments explaining the data structure
+@item
+Pretty-printed formatting for readability
+@item
+Validation when saving to ensure data integrity
+@end itemize
 
 @node Customization
 @chapter Customization
@@ -958,6 +1122,30 @@ Face for fringe indicators. Default: @code{'simply-annotate-fringe-face}
 
 @section Threading and Collaboration Variables
 
+@vtable @code
+@item simply-annotate-author-list
+@vindex simply-annotate-author-list
+List of available authors for annotations. Default: @code{(list user-full-name)}
+
+@item simply-annotate-prompt-for-author
+@vindex simply-annotate-prompt-for-author
+When to prompt for author selection. Options: @code{nil}, @code{'first-only}, @code{'always}, @code{'threads-only}. Default: @code{nil}
+
+@item simply-annotate-remember-author-per-file
+@vindex simply-annotate-remember-author-per-file
+Whether to remember author choice per file. Default: @code{nil}
+
+@item simply-annotate-thread-statuses
+@vindex simply-annotate-thread-statuses
+Available status values for annotation threads. Default: @code{'("open" "in-progress" "resolved" "closed")}
+
+@item simply-annotate-priority-levels
+@vindex simply-annotate-priority-levels
+Available priority levels for annotations. Default: @code{'("low" "normal" "high" "critical")}
+@end vtable
+
+@section Custom Faces
+
 @lisp
 ;; Custom highlight face for annotations
 (defface my-annotation-face
@@ -1036,16 +1224,48 @@ and can be version controlled if desired.
 
 @section Sample Storage Format
 
+With threading support, the storage format includes complete thread structures:
+
 @lisp
 ;;; Simply Annotate Database
 ;;; This file is auto-generated. Do not edit manually.
 
 (("simply-annotate:/path/to/file.el"
-  ((start . 1250) (end . 1300) (text . "This needs refactoring"))
-  ((start . 2100) (end . 2150) (text . "Add error handling here")))
+  ((start . 1250) (end . 1300) 
+   (text . ((id . "thread-123456")
+            (created . "2025-06-29T10:30:00")
+            (status . "open")
+            (priority . "high")
+            (tags . ("review" "urgent"))
+            (comments . (((author . "John Doe")
+                          (timestamp . "2025-06-29T10:30:00")
+                          (text . "This needs refactoring")
+                          (type . "comment"))
+                         ((author . "Jane Smith")
+                          (timestamp . "2025-06-29T10:45:00")
+                          (text . "I agree, will fix this")
+                          (type . "reply")))))))
+  ((start . 2100) (end . 2150) 
+   (text . "Add error handling here")))
  ("simply-annotate:/path/to/other-file.py"
-  ((start . 450) (end . 500) (text . "Performance bottleneck"))))
+  ((start . 450) (end . 500) 
+   (text . "Performance bottleneck"))))
 @end lisp
+
+@section Data Structure Evolution
+
+Simply Annotate supports both legacy string annotations and new thread structures:
+
+@itemize @bullet
+@item
+@strong{Legacy format}: Simple strings are automatically converted to thread structures when edited
+@item
+@strong{Thread format}: Complete data structures with metadata and conversation history
+@item
+@strong{Backward compatibility}: Old annotations continue to work seamlessly
+@item
+@strong{Migration}: Annotations are upgraded to thread format when modified
+@end itemize
 
 @section Data Management
 
@@ -1060,6 +1280,8 @@ The file uses a file key system to track annotations per file
 Empty databases are automatically cleaned up
 @item
 Only saves when there are actual changes to annotations
+@item
+Thread structures are validated when saving to prevent corruption
 @end itemize
 
 @section File Key System
@@ -1074,6 +1296,23 @@ Uses the buffer name for non-file buffers
 Ensures annotations persist across Emacs sessions
 @item
 Supports moving files (annotations follow the buffer name)
+@end itemize
+
+@section Sexp Editing and Data Integrity
+
+When using sexp editing mode:
+
+@itemize @bullet
+@item
+Data structures are validated before saving
+@item
+Required fields are automatically added if missing
+@item
+Malformed structures are rejected with helpful error messages
+@item
+Backup functionality preserves data before dangerous operations
+@item
+Thread IDs and timestamps are preserved across edits
 @end itemize
 
 @node Troubleshooting
@@ -1094,6 +1333,8 @@ Verify that hooks are installed correctly
 Check file permissions on the storage directory
 @item
 Look for error messages in the @code{*Messages*} buffer
+@item
+Verify threading data structure isn't corrupted
 @end itemize
 
 @section Display Issues
@@ -1137,6 +1378,88 @@ Check if you're properly positioned on annotated text (especially in fringe mode
 Verify the annotation buffer is responding to @kbd{C-c C-c} and @kbd{C-c C-k}
 @end itemize
 
+@section Threading Issues
+
+@subsection Author Prompting Problems
+
+@itemize @bullet
+@item
+Check @code{simply-annotate-prompt-for-author} setting
+@item
+Verify @code{simply-annotate-author-list} contains valid names
+@item
+Use @kbd{M-s A} to reset session author if stuck
+@item
+Check that prompting mode matches your workflow needs
+@end itemize
+
+@subsection Thread Display Corruption
+
+@itemize @bullet
+@item
+Try @kbd{M-s ]} to refresh display style
+@item
+Check for malformed thread data structures
+@item
+Use sexp editing mode to inspect and fix thread structure
+@item
+Verify all required fields are present in thread data
+@end itemize
+
+@subsection Reply Issues
+
+@itemize @bullet
+@item
+Ensure you're using @kbd{C-c C-c} to save replies properly
+@item
+Check that @kbd{M-s r} is working on existing annotations
+@item
+Verify author configuration for multi-user workflows
+@item
+Look for timestamp or author field corruption
+@end itemize
+
+@section Sexp Editing Issues
+
+@subsection Parsing Errors
+
+@itemize @bullet
+@item
+Ensure proper Elisp syntax with balanced parentheses
+@item
+Check that all strings are properly quoted
+@item
+Verify required fields (id, comments) are present
+@item
+Use @kbd{C-c C-k} to cancel if unsure about changes
+@end itemize
+
+@subsection Data Structure Problems
+
+@itemize @bullet
+@item
+Check timestamp format: use ISO format @code{"2025-06-29T10:30:00"}
+@item
+Ensure comment @code{type} field is @code{"comment"} or @code{"reply"}
+@item
+Verify @code{status} and @code{priority} values are from allowed lists
+@item
+Confirm @code{tags} field is a list, even if empty: @code{()}
+@end itemize
+
+@subsection Validation Failures
+
+@itemize @bullet
+@item
+Thread structure must be an association list with required keys
+@item
+@code{comments} field must be a list of comment objects
+@item
+Each comment must have @code{author}, @code{timestamp}, @code{text}, and @code{type}
+@item
+Use the helpful comments in sexp editing mode as a guide
+@end itemize
+
 @section Performance with Large Files
 
 Simply Annotate is designed to be lightweight:
@@ -1148,6 +1471,8 @@ Annotations use lightweight overlays
 No performance impact on file operations
 @item
 Fringe mode generally has better performance than highlight mode
+@item
+Sexp editing may be slower with very large annotation structures
 @item
 Consider splitting very large annotation sets across multiple files
 @end itemize
@@ -1165,6 +1490,26 @@ May need customization for exotic display modes
 Check for conflicting key bindings with @kbd{C-h k}
 @item
 Fringe indicators work well with line number modes
+@item
+Sexp editing works in any buffer that supports Emacs Lisp editing
+@end itemize
+
+@section Buffer-Local Variable Issues
+
+@cindex buffer-local variables
+@cindex overlay persistence
+
+If annotations disappear when opening new files:
+
+@itemize @bullet
+@item
+Ensure buffer-local variables are properly declared
+@item
+Check that @code{simply-annotate-overlays} is buffer-local
+@item
+Verify mode activation is working correctly per buffer
+@item
+Use debug functions to check overlay state
 @end itemize
 
 @section Common Error Messages
@@ -1183,6 +1528,12 @@ The current buffer has no annotations to navigate or list.
 @item "No annotations database found"
 No annotation file exists yet. Create your first annotation to initialize the database.
 
+@item "Invalid annotation format: must be a thread alist"
+Sexp editing validation failed. Check the data structure format and required fields.
+
+@item "Error parsing sexp"
+The Elisp syntax in sexp editing mode is invalid. Check for balanced parentheses and proper quoting.
+
 @item Database file errors
 Check permissions and disk space for the storage file location.
 @end table
@@ -1198,6 +1549,10 @@ Check the @code{*Messages*} buffer for error messages
 Use @kbd{M-x describe-mode} in an annotation buffer for mode-specific help
 @item
 The header-line always shows available commands and current status
+@item
+Use sexp editing mode to inspect annotation data structures directly
+@item
+Check threading information in the annotation list (@kbd{M-s l}) for debugging
 @end itemize
 
 @node Function Index
