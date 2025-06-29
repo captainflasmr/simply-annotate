@@ -209,13 +209,13 @@ When enabled, the package remembers the last author used for each file."
 
 ;;; Variables
 
-(defvar simply-annotate-mode nil
+(defvar-local simply-annotate-mode nil
   "Non-nil if Simply-Annotate mode is enabled.")
 
 (defvar simply-annotate-draft-overlay nil
   "Overlay for draft annotation being created.")
 
-(defvar simply-annotate-overlays nil
+(defvar-local simply-annotate-overlays nil
   "List of annotation overlays in current buffer.")
 
 (defvar simply-annotate-original-header-line nil
@@ -705,7 +705,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-update-annotation-buffer (annotation-data overlay &optional edit-sexp)
   "Update annotation buffer with compatibility for threads and strings.
   If EDIT-SEXP is non-nil, display the raw sexp for editing."
-  (prin1 annotation-data)
   (let ((buffer (simply-annotate-get-annotation-buffer))
         (source-buf (current-buffer)))
     
