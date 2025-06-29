@@ -249,8 +249,6 @@ When enabled, the package remembers the last author used for each file."
 (defvar simply-annotate-file-authors nil
   "Alist of (file-key . author) for per-file author memory.")
 
-;;; Utility Functions
-
 (defun simply-annotate-get-annotation-text (annotation-data)
   "Extract display text from annotation data (string or thread)."
   (if (stringp annotation-data)
@@ -272,8 +270,6 @@ When enabled, the package remembers the last author used for each file."
   (and (listp annotation-data)
        (alist-get 'id annotation-data)
        (alist-get 'comments annotation-data)))
-
-;;; Core Functions
 
 (defun simply-annotate-file-key ()
   "Get unique key for current file."
@@ -323,8 +319,6 @@ Argument ANNOTATIONS ."
         ;; If database is now empty, optionally remove the file
         (when (file-exists-p simply-annotate-file)
           (delete-file simply-annotate-file))))))
-
-;;; Display and Fringe Functions
 
 (defun simply-annotate-add-fringe-indicator (overlay)
   "Add fringe indicator to OVERLAY."
@@ -437,8 +431,6 @@ Optional argument POS specifies the line to check (defaults to current point)."
                    (<= (overlay-start overlay) line-end))
           (setq found-overlay overlay)))
       found-overlay)))
-
-;;; Threading Functions
 
 (defun simply-annotate-create-thread (text &optional author priority tags)
   "Create a new annotation thread."
@@ -569,8 +561,6 @@ Optional argument POS specifies the line to check (defaults to current point)."
       "\n├─────\n")
      "\n└─────")))
 
-;;; Author Management
-
 (defun simply-annotate-get-author-for-context (context &optional current-author)
   "Get appropriate author based on context and settings.
 CONTEXT can be 'annotation, 'reply, or 'edit.
@@ -639,8 +629,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
     (let ((file-key (simply-annotate-file-key)))
       (setf (alist-get file-key simply-annotate-file-authors nil nil #'string=) author))))
 
-;;; Serialization Functions
-
 (defun simply-annotate-serialize-annotations ()
   "Convert buffer annotations to serializable format."
   (mapcar (lambda (overlay)
@@ -696,8 +684,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
          (annotations (when db (alist-get file-key db nil nil #'string=))))
     (when annotations
       (simply-annotate-deserialize-annotations annotations))))
-
-;;; Annotation Buffer Functions
 
 (defun simply-annotate-get-annotation-buffer ()
   "Get or create the annotation buffer."
@@ -860,9 +846,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-cancel-edit ()
   "Cancel editing and restore read-only mode or clean up draft."
   (interactive)
-  ;; (prin1 simply-annotate-current-overlay)
-  ;; (prin1 simply-annotate-source-buffer)
-  ;; (revert-buffer)
   (when (and simply-annotate-current-overlay
              simply-annotate-source-buffer
              (buffer-live-p simply-annotate-source-buffer))
@@ -888,8 +871,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
   (when simply-annotate-draft-overlay
     (delete-overlay simply-annotate-draft-overlay)
     (setq simply-annotate-draft-overlay nil)))
-
-;;; Header-line Functions
 
 (defun simply-annotate-get-annotation-number (target-overlay)
   "Get the position number of TARGET-OVERLAY in the sorted list of annotations."
@@ -964,8 +945,6 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
   "Restore original header-line."
   (setq header-line-format simply-annotate-original-header-line
         simply-annotate-current-annotation nil))
-
-;;; Navigation Functions
 
 (defun simply-annotate-get-sorted-overlays ()
   "Get annotation overlays sorted by position."
@@ -1352,8 +1331,6 @@ including comments, replies, status, priority, and tags."
               (message "Annotation converted to thread with author: %s" new-author)))))
     (message "No annotation at point")))
 
-;;; List and Display Functions
-
 (defun simply-annotate-format-annotations-for-buffer (file-key annotations source-buffer buffer-name)
   "Enhanced version of format-annotations-for-buffer that handles threading."
   (with-current-buffer (get-buffer-create buffer-name)
@@ -1576,8 +1553,6 @@ including comments, replies, status, priority, and tags."
                  (annotations (alist-get selected-file db nil nil #'string=)))
             (simply-annotate-display-file-annotations selected-file annotations)))))))
 
-;;; Org-mode Integration
-
 (defun simply-annotate-thread-to-org (thread)
   "Convert a thread to org-mode format."
   (let* ((id (alist-get 'id thread))
@@ -1639,8 +1614,6 @@ including comments, replies, status, priority, and tags."
         (write-file filename)
         (message "Annotations exported to %s" filename)))))
 
-;;; Annotation Buffer Mode
-
 (defvar simply-annotate-annotation-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'simply-annotate-save-annotation-buffer)
@@ -1660,8 +1633,6 @@ including comments, replies, status, priority, and tags."
 (define-derived-mode simply-annotate-annotation-mode fundamental-mode "Annotation"
   "Mode for displaying and editing annotations."
   (visual-line-mode 1))
-
-;;; Minor Mode
 
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))
