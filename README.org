@@ -533,6 +533,20 @@ There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annota
 
 ** DONE Overlay not removed when cancelling a new annotation
 
+* Roadmap                                                           :roadmap:
+
+#+begin_src emacs-lisp :results table :exports results :tangle no
+(my/kanban-to-table "roadmap" "issues")
+#+end_src
+
+#+RESULTS:
+| TODO                                                                           |
+|--------------------------------------------------------------------------------|
+| Reduce in size and make the source code base more efficient, maybe <1000 lines |
+
+** TODO Reduce in size and make the source code base more efficient, maybe <1000 lines
+
+
 * Alternative package comparison
 
 ** 1. *annotate.el*
