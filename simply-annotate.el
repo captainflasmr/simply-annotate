@@ -54,6 +54,11 @@
 ;; - Set prompting behavior: (setq simply-annotate-prompt-for-author 'threads-only)
 ;; - Press =M-s a= to change annotation author
 ;;
+;; * Editing
+;; - Press =M-s e= to edit the current annotation
+;; - Edit in a sexp form and then C-c C-c to save
+;; - Any data field can be edited
+;;
 ;; * Org-mode Integration
 ;; - Press =M-s o= to export annotations to org-mode files
 ;; - Each thread becomes a TODO item with replies as sub-entries
@@ -927,14 +932,7 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
          "") ; Empty string if no thread status
 
        ;; Optional custom text (e.g., "EDITING")
-       (if text (concat text " ") "")
-
-       ;; Keybinding hints: "n p" for M-n/M-p, then "|" separator, then "j r s - a l p t o e ]" for M-s commands
-       ;; This is the most compact representation using just the key characters.
-       (propertize " M- " 'face '(bold :height 0.9 :box t))
-       (propertize " n p " 'face '(:height 0.9)) ; Navigation: M-n (Next), M-p (Previous)
-       (propertize " M-s " 'face '(bold :height 0.9 :box t))
-       (propertize " j r s - a l p t o e ]" 'face '(:height 0.9 :box nil))))))
+       (if text (concat text " ") "")))))
 
 (defun simply-annotate-update-header (&optional text)
   "Enhanced header update that handles threading information."

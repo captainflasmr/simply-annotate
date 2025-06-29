@@ -58,7 +58,6 @@ The main functional aspects that I felt were important to me that generally diff
 - =M-s p=: Set priority
 - =M-s t=: Add tag
 - =M-s a=: Change author
-- =M-s A=: Reset session author
 - =M-s o=: Export to org-mode
 
 ** <2025-06-20> *0.0.1*
@@ -159,8 +158,6 @@ For complete control over annotation data structures:
                (type . "reply")))))
 #+end_src
 
-*Note*: The sexp editor provides syntax highlighting and helpful comments to guide you through the data structure. This is particularly useful for bulk operations, data migration, or when you need precise control over annotation metadata.
-
 ** Threading & Collaboration
 
 *** Adding Replies
@@ -199,7 +196,6 @@ Available prompting modes:
 *** Author Commands
 
 - =M-s a=: Change author of existing annotation/comment
-- =M-s A=: Reset session author (forces prompt on next annotation)
 
 ** Display Styles
 
@@ -294,7 +290,6 @@ When =simply-annotate-mode= is enabled:
 | =M-s p=     | =simply-annotate-set-annotation-priority=  | Set priority (low/high)              |
 | =M-s t=     | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)              |
 | =M-s a=     | =simply-annotate-change-annotation-author= | Change author                        |
-| =M-s A=     | =simply-annotate-reset-session-author=     | Reset session author                 |
 | =M-s o=     | =simply-annotate-export-to-org-file=       | Export to org-mode file              |
 | =M-s -=     | =simply-annotate-remove=                   | Delete annotation at point           |
 | =M-s l=     | =simply-annotate-list=                     | List all annotations in current file |
@@ -524,6 +519,19 @@ Enable the mode globally if you wish for all files!
 ** Getting Help
 
 There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annotate=
+
+* Bugs                                                                 :bugs:
+
+#+begin_src emacs-lisp :results table :exports results :tangle no
+(my/kanban-to-table "bugs" "issues")
+#+end_src
+
+#+RESULTS:
+| TODO                                                 |
+|------------------------------------------------------|
+| Overlay not removed when cancelling a new annotation |
+
+** TODO Overlay not removed when cancelling a new annotation
 
 * Alternative package comparison
 
