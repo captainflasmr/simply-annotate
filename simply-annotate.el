@@ -705,13 +705,14 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 (defun simply-annotate-update-annotation-buffer (annotation-data overlay &optional edit-sexp)
   "Update annotation buffer with compatibility for threads and strings.
   If EDIT-SEXP is non-nil, display the raw sexp for editing."
+  (prin1 annotation-data)
   (let ((buffer (simply-annotate-get-annotation-buffer))
         (source-buf (current-buffer)))
     
     (with-current-buffer buffer
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (setq-local simply-annotate-editing-annotation-sexp edit-sexp)
+        (setq simply-annotate-editing-annotation-sexp edit-sexp)
         
         (if edit-sexp
             (progn
@@ -732,20 +733,20 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
               ;; In sexp edit mode, the content starts at point-min.
               (setq simply-annotate-header-end-pos (point-min)) 
               (setq header-line-format "Edit annotation sexp (C-c C-c to save, C-c C-k to cancel)"))
-          
-          (fundamental-mode)
-          (visual-line-mode 1)
-          (setq-local buffer-read-only nil)
-          (insert (make-string (1- (length "Commands: C-c C-c (save) C-c C-k (cancel), C-g to quit\n")) ?-) "\n")
-          (setq simply-annotate-header-end-pos (point))
-          (if (simply-annotate-is-thread-p annotation-data)
-              (insert (simply-annotate-format-thread-full annotation-data))
-            (insert (simply-annotate-get-annotation-text annotation-data)))
-          (setq header-line-format nil)))
+          (progn
+            (fundamental-mode)
+            (visual-line-mode 1)
+            (setq-local buffer-read-only nil)
+            (insert (make-string (1- (length "Commands: C-c C-c (save) C-c C-k (cancel), C-g to quit\n")) ?-) "\n")
+            (setq simply-annotate-header-end-pos (point))
+            (if (simply-annotate-is-thread-p annotation-data)
+                (insert (simply-annotate-format-thread-full annotation-data))
+              (insert (simply-annotate-get-annotation-text annotation-data)))
+            (setq header-line-format nil)))
       
       (goto-char simply-annotate-header-end-pos)
       (setq simply-annotate-source-buffer source-buf
-            simply-annotate-current-overlay overlay))))
+            simply-annotate-current-overlay overlay)))))
 
 (defun simply-annotate-show-annotation-buffer ()
   "Show the annotation buffer in a window."
@@ -1679,7 +1680,7 @@ including comments, replies, status, priority, and tags."
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
-    (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp) ; New keybinding
+    (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
     (define-key map (kbd "M-s ]") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
