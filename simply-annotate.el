@@ -217,7 +217,7 @@ When enabled, the package remembers the last author used for each file."
 (defvar-local simply-annotate-mode nil
   "Non-nil if Simply-Annotate mode is enabled.")
 
-(defvar-local simply-annotate-draft-overlay nil
+(defvar simply-annotate-draft-overlay nil
   "Overlay for draft annotation being created.")
 
 (defvar-local simply-annotate-overlays nil
@@ -226,13 +226,13 @@ When enabled, the package remembers the last author used for each file."
 (defvar simply-annotate-original-header-line nil
   "Original `header-line-format' before annotation mode.")
 
-(defvar-local simply-annotate-current-annotation nil
+(defvar simply-annotate-current-annotation nil
   "Current annotation text being displayed in header.")
 
-(defvar-local simply-annotate-current-overlay nil
+(defvar simply-annotate-current-overlay nil
   "Current overlay being displayed/edited in annotation buffer.")
 
-(defvar-local simply-annotate-source-buffer nil
+(defvar simply-annotate-source-buffer nil
   "Source buffer for annotation display.")
 
 (defvar simply-annotate-header-end-pos nil

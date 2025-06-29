@@ -527,11 +527,11 @@ There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annota
 #+end_src
 
 #+RESULTS:
-| TODO                                                 |
+| DONE                                                 |
 |------------------------------------------------------|
 | Overlay not removed when cancelling a new annotation |
 
-** TODO Overlay not removed when cancelling a new annotation
+** DONE Overlay not removed when cancelling a new annotation
 
 * Alternative package comparison
 
