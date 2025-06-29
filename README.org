@@ -33,6 +33,14 @@ The main functional aspects that I felt were important to me that generally diff
 
 * Whats New
 
+** <2025-06-29> *0.5.1*
+
+- *Raw sexp editing*: Edit annotation data structures directly as Elisp for complete control
+- *Advanced editing capabilities*: Full access to thread metadata, status, priority, and comments
+
+*Updated Key Bindings:*
+- =M-s e=: Edit annotation as raw Elisp sexp
+
 ** <2025-06-20> *0.5.0*
 
 - *Threading system*: Add replies to annotations for conversations
@@ -90,6 +98,7 @@ The main functional aspects that I felt were important to me that generally diff
 5. Navigate with =M-n= (next) and =M-p= (previous)
 6. Add replies: Press =M-s r= on any annotation to reply
 7. Set status: Press =M-s s= to track progress (open/resolved/etc.)
+8. Advanced editing: Press =M-s e= to edit annotation data structure directly
 
 * Usage
 
@@ -117,6 +126,40 @@ The =M-s j= command (=simply-annotate-smart-action=) is context-aware:
 4. *Elsewhere*: Creates annotation for current line
 5. Enter your annotation text in the dedicated buffer
 6. Save with =C-c C-c=
+
+** Advanced Editing
+
+*** Raw Sexp Editing
+
+For complete control over annotation data structures:
+
+1. Place cursor on any annotation
+2. Press =M-s e= to open the raw sexp editor
+3. Edit the Elisp data structure directly:
+   - Modify thread metadata (status, priority, tags)
+   - Edit comment text and timestamps
+   - Add/remove/reorder comments
+   - Change author information
+4. Save with =C-c C-c= or cancel with =C-c C-k=
+
+*Example sexp structure:*
+#+begin_src emacs-lisp
+((id . "thread-123456")
+ (created . "2025-06-29T10:30:00")
+ (status . "open")
+ (priority . "high")
+ (tags . ("bug" "critical"))
+ (comments . (((author . "John Doe")
+               (timestamp . "2025-06-29T10:30:00")
+               (text . "Found a critical bug here")
+               (type . "comment"))
+              ((author . "Jane Smith")
+               (timestamp . "2025-06-29T11:15:00")
+               (text . "I can reproduce this issue")
+               (type . "reply")))))
+#+end_src
+
+*Note*: The sexp editor provides syntax highlighting and helpful comments to guide you through the data structure. This is particularly useful for bulk operations, data migration, or when you need precise control over annotation metadata.
 
 ** Threading & Collaboration
 
@@ -197,10 +240,17 @@ When =simply-annotate-mode= is active:
 
 *** Editing
 
+*Standard Editing:*
 - Place cursor on annotated text
 - Press =C-u M-s j= to open the annotation buffer
 - Make your changes
 - Save with =C-c C-c=
+
+*Advanced Sexp Editing:*
+- Place cursor on annotated text
+- Press =M-s e= to open the raw sexp editor
+- Edit the complete data structure
+- Save with =C-c C-c= or cancel with =C-c C-k=
 
 *** Deleting
 
@@ -238,6 +288,7 @@ When =simply-annotate-mode= is enabled:
 | Key Binding | Command                                    | Description                          |
 |-------------+--------------------------------------------+--------------------------------------|
 | =M-s j=     | =simply-annotate-smart-action=             | Smart create/view/edit annotation    |
+| =M-s e=     | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp    |
 | =M-s r=     | =simply-annotate-reply-to-annotation=      | Add reply to annotation              |
 | =M-s s=     | =simply-annotate-set-annotation-status=    | Set status (open/resolved)           |
 | =M-s p=     | =simply-annotate-set-annotation-priority=  | Set priority (low/high)              |
@@ -259,11 +310,12 @@ In the annotation buffer:
 | =C-c C-c=   | =simply-annotate-save-annotation-buffer=  | Save changes                 |
 | =C-c C-k=   | =simply-annotate-cancel-edit=             | Cancel editing               |
 | =C-g=       | =simply-annotate-cancel-edit=             | Cancel editing (alternative) |
-| =C-c r=     | =simply-annotate-reply-to-annotation=     | Add reply                    |
-| =C-c s=     | =simply-annotate-set-annotation-status=   | Set status                   |
-| =C-c p=     | =simply-annotate-set-annotation-priority= | Set priority                 |
-| =C-c t=     | =simply-annotate-add-annotation-tag=      | Add tag                      |
-| =C-c o=     | =simply-annotate-export-to-org-file=      | Export to org-mode           |
+| =M-s e=     | =simply-annotate-edit-sexp=               | Switch to sexp editing mode  |
+| =M-s r=     | =simply-annotate-reply-to-annotation=     | Add reply                    |
+| =M-s s=     | =simply-annotate-set-annotation-status=   | Set status                   |
+| =M-s p=     | =simply-annotate-set-annotation-priority= | Set priority                 |
+| =M-s t=     | =simply-annotate-add-annotation-tag=      | Add tag                      |
+| =M-s o=     | =simply-annotate-export-to-org-file=      | Export to org-mode           |
 
 * Customization
 
@@ -397,6 +449,13 @@ Enable the mode globally if you wish for all files!
 - *Toggle view*: =M-s j= on annotated text to show/hide annotation buffer
 - *Region annotation*: Select text, =M-s j= to create detailed annotation
 
+** Advanced Editing Tips
+
+- *Bulk operations*: Use =M-s e= to edit multiple comments at once in sexp mode
+- *Data migration*: Copy annotation structures between files using sexp editing
+- *Precision control*: Manually adjust timestamps, IDs, or metadata via sexp editing
+- *Complex threading*: Create sophisticated reply structures that aren't possible through the UI
+
 ** Display Style Tips
 
 - Use *fringe* mode for code files to minimize visual distraction
@@ -410,6 +469,7 @@ Enable the mode globally if you wish for all files!
 - Large numbers of annotations (100+) may slightly impact performance
 - Fringe mode generally has better performance than highlight mode
 - **Threading**: Complex threads (10+ replies) may slow annotation buffer rendering
+- **Sexp editing**: Large annotation structures may take a moment to format and parse
 
 * Troubleshooting
 
@@ -453,6 +513,14 @@ Enable the mode globally if you wish for all files!
 - *Wrong author selected*: Use =M-s a= to change author after creation
 - *Session author stuck*: Use =M-s A= to reset session author
 
+*** Sexp Editing Issues
+
+- *Sexp not parsing*: Ensure proper Elisp syntax with balanced parentheses
+- *Data corruption*: Always use =C-c C-k= to cancel if unsure about changes
+- *Thread structure invalid*: Check that required fields (id, comments) are present
+- *Timestamps malformed*: Use ISO format: "2025-06-29T10:30:00"
+- *Comments missing type*: Ensure each comment has type "comment" or "reply"
+
 ** Getting Help
 
 There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annotate=
@@ -475,6 +543,7 @@ There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annota
 - *Smart action command* - context-aware annotation management
 - *Annotation buffer* - with auto-show, editing and navigation
 - *Lightweight implementation* - provides core functionality
+- *Raw sexp editing* - direct access to data structures for power users
 
 ** 2. *org-annotate-file*
 
@@ -490,6 +559,7 @@ There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annota
 - *Simpler annotation format* that's less prone to corruption
 - *Better multi-line support* without org-mode formatting requirements
 - *More responsive user interface* with immediate visual feedback
+- *Advanced editing capabilities* including raw sexp manipulation
 
 ** 3. *org-remark* (formerly org-marginalia)
 
@@ -506,6 +576,7 @@ There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annota
 - *Flexible display options* including unobtrusive fringe mode
 - *Simpler annotation model* - text-centric rather than highlight-centric
 - *More straightforward workflow* without requiring org-mode knowledge
+- *Direct data structure access* through sexp editing
 
 ** 4. *org-noter*
 
@@ -523,6 +594,7 @@ There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annota
 - *More immediate annotation access* without session management
 - *Project-friendly storage* that travels with files
 - *Smart context-aware commands* that adapt to current situation
+- *Power-user features* like direct sexp editing for complex manipulations
 
 * Contributing
 
