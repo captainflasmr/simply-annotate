@@ -735,7 +735,7 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
           
           (fundamental-mode)
           (visual-line-mode 1)
-          (setq-local buffer-read-only t)
+          (setq-local buffer-read-only nil)
           (insert (make-string (1- (length "Commands: C-c C-c (save) C-c C-k (cancel), C-g to quit\n")) ?-) "\n")
           (setq simply-annotate-header-end-pos (point))
           (if (simply-annotate-is-thread-p annotation-data)
