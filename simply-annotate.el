@@ -1161,7 +1161,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
       (message "Author changed from %s to %s" current-author new-author))))
 
 (defun simply-annotate-convert-to-thread-with-author (overlay current-data)
-  "Convert simple annotation in OVERLAY with CURRENT-DATA to thread with new author."
+  "Convert simple annotation in OVERLAY with CURRENT-DATA."
   (let* ((current-text (simply-annotate-get-annotation-text current-data))
          (new-author (simply-annotate-select-author))
          (new-thread (simply-annotate-create-thread current-text new-author)))
@@ -1245,8 +1245,8 @@ Format ANNOTATIONS for FILE-KEY from SOURCE-BUFFER into BUFFER-NAME."
                    (t (string< status-a status-b))))
               (< start-a start-b))))))
 
-(defun simply-annotate-get-line-info (start-pos end-pos source-buffer file-key)
-  "Get line information for annotation from START-POS to END-POS in SOURCE-BUFFER for FILE-KEY."
+(defun simply-annotate-get-line-info (start-pos end-pos source-buffer _file-key)
+  "Get line information from START-POS to END-POS in SOURCE-BUFFER for FILE-KEY."
   (if source-buffer
       (with-current-buffer source-buffer
         (save-excursion
