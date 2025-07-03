@@ -247,34 +247,37 @@ When enabled, the package remembers the last author used for each file."
 (defvar simply-annotate-file-authors nil
   "Alist of (file-key . author) for per-file author memory.")
 
+;;; Helper Functions
+
+(defun simply-annotate-timestamp ()
+  "Generate current timestamp string."
+  (format-time-string "%Y-%m-%dT%H:%M:%S"))
+
+(defun simply-annotate-is-thread-p (annotation-data)
+  "Check if ANNOTATION-DATA is a thread structure."
+  (and (listp annotation-data)
+       (alist-get 'id annotation-data)
+       (alist-get 'comments annotation-data)))
+
 (defun simply-annotate-get-annotation-text (annotation-data)
-  "Extract display text from annotation data (string or thread).
-Argument ANNOTATION-DATA annotation data."
+  "Extract display text from ANNOTATION-DATA (string or thread)."
   (if (stringp annotation-data)
-      annotation-data  ; Legacy string annotation
-    ;; Thread structure - get first comment text
+      annotation-data
     (let ((comments (alist-get 'comments annotation-data)))
       (when comments
         (alist-get 'text (car comments))))))
 
 (defun simply-annotate-get-annotation-summary (annotation-data)
-  "Get a summary for display (help-echo, header, etc.).
-Argument ANNOTATION-DATA annotation data."
+  "Get a summary for display (help-echo, header, etc.) from ANNOTATION-DATA."
   (if (stringp annotation-data)
-      annotation-data  ; Legacy string annotation
-    ;; Thread structure - use formatted summary
+      annotation-data
     (simply-annotate-format-thread-summary annotation-data)))
-
-(defun simply-annotate-is-thread-p (annotation-data)
-  "Check if annotation data is a thread structure.
-Argument ANNOTATION-DATA annotation data."
-  (and (listp annotation-data)
-       (alist-get 'id annotation-data)
-       (alist-get 'comments annotation-data)))
 
 (defun simply-annotate-file-key ()
   "Get unique key for current file."
   (or (buffer-file-name) (buffer-name)))
+
+;;; Database Operations
 
 (defun simply-annotate-load-database ()
   "Load annotations from database file."
@@ -286,8 +289,7 @@ Argument ANNOTATION-DATA annotation data."
           (ignore-errors (car (read-from-string content))))))))
 
 (defun simply-annotate-save-database (db)
-  "Save database to file.
-Argument DB database."
+  "Save DB to file."
   (with-temp-file simply-annotate-file
     (insert ";;; Simply Annotate Database\n")
     (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
@@ -295,31 +297,33 @@ Argument DB database."
     (insert "\n")))
 
 (defun simply-annotate-update-database (file-key annotations)
-  "Update database with ANNOTATIONS for file.
-Only writes if there are actual annotations or if removing existing entries.
-Argument FILE-KEY .
-Argument ANNOTATIONS ."
-  ;; Only proceed if we have annotations or need to remove existing ones
+  "Update database with ANNOTATIONS for FILE-KEY."
   (when (or annotations
-            (and (simply-annotate-load-database)
-                 (alist-get (if (symbolp file-key) (symbol-name file-key) file-key)
-                            (simply-annotate-load-database) nil nil #'string=)))
+            (let ((db (simply-annotate-load-database)))
+              (and db (alist-get file-key db nil nil #'string=))))
     (let ((db (or (simply-annotate-load-database) '())))
       (if annotations
-          ;; Add/update annotations
-          (setf (alist-get (if (symbolp file-key) (symbol-name file-key) file-key)
-                           db nil nil #'string=) annotations)
-        ;; Remove empty annotation entries
+          (setf (alist-get file-key db nil nil #'string=) annotations)
         (setq db (cl-remove-if (lambda (entry)
-                                 (string= (car entry)
-                                          (if (symbolp file-key) (symbol-name file-key) file-key)))
+                                 (string= (car entry) file-key))
                                db)))
-      ;; Only save if we have a non-empty database or need to clean up
       (if db
           (simply-annotate-save-database db)
-        ;; If database is now empty, optionally remove the file
         (when (file-exists-p simply-annotate-file)
           (delete-file simply-annotate-file))))))
+
+;;; Display Management
+
+(defun simply-annotate-apply-display-style (overlay)
+  "Apply current display style to OVERLAY."
+  (pcase simply-annotate-display-style
+    ('highlight
+     (overlay-put overlay 'face simply-annotate-highlight-face))
+    ('fringe
+     (simply-annotate-add-fringe-indicator overlay))
+    ('both
+     (overlay-put overlay 'face simply-annotate-highlight-face)
+     (simply-annotate-add-fringe-indicator overlay))))
 
 (defun simply-annotate-add-fringe-indicator (overlay)
   "Add fringe indicator to OVERLAY."
@@ -330,8 +334,6 @@ Argument ANNOTATIONS ."
                    ('custom 'simply-annotate-fringe-bitmap)
                    (_ 'left-triangle)))
          (fringe-spec `(left-fringe ,bitmap ,simply-annotate-fringe-face)))
-    
-    ;; Add the fringe indicator to the first character of the overlay
     (overlay-put overlay 'before-string
                  (propertize " " 'display fringe-spec))))
 
@@ -342,17 +344,8 @@ Argument ANNOTATIONS ."
     ;; Clear existing display properties
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
-    
     ;; Reapply based on current style
-    (pcase simply-annotate-display-style
-      ('highlight
-       (overlay-put overlay 'face simply-annotate-highlight-face))
-      ('fringe
-       (simply-annotate-add-fringe-indicator overlay))
-      ('both
-       (overlay-put overlay 'face simply-annotate-highlight-face)
-       (simply-annotate-add-fringe-indicator overlay))))
-  
+    (simply-annotate-apply-display-style overlay))
   (message "Updated display style to: %s" simply-annotate-display-style))
 
 (defun simply-annotate-cycle-display-style ()
@@ -362,31 +355,19 @@ Argument ANNOTATIONS ."
         (pcase simply-annotate-display-style
           ('highlight 'fringe)
           ('fringe 'both)
-          ('both 'highlight)
           (_ 'highlight)))
   (simply-annotate-update-display-style))
 
+;;; Overlay Management
+
 (defun simply-annotate-create-overlay (start end text)
   "Create annotation overlay with configurable display style.
-Argument START .
-Argument END .
-Argument TEXT ."
+START and END define the region, TEXT is the annotation content."
   (let ((overlay (make-overlay start end)))
     (overlay-put overlay 'simply-annotation text)
     (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary text))
     (overlay-put overlay 'mouse-face 'highlight)
-    
-    ;; Apply display style based on customization
-    (pcase simply-annotate-display-style
-      ('highlight
-       (overlay-put overlay 'face simply-annotate-highlight-face))
-      
-      ('fringe
-       (simply-annotate-add-fringe-indicator overlay))
-      
-      ('both
-       (overlay-put overlay 'face simply-annotate-highlight-face)
-       (simply-annotate-add-fringe-indicator overlay)))
+    (simply-annotate-apply-display-style overlay)
     overlay))
 
 (defun simply-annotate-remove-overlay (overlay)
@@ -400,105 +381,58 @@ Argument TEXT ."
   (setq simply-annotate-overlays nil))
 
 (defun simply-annotate-overlay-at-point (&optional pos)
-  "Get annotation overlay at point.
-In fringe mode, searches the entire current line for overlays.
-Optional argument POS specifies the position to check."
+  "Get annotation overlay at POS (defaults to point).
+In fringe mode, searches the entire current line for overlays."
   (let ((check-pos (or pos (point))))
-    (if (or (eq simply-annotate-display-style 'fringe))
-        ;; In fringe mode, check the entire current line
+    (if (eq simply-annotate-display-style 'fringe)
         (simply-annotate-overlay-on-line check-pos)
-      ;; In highlight mode, check only at the specific position
       (cl-find-if (lambda (ov) (overlay-get ov 'simply-annotation))
                   (overlays-at check-pos)))))
 
 (defun simply-annotate-overlay-on-line (&optional pos)
-  "Find annotation overlay anywhere on the current line.
-Optional argument POS specifies the line to check (defaults to current point)."
+  "Find annotation overlay anywhere on the line containing POS."
   (save-excursion
     (when pos (goto-char pos))
     (let ((line-start (line-beginning-position))
-          (line-end (line-end-position))
-          (found-overlay nil))
-      ;; Check all overlays in the current buffer
-      (dolist (overlay simply-annotate-overlays)
-        (when (and (not found-overlay)
-                   (overlay-get overlay 'simply-annotation)
-                   ;; Check if overlay starts anywhere on the current line
-                   (>= (overlay-start overlay) line-start)
-                   (<= (overlay-start overlay) line-end))
-          (setq found-overlay overlay)))
-      found-overlay)))
+          (line-end (line-end-position)))
+      (cl-find-if (lambda (overlay)
+                    (and (overlay-get overlay 'simply-annotation)
+                         (>= (overlay-start overlay) line-start)
+                         (<= (overlay-start overlay) line-end)))
+                  simply-annotate-overlays))))
+
+;;; Thread Management
 
 (defun simply-annotate-create-thread (text &optional author priority tags)
-  "Create a new annotation thread TEXT AUTHOR PRIORITY TAGS."
-  (let ((timestamp (format-time-string "%Y-%m-%dT%H:%M:%S"))
+  "Create a new annotation thread with TEXT, AUTHOR, PRIORITY, and TAGS."
+  (let ((timestamp (simply-annotate-timestamp))
         (id (format "thread-%d" (random 1000000))))
     `((id . ,id)
       (created . ,timestamp)
       (status . "open")
       (priority . ,(or priority "normal"))
       (tags . ,(or tags '()))
-      (comments . (((author . ,(or author simply-annotate-default-author))
-                    (timestamp . ,timestamp)
-                    (text . ,text)
-                    (type . "comment")))))))
-
-(defun simply-annotate-create-thread-with-author (text &optional author priority tags)
-  "Create a new annotation thread TEXT AUTHOR PRIORITY TAGS."
-  (let* ((chosen-author (or author (simply-annotate-get-author-for-context 'annotation)))
-         (timestamp (format-time-string "%Y-%m-%dT%H:%M:%S"))
-         (id (format "thread-%d" (random 1000000))))
-    
-    ;; Remember the author choice
-    (simply-annotate-remember-author chosen-author)
-    
-    `((id . ,id)
-      (created . ,timestamp)
-      (status . "open")
-      (priority . ,(or priority "normal"))
-      (tags . ,(or tags '()))
-      (comments . (((author . ,chosen-author)
+      (comments . (((author . ,(or author (simply-annotate-get-author-for-context 'annotation)))
                     (timestamp . ,timestamp)
                     (text . ,text)
                     (type . "comment")))))))
 
 (defun simply-annotate-add-reply (thread reply-text &optional author)
-  "Add a REPLY-TEXT to an existing THREAD AUTHOR."
-  (let* ((timestamp (format-time-string "%Y-%m-%dT%H:%M:%S"))
-         (reply `((author . ,(or author simply-annotate-default-author))
+  "Add REPLY-TEXT to an existing THREAD with optional AUTHOR."
+  (let* ((timestamp (simply-annotate-timestamp))
+         (reply `((author . ,(or author (simply-annotate-get-author-for-context 'reply)))
                   (timestamp . ,timestamp)
                   (text . ,reply-text)
                   (type . "reply")))
          (comments (alist-get 'comments thread)))
+    (simply-annotate-remember-author (alist-get 'author reply))
     (setf (alist-get 'comments thread) (append comments (list reply)))
     thread))
 
-(defun simply-annotate-add-reply-with-author (thread reply-text &optional author)
-  "Add a REPLY-TEXT to an existing THREAD with proper AUTHOR handling."
-  (let* ((chosen-author (or author (simply-annotate-get-author-for-context 'reply)))
-         (timestamp (format-time-string "%Y-%m-%dT%H:%M:%S"))
-         (reply `((author . ,chosen-author)
-                  (timestamp . ,timestamp)
-                  (text . ,reply-text)
-                  (type . "reply")))
-         (comments (alist-get 'comments thread)))
-    
-    ;; Remember the author choice
-    (simply-annotate-remember-author chosen-author)
-    
-    (setf (alist-get 'comments thread) (append comments (list reply)))
-    thread))
-
-(defun simply-annotate-set-thread-status (thread status)
-  "Set the STATUS of a THREAD."
-  (when (member status simply-annotate-thread-statuses)
-    (setf (alist-get 'status thread) status)
-    thread))
-
-(defun simply-annotate-set-thread-priority (thread priority)
-  "Set the PRIORITY of a THREAD."
-  (when (member priority simply-annotate-priority-levels)
-    (setf (alist-get 'priority thread) priority)
+(defun simply-annotate-set-thread-property (thread property value valid-values)
+  "Set PROPERTY of THREAD to VALUE if it's in VALID-VALUES."
+  (when (member value valid-values)
+    (setf (alist-get property thread) value)
     thread))
 
 (defun simply-annotate-add-thread-tag (thread tag)
@@ -532,14 +466,14 @@ Optional argument POS specifies the line to check (defaults to current point)."
          (tags (alist-get 'tags thread))
          (comments (alist-get 'comments thread))
          (header (format "┌─ Thread: %s [%s/%s]" id status priority))
-         (authors1 (delete-dups (mapcar (lambda (c) (alist-get 'author c)) comments)))
-         (author-count (length authors1)))
+         (authors (delete-dups (mapcar (lambda (c) (alist-get 'author c)) comments)))
+         (author-count (length authors)))
     
     (when tags
       (setq header (concat header (format " Tags: %s" (string-join tags ", ")))))
     
     (when (> author-count 1)
-      (setq header (concat header (format " (%d authors1)" author-count))))
+      (setq header (concat header (format " (%d authors)" author-count))))
     
     (concat
      header "\n"
@@ -558,6 +492,8 @@ Optional argument POS specifies the line to check (defaults to current point)."
       "\n├─────\n")
      "\n└─────")))
 
+;;; Author Management
+
 (defun simply-annotate-get-author-for-context (context &optional current-author)
   "Get appropriate author based on CONTEXT and CURRENT-AUTHOR."
   (let* ((file-key (simply-annotate-file-key))
@@ -565,53 +501,37 @@ Optional argument POS specifies the line to check (defaults to current point)."
                              (car simply-annotate-author-list)))
          (remembered-author (when simply-annotate-remember-author-per-file
                               (alist-get file-key simply-annotate-file-authors nil nil #'string=)))
-         (session-author simply-annotate-session-author)
-         (initial-author (or remembered-author session-author default-author)))
+         (initial-author (or remembered-author simply-annotate-session-author default-author)))
     
     (cond
-     ;; Never prompt - use default/remembered author
-     ((null simply-annotate-prompt-for-author)
-      initial-author)
-     
-     ;; Always prompt
+     ((null simply-annotate-prompt-for-author) initial-author)
      ((eq simply-annotate-prompt-for-author 'always)
       (simply-annotate-select-author initial-author current-author))
-     
-     ;; Prompt once per session
      ((eq simply-annotate-prompt-for-author 'first-only)
-      (if simply-annotate-session-author
-          simply-annotate-session-author
-        (let ((chosen (simply-annotate-select-author initial-author current-author)))
-          (setq simply-annotate-session-author chosen)
-          chosen)))
-     
-     ;; Prompt only for thread replies
+      (or simply-annotate-session-author
+          (setq simply-annotate-session-author
+                (simply-annotate-select-author initial-author current-author))))
      ((eq simply-annotate-prompt-for-author 'threads-only)
       (if (eq context 'reply)
           (simply-annotate-select-author initial-author current-author)
         initial-author))
-     
-     ;; Default fallback
      (t initial-author))))
 
 (defun simply-annotate-select-author (&optional default-author current-author)
   "Prompt user to select an author from the configured list.
-DEFAULT-AUTHOR is pre-selected.  CURRENT-AUTHOR is shown when editing."
+DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
   (let* ((authors (if (> (length simply-annotate-author-list) 1)
                       simply-annotate-author-list
-                    (append simply-annotate-author-list
-                            (list "Other..."))))
+                    (append simply-annotate-author-list (list "Other..."))))
          (prompt (if current-author
                      (format "Author (current: %s): " current-author)
                    "Author: "))
          (default (or default-author (car authors)))
          (choice (completing-read prompt authors nil nil nil nil default)))
     
-    ;; Handle "Other..." selection
     (if (string= choice "Other...")
         (let ((custom-author (read-string "Enter author name: " default)))
           (when (and custom-author (not (string-empty-p custom-author)))
-            ;; Add to author list for future use
             (unless (member custom-author simply-annotate-author-list)
               (customize-save-variable 'simply-annotate-author-list
                                        (append simply-annotate-author-list (list custom-author))))
@@ -623,6 +543,8 @@ DEFAULT-AUTHOR is pre-selected.  CURRENT-AUTHOR is shown when editing."
   (when (and simply-annotate-remember-author-per-file author)
     (let ((file-key (simply-annotate-file-key)))
       (setf (alist-get file-key simply-annotate-file-authors nil nil #'string=) author))))
+
+;;; Serialization
 
 (defun simply-annotate-serialize-annotations ()
   "Convert buffer annotations to serializable format."
@@ -646,31 +568,14 @@ DEFAULT-AUTHOR is pre-selected.  CURRENT-AUTHOR is shown when editing."
 
 (defun simply-annotate-save-annotations ()
   "Save current buffer's annotations."
-  (let ((file-key (simply-annotate-file-key)))
-    (when (and file-key simply-annotate-mode)  ; Only save if annotation mode is active
-      (let ((annotations (simply-annotate-serialize-annotations)))
-        ;; Only update database if we actually have annotations
-        (when (or annotations
-                  ;; Or if we had annotations before (to handle deletions)
-                  (let ((db (simply-annotate-load-database)))
-                    (and db (alist-get file-key db nil nil #'string=))))
-          (simply-annotate-update-database file-key annotations))))))
-
-(defun simply-annotate-should-save-p ()
-  "Check if we should save annotations for the current buffer."
-  (and simply-annotate-mode  ; Mode must be active
-       (simply-annotate-file-key)  ; Must have a valid file key
-       (or simply-annotate-overlays  ; Either have current overlays
-           ;; Or had stored annotations (for handling deletions)
-           (let ((db (simply-annotate-load-database)))
-             (and db (alist-get (simply-annotate-file-key) db nil nil #'string=))))))
-
-(defun simply-annotate-save-annotations-safe ()
-  "Save current buffer's annotations only if appropriate."
-  (when (simply-annotate-should-save-p)
-    (let ((file-key (simply-annotate-file-key))
-          (annotations (simply-annotate-serialize-annotations)))
-      (simply-annotate-update-database file-key annotations))))
+  (when simply-annotate-mode
+    (let ((file-key (simply-annotate-file-key)))
+      (when file-key
+        (let ((annotations (simply-annotate-serialize-annotations)))
+          (when (or annotations
+                    (let ((db (simply-annotate-load-database)))
+                      (and db (alist-get file-key db nil nil #'string=))))
+            (simply-annotate-update-database file-key annotations)))))))
 
 (defun simply-annotate-load-annotations ()
   "Load annotations for current buffer."
@@ -679,6 +584,8 @@ DEFAULT-AUTHOR is pre-selected.  CURRENT-AUTHOR is shown when editing."
          (annotations (when db (alist-get file-key db nil nil #'string=))))
     (when annotations
       (simply-annotate-deserialize-annotations annotations))))
+
+;;; Annotation Buffer Management
 
 (defun simply-annotate-get-annotation-buffer ()
   "Get or create the annotation buffer."
@@ -689,9 +596,8 @@ DEFAULT-AUTHOR is pre-selected.  CURRENT-AUTHOR is shown when editing."
     buffer))
 
 (defun simply-annotate-update-annotation-buffer (annotation-data overlay &optional edit-sexp)
-  "Update ANNOTATION-DATA buffer with compatibility for threads and strings.
-If EDIT-SEXP is non-nil, display the raw sexp for editing.
-Argument OVERLAY overlay."
+  "Update annotation buffer with ANNOTATION-DATA and OVERLAY.
+If EDIT-SEXP is non-nil, display the raw sexp for editing."
   (let ((buffer (simply-annotate-get-annotation-buffer))
         (source-buf (current-buffer)))
     
@@ -708,15 +614,13 @@ Argument OVERLAY overlay."
               (buffer-disable-undo)
               (buffer-enable-undo)
               
-              ;; Convert string annotation or empty draft to a new thread structure for pp
               (let* ((data-to-print (if (simply-annotate-is-thread-p annotation-data)
                                         annotation-data
-                                      (simply-annotate-create-thread-with-author
+                                      (simply-annotate-create-thread
                                        (simply-annotate-get-annotation-text annotation-data))))
                      (print-level nil) (print-length nil))
                 (pp data-to-print (current-buffer)))
               
-              ;; In sexp edit mode, the content starts at point-min.
               (setq simply-annotate-header-end-pos (point-min))
               (setq header-line-format "Edit annotation sexp (C-c C-c to save, C-c C-k to cancel)"))
           (progn
@@ -770,73 +674,78 @@ Argument OVERLAY overlay."
         (condition-case err
             (progn
               (setq final-data (read (buffer-string)))
-              ;; Basic validation for thread structure
               (unless (simply-annotate-is-thread-p final-data)
-                (user-error "Invalid annotation format: must be a thread alist.  Sexp read: %S" final-data))
+                (user-error "Invalid annotation format: must be a thread alist"))
               
-              ;; If it was a draft, ensure it gets a proper ID and first comment if missing
               (when is-draft
                 (unless (alist-get 'id final-data)
                   (setf (alist-get 'id final-data) (format "thread-%d" (random 1000000))))
                 (unless (alist-get 'comments final-data)
-                  ;; Add a placeholder comment if none exists
                   (setf (alist-get 'comments final-data)
                         (list `((author . ,(simply-annotate-get-author-for-context 'annotation))
-                                (timestamp . ,(format-time-string "%Y-%m-%dT%H:%M:%S"))
+                                (timestamp . ,(simply-annotate-timestamp))
                                 (text . "Initial comment text (edited)")
                                 (type . "comment")))))))
           (error
-           (message "Error saving history: %s" (error-message-string err))
+           (message "Error saving annotation: %s" (error-message-string err))
            (cl-return-from simply-annotate-save-annotation-buffer)))
-      ;; Not in raw sexp edit mode, proceed with text-based editing (first comment)
+      ;; Text-based editing mode
       (let ((content (string-trim
                       (buffer-substring simply-annotate-header-end-pos (point-max)))))
         (if (string-empty-p content)
-            ;; If content is empty, treat as cancellation/removal for text mode
             (progn
-              (with-current-buffer simply-annotate-source-buffer
-                (if is-draft
-                    (progn
-                      (delete-overlay simply-annotate-draft-overlay)
-                      (setq simply-annotate-draft-overlay nil))
-                  (progn
-                    (simply-annotate-remove-overlay overlay)
-                    (simply-annotate-save-annotations)))
-                (simply-annotate-update-header))
-              (simply-annotate-hide-annotation-buffer)
-              (message "Annotation cancelled/removed")
+              (simply-annotate-cancel-annotation overlay is-draft)
               (cl-return-from simply-annotate-save-annotation-buffer))
-          ;; Update existing thread's first comment or create new thread
           (setq final-data (if (simply-annotate-is-thread-p current-data)
-                               (let ((thread (copy-alist current-data)))
-                                 (let* ((comments (alist-get 'comments thread))
-                                        (first-comment (copy-alist (car comments)))
-                                        (rest-comments (cdr comments)))
-                                   (setf (alist-get 'text first-comment) content)
-                                   (setf (alist-get 'comments thread)
-                                         (cons first-comment rest-comments)))
-                                 thread)
-                             (simply-annotate-create-thread-with-author content))))))
+                               (simply-annotate-update-thread-first-comment current-data content)
+                             (simply-annotate-create-thread content))))))
     
-    (overlay-put overlay 'simply-annotation final-data)
-    (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary final-data))
-    
-    (with-current-buffer simply-annotate-source-buffer
-      (if is-draft
-          (progn
-            (overlay-put overlay 'simply-annotation-draft nil)
-            (push overlay simply-annotate-overlays)
-            (setq simply-annotate-draft-overlay nil))
-        nil)
-      (simply-annotate-save-annotations)
-      (simply-annotate-update-header "SAVED")
-      (simply-annotate-hide-annotation-buffer)
-      (when (use-region-p) (deactivate-mark)))
-    
-    (let ((author (if (simply-annotate-is-thread-p final-data)
-                      (alist-get 'author (car (alist-get 'comments final-data)))
-                    simply-annotate-default-author)))
-      (message "Annotation saved by %s" author))))
+    (simply-annotate-finalize-annotation overlay final-data is-draft)))
+
+(defun simply-annotate-cancel-annotation (overlay is-draft)
+  "Cancel annotation editing for OVERLAY, handling IS-DRAFT state."
+  (with-current-buffer simply-annotate-source-buffer
+    (if is-draft
+        (progn
+          (delete-overlay simply-annotate-draft-overlay)
+          (setq simply-annotate-draft-overlay nil))
+      (progn
+        (simply-annotate-remove-overlay overlay)
+        (simply-annotate-save-annotations)))
+    (simply-annotate-update-header))
+  (simply-annotate-hide-annotation-buffer)
+  (message "Annotation cancelled/removed"))
+
+(defun simply-annotate-update-thread-first-comment (thread content)
+  "Update the first comment of THREAD with CONTENT."
+  (let ((thread-copy (copy-alist thread)))
+    (let* ((comments (alist-get 'comments thread-copy))
+           (first-comment (copy-alist (car comments)))
+           (rest-comments (cdr comments)))
+      (setf (alist-get 'text first-comment) content)
+      (setf (alist-get 'comments thread-copy)
+            (cons first-comment rest-comments)))
+    thread-copy))
+
+(defun simply-annotate-finalize-annotation (overlay final-data is-draft)
+  "Finalize annotation for OVERLAY with FINAL-DATA, handling IS-DRAFT state."
+  (overlay-put overlay 'simply-annotation final-data)
+  (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary final-data))
+  
+  (with-current-buffer simply-annotate-source-buffer
+    (when is-draft
+      (overlay-put overlay 'simply-annotation-draft nil)
+      (push overlay simply-annotate-overlays)
+      (setq simply-annotate-draft-overlay nil))
+    (simply-annotate-save-annotations)
+    (simply-annotate-update-header "SAVED")
+    (simply-annotate-hide-annotation-buffer)
+    (when (use-region-p) (deactivate-mark)))
+  
+  (let ((author (if (simply-annotate-is-thread-p final-data)
+                    (alist-get 'author (car (alist-get 'comments final-data)))
+                  simply-annotate-default-author)))
+    (message "Annotation saved by %s" author)))
 
 (defun simply-annotate-cancel-edit ()
   "Cancel editing and restore read-only mode or clean up draft."
@@ -851,7 +760,6 @@ Argument OVERLAY overlay."
               (when simply-annotate-draft-overlay
                 (delete-overlay simply-annotate-draft-overlay))
               (setq simply-annotate-draft-overlay nil))
-          ;; If not a draft, revert the annotation buffer to display mode
           (when (and simply-annotate-current-overlay
                      (overlay-buffer simply-annotate-current-overlay))
             (simply-annotate-update-annotation-buffer
@@ -867,35 +775,27 @@ Argument OVERLAY overlay."
     (delete-overlay simply-annotate-draft-overlay)
     (setq simply-annotate-draft-overlay nil)))
 
+;;; Header Management
+
 (defun simply-annotate-get-annotation-number (target-overlay)
   "Get the position number of TARGET-OVERLAY in the sorted list of annotations."
   (when target-overlay
     (with-current-buffer (overlay-buffer target-overlay)
-      (let ((sorted-overlays (seq-sort-by #'overlay-start #'< simply-annotate-overlays))
-            (position 1))
-        (catch 'found
-          (dolist (overlay sorted-overlays)
-            (when (eq overlay target-overlay)
-              (throw 'found position))
-            (cl-incf position))
-          1)))))
+      (let ((sorted-overlays (seq-sort-by #'overlay-start #'< simply-annotate-overlays)))
+        (1+ (or (cl-position target-overlay sorted-overlays) 0))))))
 
 (defun simply-annotate-format-header (&optional text)
-  "Enhanced header format that show thread information.
-Optional argument TEXT text."
+  "Enhanced header format that shows thread information with optional TEXT."
   (let ((count (length simply-annotate-overlays)))
     (when (> count 0)
       (concat
-       ;; Annotation count: e.g., " [1/5] "
        (propertize (format " ANNOTATION %s/%d"
                            (if-let ((overlay (simply-annotate-overlay-at-point)))
                                (simply-annotate-get-annotation-number overlay)
                              "")
                            count)
                    'face '(bold :height 0.9 :box nil))
-       " " ; Separator
-
-       ;; Thread status info (conditional): e.g., "[O/N:3] " (Open/Normal:3 comments)
+       " "
        (if-let* ((overlay (simply-annotate-overlay-at-point))
                  (annotation-data (overlay-get overlay 'simply-annotation))
                  (thread (and (simply-annotate-is-thread-p annotation-data) annotation-data)))
@@ -905,14 +805,11 @@ Optional argument TEXT text."
              (propertize
               (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
               'face '(:height 0.9)))
-         "") ; Empty string if no thread status
-
-       ;; Optional custom text (e.g., "EDITING")
+         "")
        (if text (concat text " ") "")))))
 
 (defun simply-annotate-update-header (&optional text)
-  "Enhanced header update that handles threading information.
-Optional argument TEXT text."
+  "Enhanced header update that handles threading information with optional TEXT."
   (let ((overlay (simply-annotate-overlay-at-point))
         (new-annotation nil))
     
@@ -928,7 +825,6 @@ Optional argument TEXT text."
       (when (and (not overlay) (get-buffer-window simply-annotate-buffer-name))
         (simply-annotate-hide-annotation-buffer)))
     
-    ;; Always update the header format and force refresh
     (setq header-line-format (simply-annotate-format-header text))
     (force-mode-line-update t)))
 
@@ -942,14 +838,16 @@ Optional argument TEXT text."
   (setq header-line-format simply-annotate-original-header-line
         simply-annotate-current-annotation nil))
 
+;;; Navigation
+
 (defun simply-annotate-get-sorted-overlays ()
   "Get annotation overlays sorted by position."
   (sort (copy-sequence simply-annotate-overlays)
         (lambda (a b) (< (overlay-start a) (overlay-start b)))))
 
 (defun simply-annotate-find-annotation (forward &optional wrap)
-  "Find next/previous annotation.  FORWARD t for next, nil for previous.
-Optional argument WRAP ."
+  "Find next/previous annotation. FORWARD t for next, nil for previous.
+If WRAP is non-nil, wrap around to the beginning/end."
   (let* ((pos (point))
          (overlays (if forward
                        (simply-annotate-get-sorted-overlays)
@@ -963,24 +861,19 @@ Optional argument WRAP ."
       (setq found (car overlays)))
     found))
 
-(defun simply-annotate--navigate-to-overlay (overlay)
-  "Enhanced navigation that handles both string and thread annotations.
-Argument OVERLAY overlay."
+(defun simply-annotate-navigate-to-overlay (overlay)
+  "Enhanced navigation that handles both string and thread annotations for OVERLAY."
   (when overlay
     (goto-char (overlay-start overlay))
     (pulse-momentary-highlight-region (overlay-start overlay)
                                       (overlay-end overlay))
     
-    ;; Get annotation data
     (let ((annotation-data (overlay-get overlay 'simply-annotation)))
-      ;; Update annotation buffer if it's visible
       (if (get-buffer-window simply-annotate-buffer-name)
           (progn
             (simply-annotate-update-annotation-buffer annotation-data overlay)
             (simply-annotate-show-annotation-buffer))
-        ;; Show appropriate message based on annotation type
         (if (simply-annotate-is-thread-p annotation-data)
-            ;; Thread annotation - show summary
             (let* ((thread annotation-data)
                    (status (alist-get 'status thread))
                    (priority (alist-get 'priority thread))
@@ -996,14 +889,13 @@ Argument OVERLAY overlay."
                                     comment-count
                                     (if (= comment-count 1) "" "s"))))
               (message "%s" summary))
-          ;; Simple string annotation - show text
           (message "%s" (simply-annotate-get-annotation-text annotation-data)))))
     
     (simply-annotate-update-header)))
 
 ;;;###autoload
 (defun simply-annotate-show ()
-  "Enhanced version of `simply-annotate-show' that handles threading."
+  "Enhanced version that handles threading."
   (interactive)
   (if-let ((overlay (simply-annotate-overlay-at-point)))
       (let ((annotation-data (overlay-get overlay 'simply-annotation)))
@@ -1020,7 +912,7 @@ Argument OVERLAY overlay."
     (if (and source-buffer (buffer-live-p source-buffer))
         (with-current-buffer source-buffer
           (if-let ((next-overlay (simply-annotate-find-annotation t t)))
-              (simply-annotate--navigate-to-overlay next-overlay)
+              (simply-annotate-navigate-to-overlay next-overlay)
             (message "No more annotations in buffer")))
       (message "Source buffer not available"))))
 
@@ -1034,7 +926,7 @@ Argument OVERLAY overlay."
     (if (and source-buffer (buffer-live-p source-buffer))
         (with-current-buffer source-buffer
           (if-let ((prev-overlay (simply-annotate-find-annotation nil t)))
-              (simply-annotate--navigate-to-overlay prev-overlay)
+              (simply-annotate-navigate-to-overlay prev-overlay)
             (message "No more annotations in buffer")))
       (message "Source buffer not available"))))
 
@@ -1044,120 +936,88 @@ Argument OVERLAY overlay."
   "Enhanced smart action with author support."
   (interactive)
   (cond
-   ;; Case 1: Region is selected - always create/edit annotation and enter edit mode
    ((use-region-p)
-    (let* ((start (region-beginning))
-           (end (region-end))
-           (existing-overlay (simply-annotate-overlay-at-point start)))
-      
-      (if existing-overlay
-          ;; Edit existing annotation
-          (progn
-            (goto-char (overlay-start existing-overlay))
-            (let ((annotation-data (overlay-get existing-overlay 'simply-annotation)))
-              (simply-annotate-update-header "EDITING")
-              (simply-annotate-update-annotation-buffer annotation-data existing-overlay)
-              (simply-annotate-show-annotation-buffer)
-              (pop-to-buffer (simply-annotate-get-annotation-buffer))
-              ;; Enter edit mode immediately
-              (goto-char simply-annotate-header-end-pos)
-              (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
-        
-        ;; Create new annotation with author selection
-        (let ((draft-overlay (simply-annotate-create-overlay start end "")))
-          (simply-annotate-update-header "EDITING")
-          (overlay-put draft-overlay 'simply-annotation-draft t)
-          (setq simply-annotate-draft-overlay draft-overlay)
-          
-          ;; Show annotation buffer for editing
-          (simply-annotate-update-annotation-buffer "" draft-overlay)
-          (simply-annotate-show-annotation-buffer)
-          (pop-to-buffer (simply-annotate-get-annotation-buffer))
-          
-          ;; Enter edit mode immediately
-          (goto-char simply-annotate-header-end-pos)
-          (message "Enter annotation text (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
-      
-      (deactivate-mark)))
-   
-   ;; Case 2: No region, but cursor is on an overlay - toggle annotation buffer
+    (simply-annotate-handle-region-action))
    ((simply-annotate-overlay-at-point)
-    (let* ((current-prefix-arg-val (prefix-numeric-value current-prefix-arg))
-           (existing-overlay (simply-annotate-overlay-at-point))
-           (annotation-data (overlay-get existing-overlay 'simply-annotation))
-           (buffer-window (get-buffer-window simply-annotate-buffer-name)))
-
-      (if (= current-prefix-arg-val 4)
-          ;; Edit existing annotation
-          (progn
-            (goto-char (overlay-start existing-overlay))
-            (simply-annotate-update-header "EDITING")
-            (simply-annotate-update-annotation-buffer annotation-data existing-overlay)
-            (simply-annotate-show-annotation-buffer)
-            (pop-to-buffer (simply-annotate-get-annotation-buffer))
-            ;; Enter edit mode immediately
-            (goto-char simply-annotate-header-end-pos)
-            (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel)"))
-        (if buffer-window
-            ;; Buffer is visible - hide it (toggle off)
-            (progn
-              (simply-annotate-hide-annotation-buffer))
-          ;; Buffer is not visible - show it (toggle on)
-          (progn
-            (simply-annotate-update-annotation-buffer annotation-data existing-overlay)
-            (simply-annotate-show-annotation-buffer))))))
-
-   ;; Case 3: No region, not on overlay - create new annotation on current line
+    (simply-annotate-handle-overlay-action))
    (t
-    (let ((buffer-window (get-buffer-window simply-annotate-buffer-name)))
+    (simply-annotate-handle-line-action))))
+
+(defun simply-annotate-handle-region-action ()
+  "Handle smart action when region is selected."
+  (let* ((start (region-beginning))
+         (end (region-end))
+         (existing-overlay (simply-annotate-overlay-at-point start)))
+    
+    (if existing-overlay
+        (simply-annotate-edit-annotation existing-overlay)
+      (simply-annotate-create-new-annotation start end))
+    (deactivate-mark)))
+
+(defun simply-annotate-handle-overlay-action ()
+  "Handle smart action when cursor is on an overlay."
+  (let* ((existing-overlay (simply-annotate-overlay-at-point))
+         (annotation-data (overlay-get existing-overlay 'simply-annotation))
+         (buffer-window (get-buffer-window simply-annotate-buffer-name)))
+
+    (if (= (prefix-numeric-value current-prefix-arg) 4)
+        (simply-annotate-edit-annotation existing-overlay)
       (if buffer-window
-          (progn
-            (simply-annotate-hide-annotation-buffer))
+          (simply-annotate-hide-annotation-buffer)
         (progn
-          (let* ((start (save-excursion
-                          (beginning-of-line)
-                          (point)))
-                 (end (save-excursion
-                        (end-of-line)
-                        (point)))
-                 (draft-overlay (simply-annotate-create-overlay start end "")))
-            (overlay-put draft-overlay 'simply-annotation-draft t)
-            (setq simply-annotate-draft-overlay draft-overlay)
-            
-            ;; Show annotation buffer for editing
-            (simply-annotate-update-annotation-buffer "" draft-overlay)
-            (simply-annotate-show-annotation-buffer)
-            (pop-to-buffer (simply-annotate-get-annotation-buffer))
-            
-            ;; Enter edit mode immediately
-            (goto-char simply-annotate-header-end-pos)
-            (message "Enter annotation text (C-c C-c to save, C-c C-k to cancel)"))))))))
+          (simply-annotate-update-annotation-buffer annotation-data existing-overlay)
+          (simply-annotate-show-annotation-buffer))))))
+
+(defun simply-annotate-handle-line-action ()
+  "Handle smart action when no region or overlay."
+  (let ((buffer-window (get-buffer-window simply-annotate-buffer-name)))
+    (if buffer-window
+        (simply-annotate-hide-annotation-buffer)
+      (let* ((start (line-beginning-position))
+             (end (line-end-position)))
+        (simply-annotate-create-new-annotation start end)))))
+
+(defun simply-annotate-edit-annotation (overlay)
+  "Edit existing annotation OVERLAY."
+  (goto-char (overlay-start overlay))
+  (let ((annotation-data (overlay-get overlay 'simply-annotation)))
+    (simply-annotate-update-header "EDITING")
+    (simply-annotate-update-annotation-buffer annotation-data overlay)
+    (simply-annotate-show-annotation-buffer)
+    (pop-to-buffer (simply-annotate-get-annotation-buffer))
+    (goto-char simply-annotate-header-end-pos)
+    (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
+
+(defun simply-annotate-create-new-annotation (start end)
+  "Create new annotation from START to END."
+  (let ((draft-overlay (simply-annotate-create-overlay start end "")))
+    (simply-annotate-update-header "EDITING")
+    (overlay-put draft-overlay 'simply-annotation-draft t)
+    (setq simply-annotate-draft-overlay draft-overlay)
+    
+    (simply-annotate-update-annotation-buffer "" draft-overlay)
+    (simply-annotate-show-annotation-buffer)
+    (pop-to-buffer (simply-annotate-get-annotation-buffer))
+    
+    (goto-char simply-annotate-header-end-pos)
+    (message "Enter annotation text (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
 
 ;;;###autoload
 (defun simply-annotate-edit-sexp ()
-  "Edit the current annotation as a raw Elisp sexp.
-This allows full control over the annotation's internal data structure,
-including comments, replies, status, priority, and tags."
+  "Edit the current annotation as a raw Elisp sexp."
   (interactive)
   (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
                      simply-annotate-current-overlay
                    (simply-annotate-overlay-at-point))))
     (if overlay
         (progn
-          ;; Switch to source buffer to update its header line
           (with-current-buffer (overlay-buffer overlay)
-            (goto-char (overlay-start overlay)) ; Go to the source buffer's point
+            (goto-char (overlay-start overlay))
             (simply-annotate-update-header "EDITING SEXP"))
           
-          ;; Update the annotation buffer to display raw sexp
           (simply-annotate-update-annotation-buffer (overlay-get overlay 'simply-annotation) overlay t)
-          
-          ;; Ensure annotation buffer is visible and current
           (simply-annotate-show-annotation-buffer)
           (pop-to-buffer (simply-annotate-get-annotation-buffer))
-          
-          ;; Move point to the beginning of the editable content
-          ;; In sexp edit mode, the entire buffer is the content, so point-min is correct.
           (goto-char (point-min))
           
           (message "Editing annotation sexp. C-c C-c to save, C-c C-k to cancel."))
@@ -1171,7 +1031,6 @@ including comments, replies, status, priority, and tags."
       (progn
         (simply-annotate-remove-overlay overlay)
         (simply-annotate-save-annotations)
-        ;; Ensure header is updated after removal
         (simply-annotate-update-header)
         (message "Annotation removed"))
     (message "No annotation at point")))
@@ -1187,17 +1046,16 @@ including comments, replies, status, priority, and tags."
     (if overlay
         (let* ((current-data (overlay-get overlay 'simply-annotation))
                (thread (if (simply-annotate-is-thread-p current-data)
-                           current-data  ; Already a thread
-                         (simply-annotate-create-thread-with-author current-data)))
+                           current-data
+                         (simply-annotate-create-thread current-data)))
                (reply-text (read-string "Reply: " nil nil nil t)))
           (when (and reply-text (not (string-empty-p reply-text)))
-            (simply-annotate-add-reply-with-author thread reply-text)
+            (simply-annotate-add-reply thread reply-text)
             (overlay-put overlay 'simply-annotation thread)
             (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
             (simply-annotate-save-annotations)
             (simply-annotate-update-header "REPLY ADDED")
             
-            ;; If annotation buffer is open, refresh it
             (when (get-buffer-window simply-annotate-buffer-name)
               (simply-annotate-update-annotation-buffer thread overlay)
               (simply-annotate-show-annotation-buffer))
@@ -1209,6 +1067,15 @@ including comments, replies, status, priority, and tags."
 (defun simply-annotate-set-annotation-status ()
   "Set the status of annotation at point."
   (interactive)
+  (simply-annotate-set-annotation-property 'status simply-annotate-thread-statuses "Status"))
+
+(defun simply-annotate-set-annotation-priority ()
+  "Set the priority of annotation at point."
+  (interactive)
+  (simply-annotate-set-annotation-property 'priority simply-annotate-priority-levels "Priority"))
+
+(defun simply-annotate-set-annotation-property (property valid-values prompt)
+  "Set PROPERTY of annotation at point from VALID-VALUES with PROMPT."
   (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
                      simply-annotate-current-overlay
                    (simply-annotate-overlay-at-point))))
@@ -1216,46 +1083,19 @@ including comments, replies, status, priority, and tags."
         (let* ((current-data (overlay-get overlay 'simply-annotation))
                (thread (if (simply-annotate-is-thread-p current-data)
                            current-data
-                         (simply-annotate-create-thread-with-author current-data)))
-               (status (completing-read "Status: " simply-annotate-thread-statuses)))
-          (simply-annotate-set-thread-status thread status)
+                         (simply-annotate-create-thread current-data)))
+               (value (completing-read (concat prompt ": ") valid-values)))
+          (simply-annotate-set-thread-property thread property value valid-values)
           (overlay-put overlay 'simply-annotation thread)
           (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
           (simply-annotate-save-annotations)
           (simply-annotate-update-header)
           
-          ;; If annotation buffer is open, refresh it
           (when (get-buffer-window simply-annotate-buffer-name)
             (simply-annotate-update-annotation-buffer thread overlay)
             (simply-annotate-show-annotation-buffer))
 
-          (message "Status set to: %s" status))
-      (message "No annotation at point"))))
-
-(defun simply-annotate-set-annotation-priority ()
-  "Set the priority of annotation at point."
-  (interactive)
-  (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
-                     simply-annotate-current-overlay
-                   (simply-annotate-overlay-at-point))))
-    (if overlay
-        (let* ((current-data (overlay-get overlay 'simply-annotation))
-               (thread (if (simply-annotate-is-thread-p current-data)
-                           current-data
-                         (simply-annotate-create-thread-with-author current-data)))
-               (priority (completing-read "Priority: " simply-annotate-priority-levels)))
-          (simply-annotate-set-thread-priority thread priority)
-          (overlay-put overlay 'simply-annotation thread)
-          (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
-          (simply-annotate-save-annotations)
-          (simply-annotate-update-header)
-
-          ;; If annotation buffer is open, refresh it
-          (when (get-buffer-window simply-annotate-buffer-name)
-            (simply-annotate-update-annotation-buffer thread overlay)
-            (simply-annotate-show-annotation-buffer))
-
-          (message "Priority set to: %s" priority))
+          (message "%s set to: %s" prompt value))
       (message "No annotation at point"))))
 
 (defun simply-annotate-add-annotation-tag ()
@@ -1268,7 +1108,7 @@ including comments, replies, status, priority, and tags."
         (let* ((current-data (overlay-get overlay 'simply-annotation))
                (thread (if (simply-annotate-is-thread-p current-data)
                            current-data
-                         (simply-annotate-create-thread-with-author current-data)))
+                         (simply-annotate-create-thread current-data)))
                (tag (read-string "Tag: ")))
           (when (not (string-empty-p tag))
             (simply-annotate-add-thread-tag thread tag)
@@ -1277,7 +1117,6 @@ including comments, replies, status, priority, and tags."
             (simply-annotate-save-annotations)
             (simply-annotate-update-header)
 
-            ;; If annotation buffer is open, refresh it
             (when (get-buffer-window simply-annotate-buffer-name)
               (simply-annotate-update-annotation-buffer thread overlay)
               (simply-annotate-show-annotation-buffer))
@@ -1291,203 +1130,204 @@ including comments, replies, status, priority, and tags."
   (if-let ((overlay (simply-annotate-overlay-at-point)))
       (let* ((current-data (overlay-get overlay 'simply-annotation)))
         (if (simply-annotate-is-thread-p current-data)
-            ;; Handle thread - allow changing specific comment authors
-            (let* ((thread current-data)
-                   (comments (alist-get 'comments thread))
-                   (comment-choices (mapcar
-                                     (lambda (comment)
-                                       (let ((author (alist-get 'author comment))
-                                             (text (alist-get 'text comment))
-                                             (type (alist-get 'type comment)))
-                                         (format "%s %s: %s"
-                                                 (if (string= type "comment") "ὊC" "↳")
-                                                 author
-                                                 (truncate-string-to-width text 40 nil nil "..."))))
-                                     comments))
-                   (selected (completing-read "Change author for: " comment-choices))
-                   (comment-index (cl-position selected comment-choices :test #'string=))
-                   (selected-comment (nth comment-index comments))
-                   (current-author (alist-get 'author selected-comment))
-                   (new-author (simply-annotate-select-author current-author current-author)))
-              
-              (when new-author
-                (setf (alist-get 'author selected-comment) new-author)
-                (overlay-put overlay 'simply-annotation thread)
-                (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
-                (simply-annotate-save-annotations)
-                (message "Author changed from %s to %s" current-author new-author)))
-          
-          ;; Handle simple string annotation - convert to thread with new author
-          (let* ((current-text (simply-annotate-get-annotation-text current-data))
-                 (new-author (simply-annotate-select-author))
-                 (new-thread (simply-annotate-create-thread-with-author current-text new-author)))
-            (when new-author
-              (overlay-put overlay 'simply-annotation new-thread)
-              (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary new-thread))
-              (simply-annotate-save-annotations)
-              (message "Annotation converted to thread with author: %s" new-author)))))
+            (simply-annotate-change-thread-author overlay current-data)
+          (simply-annotate-convert-to-thread-with-author overlay current-data)))
     (message "No annotation at point")))
 
+(defun simply-annotate-change-thread-author (overlay thread)
+  "Change author for THREAD in OVERLAY."
+  (let* ((comments (alist-get 'comments thread))
+         (comment-choices (mapcar
+                           (lambda (comment)
+                             (let ((author (alist-get 'author comment))
+                                   (text (alist-get 'text comment))
+                                   (type (alist-get 'type comment)))
+                               (format "%s %s: %s"
+                                       (if (string= type "comment") "💬" "↳")
+                                       author
+                                       (truncate-string-to-width text 40 nil nil "..."))))
+                           comments))
+         (selected (completing-read "Change author for: " comment-choices))
+         (comment-index (cl-position selected comment-choices :test #'string=))
+         (selected-comment (nth comment-index comments))
+         (current-author (alist-get 'author selected-comment))
+         (new-author (simply-annotate-select-author current-author current-author)))
+    
+    (when new-author
+      (setf (alist-get 'author selected-comment) new-author)
+      (overlay-put overlay 'simply-annotation thread)
+      (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary thread))
+      (simply-annotate-save-annotations)
+      (message "Author changed from %s to %s" current-author new-author))))
+
+(defun simply-annotate-convert-to-thread-with-author (overlay current-data)
+  "Convert simple annotation in OVERLAY with CURRENT-DATA to thread with new author."
+  (let* ((current-text (simply-annotate-get-annotation-text current-data))
+         (new-author (simply-annotate-select-author))
+         (new-thread (simply-annotate-create-thread current-text new-author)))
+    (when new-author
+      (overlay-put overlay 'simply-annotation new-thread)
+      (overlay-put overlay 'help-echo (simply-annotate-get-annotation-summary new-thread))
+      (simply-annotate-save-annotations)
+      (message "Annotation converted to thread with author: %s" new-author))))
+
+;;; Export and Listing
+
 (defun simply-annotate-format-annotations-for-buffer (file-key annotations source-buffer buffer-name)
-  "Enhanced version of format-annotations-for-buffer that handles threading.
-Argument FILE-KEY file key.
-Argument ANNOTATIONS annotations.
-Argument SOURCE-BUFFER source buffer.
-Argument BUFFER-NAME buffer name."
+  "Enhanced version that handles threading.
+Format ANNOTATIONS for FILE-KEY from SOURCE-BUFFER into BUFFER-NAME."
   (with-current-buffer (get-buffer-create buffer-name)
     (let ((inhibit-read-only t))
       (erase-buffer)
-      ;; Add a header comment with summary stats
-      (let* ((total-annotations (length annotations))
-             (thread-count 0)
-             (string-count 0)
-             (open-count 0)
-             (resolved-count 0))
-        
-        ;; Count different types
-        (dolist (ann annotations)
-          (let ((data (alist-get 'text ann)))
-            (if (simply-annotate-is-thread-p data)
-                (progn
-                  (setq thread-count (1+ thread-count))
-                  (let ((status (alist-get 'status data)))
-                    (cond
-                     ((string= status "resolved") (setq resolved-count (1+ resolved-count)))
-                     ((string= status "closed") (setq resolved-count (1+ resolved-count)))
-                     (t (setq open-count (1+ open-count))))))
-              (setq string-count (1+ string-count)
-                    open-count (1+ open-count)))))
-        
-        (insert (format "Annotations for %s:\n" file-key))
-        (insert (format "Total: %d | Threads: %d | Simple: %d | Open: %d | Resolved: %d\n\n"
-                        total-annotations thread-count string-count open-count resolved-count)))
-      
-      ;; Sort annotations by line position, then by status (open items first)
-      (let ((sorted-annotations
-             (sort annotations
-                   (lambda (a b)
-                     (let ((start-a (alist-get 'start a))
-                           (start-b (alist-get 'start b))
-                           (data-a (alist-get 'text a))
-                           (data-b (alist-get 'text b)))
-                       (if (= start-a start-b)
-                           ;; Same position - prioritize by status (open first)
-                           (let ((status-a (if (simply-annotate-is-thread-p data-a)
-                                               (alist-get 'status data-a)
-                                             "open"))
-                                 (status-b (if (simply-annotate-is-thread-p data-b)
-                                               (alist-get 'status data-b)
-                                             "open")))
-                             (cond
-                              ((and (member status-a '("open" "in-progress"))
-                                    (member status-b '("resolved" "closed"))) t)
-                              ((and (member status-a '("resolved" "closed"))
-                                    (member status-b '("open" "in-progress"))) nil)
-                              (t (string< status-a status-b))))
-                         ;; Different positions - sort by line number
-                         (< start-a start-b)))))))
-        
-        ;; Format each annotation
-        (dolist (ann sorted-annotations)
-          (let* ((start-pos (alist-get 'start ann))
-                 (end-pos (alist-get 'end ann))
-                 (annotation-data (alist-get 'text ann))
-                 (line-num (if source-buffer
-                               (with-current-buffer source-buffer
-                                 (save-excursion
-                                   (goto-char (min start-pos (point-max)))
-                                   (line-number-at-pos)))
-                             1))
-                 (col-num (if source-buffer
-                              (with-current-buffer source-buffer
-                                (save-excursion
-                                  (goto-char (min start-pos (point-max)))
-                                  (current-column)))
-                            0))
-                 (line-content (if source-buffer
-                                   (with-current-buffer source-buffer
-                                     (save-excursion
-                                       (goto-char (min start-pos (point-max)))
-                                       (let ((line-end (min end-pos
-                                                            (line-end-position)
-                                                            (point-max))))
-                                         (buffer-substring-no-properties
-                                          (min start-pos (point-max)) line-end))))
-                                 "Content not available")))
-            
-            (if (simply-annotate-is-thread-p annotation-data)
-                ;; Format threaded annotation
-                (let* ((thread annotation-data)
-                       (status (alist-get 'status thread))
-                       (priority (alist-get 'priority thread))
-                       (tags (alist-get 'tags thread))
-                       (comments (alist-get 'comments thread))
-                       (comment-count (length comments)))
-                  
-                  ;; Location line with status indicators
-                  (insert (format "%s:%d:%d [%s/%s]"
-                                  file-key line-num (1+ col-num)
-                                  (upcase status) (upcase priority)))
-                  (when tags
-                    (insert (format " #%s" (string-join tags " #"))))
-                  (insert (format " (%d comment%s)\n"
-                                  comment-count
-                                  (if (= comment-count 1) "" "s")))
-                  
-                  ;; Thread content
-                  (insert "┌─ THREAD ─┐\n")
-                  (dolist (comment comments)
-                    (let* ((comment-author (alist-get 'author comment))
-                           (comment-timestamp (alist-get 'timestamp comment))
-                           (comment-text (alist-get 'text comment))
-                           (comment-type (alist-get 'type comment))
-                           (prefix (if (string= comment-type "comment") "💬" "↳"))
-                           (formatted-time (format-time-string "%m/%d %H:%M"
-                                                               (date-to-time comment-timestamp))))
-                      (insert (format "│ %s %s (%s):\n" prefix comment-author formatted-time))
-                      ;; Indent comment text
-                      (let ((text-lines (split-string comment-text "\n")))
-                        (dolist (line text-lines)
-                          (insert (format "│   %s\n" line))))))
-                  (insert "└───────────┘\n")
-                  
-                  ;; Source line
-                  (insert (format "│ Source: %s\n\n" (string-trim line-content))))
-              
-              ;; Format simple string annotation (legacy format)
-              (insert (format "%s:%d:%d\n" file-key line-num (1+ col-num)))
-              (insert (format "%s\n" simply-annotate-annotation-separator))
-              (let* ((lines (split-string (string-trim annotation-data) "\n"))
-                     (indented-text (mapconcat (lambda (line) (concat "│ " line)) lines "\n")))
-                (insert (format "%s\n" indented-text)))
-              (insert (format "%s\n" simply-annotate-text-separator))
-              (insert (format "%s\n\n" (string-trim line-content)))))))
-      
-      ;; Enable grep-mode for navigation
-      (grep-mode)
-      ;; Enhanced font-lock rules for threading
-      (font-lock-add-keywords nil
-                              `((,simply-annotate-annotation-block-regexp 1 '(:slant italic))
-                                (,simply-annotate-header-regexp 1 '(:weight bold))
-                                (,simply-annotate-annotation-separator 0 '(:underline nil))
-                                (,simply-annotate-text-separator 0 '(:underline nil))
-                                ;; Thread-specific highlighting
-                                ("┌─ THREAD ─┐\\|└───────────┘" 0 '(:weight bold))
-                                ("│.*💬.*:" 0 '(:weight bold))
-                                ("│.*↳.*:" 0 '(:slant italic))
-                                ("\\[OPEN/[^]]*\\]\\|\\[IN-PROGRESS/[^]]*\\]" 0 '(:weight bold))
-                                ("\\[RESOLVED/[^]]*\\]\\|\\[CLOSED/[^]]*\\]" 0 '(:weight bold))
-                                ("#[a-zA-Z0-9_-]+" 0 '(:weight bold)))
-                              'append)
+      (simply-annotate-insert-header file-key annotations)
+      (simply-annotate-insert-formatted-annotations file-key annotations source-buffer)
+      (simply-annotate-setup-annotation-list-mode)
       (goto-char (point-min)))
     (current-buffer)))
 
+(defun simply-annotate-insert-header (file-key annotations)
+  "Insert header with summary stats for FILE-KEY and ANNOTATIONS."
+  (let* ((total-annotations (length annotations))
+         (thread-count 0)
+         (string-count 0)
+         (open-count 0)
+         (resolved-count 0))
+    
+    (dolist (ann annotations)
+      (let ((data (alist-get 'text ann)))
+        (if (simply-annotate-is-thread-p data)
+            (progn
+              (setq thread-count (1+ thread-count))
+              (let ((status (alist-get 'status data)))
+                (if (member status '("resolved" "closed"))
+                    (setq resolved-count (1+ resolved-count))
+                  (setq open-count (1+ open-count)))))
+          (setq string-count (1+ string-count)
+                open-count (1+ open-count)))))
+    
+    (insert (format "Annotations for %s:\n" file-key))
+    (insert (format "Total: %d | Threads: %d | Simple: %d | Open: %d | Resolved: %d\n\n"
+                    total-annotations thread-count string-count open-count resolved-count))))
+
+(defun simply-annotate-insert-formatted-annotations (file-key annotations source-buffer)
+  "Insert formatted ANNOTATIONS for FILE-KEY from SOURCE-BUFFER."
+  (let ((sorted-annotations (simply-annotate-sort-annotations annotations)))
+    (dolist (ann sorted-annotations)
+      (let* ((start-pos (alist-get 'start ann))
+             (end-pos (alist-get 'end ann))
+             (annotation-data (alist-get 'text ann))
+             (line-info (simply-annotate-get-line-info start-pos end-pos source-buffer file-key)))
+        
+        (if (simply-annotate-is-thread-p annotation-data)
+            (simply-annotate-insert-thread-annotation annotation-data line-info file-key)
+          (simply-annotate-insert-simple-annotation annotation-data line-info file-key))))))
+
+(defun simply-annotate-sort-annotations (annotations)
+  "Sort ANNOTATIONS by line position, then by status (open items first)."
+  (sort annotations
+        (lambda (a b)
+          (let ((start-a (alist-get 'start a))
+                (start-b (alist-get 'start b))
+                (data-a (alist-get 'text a))
+                (data-b (alist-get 'text b)))
+            (if (= start-a start-b)
+                (let ((status-a (if (simply-annotate-is-thread-p data-a)
+                                    (alist-get 'status data-a)
+                                  "open"))
+                      (status-b (if (simply-annotate-is-thread-p data-b)
+                                    (alist-get 'status data-b)
+                                  "open")))
+                  (cond
+                   ((and (member status-a '("open" "in-progress"))
+                         (member status-b '("resolved" "closed"))) t)
+                   ((and (member status-a '("resolved" "closed"))
+                         (member status-b '("open" "in-progress"))) nil)
+                   (t (string< status-a status-b))))
+              (< start-a start-b))))))
+
+(defun simply-annotate-get-line-info (start-pos end-pos source-buffer file-key)
+  "Get line information for annotation from START-POS to END-POS in SOURCE-BUFFER for FILE-KEY."
+  (if source-buffer
+      (with-current-buffer source-buffer
+        (save-excursion
+          (goto-char (min start-pos (point-max)))
+          (list (line-number-at-pos)
+                (current-column)
+                (buffer-substring-no-properties
+                 (min start-pos (point-max))
+                 (min end-pos (line-end-position) (point-max))))))
+    (list 1 0 "Content not available")))
+
+(defun simply-annotate-insert-thread-annotation (thread line-info file-key)
+  "Insert formatted THREAD annotation with LINE-INFO for FILE-KEY."
+  (let* ((status (alist-get 'status thread))
+         (priority (alist-get 'priority thread))
+         (tags (alist-get 'tags thread))
+         (comments (alist-get 'comments thread))
+         (comment-count (length comments))
+         (line-num (car line-info))
+         (col-num (cadr line-info))
+         (line-content (caddr line-info)))
+    
+    (insert (format "%s:%d:%d [%s/%s]"
+                    file-key line-num (1+ col-num)
+                    (upcase status) (upcase priority)))
+    (when tags
+      (insert (format " #%s" (string-join tags " #"))))
+    (insert (format " (%d comment%s)\n"
+                    comment-count
+                    (if (= comment-count 1) "" "s")))
+    
+    (insert "┌─ THREAD ─┐\n")
+    (dolist (comment comments)
+      (let* ((comment-author (alist-get 'author comment))
+             (comment-timestamp (alist-get 'timestamp comment))
+             (comment-text (alist-get 'text comment))
+             (comment-type (alist-get 'type comment))
+             (prefix (if (string= comment-type "comment") "💬" "↳"))
+             (formatted-time (format-time-string "%m/%d %H:%M"
+                                                 (date-to-time comment-timestamp))))
+        (insert (format "│ %s %s (%s):\n" prefix comment-author formatted-time))
+        (let ((text-lines (split-string comment-text "\n")))
+          (dolist (line text-lines)
+            (insert (format "│   %s\n" line))))))
+    (insert "└───────────┘\n")
+    (insert (format "│ Source: %s\n\n" (string-trim line-content)))))
+
+(defun simply-annotate-insert-simple-annotation (annotation-data line-info file-key)
+  "Insert formatted simple ANNOTATION-DATA with LINE-INFO for FILE-KEY."
+  (let ((line-num (car line-info))
+        (col-num (cadr line-info))
+        (line-content (caddr line-info)))
+    (insert (format "%s:%d:%d\n" file-key line-num (1+ col-num)))
+    (insert (format "%s\n" simply-annotate-annotation-separator))
+    (let* ((lines (split-string (string-trim annotation-data) "\n"))
+           (indented-text (mapconcat (lambda (line) (concat "│ " line)) lines "\n")))
+      (insert (format "%s\n" indented-text)))
+    (insert (format "%s\n" simply-annotate-text-separator))
+    (insert (format "%s\n\n" (string-trim line-content)))))
+
+(defun simply-annotate-setup-annotation-list-mode ()
+  "Setup grep-mode and font-lock for annotation list."
+  (grep-mode)
+  (font-lock-add-keywords nil
+                          `((,simply-annotate-annotation-block-regexp 1 '(:slant italic))
+                            (,simply-annotate-header-regexp 1 '(:weight bold))
+                            (,simply-annotate-annotation-separator 0 '(:underline nil))
+                            (,simply-annotate-text-separator 0 '(:underline nil))
+                            ("┌─ THREAD ─┐\\|└───────────┘" 0 '(:weight bold))
+                            ("│.*💬.*:" 0 '(:weight bold))
+                            ("│.*↳.*:" 0 '(:slant italic))
+                            ("\\[OPEN/[^]]*\\]\\|\\[IN-PROGRESS/[^]]*\\]" 0 '(:weight bold))
+                            ("\\[RESOLVED/[^]]*\\]\\|\\[CLOSED/[^]]*\\]" 0 '(:weight bold))
+                            ("#[a-zA-Z0-9_-]+" 0 '(:weight bold)))
+                          'append))
+
 ;;;###autoload
 (defun simply-annotate-list ()
-  "Enhanced version of `simply-annotate-list' that handles threading."
+  "Enhanced version that handles threading."
   (interactive)
   (let ((buffer-name "*Annotations*"))
-     ;; Buffer not visible - show annotations
     (if simply-annotate-overlays
         (let* ((source-buffer (current-buffer))
                (source-file (or (buffer-file-name) (buffer-name)))
@@ -1500,8 +1340,7 @@ Argument BUFFER-NAME buffer name."
 
 (defun simply-annotate-display-file-annotations (file-key annotations)
   "Enhanced version that handles threading in cross-file display.
-Argument FILE-KEY file key.
-Argument ANNOTATIONS annotations."
+Display ANNOTATIONS for FILE-KEY."
   (let* ((buffer-name "*Annotations*")
          (source-buffer (if (file-exists-p file-key)
                             (find-file-other-window file-key)
@@ -1509,15 +1348,11 @@ Argument ANNOTATIONS annotations."
          (annotation-buffer (simply-annotate-format-annotations-for-buffer
                              file-key annotations source-buffer buffer-name)))
     
-    ;; Display both buffers with focus on annotation buffer
     (if (file-exists-p file-key)
         (progn
-          ;; Source file is already open in other window from find-file-other-window above
-          ;; Now display annotation buffer in current window and focus on it
           (pop-to-buffer annotation-buffer)
           (goto-char (point-min))
           (message "Source file opened in other window. Navigate with Enter key."))
-      ;; File doesn't exist, just show annotation buffer
       (progn
         (display-buffer annotation-buffer)
         (pop-to-buffer annotation-buffer)
@@ -1526,7 +1361,7 @@ Argument ANNOTATIONS annotations."
 
 ;;;###autoload
 (defun simply-annotate-show-all ()
-  "Show annotations from all files via `completing-read' selection."
+  "Show annotations from all files via completing-read selection."
   (interactive)
   (let* ((db (simply-annotate-load-database)))
     (if (not db)
@@ -1550,8 +1385,10 @@ Argument ANNOTATIONS annotations."
                  (annotations (alist-get selected-file db nil nil #'string=)))
             (simply-annotate-display-file-annotations selected-file annotations)))))))
 
+;;; Org Export
+
 (defun simply-annotate-thread-to-org (thread)
-  "Convert a THREAD to `org-mode' format."
+  "Convert a THREAD to org-mode format."
   (let* ((id (alist-get 'id thread))
          (status (alist-get 'status thread))
          (priority (alist-get 'priority thread))
@@ -1574,7 +1411,6 @@ Argument ANNOTATIONS annotations."
      (when (> (length first-text) (length (car (split-string first-text "\n"))))
        (concat (string-join (cdr (split-string first-text "\n")) "\n") "\n\n"))
      
-     ;; Add replies as sub-entries
      (when replies
        (mapconcat
         (lambda (reply)
@@ -1586,8 +1422,7 @@ Argument ANNOTATIONS annotations."
         "")))))
 
 (defun simply-annotate-export-to-org-file (filename)
-  "Export all annotations in current buffer to an org file.
-Argument FILENAME filename."
+  "Export all annotations in current buffer to an org file FILENAME."
   (interactive "FExport annotations to org file: ")
   (let* ((file-key (simply-annotate-file-key))
          (db (simply-annotate-load-database))
@@ -1600,17 +1435,18 @@ Argument FILENAME filename."
         (insert (format "#+TITLE: Annotations for %s\n" file-key))
         (insert (format "#+DATE: %s\n\n" (format-time-string "%Y-%m-%d")))
         
-        ;; Convert annotations to threads if they aren't already
         (dolist (ann annotations)
           (let* ((text (alist-get 'text ann))
                  (thread (if (simply-annotate-is-thread-p text)
-                             text  ; Already a thread
+                             text
                            (simply-annotate-create-thread (simply-annotate-get-annotation-text text)))))
             (insert (simply-annotate-thread-to-org thread))
             (insert "\n")))
         
         (write-file filename)
         (message "Annotations exported to %s" filename)))))
+
+;;; Mode definitions
 
 (defvar simply-annotate-annotation-mode-map
   (let ((map (make-sparse-keymap)))
@@ -1622,7 +1458,7 @@ Argument FILENAME filename."
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
-    (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp) ; New keybinding
+    (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
@@ -1640,9 +1476,7 @@ Argument FILENAME filename."
     (define-key map (kbd "M-s -") #'simply-annotate-remove)
     (define-key map (kbd "M-s a") #'simply-annotate-change-annotation-author)
     (define-key map (kbd "M-s l") #'simply-annotate-list)
-    
     (define-key map (kbd "M-s 0") #'simply-annotate-show-all)
-    
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
@@ -1651,7 +1485,7 @@ Argument FILENAME filename."
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
-  "Keymap for `simply-annotate-mode'.")
+  "Keymap for simply-annotate-mode.")
 
 ;;;###autoload
 (define-minor-mode simply-annotate-mode
@@ -1665,18 +1499,16 @@ Argument FILENAME filename."
         (simply-annotate-load-annotations)
         (simply-annotate-setup-header)
         (simply-annotate-update-header)
-        ;; Use the safer save function
-        (add-hook 'before-save-hook #'simply-annotate-save-annotations-safe nil t)
-        (add-hook 'kill-buffer-hook #'simply-annotate-save-annotations-safe nil t)
+        (add-hook 'before-save-hook #'simply-annotate-save-annotations nil t)
+        (add-hook 'kill-buffer-hook #'simply-annotate-save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer nil t)
         (message "Simply-annotate mode enabled. Loaded %d annotations."
                  (length simply-annotate-overlays)))
     (simply-annotate-clear-all-overlays)
     (simply-annotate-cleanup-header)
     (simply-annotate-hide-annotation-buffer)
-    ;; Remove the safer save function hooks
-    (remove-hook 'before-save-hook #'simply-annotate-save-annotations-safe t)
-    (remove-hook 'kill-buffer-hook #'simply-annotate-save-annotations-safe t)
+    (remove-hook 'before-save-hook #'simply-annotate-save-annotations t)
+    (remove-hook 'kill-buffer-hook #'simply-annotate-save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)))
 
 (provide 'simply-annotate)

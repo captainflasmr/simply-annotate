@@ -53,6 +53,10 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2025-07-03> *0.6.0*
+
+A little refactoring and tidying up.
+
 ** <2025-06-29> *0.5.1*
 
 - *Raw sexp editing*: Edit annotation data structures directly as Elisp for complete control
