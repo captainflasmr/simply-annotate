@@ -142,7 +142,7 @@
   "Face for inline annotation border characters."
   :group 'simply-annotate)
 
-(defcustom simply-annotate-inline-max-lines 10
+(defcustom simply-annotate-inline-max-lines 20
   "Maximum number of lines shown for inline annotations.
 Lines beyond this limit are truncated with a count.
 Set to nil to show all lines."
@@ -315,6 +315,25 @@ mode changes that would kill buffer-local values.")
       (when comments
         (alist-get 'text (car comments))))))
 
+(defun simply-annotate--strip-boilerplate (text)
+  "Strip box-drawing and thread boilerplate from TEXT.
+This helps fix corrupted annotations from older versions."
+  (if (or (null text) (not (stringp text)))
+      ""
+    (let ((lines (split-string text "\n")))
+      ;; 1. Remove obvious header/footer/metadata lines
+      (setq lines (cl-remove-if
+                   (lambda (line)
+                     (or (string-match-p "^[┌└─]" line) ; Thread/Box header or footer
+                         (string-match-p "^│?\\s-*[💬↳]" line) ; Comment indicator
+                         (string-match-p "^│?\\s-*Source:" line) ; Source info
+                         (string-match-p "^│?\\s-*Thread:" line))) ; Thread info
+                   lines))
+      ;; 2. For remaining lines, strip leading '│' and whitespace
+      (setq lines (mapcar (lambda (l) (replace-regexp-in-string "^│\\s-*" "" l)) lines))
+      ;; 3. Join and trim
+      (string-trim (mapconcat #'identity lines "\n")))))
+
 (defun simply-annotate--annotation-summary (annotation-data)
   "Get a summary for display (help-echo, header, etc.) from ANNOTATION-DATA."
   (if (stringp annotation-data)
@@ -368,50 +387,69 @@ mode changes that would kill buffer-local values.")
 (defun simply-annotate--inline-text (overlay)
   "Return the inline display string for OVERLAY as a box-drawn block."
   (let* ((data (overlay-get overlay 'simply-annotation))
-         (text (if (stringp data)
-                   data
-                 (let ((first (car (alist-get 'comments data))))
-                   (or (alist-get 'text first) ""))))
-         (meta (unless (stringp data)
+         (is-thread (simply-annotate--thread-p data))
+         (meta (when is-thread
                  (let ((status (alist-get 'status data))
-                       (priority (alist-get 'priority data))
-                       (n (length (alist-get 'comments data))))
-                   (concat
-                    (when (or status priority)
-                      (format " [%s]"
-                              (string-join
-                               (delq nil (list (when status (upcase status))
-                                               (when priority (upcase priority))))
-                               "/")))
-                    (when (> n 1) (format " (%d comments)" n))))))
-         (lines (split-string text "\n"))
-         (lines (if (and simply-annotate-inline-max-lines
-                         (> (length lines) simply-annotate-inline-max-lines))
-                    (append (seq-take lines simply-annotate-inline-max-lines)
-                            (list (format "… +%d lines"
-                                          (- (length lines)
-                                             simply-annotate-inline-max-lines))))
-                  lines))
+                       (priority (alist-get 'priority data)))
+                   (when (or status priority)
+                     (format " [%s]"
+                             (string-join
+                              (delq nil (list (when status (upcase status))
+                                              (when priority (upcase priority))))
+                              "/"))))))
+         (comments (if is-thread
+                       (alist-get 'comments data)
+                     (list `((text . ,data) (type . "comment") (author . "System")))))
+         (formatted-lines '())
          (label (concat "✎" (or meta "")))
-         (rule-len (max 20 (+ 4 (string-width label))))
-         (header (concat
-                  "  "
-                  (propertize (concat "┌─ " label " "
-                                      (make-string
-                                       (max 1 (- rule-len 4 (string-width label)))
-                                       ?─))
-                              'face 'simply-annotate-inline-border-face)))
-         (body (mapconcat
-                (lambda (line)
-                  (concat "  "
-                          (propertize "│ " 'face 'simply-annotate-inline-border-face)
-                          (propertize line 'face 'simply-annotate-inline-face)))
-                lines "\n"))
-         (footer (concat
-                  "  "
-                  (propertize (concat "└" (make-string rule-len ?─))
-                              'face 'simply-annotate-inline-border-face))))
-    (concat "\n" header "\n" body "\n" footer)))
+         (rule-len (max 20 (+ 4 (string-width label)))))
+
+    ;; Format each comment with its metadata and prefix
+    (dolist (comment comments)
+      (let* ((text (alist-get 'text comment))
+             (type (alist-get 'type comment))
+             (author (alist-get 'author comment))
+             (timestamp (alist-get 'timestamp comment))
+             (prefix (if (string= type "comment") "💬 " "↳ "))
+             (meta (if (and author timestamp)
+                       (format "%s (%s):"
+                               (propertize author 'face 'bold)
+                               (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                     ""))
+             (comment-lines (split-string text "\n")))
+        (push (concat prefix meta) formatted-lines)
+        (dolist (line comment-lines)
+          (push (concat "  " line) formatted-lines))))
+
+    (setq formatted-lines (reverse formatted-lines))
+
+    ;; Handle max lines if necessary
+    (when (and simply-annotate-inline-max-lines
+               (> (length formatted-lines) simply-annotate-inline-max-lines))
+      (setq formatted-lines
+            (append (seq-take formatted-lines simply-annotate-inline-max-lines)
+                    (list (format "… +%d lines"
+                                  (- (length formatted-lines)
+                                     simply-annotate-inline-max-lines))))))
+
+    (let ((header (concat
+                   "  "
+                   (propertize (concat "┌─ " label " "
+                                       (make-string
+                                        (max 1 (- rule-len 4 (string-width label)))
+                                        ?─))
+                               'face 'simply-annotate-inline-border-face)))
+          (body (mapconcat
+                 (lambda (line)
+                   (concat "  "
+                           (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                           (propertize line 'face 'simply-annotate-inline-face)))
+                 formatted-lines "\n"))
+          (footer (concat
+                   "  "
+                   (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
+                               'face 'simply-annotate-inline-border-face))))
+      (concat "\n" header "\n" body "\n" footer))))
 
 (defun simply-annotate--add-inline-text (overlay)
   "Add inline annotation text after OVERLAY."
@@ -420,9 +458,11 @@ mode changes that would kill buffer-local values.")
 (defun simply-annotate--refresh-overlay-display (overlay)
   "Refresh display properties of OVERLAY after a data change.
 Updates inline text when the inline toggle is active."
-  (when (and simply-annotate-inline
+  (with-current-buffer (overlay-buffer overlay)
+    (if (and simply-annotate-inline
              (simply-annotate--level-match-p overlay))
-    (simply-annotate--add-inline-text overlay)))
+        (simply-annotate--add-inline-text overlay)
+      (overlay-put overlay 'after-string nil))))
 
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
@@ -802,46 +842,54 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
         (simply-annotate-annotation-mode)))
     buffer))
 
-(defun simply-annotate--update-annotation-buffer (annotation-data overlay &optional edit-sexp)
+(defun simply-annotate--update-annotation-buffer (annotation-data overlay &optional mode)
   "Update annotation buffer with ANNOTATION-DATA and OVERLAY.
-If EDIT-SEXP is non-nil, display the raw sexp for editing."
+MODE can be 'view, 'edit, or 'sexp (default is 'view)."
   (let ((buffer (simply-annotate--get-annotation-buffer))
-        (source-buf (current-buffer)))
-    
+        (source-buf (current-buffer))
+        (mode (or mode 'view)))
     (with-current-buffer buffer
       (let ((inhibit-read-only t))
         (erase-buffer)
-        (setq simply-annotate-editing-annotation-sexp edit-sexp)
+        (setq simply-annotate-editing-annotation-sexp (eq mode 'sexp))
         
-        (if edit-sexp
-            (progn
-              (emacs-lisp-mode)
-              (visual-line-mode 1)
-              (setq-local buffer-read-only nil)
-              (buffer-disable-undo)
-              (buffer-enable-undo)
-              
-              (let* ((data-to-print (if (simply-annotate--thread-p annotation-data)
-                                        annotation-data
-                                      (simply-annotate--create-thread
-                                       (simply-annotate--annotation-text annotation-data))))
-                     (print-level nil) (print-length nil))
-                (pp data-to-print (current-buffer)))
-              
-              (setq simply-annotate-header-end-pos (point-min))
-              (setq header-line-format "Edit annotation sexp (C-c C-c to save, C-c C-k to cancel)"))
-          (progn
-            (fundamental-mode)
-            (visual-line-mode 1)
-            (setq-local buffer-read-only nil)
-            (insert (make-string (1- (length "Commands: C-c C-c (save) C-c C-k (cancel), C-g to quit\n")) ?-) "\n")
-            (setq simply-annotate-header-end-pos (point))
-            (if (simply-annotate--thread-p annotation-data)
-                (insert (simply-annotate--format-thread-full annotation-data))
-              (insert (simply-annotate--annotation-text annotation-data)))
-            (setq header-line-format nil)))
+        (cond
+         ((eq mode 'sexp)
+          (emacs-lisp-mode)
+          (visual-line-mode 1)
+          (setq-local buffer-read-only nil)
+          (buffer-disable-undo)
+          (buffer-enable-undo)
+          (let* ((data-to-print (if (simply-annotate--thread-p annotation-data)
+                                    annotation-data
+                                  (simply-annotate--create-thread
+                                   (simply-annotate--annotation-text annotation-data))))
+                 (print-level nil) (print-length nil))
+            (pp data-to-print (current-buffer)))
+          (setq simply-annotate-header-end-pos (point-min))
+          (setq header-line-format "Edit annotation sexp (C-c C-c to save, C-c C-k to cancel)"))
+         
+         ((eq mode 'edit)
+          (fundamental-mode)
+          (visual-line-mode 1)
+          (setq-local buffer-read-only nil)
+          (buffer-enable-undo)
+          (let ((text (simply-annotate--annotation-text annotation-data)))
+            (insert (simply-annotate--strip-boilerplate text)))
+          (setq simply-annotate-header-end-pos (point-min))
+          (setq header-line-format "EDITING: Type annotation text. C-c C-c to save, C-c C-k to cancel."))
+         
+         (t ;; 'view mode
+          (fundamental-mode)
+          (visual-line-mode 1)
+          (setq-local buffer-read-only t)
+          (if (simply-annotate--thread-p annotation-data)
+              (insert (simply-annotate--format-thread-full annotation-data))
+            (insert (simply-annotate--annotation-text annotation-data)))
+          (setq simply-annotate-header-end-pos (point-min))
+          (setq header-line-format (propertize " VIEW MODE: C-u M-s j to edit, r to reply, q to hide " 'face 'highlight))))
       
-      (goto-char simply-annotate-header-end-pos)
+      (goto-char (point-min))
       (setq simply-annotate-source-buffer source-buf
             simply-annotate-current-overlay overlay)))))
 
@@ -897,7 +945,7 @@ If EDIT-SEXP is non-nil, display the raw sexp for editing."
            (message "Error saving annotation: %s" (error-message-string err))
            (cl-return-from simply-annotate-save-annotation-buffer)))
       ;; Text-based editing mode
-      (let ((content (string-trim
+      (let ((content (simply-annotate--strip-boilerplate
                       (buffer-substring simply-annotate-header-end-pos (point-max)))))
         (if (string-empty-p content)
             (progn
@@ -1104,27 +1152,9 @@ If WRAP is non-nil, wrap around to the beginning/end."
                                       (overlay-end overlay))
     
     (let ((annotation-data (overlay-get overlay 'simply-annotation)))
-      (if (get-buffer-window simply-annotate-buffer-name)
-          (progn
-            (simply-annotate--update-annotation-buffer annotation-data overlay)
-            (simply-annotate--show-annotation-buffer))
-        (if (simply-annotate--thread-p annotation-data)
-            (let* ((thread annotation-data)
-                   (status (alist-get 'status thread))
-                   (priority (alist-get 'priority thread))
-                   (comments (alist-get 'comments thread))
-                   (comment-count (length comments))
-                   (first-comment (car comments))
-                   (first-text (alist-get 'text first-comment))
-                   (preview (truncate-string-to-width first-text 60 nil nil "..."))
-                   (summary (format "[%s/%s] %s (%d comment%s)"
-                                    (upcase status)
-                                    (upcase priority)
-                                    preview
-                                    comment-count
-                                    (if (= comment-count 1) "" "s"))))
-              (message "%s" summary))
-          (message "%s" (simply-annotate--annotation-text annotation-data)))))
+      (when (get-buffer-window simply-annotate-buffer-name)
+        (simply-annotate--update-annotation-buffer annotation-data overlay 'view)
+        (simply-annotate--show-annotation-buffer)))
     
     (simply-annotate--update-header)))
 
@@ -1134,7 +1164,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
   (interactive)
   (if-let ((overlay (simply-annotate--overlay-at-point)))
       (let ((annotation-data (overlay-get overlay 'simply-annotation)))
-        (simply-annotate--update-annotation-buffer annotation-data overlay)
+        (simply-annotate--update-annotation-buffer annotation-data overlay 'view)
         (simply-annotate--show-annotation-buffer))))
 
 ;;;###autoload
@@ -1200,7 +1230,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
       (if buffer-window
           (simply-annotate-hide-annotation-buffer)
         (progn
-          (simply-annotate--update-annotation-buffer annotation-data existing-overlay)
+          (simply-annotate--update-annotation-buffer annotation-data existing-overlay 'view)
           (simply-annotate--show-annotation-buffer))))))
 
 (defun simply-annotate--handle-line-action ()
@@ -1217,7 +1247,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
   (goto-char (overlay-start overlay))
   (let ((annotation-data (overlay-get overlay 'simply-annotation)))
     (simply-annotate--update-header "EDITING")
-    (simply-annotate--update-annotation-buffer annotation-data overlay)
+    (simply-annotate--update-annotation-buffer annotation-data overlay 'edit)
     (simply-annotate--show-annotation-buffer)
     (pop-to-buffer (simply-annotate--get-annotation-buffer))
     (goto-char simply-annotate-header-end-pos)
@@ -1231,7 +1261,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
     (overlay-put draft-overlay 'simply-annotation-level simply-annotate-current-level)
     (setq simply-annotate-draft-overlay draft-overlay)
     
-    (simply-annotate--update-annotation-buffer "" draft-overlay)
+    (simply-annotate--update-annotation-buffer "" draft-overlay 'edit)
     (simply-annotate--show-annotation-buffer)
     (pop-to-buffer (simply-annotate--get-annotation-buffer))
     
@@ -1247,11 +1277,10 @@ If WRAP is non-nil, wrap around to the beginning/end."
                    (simply-annotate--overlay-at-point))))
     (if overlay
         (progn
-          (with-current-buffer (overlay-buffer overlay)
-            (goto-char (overlay-start overlay))
-            (simply-annotate--update-header "EDITING SEXP"))
+          (goto-char (overlay-start overlay))
+          (simply-annotate--update-header "EDITING SEXP")
           
-          (simply-annotate--update-annotation-buffer (overlay-get overlay 'simply-annotation) overlay t)
+          (simply-annotate--update-annotation-buffer (overlay-get overlay 'simply-annotation) overlay 'sexp)
           (simply-annotate--show-annotation-buffer)
           (pop-to-buffer (simply-annotate--get-annotation-buffer))
           (goto-char (point-min))
@@ -1294,7 +1323,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
             (simply-annotate--update-header "REPLY ADDED")
             
             (when (get-buffer-window simply-annotate-buffer-name)
-              (simply-annotate--update-annotation-buffer thread overlay)
+              (simply-annotate--update-annotation-buffer thread overlay 'view)
               (simply-annotate--show-annotation-buffer))
             
             (let ((author (alist-get 'author (car (last (alist-get 'comments thread))))))
@@ -1330,7 +1359,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
           (simply-annotate--update-header)
           
           (when (get-buffer-window simply-annotate-buffer-name)
-            (simply-annotate--update-annotation-buffer thread overlay)
+            (simply-annotate--update-annotation-buffer thread overlay 'view)
             (simply-annotate--show-annotation-buffer))
 
           (message "%s set to: %s" prompt value))
@@ -1357,7 +1386,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
             (simply-annotate--update-header)
 
             (when (get-buffer-window simply-annotate-buffer-name)
-              (simply-annotate--update-annotation-buffer thread overlay)
+              (simply-annotate--update-annotation-buffer thread overlay 'view)
               (simply-annotate--show-annotation-buffer))
             
             (message "Tag '%s' added" tag)))
