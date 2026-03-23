@@ -11,6 +11,47 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-23 Sun> *0.7.1*
+
+Inline display, subtle style, and annotation listing improvements.
+
+*** Features
+
+- *Inline display toggle* -- =M-s /= toggles box-drawn annotation text blocks on
+  top of any display style.  Shows full multiline annotation content with thread
+  metadata, author info, and comment history directly in the buffer.
+- *Inline positioning* -- =simply-annotate-inline-position= controls where blocks
+  appear: ='after= (below annotated text) or ='above= (above annotated text).
+- *Subtle display style* -- New display style using overline/underline to bracket
+  annotated regions.  Visible but unobtrusive, ideal for pairing with inline display.
+- *Level-filtered display* -- All display styles now show only annotations matching
+  the active level.  Non-matching annotations have styling removed but text remains.
+- *Header level counts* -- Header-line shows annotation counts for every level
+  (e.g. =FILE:2 | DEFUN:5 | LINE:3=) with the active level in bold.
+- *Bidirectional level cycling* -- =M-s ]= cycles levels forward, =M-s [= cycles
+  backward.
+
+*** Improvements
+
+- *Annotation listing* -- Redesigned =M-s l= listing with per-level sections, counts
+  per level in the header, cleaner formatting, and source context for each annotation.
+- *Listing auto-level sync* -- Jumping from the annotation listing to a source
+  location automatically switches the source buffer to the annotation's level.
+- *View mode focus* -- =M-s j= on annotated text now shows the annotation buffer
+  without stealing focus from the source buffer.  Edit, reply, and sexp modes
+  still select the annotation buffer.
+- *Reply fix* -- Fixed reply mode variable being wiped by =kill-all-local-variables=
+  during mode switch, which caused replies to overwrite the original comment.
+- *Inline faces* -- =simply-annotate-inline-face= (body text) and
+  =simply-annotate-inline-border-face= (box-drawing characters) for customisation.
+
+*** Key binding changes
+
+- =M-s /=: Toggle inline annotation display (new)
+- =M-s '=: Cycle display style (moved from =M-s ]=)
+- =M-s ]=: Cycle annotation level forward (moved from display style)
+- =M-s [=: Cycle annotation level backward (was forward-only)
+
 ** <2026-03-23 Sun> *0.7.0*
 
 Annotation levels -- layered annotations for progressive code exploration.

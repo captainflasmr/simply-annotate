@@ -102,7 +102,7 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @item
 @strong{Annotation levels}: Three-tier annotation system (file, defun, line) for progressive code exploration
 @item
-@strong{Multiple display styles}: Choose between highlighting, fringe indicators, or both
+@strong{Multiple display styles}: Choose between highlighting, fringe indicators, both, or subtle
 @item
 @strong{Smart action}: Context-aware command that adapts to the situation
 @item
@@ -634,6 +634,8 @@ Traditional background highlighting of annotated text (good for emphasis)
 Shows small indicators in the left fringe (minimal visual impact)
 @item both
 Combines both highlighting and fringe indicators (maximum visibility)
+@item subtle
+Uses overline and underline to bracket annotated regions (unobtrusive)
 @end table
 
 Additionally, inline display can be toggled on top of any style
@@ -694,8 +696,14 @@ Define custom bitmaps for unique indicators
 @findex simply-annotate-toggle-inline
 Inline display is an overlay that can be toggled on top of any display style
 with @kbd{M-s /} (@code{simply-annotate-toggle-inline}).  When active, it
-renders annotation text as a box-drawn block directly below the annotated
-region:
+renders annotation text as a box-drawn block relative to the annotated region.
+
+@vindex simply-annotate-inline-position
+The position is controlled by @code{simply-annotate-inline-position}:
+
+@table @code
+@item after
+(Default) The block appears after the annotated region:
 
 @example
 (defun calculate-total (items)
@@ -706,12 +714,25 @@ region:
   (apply #'+ (mapcar #'price items)))
 @end example
 
-Both inline blocks and the underlying display style (highlight, fringe, or both)
+@item above
+The block appears above the annotated region:
+
+@example
+  ┌─ ✎ [OPEN/NORMAL] ────────
+  │ Sums all item prices.
+  │ Returns zero for empty list.
+  └────────────────────────────
+(defun calculate-total (items)
+  (apply #'+ (mapcar #'price items)))
+@end example
+@end table
+
+Both inline blocks and the underlying display style (highlight, fringe, both, or subtle)
 are filtered to the active annotation level --- cycling levels with @kbd{M-s [}
 updates which annotations are visible.
 
 Long annotations are truncated after @code{simply-annotate-inline-max-lines}
-lines (default 10).  Thread metadata (status, priority, comment count) appears
+lines (default 20).  Thread metadata (status, priority, comment count) appears
 in the header.
 
 Customise the appearance with:
@@ -723,6 +744,8 @@ Customise the appearance with:
 @code{simply-annotate-inline-border-face}: face for the box-drawing border
 @item
 @code{simply-annotate-inline-max-lines}: maximum lines before truncation
+@item
+@code{simply-annotate-inline-position}: @code{'after} or @code{'above}
 @end itemize
 
 @node Annotation Levels
@@ -1187,7 +1210,7 @@ Validation when saving to ensure data integrity
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1275,7 +1298,7 @@ Height of annotation buffer as fraction of frame height. Default: @code{0.3}
 
 @item simply-annotate-display-style
 @vindex simply-annotate-display-style
-How to display annotations. Options: @code{'highlight}, @code{'fringe}, @code{'both}. Default: @code{'fringe}
+How to display annotations. Options: @code{'highlight}, @code{'fringe}, @code{'both}, @code{'subtle}. Default: @code{'fringe}
 
 @item simply-annotate-fringe-indicator
 @vindex simply-annotate-fringe-indicator
@@ -1285,10 +1308,15 @@ Symbol for fringe indicators. Options: @code{'left-triangle}, @code{'right-trian
 @vindex simply-annotate-fringe-face
 Face for fringe indicators. Default: @code{'simply-annotate-fringe-face}
 
+@item simply-annotate-inline-position
+@vindex simply-annotate-inline-position
+Where to display inline blocks relative to the annotated region.
+Options: @code{'after}, @code{'above}.  Default: @code{'after}
+
 @item simply-annotate-inline-max-lines
 @vindex simply-annotate-inline-max-lines
 Maximum number of lines shown for inline annotations.  Lines beyond this limit
-are truncated with a count.  Set to @code{nil} to show all lines.  Default: @code{10}
+are truncated with a count.  Set to @code{nil} to show all lines.  Default: @code{20}
 @end vtable
 
 @section Annotation Level Variables

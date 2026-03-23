@@ -88,7 +88,7 @@ and documentation and includes threading and collaboration features.
    • *Annotation levels*: Three-tier annotation system (file, defun,
      line) for progressive code exploration
    • *Multiple display styles*: Choose between highlighting, fringe
-     indicators, or both
+     indicators, both, or subtle
    • *Smart action*: Context-aware command that adapts to the situation
    • *Rich editing*: Full-featured annotation buffer for longer notes
    • *Navigation*: Jump between annotations with simple keybindings
@@ -138,9 +138,8 @@ Here's how to get started with Simply Annotate:
   3. Select some text and press ‘M-s j’ to create your first annotation
   4. Type your annotation text and press ‘C-c C-c’ to save
   5. Navigate with ‘M-n’ (next) and ‘M-p’ (previous)
-  6. Press ‘M-s ]’ to cycle through different display styles
-  7. Press ‘M-s [’ to cycle through annotation levels (file, defun,
-     line)
+  6. Press ‘M-s '’ to cycle through different display styles
+  7. Press ‘M-s [’ and ‘M-s ]’ to cycle through annotation levels
   8. Press ‘M-s r’ to add a reply to any annotation
   9. Press ‘M-s s’ to set status (open, resolved, etc.)
   10. Press ‘M-s e’ to edit annotation data structure directly
@@ -502,13 +501,19 @@ allowing you to choose the visual style that best fits your workflow.
 ‘both’
      Combines both highlighting and fringe indicators (maximum
      visibility)
+‘subtle’
+     Uses overline and underline to bracket annotated regions
+     (unobtrusive)
+
+   Additionally, inline display can be toggled on top of any style
+(*note Display Styles::).
 
 7.2 Changing Display Styles
 ===========================
 
 You can change the display style in several ways:
 
-   • Press ‘M-s ]’ to cycle through all three styles
+   • Press ‘M-s '’ to cycle through all three styles
    • Set ‘simply-annotate-display-style’ in your configuration
    • Use ‘simply-annotate-update-display-style’ to refresh existing
      annotations
@@ -522,6 +527,9 @@ You can change the display style in several ways:
      Use ‘highlight’ style for emphasis on important passages
 *Critical Files*
      Use ‘both’ style for maximum visibility of important annotations
+*Code Exploration*
+     Toggle inline display (‘M-s /’) to read annotations in context
+     without opening the annotation buffer
 *Threading Display*
      All styles work well with threaded annotations and status
      indicators
@@ -535,6 +543,52 @@ The fringe display can be customized:
      ‘filled-rectangle’, or ‘custom’
    • Customize colors with ‘simply-annotate-fringe-face’
    • Define custom bitmaps for unique indicators
+
+7.5 Inline Display
+==================
+
+Inline display is an overlay that can be toggled on top of any display
+style with ‘M-s /’ (‘simply-annotate-toggle-inline’).  When active, it
+renders annotation text as a box-drawn block relative to the annotated
+region.
+
+   The position is controlled by ‘simply-annotate-inline-position’:
+
+‘after’
+     (Default) The block appears after the annotated region:
+
+          (defun calculate-total (items)
+            ┌─ ✎ [OPEN/NORMAL] ────────
+            │ Sums all item prices.
+            │ Returns zero for empty list.
+            └────────────────────────────
+            (apply #'+ (mapcar #'price items)))
+
+‘above’
+     The block appears above the annotated region:
+
+            ┌─ ✎ [OPEN/NORMAL] ────────
+            │ Sums all item prices.
+            │ Returns zero for empty list.
+            └────────────────────────────
+          (defun calculate-total (items)
+            (apply #'+ (mapcar #'price items)))
+
+   Both inline blocks and the underlying display style (highlight,
+fringe, both, or subtle) are filtered to the active annotation level --
+cycling levels with ‘M-s [’ updates which annotations are visible.
+
+   Long annotations are truncated after
+‘simply-annotate-inline-max-lines’ lines (default 20).  Thread metadata
+(status, priority, comment count) appears in the header.
+
+   Customise the appearance with:
+
+   • ‘simply-annotate-inline-face’: face for the annotation body text
+   • ‘simply-annotate-inline-border-face’: face for the box-drawing
+     border
+   • ‘simply-annotate-inline-max-lines’: maximum lines before truncation
+   • ‘simply-annotate-inline-position’: ‘'after’ or ‘'above’
 
 
 File: simply-annotate.info,  Node: Annotation Levels,  Next: Navigation,  Prev: Display Styles,  Up: Top
@@ -565,28 +619,30 @@ at a particular granularity.
 8.2 How Levels Work
 ===================
 
-All annotation overlay markers (highlights and fringe indicators) remain
-visible regardless of the active level.  Only _interaction_ is filtered
-to the active level:
+Only annotations matching the active level are styled.  Annotations at
+other levels have their visual markers (highlights, fringe indicators,
+inline blocks) removed, but the underlying text remains visible:
 
-   • *Navigation*: ‘M-n’ and ‘M-p’ skip annotations that don't match the
-     active level.
+   • *Display*: Only overlays matching the active level show highlights,
+     fringe indicators, and inline blocks.
+   • *Navigation*: ‘M-n’ and ‘M-p’ visit only annotations at the active
+     level.
    • *Editing*: ‘M-s j’ on annotated text only opens annotations
      matching the active level.
    • *Header display*: The annotation count and position indicator
      reflect only the active level.
-   • *Visual markers*: All overlays from all levels remain visible at
-     all times.
 
 8.3 Cycling Levels
 ==================
 
-Press ‘M-s [’ to cycle through levels:
+Use ‘M-s ]’ to cycle forward and ‘M-s [’ to cycle backward through
+levels:
 
-     file ⇒ defun ⇒ line ⇒ file ⇒ ...
+     M-s ]: file ⇒ defun ⇒ line ⇒ file ⇒ ...
+     M-s [: line ⇒ defun ⇒ file ⇒ line ⇒ ...
 
-   The header-line updates to show the active level as ‘[FILE]’,
-‘[DEFUN]’, or ‘[LINE]’ along with the annotation count for that level.
+   The header-line shows annotation counts for every level, with the
+active level in bold (e.g. ‘FILE:2 | DEFUN:5 | LINE:3’).
 
 8.4 Direct Level Selection
 ==========================
@@ -858,8 +914,12 @@ Key         Command                   Description
                                       file
 ‘M-s 0’     ‘simply-annotate-show-all’Browse annotations across all
                                       files
-‘M-s ]’     ‘simply-annotate-cycle-display-style’Cycle through display styles
-‘M-s [’     ‘simply-annotate-cycle-level’Cycle through annotation levels
+‘M-s [’     ‘simply-annotate-cycle-level-backward’Cycle levels backward (line ⇒
+                                      defun ⇒ file)
+‘M-s ]’     ‘simply-annotate-cycle-level-forward’Cycle levels forward (file ⇒ defun
+                                      ⇒ line)
+‘M-s '’     ‘simply-annotate-cycle-display-style’Cycle through display styles
+‘M-s /’     ‘simply-annotate-toggle-inline’Toggle inline annotation display
 ‘M-n’       ‘simply-annotate-next’    Jump to next annotation
 ‘M-p’       ‘simply-annotate-previous’Jump to previous annotation
 
@@ -922,7 +982,7 @@ File: simply-annotate.info,  Node: Customization,  Next: Data Storage,  Prev: Ke
        :ensure t
        :custom
        ;; Choose display style
-       (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+       (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
 
        ;; Customize the highlight face
        (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1008,7 +1068,7 @@ Configure team collaboration and threading features:
 
 ‘simply-annotate-display-style’
      How to display annotations.  Options: ‘'highlight’, ‘'fringe’,
-     ‘'both’.  Default: ‘'fringe’
+     ‘'both’, ‘'subtle’.  Default: ‘'fringe’
 
 ‘simply-annotate-fringe-indicator’
      Symbol for fringe indicators.  Options: ‘'left-triangle’,
@@ -1018,6 +1078,15 @@ Configure team collaboration and threading features:
 ‘simply-annotate-fringe-face’
      Face for fringe indicators.  Default:
      ‘'simply-annotate-fringe-face’
+
+‘simply-annotate-inline-position’
+     Where to display inline blocks relative to the annotated region.
+     Options: ‘'after’, ‘'above’.  Default: ‘'after’
+
+‘simply-annotate-inline-max-lines’
+     Maximum number of lines shown for inline annotations.  Lines beyond
+     this limit are truncated with a count.  Set to ‘nil’ to show all
+     lines.  Default: ‘20’
 
 13.5 Annotation Level Variables
 ===============================
@@ -1275,7 +1344,7 @@ If your annotations aren't being saved between sessions:
 15.4.2 Thread Display Corruption
 --------------------------------
 
-   • Try ‘M-s ]’ to refresh display style
+   • Try ‘M-s '’ to refresh display style
    • Check for malformed thread data structures
    • Use sexp editing mode to inspect and fix thread structure
    • Verify all required fields are present in thread data
@@ -1402,8 +1471,9 @@ Function Index
 * simply-annotate-cancel-edit:           Basic Usage.         (line  72)
 * simply-annotate-change-annotation-author: Threading and Collaboration.
                                                               (line 104)
-* simply-annotate-cycle-display-style:   Display Styles.      (line  24)
-* simply-annotate-cycle-level:           Annotation Levels.   (line  45)
+* simply-annotate-cycle-display-style:   Display Styles.      (line  30)
+* simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
+* simply-annotate-cycle-level-forward:   Annotation Levels.   (line  45)
 * simply-annotate-edit-sexp:             Advanced Editing.    (line  13)
 * simply-annotate-export-to-org-file:    Org-mode Integration.
                                                               (line  12)
@@ -1421,10 +1491,11 @@ Function Index
                                                               (line  57)
 * simply-annotate-set-annotation-status: Threading and Collaboration.
                                                               (line  45)
-* simply-annotate-set-level:             Annotation Levels.   (line  55)
+* simply-annotate-set-level:             Annotation Levels.   (line  57)
 * simply-annotate-show:                  Navigation.          (line  25)
 * simply-annotate-show-all:              Advanced Features.   (line  38)
 * simply-annotate-smart-action:          Basic Usage.         (line  23)
+* simply-annotate-toggle-inline:         Display Styles.      (line  66)
 
 
 File: simply-annotate.info,  Node: Variable Index,  Next: Concept Index,  Prev: Function Index,  Up: Top
@@ -1442,44 +1513,49 @@ Variable Index
 * priority:                              Advanced Editing.    (line  54)
 * simply-annotate-author-list:           Threading and Collaboration.
                                                               (line  79)
-* simply-annotate-author-list <1>:       Customization.       (line 123)
-* simply-annotate-author-list <2>:       Customization.       (line 124)
+* simply-annotate-author-list <1>:       Customization.       (line 132)
+* simply-annotate-author-list <2>:       Customization.       (line 133)
 * simply-annotate-buffer-height:         Customization.       (line  93)
 * simply-annotate-buffer-height <1>:     Customization.       (line  94)
 * simply-annotate-buffer-name:           Customization.       (line  90)
 * simply-annotate-buffer-name <1>:       Customization.       (line  91)
-* simply-annotate-default-level:         Customization.       (line 116)
-* simply-annotate-default-level <1>:     Customization.       (line 117)
-* simply-annotate-display-style:         Display Styles.      (line  24)
+* simply-annotate-default-level:         Customization.       (line 125)
+* simply-annotate-default-level <1>:     Customization.       (line 126)
+* simply-annotate-display-style:         Display Styles.      (line  30)
 * simply-annotate-display-style <1>:     Customization.       (line  97)
 * simply-annotate-display-style <2>:     Customization.       (line  98)
 * simply-annotate-file:                  Customization.       (line  82)
 * simply-annotate-file <1>:              Customization.       (line  83)
-* simply-annotate-fringe-face:           Display Styles.      (line  47)
+* simply-annotate-fringe-face:           Display Styles.      (line  56)
 * simply-annotate-fringe-face <1>:       Customization.       (line 106)
 * simply-annotate-fringe-face <2>:       Customization.       (line 107)
-* simply-annotate-fringe-indicator:      Display Styles.      (line  47)
+* simply-annotate-fringe-indicator:      Display Styles.      (line  56)
 * simply-annotate-fringe-indicator <1>:  Customization.       (line 101)
 * simply-annotate-fringe-indicator <2>:  Customization.       (line 102)
 * simply-annotate-highlight-face:        Customization.       (line  86)
 * simply-annotate-highlight-face <1>:    Customization.       (line  87)
-* simply-annotate-levels:                Customization.       (line 113)
-* simply-annotate-levels <1>:            Customization.       (line 114)
+* simply-annotate-inline-max-lines:      Customization.       (line 114)
+* simply-annotate-inline-max-lines <1>:  Customization.       (line 115)
+* simply-annotate-inline-position:       Display Styles.      (line  71)
+* simply-annotate-inline-position <1>:   Customization.       (line 110)
+* simply-annotate-inline-position <2>:   Customization.       (line 111)
+* simply-annotate-levels:                Customization.       (line 122)
+* simply-annotate-levels <1>:            Customization.       (line 123)
 * simply-annotate-priority-levels:       Threading and Collaboration.
                                                               (line  57)
-* simply-annotate-priority-levels <1>:   Customization.       (line 138)
-* simply-annotate-priority-levels <2>:   Customization.       (line 139)
+* simply-annotate-priority-levels <1>:   Customization.       (line 147)
+* simply-annotate-priority-levels <2>:   Customization.       (line 148)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
                                                               (line  79)
-* simply-annotate-prompt-for-author <1>: Customization.       (line 127)
-* simply-annotate-prompt-for-author <2>: Customization.       (line 128)
-* simply-annotate-remember-author-per-file: Customization.    (line 131)
+* simply-annotate-prompt-for-author <1>: Customization.       (line 136)
+* simply-annotate-prompt-for-author <2>: Customization.       (line 137)
+* simply-annotate-remember-author-per-file: Customization.    (line 140)
 * simply-annotate-remember-author-per-file <1>: Customization.
-                                                              (line 132)
+                                                              (line 141)
 * simply-annotate-thread-statuses:       Threading and Collaboration.
                                                               (line  45)
-* simply-annotate-thread-statuses <1>:   Customization.       (line 134)
-* simply-annotate-thread-statuses <2>:   Customization.       (line 135)
+* simply-annotate-thread-statuses <1>:   Customization.       (line 143)
+* simply-annotate-thread-statuses <2>:   Customization.       (line 144)
 * status:                                Advanced Editing.    (line  51)
 * tags:                                  Advanced Editing.    (line  56)
 * text:                                  Advanced Editing.    (line  70)
@@ -1506,8 +1582,10 @@ Concept Index
                                                               (line  11)
 * data structure editing:                Advanced Editing.    (line   9)
 * defun level:                           Annotation Levels.   (line   6)
+* embedded comments:                     Display Styles.      (line  66)
 * file level:                            Annotation Levels.   (line   6)
 * header-line:                           Advanced Features.   (line  68)
+* inline display:                        Display Styles.      (line  66)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
                                                               (line  66)
@@ -1534,23 +1612,23 @@ Concept Index
 Tag Table:
 Node: Top792
 Node: Introduction2778
-Node: Installation4536
-Node: Quick Start5144
-Node: Basic Usage6001
-Node: Advanced Editing8614
-Node: Threading and Collaboration12139
-Node: Display Styles16324
-Node: Annotation Levels18016
-Node: Navigation21174
-Node: Advanced Features22816
-Node: Org-mode Integration25695
-Node: Key Bindings27889
-Node: Customization31483
-Node: Data Storage38116
-Node: Troubleshooting41595
-Node: Function Index48018
-Node: Variable Index50202
-Node: Concept Index53991
+Node: Installation4544
+Node: Quick Start5152
+Node: Basic Usage6000
+Node: Advanced Editing8613
+Node: Threading and Collaboration12138
+Node: Display Styles16323
+Node: Annotation Levels20224
+Node: Navigation23527
+Node: Advanced Features25169
+Node: Org-mode Integration28048
+Node: Key Bindings30242
+Node: Customization34125
+Node: Data Storage41174
+Node: Troubleshooting44653
+Node: Function Index51076
+Node: Variable Index53406
+Node: Concept Index57560
 
 End Tag Table
 

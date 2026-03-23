@@ -53,13 +53,15 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-03-23> *0.7.0*
+** <2026-03-23> *0.7.1*
 
-Annotation levels -- layered annotations for progressive code exploration.
+Inline display, subtle style, and annotation listing improvements.
 
-- *Annotation levels* -- Three levels: =file=, =defun=, =line=.  Cycle with =M-s [=.
-- *Level-scoped interaction* -- Navigation, header counts, and editing are filtered to the active level.  All visual markers remain visible across levels.
-- *Internal cleanup* -- Private functions use double-dash naming, buffer-local state fixes, improved error handling.
+- *Inline display* -- =M-s /= toggles box-drawn annotation blocks in the buffer.  Position with =simply-annotate-inline-position= (='after= or ='above=).
+- *Subtle display style* -- New overline/underline style that brackets annotated regions unobtrusively.
+- *Level-filtered display* -- Display styles now show only annotations at the active level.
+- *Redesigned listing* -- =M-s l= groups annotations by level with counts and auto-syncs level on jump.
+- *Key binding changes* -- =M-s '= for display style, =M-s [=/=]= for level cycling, =M-s /= for inline toggle.
 
 See [[file:CHANGELOG.org]] for full version history.
 

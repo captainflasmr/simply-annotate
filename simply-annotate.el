@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.7.0
+;; Version: 0.7.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -113,10 +113,12 @@
   "How to display annotated text.
 - highlight: Highlight the annotated text (default behavior)
 - fringe: Show indicators in the fringe
-- both: Show both fringe indicators and text highlighting"
+- both: Show both fringe indicators and text highlighting
+- subtle: Show a thin left border on annotated text"
   :type '(choice (const :tag "Highlight text" highlight)
                  (const :tag "Fringe indicators" fringe)
-                 (const :tag "Both fringe and highlight" both))
+                 (const :tag "Both fringe and highlight" both)
+                 (const :tag "Subtle left border" subtle))
   :group 'simply-annotate)
 
 (defcustom simply-annotate-fringe-indicator 'right-triangle
@@ -130,6 +132,16 @@
 (defcustom simply-annotate-fringe-face 'simply-annotate-fringe-face
   "Face for fringe indicators."
   :type 'face
+  :group 'simply-annotate)
+
+(defface simply-annotate-subtle-face
+  '((((background dark))
+     (:overline "gray40" :underline (:style line :color "gray40")))
+    (((background light))
+     (:overline "gray75" :underline (:style line :color "gray75")))
+    (t (:overline "gray" :underline (:style line :color "gray"))))
+  "Face for subtle annotation display.
+Uses overline and underline to bracket the annotated region."
   :group 'simply-annotate)
 
 (defface simply-annotate-inline-face
@@ -497,7 +509,9 @@ for matching overlays."
            (simply-annotate--add-fringe-indicator overlay))
           ('both
            (overlay-put overlay 'face simply-annotate-highlight-face)
-           (simply-annotate--add-fringe-indicator overlay)))
+           (simply-annotate--add-fringe-indicator overlay))
+          ('subtle
+           (overlay-put overlay 'face 'simply-annotate-subtle-face)))
         (when simply-annotate-inline
           (simply-annotate--add-inline-text overlay)))
     (overlay-put overlay 'face nil)
@@ -535,6 +549,7 @@ for matching overlays."
         (pcase simply-annotate-display-style
           ('highlight 'fringe)
           ('fringe 'both)
+          ('both 'subtle)
           (_ 'highlight)))
   (simply-annotate-update-display-style))
 
