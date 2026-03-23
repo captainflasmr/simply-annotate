@@ -165,9 +165,9 @@ Type your annotation text and press @kbd{C-c C-c} to save
 @item
 Navigate with @kbd{M-n} (next) and @kbd{M-p} (previous)
 @item
-Press @kbd{M-s ]} to cycle through different display styles
+Press @kbd{M-s '} to cycle through different display styles
 @item
-Press @kbd{M-s [} to cycle through annotation levels (file, defun, line)
+Press @kbd{M-s [} and @kbd{M-s ]} to cycle through annotation levels
 @item
 Press @kbd{M-s r} to add a reply to any annotation
 @item
@@ -636,6 +636,9 @@ Shows small indicators in the left fringe (minimal visual impact)
 Combines both highlighting and fringe indicators (maximum visibility)
 @end table
 
+Additionally, inline display can be toggled on top of any style
+(@pxref{Display Styles}).
+
 @section Changing Display Styles
 
 @findex simply-annotate-cycle-display-style
@@ -645,7 +648,7 @@ You can change the display style in several ways:
 
 @itemize @bullet
 @item
-Press @kbd{M-s ]} to cycle through all three styles
+Press @kbd{M-s '} to cycle through all three styles
 @item
 Set @code{simply-annotate-display-style} in your configuration
 @item
@@ -661,6 +664,8 @@ Use @code{fringe} style to avoid visual clutter while coding
 Use @code{highlight} style for emphasis on important passages
 @item Critical Files
 Use @code{both} style for maximum visibility of important annotations
+@item Code Exploration
+Toggle inline display (@kbd{M-s /}) to read annotations in context without opening the annotation buffer
 @item Threading Display
 All styles work well with threaded annotations and status indicators
 @end table
@@ -679,6 +684,45 @@ Choose different symbols: @code{left-triangle}, @code{right-triangle}, @code{fil
 Customize colors with @code{simply-annotate-fringe-face}
 @item
 Define custom bitmaps for unique indicators
+@end itemize
+
+@section Inline Display
+
+@cindex inline display
+@cindex embedded comments
+
+@findex simply-annotate-toggle-inline
+Inline display is an overlay that can be toggled on top of any display style
+with @kbd{M-s /} (@code{simply-annotate-toggle-inline}).  When active, it
+renders annotation text as a box-drawn block directly below the annotated
+region:
+
+@example
+(defun calculate-total (items)
+  ┌─ ✎ [OPEN/NORMAL] ────────
+  │ Sums all item prices.
+  │ Returns zero for empty list.
+  └────────────────────────────
+  (apply #'+ (mapcar #'price items)))
+@end example
+
+Both inline blocks and the underlying display style (highlight, fringe, or both)
+are filtered to the active annotation level --- cycling levels with @kbd{M-s [}
+updates which annotations are visible.
+
+Long annotations are truncated after @code{simply-annotate-inline-max-lines}
+lines (default 10).  Thread metadata (status, priority, comment count) appears
+in the header.
+
+Customise the appearance with:
+
+@itemize @bullet
+@item
+@code{simply-annotate-inline-face}: face for the annotation body text
+@item
+@code{simply-annotate-inline-border-face}: face for the box-drawing border
+@item
+@code{simply-annotate-inline-max-lines}: maximum lines before truncation
 @end itemize
 
 @node Annotation Levels
@@ -710,36 +754,39 @@ specific expressions, variables, or implementation details.
 
 @section How Levels Work
 
-All annotation overlay markers (highlights and fringe indicators) remain visible
-regardless of the active level.  Only @emph{interaction} is filtered to the
-active level:
+Only annotations matching the active level are styled.  Annotations at other
+levels have their visual markers (highlights, fringe indicators, inline blocks)
+removed, but the underlying text remains visible:
 
 @itemize @bullet
 @item
-@strong{Navigation}: @kbd{M-n} and @kbd{M-p} skip annotations that don't match
-the active level.
+@strong{Display}: Only overlays matching the active level show highlights,
+fringe indicators, and inline blocks.
+@item
+@strong{Navigation}: @kbd{M-n} and @kbd{M-p} visit only annotations at the
+active level.
 @item
 @strong{Editing}: @kbd{M-s j} on annotated text only opens annotations matching
 the active level.
 @item
 @strong{Header display}: The annotation count and position indicator reflect
 only the active level.
-@item
-@strong{Visual markers}: All overlays from all levels remain visible at all
-times.
 @end itemize
 
 @section Cycling Levels
 
-@findex simply-annotate-cycle-level
-Press @kbd{M-s [} to cycle through levels:
+@findex simply-annotate-cycle-level-forward
+@findex simply-annotate-cycle-level-backward
+Use @kbd{M-s ]} to cycle forward and @kbd{M-s [} to cycle backward through
+levels:
 
 @example
-file @result{} defun @result{} line @result{} file @result{} @dots{}
+@kbd{M-s ]}: file @result{} defun @result{} line @result{} file @result{} @dots{}
+@kbd{M-s [}: line @result{} defun @result{} file @result{} line @result{} @dots{}
 @end example
 
-The header-line updates to show the active level as @code{[FILE]},
-@code{[DEFUN]}, or @code{[LINE]} along with the annotation count for that level.
+The header-line shows annotation counts for every level, with the active level
+in bold (e.g.@: @code{FILE:2 | DEFUN:5 | LINE:3}).
 
 @section Direct Level Selection
 
@@ -1072,8 +1119,10 @@ When @code{simply-annotate-mode} is enabled:
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
 @item @kbd{M-s 0} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
-@item @kbd{M-s ]} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
-@item @kbd{M-s [} @tab @code{simply-annotate-cycle-level} @tab Cycle through annotation levels
+@item @kbd{M-s [} @tab @code{simply-annotate-cycle-level-backward} @tab Cycle levels backward (line @result{} defun @result{} file)
+@item @kbd{M-s ]} @tab @code{simply-annotate-cycle-level-forward} @tab Cycle levels forward (file @result{} defun @result{} line)
+@item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
+@item @kbd{M-s /} @tab @code{simply-annotate-toggle-inline} @tab Toggle inline annotation display
 @item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @end multitable
@@ -1235,6 +1284,11 @@ Symbol for fringe indicators. Options: @code{'left-triangle}, @code{'right-trian
 @item simply-annotate-fringe-face
 @vindex simply-annotate-fringe-face
 Face for fringe indicators. Default: @code{'simply-annotate-fringe-face}
+
+@item simply-annotate-inline-max-lines
+@vindex simply-annotate-inline-max-lines
+Maximum number of lines shown for inline annotations.  Lines beyond this limit
+are truncated with a count.  Set to @code{nil} to show all lines.  Default: @code{10}
 @end vtable
 
 @section Annotation Level Variables
@@ -1531,7 +1585,7 @@ Check that prompting mode matches your workflow needs
 
 @itemize @bullet
 @item
-Try @kbd{M-s ]} to refresh display style
+Try @kbd{M-s '} to refresh display style
 @item
 Check for malformed thread data structures
 @item

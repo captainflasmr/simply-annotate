@@ -132,6 +132,23 @@
   :type 'face
   :group 'simply-annotate)
 
+(defface simply-annotate-inline-face
+  '((t (:inherit font-lock-doc-face :extend t)))
+  "Face for inline annotation text body."
+  :group 'simply-annotate)
+
+(defface simply-annotate-inline-border-face
+  '((t (:inherit shadow)))
+  "Face for inline annotation border characters."
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-inline-max-lines 10
+  "Maximum number of lines shown for inline annotations.
+Lines beyond this limit are truncated with a count.
+Set to nil to show all lines."
+  :type '(choice integer (const :tag "No limit" nil))
+  :group 'simply-annotate)
+
 ;; Threading and Collaboration Customization
 
 (defcustom simply-annotate-default-author
@@ -267,6 +284,9 @@ mode changes that would kill buffer-local values.")
 (defvar-local simply-annotate-current-level 'defun
   "Currently displayed annotation level in this buffer.")
 
+(defvar-local simply-annotate-inline nil
+  "Non-nil when inline annotation display is active in this buffer.")
+
 ;; Threading Variables
 
 (defvar simply-annotate-session-author nil
@@ -345,16 +365,86 @@ mode changes that would kill buffer-local values.")
 
 ;;; Display Management
 
+(defun simply-annotate--inline-text (overlay)
+  "Return the inline display string for OVERLAY as a box-drawn block."
+  (let* ((data (overlay-get overlay 'simply-annotation))
+         (text (if (stringp data)
+                   data
+                 (let ((first (car (alist-get 'comments data))))
+                   (or (alist-get 'text first) ""))))
+         (meta (unless (stringp data)
+                 (let ((status (alist-get 'status data))
+                       (priority (alist-get 'priority data))
+                       (n (length (alist-get 'comments data))))
+                   (concat
+                    (when (or status priority)
+                      (format " [%s]"
+                              (string-join
+                               (delq nil (list (when status (upcase status))
+                                               (when priority (upcase priority))))
+                               "/")))
+                    (when (> n 1) (format " (%d comments)" n))))))
+         (lines (split-string text "\n"))
+         (lines (if (and simply-annotate-inline-max-lines
+                         (> (length lines) simply-annotate-inline-max-lines))
+                    (append (seq-take lines simply-annotate-inline-max-lines)
+                            (list (format "… +%d lines"
+                                          (- (length lines)
+                                             simply-annotate-inline-max-lines))))
+                  lines))
+         (label (concat "✎" (or meta "")))
+         (rule-len (max 20 (+ 4 (string-width label))))
+         (header (concat
+                  "  "
+                  (propertize (concat "┌─ " label " "
+                                      (make-string
+                                       (max 1 (- rule-len 4 (string-width label)))
+                                       ?─))
+                              'face 'simply-annotate-inline-border-face)))
+         (body (mapconcat
+                (lambda (line)
+                  (concat "  "
+                          (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                          (propertize line 'face 'simply-annotate-inline-face)))
+                lines "\n"))
+         (footer (concat
+                  "  "
+                  (propertize (concat "└" (make-string rule-len ?─))
+                              'face 'simply-annotate-inline-border-face))))
+    (concat "\n" header "\n" body "\n" footer)))
+
+(defun simply-annotate--add-inline-text (overlay)
+  "Add inline annotation text after OVERLAY."
+  (overlay-put overlay 'after-string (simply-annotate--inline-text overlay)))
+
+(defun simply-annotate--refresh-overlay-display (overlay)
+  "Refresh display properties of OVERLAY after a data change.
+Updates inline text when the inline toggle is active."
+  (when (and simply-annotate-inline
+             (simply-annotate--level-match-p overlay))
+    (simply-annotate--add-inline-text overlay)))
+
 (defun simply-annotate--apply-display-style (overlay)
-  "Apply current display style to OVERLAY."
-  (pcase simply-annotate-display-style
-    ('highlight
-     (overlay-put overlay 'face simply-annotate-highlight-face))
-    ('fringe
-     (simply-annotate--add-fringe-indicator overlay))
-    ('both
-     (overlay-put overlay 'face simply-annotate-highlight-face)
-     (simply-annotate--add-fringe-indicator overlay))))
+  "Apply current display style to OVERLAY.
+Overlays not matching the active level are hidden.
+When `simply-annotate-inline' is non-nil, also adds inline text
+for matching overlays."
+  (if (simply-annotate--level-match-p overlay)
+      (progn
+        (pcase simply-annotate-display-style
+          ('highlight
+           (overlay-put overlay 'face simply-annotate-highlight-face))
+          ('fringe
+           (simply-annotate--add-fringe-indicator overlay))
+          ('both
+           (overlay-put overlay 'face simply-annotate-highlight-face)
+           (simply-annotate--add-fringe-indicator overlay)))
+        (if simply-annotate-inline
+            (simply-annotate--add-inline-text overlay)
+          (overlay-put overlay 'after-string nil)))
+    (overlay-put overlay 'face nil)
+    (overlay-put overlay 'before-string nil)
+    (overlay-put overlay 'after-string nil)))
 
 (defun simply-annotate--add-fringe-indicator (overlay)
   "Add fringe indicator to OVERLAY."
@@ -375,6 +465,7 @@ mode changes that would kill buffer-local values.")
     ;; Clear existing display properties
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
+    (overlay-put overlay 'after-string nil)
     ;; Reapply based on current style
     (simply-annotate--apply-display-style overlay))
   (message "Updated display style to: %s" simply-annotate-display-style))
@@ -389,6 +480,21 @@ mode changes that would kill buffer-local values.")
           (_ 'highlight)))
   (simply-annotate-update-display-style))
 
+;;;###autoload
+(defun simply-annotate-toggle-inline ()
+  "Toggle inline annotation display.
+When active, annotation text is shown as box-drawn blocks below
+the annotated region, filtered to the current annotation level.
+This layers on top of the current display style."
+  (interactive)
+  (setq simply-annotate-inline (not simply-annotate-inline))
+  (dolist (ov simply-annotate-overlays)
+    (overlay-put ov 'after-string nil)
+    (when (and simply-annotate-inline
+               (simply-annotate--level-match-p ov))
+      (simply-annotate--add-inline-text ov)))
+  (message "Inline annotations %s" (if simply-annotate-inline "enabled" "disabled")))
+
 ;;; Level Management
 
 (defun simply-annotate--level-match-p (overlay)
@@ -402,21 +508,39 @@ mode changes that would kill buffer-local values.")
 
 (defun simply-annotate--apply-level-filter ()
   "Update display after a level change.
-All overlays remain visible; only interaction changes."
+Only overlays matching the active level are shown."
   (when (and simply-annotate-current-overlay
              (not (simply-annotate--level-match-p simply-annotate-current-overlay))
              (get-buffer-window simply-annotate-buffer-name))
     (simply-annotate-hide-annotation-buffer))
+  (dolist (ov simply-annotate-overlays)
+    (overlay-put ov 'face nil)
+    (overlay-put ov 'before-string nil)
+    (overlay-put ov 'after-string nil)
+    (simply-annotate--apply-display-style ov))
   (simply-annotate--update-header))
 
 ;;;###autoload
-(defun simply-annotate-cycle-level ()
-  "Cycle through annotation levels."
+(defun simply-annotate-cycle-level-forward ()
+  "Cycle forward through annotation levels."
   (interactive)
   (let* ((levels simply-annotate-levels)
          (current-pos (cl-position simply-annotate-current-level levels))
          (next-pos (if current-pos
                        (mod (1+ current-pos) (length levels))
+                     0)))
+    (setq simply-annotate-current-level (nth next-pos levels))
+    (simply-annotate--apply-level-filter)
+    (message "Annotation level: %s" simply-annotate-current-level)))
+
+;;;###autoload
+(defun simply-annotate-cycle-level-backward ()
+  "Cycle backward through annotation levels."
+  (interactive)
+  (let* ((levels simply-annotate-levels)
+         (current-pos (cl-position simply-annotate-current-level levels))
+         (next-pos (if current-pos
+                       (mod (1- current-pos) (length levels))
                      0)))
     (setq simply-annotate-current-level (nth next-pos levels))
     (simply-annotate--apply-level-filter)
@@ -814,7 +938,8 @@ If EDIT-SEXP is non-nil, display the raw sexp for editing."
   "Finalize annotation for OVERLAY with FINAL-DATA, handling IS-DRAFT state."
   (overlay-put overlay 'simply-annotation final-data)
   (overlay-put overlay 'help-echo (simply-annotate--annotation-summary final-data))
-  
+  (simply-annotate--refresh-overlay-display overlay)
+
   (with-current-buffer simply-annotate-source-buffer
     (when is-draft
       (overlay-put overlay 'simply-annotation-draft nil)
@@ -868,22 +993,40 @@ If EDIT-SEXP is non-nil, display the raw sexp for editing."
                                         (simply-annotate--active-overlays))))
         (1+ (or (cl-position target-overlay sorted-active) 0))))))
 
+(defun simply-annotate--level-counts ()
+  "Return a formatted string showing annotation counts per level.
+The active level is shown in bold."
+  (mapconcat
+   (lambda (level)
+     (let* ((name (upcase (symbol-name level)))
+            (n (cl-count-if
+                (lambda (ov)
+                  (eq (or (overlay-get ov 'simply-annotation-level) 'defun) level))
+                simply-annotate-overlays))
+            (label (format "%s:%d" name n)))
+       (if (eq level simply-annotate-current-level)
+           (propertize label 'face '(bold :height 0.9))
+         (propertize label 'face '(:height 0.9)))))
+   simply-annotate-levels
+   (propertize " | " 'face '(:height 0.9))))
+
 (defun simply-annotate--format-header (&optional text)
-  "Header format showing current level, thread info, with optional TEXT."
+  "Header format showing level counts, current position, and thread info.
+Optional TEXT is appended (e.g. status messages)."
   (let* ((active (simply-annotate--active-overlays))
          (count (length active))
          (total (length simply-annotate-overlays)))
     (when (> total 0)
       (concat
-       (propertize (format " [%s]" (upcase (symbol-name simply-annotate-current-level)))
-                   'face '(bold :height 0.9))
        " "
-       (propertize (format "ANNOTATION %s/%d"
+       (simply-annotate--level-counts)
+       (propertize " │ " 'face '(:height 0.9))
+       (propertize (format "%s/%d"
                            (if-let ((overlay (simply-annotate--overlay-at-point)))
                                (simply-annotate--annotation-number overlay)
-                             "")
+                             "-")
                            count)
-                   'face '(bold :height 0.9 :box nil))
+                   'face '(bold :height 0.9))
        " "
        (if-let* ((overlay (simply-annotate--overlay-at-point))
                  (annotation-data (overlay-get overlay 'simply-annotation))
@@ -1146,6 +1289,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
             (simply-annotate--add-reply thread reply-text)
             (overlay-put overlay 'simply-annotation thread)
             (overlay-put overlay 'help-echo (simply-annotate--annotation-summary thread))
+            (simply-annotate--refresh-overlay-display overlay)
             (simply-annotate--save-annotations)
             (simply-annotate--update-header "REPLY ADDED")
             
@@ -1181,6 +1325,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
           (simply-annotate--set-thread-property thread property value valid-values)
           (overlay-put overlay 'simply-annotation thread)
           (overlay-put overlay 'help-echo (simply-annotate--annotation-summary thread))
+          (simply-annotate--refresh-overlay-display overlay)
           (simply-annotate--save-annotations)
           (simply-annotate--update-header)
           
@@ -1207,6 +1352,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
             (simply-annotate--add-thread-tag thread tag)
             (overlay-put overlay 'simply-annotation thread)
             (overlay-put overlay 'help-echo (simply-annotate--annotation-summary thread))
+            (simply-annotate--refresh-overlay-display overlay)
             (simply-annotate--save-annotations)
             (simply-annotate--update-header)
 
@@ -1250,6 +1396,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
       (setf (alist-get 'author selected-comment) new-author)
       (overlay-put overlay 'simply-annotation thread)
       (overlay-put overlay 'help-echo (simply-annotate--annotation-summary thread))
+      (simply-annotate--refresh-overlay-display overlay)
       (simply-annotate--save-annotations)
       (message "Author changed from %s to %s" current-author new-author))))
 
@@ -1261,6 +1408,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
     (when new-author
       (overlay-put overlay 'simply-annotation new-thread)
       (overlay-put overlay 'help-echo (simply-annotate--annotation-summary new-thread))
+      (simply-annotate--refresh-overlay-display overlay)
       (simply-annotate--save-annotations)
       (message "Annotation converted to thread with author: %s" new-author))))
 
@@ -1551,7 +1699,9 @@ Display ANNOTATIONS for FILE-KEY."
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
-    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level)
+    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level-backward)
+    (define-key map (kbd "M-s ]") #'simply-annotate-cycle-level-forward)
+    (define-key map (kbd "M-s '") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
@@ -1574,8 +1724,10 @@ Display ANNOTATIONS for FILE-KEY."
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
-    (define-key map (kbd "M-s ]") #'simply-annotate-cycle-display-style)
-    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level)
+    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level-backward)
+    (define-key map (kbd "M-s ]") #'simply-annotate-cycle-level-forward)
+    (define-key map (kbd "M-s '") #'simply-annotate-cycle-display-style)
+    (define-key map (kbd "M-s /") #'simply-annotate-toggle-inline)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
