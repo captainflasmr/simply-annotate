@@ -142,6 +142,14 @@
   "Face for inline annotation border characters."
   :group 'simply-annotate)
 
+(defcustom simply-annotate-inline-position 'after
+  "Where to display inline annotation blocks relative to the annotated region.
+- after: Below the annotated text (as an after-string)
+- above: Above the annotated text (as a before-string)"
+  :type '(choice (const :tag "After annotated region" after)
+                 (const :tag "Above annotated region" above))
+  :group 'simply-annotate)
+
 (defcustom simply-annotate-inline-max-lines 20
   "Maximum number of lines shown for inline annotations.
 Lines beyond this limit are truncated with a count.
@@ -452,20 +460,28 @@ This helps fix corrupted annotations from older versions."
                    "  "
                    (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
                                'face 'simply-annotate-inline-border-face))))
-      (concat "\n" header "\n" body "\n" footer "\n"))))
+      (if (eq simply-annotate-inline-position 'above)
+          (concat "\n" header "\n" body "\n" footer "\n")
+        (concat "\n" header "\n" body "\n" footer)))))
 
 (defun simply-annotate--add-inline-text (overlay)
-  "Add inline annotation text after OVERLAY."
-  (overlay-put overlay 'after-string (simply-annotate--inline-text overlay)))
+  "Add inline annotation text to OVERLAY based on `simply-annotate-inline-position'."
+  (let ((text (simply-annotate--inline-text overlay)))
+    (if (eq simply-annotate-inline-position 'above)
+        (let ((fringe (when (memq simply-annotate-display-style '(fringe both))
+                        (overlay-get overlay 'before-string))))
+          (overlay-put overlay 'before-string
+                       (concat text (or fringe ""))))
+      (overlay-put overlay 'after-string text))))
 
 (defun simply-annotate--refresh-overlay-display (overlay)
   "Refresh display properties of OVERLAY after a data change.
-Updates inline text when the inline toggle is active."
+Does a full display re-apply to update inline text."
   (with-current-buffer (overlay-buffer overlay)
-    (if (and simply-annotate-inline
-             (simply-annotate--level-match-p overlay))
-        (simply-annotate--add-inline-text overlay)
-      (overlay-put overlay 'after-string nil))))
+    (overlay-put overlay 'face nil)
+    (overlay-put overlay 'before-string nil)
+    (overlay-put overlay 'after-string nil)
+    (simply-annotate--apply-display-style overlay)))
 
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
@@ -482,9 +498,8 @@ for matching overlays."
           ('both
            (overlay-put overlay 'face simply-annotate-highlight-face)
            (simply-annotate--add-fringe-indicator overlay)))
-        (if simply-annotate-inline
-            (simply-annotate--add-inline-text overlay)
-          (overlay-put overlay 'after-string nil)))
+        (when simply-annotate-inline
+          (simply-annotate--add-inline-text overlay)))
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
     (overlay-put overlay 'after-string nil)))
@@ -526,16 +541,12 @@ for matching overlays."
 ;;;###autoload
 (defun simply-annotate-toggle-inline ()
   "Toggle inline annotation display.
-When active, annotation text is shown as box-drawn blocks below
-the annotated region, filtered to the current annotation level.
-This layers on top of the current display style."
+When active, annotation text is shown as box-drawn blocks
+relative to the annotated region, filtered to the current
+annotation level.  This layers on top of the current display style."
   (interactive)
   (setq simply-annotate-inline (not simply-annotate-inline))
-  (dolist (ov simply-annotate-overlays)
-    (overlay-put ov 'after-string nil)
-    (when (and simply-annotate-inline
-               (simply-annotate--level-match-p ov))
-      (simply-annotate--add-inline-text ov)))
+  (simply-annotate-update-display-style)
   (message "Inline annotations %s" (if simply-annotate-inline "enabled" "disabled")))
 
 ;;; Level Management
@@ -1462,12 +1473,12 @@ Format ANNOTATIONS for FILE-KEY from SOURCE-BUFFER into BUFFER-NAME."
 
 (defun simply-annotate--insert-header (file-key annotations)
   "Insert header with summary stats for FILE-KEY and ANNOTATIONS."
-  (let* ((total-annotations (length annotations))
+  (let* ((total (length annotations))
          (thread-count 0)
          (string-count 0)
          (open-count 0)
          (resolved-count 0))
-    
+
     (dolist (ann annotations)
       (let ((data (alist-get 'text ann)))
         (if (simply-annotate--thread-p data)
@@ -1479,34 +1490,43 @@ Format ANNOTATIONS for FILE-KEY from SOURCE-BUFFER into BUFFER-NAME."
                   (setq open-count (1+ open-count)))))
           (setq string-count (1+ string-count)
                 open-count (1+ open-count)))))
-    
-    (insert (format "Annotations for %s:\n" file-key))
-    (insert (format "Total: %d | Threads: %d | Simple: %d | Open: %d | Resolved: %d\n\n"
-                    total-annotations thread-count string-count open-count resolved-count))))
+
+    (insert (propertize (format "Annotations for %s\n" file-key) 'face 'bold))
+    (insert (format "Total: %d" total))
+    (dolist (level simply-annotate-levels)
+      (let ((n (cl-count-if
+                (lambda (ann) (eq (or (alist-get 'level ann) 'defun) level))
+                annotations)))
+        (insert (format " │ %s: %d" (upcase (symbol-name level)) n))))
+    (insert (format " │ Open: %d │ Resolved: %d\n"
+                    open-count resolved-count))
+    (insert (make-string 60 ?─) "\n\n")))
 
 (defun simply-annotate--insert-formatted-annotations (file-key annotations source-buffer)
   "Insert formatted ANNOTATIONS for FILE-KEY from SOURCE-BUFFER grouped by level."
-  (let ((levels simply-annotate-levels))
-    (dolist (level levels)
-      (let ((level-annotations (cl-remove-if-not 
-                                (lambda (ann) (eq (alist-get 'level ann) level))
-                                annotations)))
-        (when level-annotations
-          ;; Insert Level Header
-          (let ((header (format "== Level: %s ==\n" (symbol-name level))))
-            (insert (propertize header 'face 'bold)))
-          
-          (let ((sorted-annotations (simply-annotate--sort-annotations level-annotations)))
-            (dolist (ann sorted-annotations)
-              (let* ((start-pos (alist-get 'start ann))
-                     (end-pos (alist-get 'end ann))
-                     (annotation-data (alist-get 'text ann))
-                     (line-info (simply-annotate--line-info start-pos end-pos source-buffer file-key)))
-                
-                (if (simply-annotate--thread-p annotation-data)
-                    (simply-annotate--insert-thread-annotation annotation-data line-info file-key)
-                  (simply-annotate--insert-simple-annotation annotation-data line-info file-key)))))
-          (insert "\n"))))))
+  (dolist (level simply-annotate-levels)
+    (let ((level-annotations (cl-remove-if-not
+                              (lambda (ann) (eq (or (alist-get 'level ann) 'defun) level))
+                              annotations)))
+      (when level-annotations
+        (let* ((name (upcase (symbol-name level)))
+               (count (length level-annotations))
+               (label (format " %s (%d) " name count))
+               (rule-len (max 0 (- 58 (length label)))))
+          (insert (propertize (concat "─" label (make-string rule-len ?─) "\n")
+                              'face 'bold)))
+
+        (let ((sorted-annotations (simply-annotate--sort-annotations level-annotations)))
+          (dolist (ann sorted-annotations)
+            (let* ((start-pos (alist-get 'start ann))
+                   (end-pos (alist-get 'end ann))
+                   (annotation-data (alist-get 'text ann))
+                   (line-info (simply-annotate--line-info start-pos end-pos source-buffer file-key)))
+
+              (if (simply-annotate--thread-p annotation-data)
+                  (simply-annotate--insert-thread-annotation annotation-data line-info file-key level)
+                (simply-annotate--insert-simple-annotation annotation-data line-info file-key level)))))
+        (insert "\n")))))
 
 (defun simply-annotate--sort-annotations (annotations)
   "Sort ANNOTATIONS by line position, then by status (open items first)."
@@ -1544,8 +1564,8 @@ Format ANNOTATIONS for FILE-KEY from SOURCE-BUFFER into BUFFER-NAME."
                  (min end-pos (line-end-position) (point-max))))))
     (list 1 0 "Content not available")))
 
-(defun simply-annotate--insert-thread-annotation (thread line-info file-key)
-  "Insert formatted THREAD annotation with LINE-INFO for FILE-KEY."
+(defun simply-annotate--insert-thread-annotation (thread line-info file-key level)
+  "Insert formatted THREAD annotation with LINE-INFO for FILE-KEY at LEVEL."
   (let* ((status (alist-get 'status thread))
          (priority (alist-get 'priority thread))
          (tags (alist-get 'tags thread))
@@ -1553,57 +1573,81 @@ Format ANNOTATIONS for FILE-KEY from SOURCE-BUFFER into BUFFER-NAME."
          (comment-count (length comments))
          (line-num (car line-info))
          (col-num (cadr line-info))
-         (line-content (caddr line-info)))
-    
-    (insert (format "%s:%d:%d [%s/%s]"
-                    file-key line-num (1+ col-num)
-                    (upcase status) (upcase priority)))
+         (line-content (caddr line-info))
+         (loc-start (point)))
+
+    ;; Location line (grep-compatible)
+    (insert (format "%s:%d:%d" file-key line-num (1+ col-num)))
+    (insert (format " [%s/%s]" (upcase status) (upcase priority)))
     (when tags
       (insert (format " #%s" (string-join tags " #"))))
     (insert (format " (%d comment%s)\n"
                     comment-count
                     (if (= comment-count 1) "" "s")))
-    
-    (insert "┌─ THREAD ─┐\n")
+    (put-text-property loc-start (point) 'simply-annotate-level level)
+
+    ;; Source context
+    (insert (format "  %s\n" (string-trim line-content)))
+
+    ;; Thread comments
     (dolist (comment comments)
       (let* ((comment-author (alist-get 'author comment))
              (comment-timestamp (alist-get 'timestamp comment))
              (comment-text (alist-get 'text comment))
              (comment-type (alist-get 'type comment))
-             (prefix (if (string= comment-type "comment") "💬" "↳"))
+             (prefix (if (string= comment-type "comment") "💬" "  ↳"))
              (formatted-time (format-time-string "%m/%d %H:%M"
                                                  (date-to-time comment-timestamp))))
-        (insert (format "│ %s %s (%s):\n" prefix comment-author formatted-time))
-        (let ((text-lines (split-string comment-text "\n")))
-          (dolist (line text-lines)
-            (insert (format "│   %s\n" line))))))
-    (insert "└───────────┘\n")
-    (insert (format "│ Source: %s\n\n" (string-trim line-content)))))
+        (insert (format "  %s %s (%s):\n" prefix comment-author formatted-time))
+        (dolist (line (split-string comment-text "\n"))
+          (insert (format "    %s\n" line)))))
+    (insert "\n")))
 
-(defun simply-annotate--insert-simple-annotation (annotation-data line-info file-key)
-  "Insert formatted simple ANNOTATION-DATA with LINE-INFO for FILE-KEY."
+(defun simply-annotate--insert-simple-annotation (annotation-data line-info file-key level)
+  "Insert formatted simple ANNOTATION-DATA with LINE-INFO for FILE-KEY at LEVEL."
   (let ((line-num (car line-info))
         (col-num (cadr line-info))
-        (line-content (caddr line-info)))
+        (line-content (caddr line-info))
+        (loc-start (point)))
+    ;; Location line (grep-compatible)
     (insert (format "%s:%d:%d\n" file-key line-num (1+ col-num)))
-    (insert (format "%s\n" simply-annotate-annotation-separator))
-    (let* ((lines (split-string (string-trim annotation-data) "\n"))
-           (indented-text (mapconcat (lambda (line) (concat "│ " line)) lines "\n")))
-      (insert (format "%s\n" indented-text)))
-    (insert (format "%s\n" simply-annotate-text-separator))
-    (insert (format "%s\n\n" (string-trim line-content)))))
+    (put-text-property loc-start (point) 'simply-annotate-level level)
+    ;; Source context
+    (insert (format "  %s\n" (string-trim line-content)))
+    ;; Annotation text
+    (dolist (line (split-string (string-trim annotation-data) "\n"))
+      (insert (format "  │ %s\n" line)))
+    (insert "\n")))
+
+(defun simply-annotate--sync-level-from-listing ()
+  "Switch the source buffer to the annotation level from the listing.
+Intended for use as a `next-error-hook'."
+  (when-let* ((annotations-buf (get-buffer "*Annotations*"))
+              (level (with-current-buffer annotations-buf
+                       (save-excursion
+                         (let ((pos (point)))
+                           (or (get-text-property pos 'simply-annotate-level)
+                               (let ((prev (previous-single-property-change
+                                            pos 'simply-annotate-level)))
+                                 (when prev
+                                   (get-text-property (1- prev)
+                                                      'simply-annotate-level)))))))))
+    (when (and (boundp 'simply-annotate-current-level)
+               (not (eq simply-annotate-current-level level)))
+      (setq simply-annotate-current-level level)
+      (simply-annotate--apply-level-filter))))
 
 (defun simply-annotate--setup-annotation-list-mode ()
   "Setup grep-mode and font-lock for annotation list."
   (grep-mode)
+  (add-hook 'next-error-hook #'simply-annotate--sync-level-from-listing)
   (font-lock-add-keywords nil
                           `((,simply-annotate-annotation-block-regexp 1 '(:slant italic))
                             (,simply-annotate-header-regexp 1 '(:weight bold))
-                            (,simply-annotate-annotation-separator 0 '(:underline nil))
-                            (,simply-annotate-text-separator 0 '(:underline nil))
-                            ("┌─ THREAD ─┐\\|└───────────┘" 0 '(:weight bold))
-                            ("│.*💬.*:" 0 '(:weight bold))
-                            ("│.*↳.*:" 0 '(:slant italic))
+                            ("^─ [A-Z]+ ([0-9]+) ─+" 0 '(:weight bold))
+                            ("  💬.*:" 0 '(:weight bold))
+                            ("  ↳.*:" 0 '(:slant italic))
+                            ("  │ .*" 0 'simply-annotate-inline-face)
                             ("\\[OPEN/[^]]*\\]\\|\\[IN-PROGRESS/[^]]*\\]" 0 '(:weight bold))
                             ("\\[RESOLVED/[^]]*\\]\\|\\[CLOSED/[^]]*\\]" 0 '(:weight bold))
                             ("#[a-zA-Z0-9_-]+" 0 '(:weight bold)))
