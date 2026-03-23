@@ -60,6 +60,7 @@ modifying the original content.
 * Advanced Editing::            Raw sexp editing and data structure control
 * Threading and Collaboration:: Replies, status, and multi-author support
 * Display Styles::              Different ways to show annotations
+* Annotation Levels::           Layered annotations for progressive exploration
 * Navigation::                  Moving between annotations
 * Advanced Features::           Cross-file annotations and listing
 * Org-mode Integration::        Export annotations to org-mode
@@ -98,6 +99,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @strong{Tag system}: Categorize with hashtags (@code{#review}, @code{#bug}, @code{#question})
 @item
 @strong{Raw sexp editing}: Direct access to annotation data structures for power users
+@item
+@strong{Annotation levels}: Three-tier annotation system (file, defun, line) for progressive code exploration
 @item
 @strong{Multiple display styles}: Choose between highlighting, fringe indicators, or both
 @item
@@ -163,6 +166,8 @@ Type your annotation text and press @kbd{C-c C-c} to save
 Navigate with @kbd{M-n} (next) and @kbd{M-p} (previous)
 @item
 Press @kbd{M-s ]} to cycle through different display styles
+@item
+Press @kbd{M-s [} to cycle through annotation levels (file, defun, line)
 @item
 Press @kbd{M-s r} to add a reply to any annotation
 @item
@@ -676,6 +681,112 @@ Customize colors with @code{simply-annotate-fringe-face}
 Define custom bitmaps for unique indicators
 @end itemize
 
+@node Annotation Levels
+@chapter Annotation Levels
+
+@cindex annotation levels
+@cindex file level
+@cindex defun level
+@cindex line level
+@cindex progressive exploration
+
+Simply Annotate provides a three-tier annotation level system for progressive
+code exploration.  Each annotation is tagged with a level when created, and you
+can cycle through levels to focus on annotations at a particular granularity.
+
+@section Level Overview
+
+@table @code
+@item file
+Whole-file descriptions.  Use this level for high-level summaries of what a file
+does, its purpose in the project, or overall architecture notes.
+@item defun
+Function or element descriptions.  The default level, suitable for documenting
+individual functions, classes, or major code blocks.
+@item line
+Individual syntactical elements.  Use this level for fine-grained notes about
+specific expressions, variables, or implementation details.
+@end table
+
+@section How Levels Work
+
+All annotation overlay markers (highlights and fringe indicators) remain visible
+regardless of the active level.  Only @emph{interaction} is filtered to the
+active level:
+
+@itemize @bullet
+@item
+@strong{Navigation}: @kbd{M-n} and @kbd{M-p} skip annotations that don't match
+the active level.
+@item
+@strong{Editing}: @kbd{M-s j} on annotated text only opens annotations matching
+the active level.
+@item
+@strong{Header display}: The annotation count and position indicator reflect
+only the active level.
+@item
+@strong{Visual markers}: All overlays from all levels remain visible at all
+times.
+@end itemize
+
+@section Cycling Levels
+
+@findex simply-annotate-cycle-level
+Press @kbd{M-s [} to cycle through levels:
+
+@example
+file @result{} defun @result{} line @result{} file @result{} @dots{}
+@end example
+
+The header-line updates to show the active level as @code{[FILE]},
+@code{[DEFUN]}, or @code{[LINE]} along with the annotation count for that level.
+
+@section Direct Level Selection
+
+@findex simply-annotate-set-level
+Use @code{M-x simply-annotate-set-level} to jump directly to a specific level
+via @code{completing-read}.
+
+@section Creating Annotations at a Level
+
+New annotations inherit the currently active level.  For example, if you cycle to
+@code{file} level and then create an annotation, it will be tagged as a
+file-level annotation.
+
+@section Backward Compatibility
+
+Existing annotations created before the levels feature was introduced
+automatically default to the @code{defun} level.  No database migration is
+required.
+
+@section Use Cases
+
+@subsection Code Exploration
+
+@enumerate
+@item
+Start at @code{file} level to read high-level descriptions of what each file does
+@item
+Switch to @code{defun} level to understand individual functions
+@item
+Drill down to @code{line} level for implementation details
+@end enumerate
+
+@subsection LLM-Generated Documentation
+
+Annotation levels provide a natural structure for AI-generated code descriptions:
+
+@itemize @bullet
+@item
+Generate @code{file}-level summaries for project overview
+@item
+Generate @code{defun}-level documentation for API reference
+@item
+Generate @code{line}-level annotations for detailed code walkthroughs
+@end itemize
+
+Users can then browse these layered annotations at their preferred depth.
+
 @node Navigation
 @chapter Navigation
 
@@ -693,8 +804,10 @@ Simply Annotate provides convenient commands for navigation:
 @end table
 
 These commands automatically wrap around, so you can continuously navigate
-through all annotations in a buffer. When you arrive at an annotation,
-the text is briefly highlighted with a pulse effect.
+through all annotations in a buffer.  Navigation is filtered to the active
+annotation level---only annotations matching the current level are visited.
+When you arrive at an annotation, the text is briefly highlighted with a
+pulse effect.
 
 @section Viewing Current Annotation
 
@@ -833,17 +946,19 @@ The header-line provides real-time information with threading support:
 
 @itemize @bullet
 @item
-Current annotation position (e.g., "2/5")
+Active annotation level indicator (@code{[FILE]}, @code{[DEFUN]}, or @code{[LINE]})
+@item
+Current annotation position scoped to the active level (e.g., "2/5")
 @item
 Thread status and priority (e.g., @code{[OPEN/HIGH:3]})
 @item
-Total annotation count
+Total annotation count for the active level
 @item
-Enhanced keybinding help including threading commands
+Enhanced keybinding help including threading and level commands
 @item
 Context-sensitive help text
 @item
-Automatic updates when annotations or threads change
+Automatic updates when annotations, threads, or levels change
 @end itemize
 
 @node Org-mode Integration
@@ -946,7 +1061,7 @@ When @code{simply-annotate-mode} is enabled:
 @multitable @columnfractions .15 .35 .5
 @headitem Key @tab Command @tab Description
 @item @kbd{M-s j} @tab @code{simply-annotate-smart-action} @tab Smart create/view/edit annotation
-@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab @strong{New:} Edit annotation as raw Elisp sexp
+@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab Edit annotation as raw Elisp sexp
 @item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply to annotation
 @item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status (open/resolved)
 @item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
@@ -958,6 +1073,7 @@ When @code{simply-annotate-mode} is enabled:
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
 @item @kbd{M-s 0} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
 @item @kbd{M-s ]} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
+@item @kbd{M-s [} @tab @code{simply-annotate-cycle-level} @tab Cycle through annotation levels
 @item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @end multitable
@@ -970,8 +1086,7 @@ In the annotation buffer:
 @headitem Key @tab Command @tab Description
 @item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Save changes
 @item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing
-@item @kbd{C-g} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing (alternative)
-@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab @strong{New:} Switch to sexp editing mode
+@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab Switch to sexp editing mode
 @item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply
 @item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status
 @item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority
@@ -999,7 +1114,6 @@ When in sexp editing mode (after @kbd{M-s e}):
 @headitem Key @tab Command @tab Description
 @item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Parse and save sexp
 @item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel sexp editing
-@item @kbd{C-g} @tab @code{simply-annotate-cancel-edit} @tab Cancel sexp editing (alternative)
 @end multitable
 
 The sexp editing buffer provides:
@@ -1034,7 +1148,10 @@ Validation when saving to ensure data integrity
   
   ;; Customize annotation buffer height
   (simply-annotate-buffer-height 0.25)
-  
+
+  ;; Annotation level settings
+  (simply-annotate-default-level 'defun)  ; 'file, 'defun, or 'line
+
   ;; Fringe indicator settings
   (simply-annotate-fringe-indicator 'right-triangle)
   (simply-annotate-fringe-face 'simply-annotate-fringe-face)
@@ -1118,6 +1235,18 @@ Symbol for fringe indicators. Options: @code{'left-triangle}, @code{'right-trian
 @item simply-annotate-fringe-face
 @vindex simply-annotate-fringe-face
 Face for fringe indicators. Default: @code{'simply-annotate-fringe-face}
+@end vtable
+
+@section Annotation Level Variables
+
+@vtable @code
+@item simply-annotate-levels
+@vindex simply-annotate-levels
+List of available annotation levels.  Default: @code{'(file defun line)}
+
+@item simply-annotate-default-level
+@vindex simply-annotate-default-level
+Default level for new annotations and for existing annotations that lack a level tag.  Default: @code{'defun}
 @end vtable
 
 @section Threading and Collaboration Variables
@@ -1231,7 +1360,7 @@ With threading support, the storage format includes complete thread structures:
 ;;; This file is auto-generated. Do not edit manually.
 
 (("simply-annotate:/path/to/file.el"
-  ((start . 1250) (end . 1300) 
+  ((start . 1250) (end . 1300)
    (text . ((id . "thread-123456")
             (created . "2025-06-29T10:30:00")
             (status . "open")
@@ -1244,12 +1373,15 @@ With threading support, the storage format includes complete thread structures:
                          ((author . "Jane Smith")
                           (timestamp . "2025-06-29T10:45:00")
                           (text . "I agree, will fix this")
-                          (type . "reply")))))))
-  ((start . 2100) (end . 2150) 
-   (text . "Add error handling here")))
+                          (type . "reply"))))))
+   (level . defun))
+  ((start . 2100) (end . 2150)
+   (text . "Add error handling here")
+   (level . line)))
  ("simply-annotate:/path/to/other-file.py"
-  ((start . 450) (end . 500) 
-   (text . "Performance bottleneck"))))
+  ((start . 450) (end . 500)
+   (text . "Performance bottleneck")
+   (level . file))))
 @end lisp
 
 @section Data Structure Evolution
@@ -1262,7 +1394,9 @@ Simply Annotate supports both legacy string annotations and new thread structure
 @item
 @strong{Thread format}: Complete data structures with metadata and conversation history
 @item
-@strong{Backward compatibility}: Old annotations continue to work seamlessly
+@strong{Level field}: Each annotation includes a @code{level} field (@code{file}, @code{defun}, or @code{line})
+@item
+@strong{Backward compatibility}: Old annotations without a @code{level} field default to @code{defun}.  No migration required
 @item
 @strong{Migration}: Annotations are upgraded to thread format when modified
 @end itemize

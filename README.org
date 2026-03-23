@@ -53,44 +53,15 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2025-07-03> *0.6.0*
+** <2026-03-23> *0.7.0*
 
-A little refactoring and tidying up.
+Annotation levels -- layered annotations for progressive code exploration.
 
-** <2025-06-29> *0.5.1*
+- *Annotation levels* -- Three levels: =file=, =defun=, =line=.  Cycle with =M-s [=.
+- *Level-scoped interaction* -- Navigation, header counts, and editing are filtered to the active level.  All visual markers remain visible across levels.
+- *Internal cleanup* -- Private functions use double-dash naming, buffer-local state fixes, improved error handling.
 
-- *Raw sexp editing*: Edit annotation data structures directly as Elisp for complete control
-- *Advanced editing capabilities*: Full access to thread metadata, status, priority, and comments
-
-*Updated Key Bindings:*
-- =M-s e=: Edit annotation as raw Elisp sexp
-
-** <2025-06-20> *0.5.0*
-
-- *Threading system*: Add replies to annotations for conversations
-- *Status management*: Track progress (open, in-progress, resolved, closed)
-- *Priority levels*: Set importance (low, normal, high, critical)
-- *Multi-author support*: Configure team members for collaboration
-- *Tag system*: Organize with hashtags (#review, #bug, #question)
-- *Org-mode export*: Convert threads to structured TODO items
-- *Enhanced display*: Thread info in headers and lists
-- *Author management*: Flexible prompting modes and author changes
-
-*New Key Bindings:*
-- =M-s r=: Add reply to annotation
-- =M-s s=: Set status
-- =M-s p=: Set priority
-- =M-s t=: Add tag
-- =M-s a=: Change author
-- =M-s o=: Export to org-mode
-
-** <2025-06-20> *0.0.1*
-
-- Basic annotation functionality
-- Persistent storage
-- Navigation commands
-- Org-mode export
-- Customizable highlighting
+See [[file:CHANGELOG.org]] for full version history.
 
 * Installation
 

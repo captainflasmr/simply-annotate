@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.6.0
+;; Version: 0.7.0
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -176,6 +176,22 @@ When enabled, the package remembers the last author used for each file."
   :type '(repeat string)
   :group 'simply-annotate)
 
+;; Annotation Levels
+
+(defcustom simply-annotate-levels '(file defun line)
+  "Available annotation levels, ordered from broadest to narrowest."
+  :type '(repeat symbol)
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-default-level 'defun
+  "Default annotation level for display and new annotations."
+  :type '(choice (const :tag "File-level" file)
+                 (const :tag "Defun-level" defun)
+                 (const :tag "Line-level" line))
+  :group 'simply-annotate)
+
+;; Separators and Regexps
+
 (defcustom simply-annotate-annotation-separator "┌─────"
   "String used as the annotation separator line.
 Also used as a regexp in font-lock; avoid special regexp characters."
@@ -247,6 +263,9 @@ mode changes that would kill buffer-local values.")
 
 (defvar simply-annotate-editing-annotation-sexp nil
   "Non-nil if the *Annotation* buffer is currently displaying the raw sexp.")
+
+(defvar-local simply-annotate-current-level 'defun
+  "Currently displayed annotation level in this buffer.")
 
 ;; Threading Variables
 
@@ -370,6 +389,50 @@ mode changes that would kill buffer-local values.")
           (_ 'highlight)))
   (simply-annotate-update-display-style))
 
+;;; Level Management
+
+(defun simply-annotate--level-match-p (overlay)
+  "Return non-nil if OVERLAY matches the current annotation level."
+  (eq (or (overlay-get overlay 'simply-annotation-level) 'defun)
+      simply-annotate-current-level))
+
+(defun simply-annotate--active-overlays ()
+  "Return list of overlays matching the current annotation level."
+  (cl-remove-if-not #'simply-annotate--level-match-p simply-annotate-overlays))
+
+(defun simply-annotate--apply-level-filter ()
+  "Update display after a level change.
+All overlays remain visible; only interaction changes."
+  (when (and simply-annotate-current-overlay
+             (not (simply-annotate--level-match-p simply-annotate-current-overlay))
+             (get-buffer-window simply-annotate-buffer-name))
+    (simply-annotate-hide-annotation-buffer))
+  (simply-annotate--update-header))
+
+;;;###autoload
+(defun simply-annotate-cycle-level ()
+  "Cycle through annotation levels."
+  (interactive)
+  (let* ((levels simply-annotate-levels)
+         (current-pos (cl-position simply-annotate-current-level levels))
+         (next-pos (if current-pos
+                       (mod (1+ current-pos) (length levels))
+                     0)))
+    (setq simply-annotate-current-level (nth next-pos levels))
+    (simply-annotate--apply-level-filter)
+    (message "Annotation level: %s" simply-annotate-current-level)))
+
+;;;###autoload
+(defun simply-annotate-set-level (level)
+  "Set annotation view to LEVEL."
+  (interactive
+   (list (intern (completing-read "Level: "
+                                  (mapcar #'symbol-name simply-annotate-levels)
+                                  nil t))))
+  (setq simply-annotate-current-level level)
+  (simply-annotate--apply-level-filter)
+  (message "Annotation level: %s" level))
+
 ;;; Overlay Management
 
 (defun simply-annotate--create-overlay (start end text)
@@ -393,22 +456,25 @@ START and END define the region, TEXT is the annotation content."
   (setq simply-annotate-overlays nil))
 
 (defun simply-annotate--overlay-at-point (&optional pos)
-  "Get annotation overlay at POS (defaults to point).
+  "Get annotation overlay at POS (defaults to point) matching current level.
 In fringe mode, searches the entire current line for overlays."
   (let ((check-pos (or pos (point))))
     (if (eq simply-annotate-display-style 'fringe)
         (simply-annotate--overlay-on-line check-pos)
-      (cl-find-if (lambda (ov) (overlay-get ov 'simply-annotation))
+      (cl-find-if (lambda (ov)
+                    (and (overlay-get ov 'simply-annotation)
+                         (simply-annotate--level-match-p ov)))
                   (overlays-at check-pos)))))
 
 (defun simply-annotate--overlay-on-line (&optional pos)
-  "Find annotation overlay anywhere on the line containing POS."
+  "Find annotation overlay matching current level on the line containing POS."
   (save-excursion
     (when pos (goto-char pos))
     (let ((line-start (line-beginning-position))
           (line-end (line-end-position)))
       (cl-find-if (lambda (overlay)
                     (and (overlay-get overlay 'simply-annotation)
+                         (simply-annotate--level-match-p overlay)
                          (>= (overlay-start overlay) line-start)
                          (<= (overlay-start overlay) line-end)))
                   simply-annotate-overlays))))
@@ -563,7 +629,9 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
   (mapcar (lambda (overlay)
             `((start . ,(overlay-start overlay))
               (end . ,(overlay-end overlay))
-              (text . ,(overlay-get overlay 'simply-annotation))))
+              (text . ,(overlay-get overlay 'simply-annotation))
+              (level . ,(or (overlay-get overlay 'simply-annotation-level)
+                            simply-annotate-default-level))))
           simply-annotate-overlays))
 
 (defun simply-annotate--deserialize-annotations (annotations)
@@ -571,12 +639,15 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
   (dolist (ann annotations)
     (let ((start (alist-get 'start ann))
           (end (alist-get 'end ann))
-          (text (alist-get 'text ann)))
+          (text (alist-get 'text ann))
+          (level (or (alist-get 'level ann) 'defun)))
       (when (and start end text
                  (<= start (point-max))
                  (<= end (point-max))
                  (> end start))
-        (push (simply-annotate--create-overlay start end text) simply-annotate-overlays)))))
+        (let ((ov (simply-annotate--create-overlay start end text)))
+          (overlay-put ov 'simply-annotation-level level)
+          (push ov simply-annotate-overlays))))))
 
 (defun simply-annotate--save-annotations ()
   "Save current buffer's annotations."
@@ -790,18 +861,24 @@ If EDIT-SEXP is non-nil, display the raw sexp for editing."
 ;;; Header Management
 
 (defun simply-annotate--annotation-number (target-overlay)
-  "Get the position number of TARGET-OVERLAY in the sorted list of annotations."
+  "Get the position number of TARGET-OVERLAY among active-level annotations."
   (when target-overlay
     (with-current-buffer (overlay-buffer target-overlay)
-      (let ((sorted-overlays (seq-sort-by #'overlay-start #'< simply-annotate-overlays)))
-        (1+ (or (cl-position target-overlay sorted-overlays) 0))))))
+      (let ((sorted-active (seq-sort-by #'overlay-start #'<
+                                        (simply-annotate--active-overlays))))
+        (1+ (or (cl-position target-overlay sorted-active) 0))))))
 
 (defun simply-annotate--format-header (&optional text)
-  "Enhanced header format that shows thread information with optional TEXT."
-  (let ((count (length simply-annotate-overlays)))
-    (when (> count 0)
+  "Header format showing current level, thread info, with optional TEXT."
+  (let* ((active (simply-annotate--active-overlays))
+         (count (length active))
+         (total (length simply-annotate-overlays)))
+    (when (> total 0)
       (concat
-       (propertize (format " ANNOTATION %s/%d"
+       (propertize (format " [%s]" (upcase (symbol-name simply-annotate-current-level)))
+                   'face '(bold :height 0.9))
+       " "
+       (propertize (format "ANNOTATION %s/%d"
                            (if-let ((overlay (simply-annotate--overlay-at-point)))
                                (simply-annotate--annotation-number overlay)
                              "")
@@ -858,19 +935,22 @@ If EDIT-SEXP is non-nil, display the raw sexp for editing."
         (lambda (a b) (< (overlay-start a) (overlay-start b)))))
 
 (defun simply-annotate--find-annotation (forward &optional wrap)
-  "Find next/previous annotation. FORWARD t for next, nil for previous.
+  "Find next/previous visible annotation.
+FORWARD t for next, nil for previous.
 If WRAP is non-nil, wrap around to the beginning/end."
   (let* ((pos (point))
-         (overlays (if forward
-                       (simply-annotate--sorted-overlays)
-                     (reverse (simply-annotate--sorted-overlays))))
+         (active (cl-remove-if-not
+                  #'simply-annotate--level-match-p
+                  (if forward
+                      (simply-annotate--sorted-overlays)
+                    (reverse (simply-annotate--sorted-overlays)))))
          (test-fn (if forward
                       (lambda (ov) (> (overlay-start ov) pos))
                     (lambda (ov) (< (overlay-end ov) pos))))
-         (found (cl-find-if test-fn overlays)))
-    
-    (when (and (not found) wrap overlays)
-      (setq found (car overlays)))
+         (found (cl-find-if test-fn active)))
+
+    (when (and (not found) wrap active)
+      (setq found (car active)))
     found))
 
 (defun simply-annotate--navigate-to-overlay (overlay)
@@ -1005,6 +1085,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
   (let ((draft-overlay (simply-annotate--create-overlay start end "")))
     (simply-annotate--update-header "EDITING")
     (overlay-put draft-overlay 'simply-annotation-draft t)
+    (overlay-put draft-overlay 'simply-annotation-level simply-annotate-current-level)
     (setq simply-annotate-draft-overlay draft-overlay)
     
     (simply-annotate--update-annotation-buffer "" draft-overlay)
@@ -1470,6 +1551,7 @@ Display ANNOTATIONS for FILE-KEY."
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
+    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
@@ -1493,6 +1575,7 @@ Display ANNOTATIONS for FILE-KEY."
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
     (define-key map (kbd "M-s ]") #'simply-annotate-cycle-display-style)
+    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
@@ -1508,6 +1591,8 @@ Display ANNOTATIONS for FILE-KEY."
         (simply-annotate--clear-all-overlays)
         (simply-annotate--cleanup-draft)
         (simply-annotate--load-annotations)
+        (setq simply-annotate-current-level simply-annotate-default-level)
+        (simply-annotate--apply-level-filter)
         (simply-annotate--setup-header)
         (simply-annotate--update-header)
         (add-hook 'before-save-hook #'simply-annotate--save-annotations nil t)
@@ -1523,5 +1608,4 @@ Display ANNOTATIONS for FILE-KEY."
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)))
 
 (provide 'simply-annotate)
-;;; simply-annotate.el ends here
 ;;; simply-annotate.el ends here
