@@ -1,0 +1,103 @@
+#+title: Change Log for simply-annotate
+#+author: James Dyer
+#+email: captainflasmr@gmail.com
+#+language: en
+#+options: ':t toc:nil author:nil email:nil num:nil title:nil
+#+todo: TODO DOING | DONE
+#+startup: showall
+
+This document contains the release notes for each tagged commit on the
+project's main git repository: [[https://github.com/captainflasmr/simply-annotate]]
+
+* Versions
+
+** <2026-03-23 Sun> *0.7.0*
+
+Annotation levels -- layered annotations for progressive code exploration.
+
+*** Features
+
+- *Annotation levels* -- Three annotation levels: =file= (whole-file description),
+  =defun= (function/element description), and =line= (individual syntactical
+  elements).  Each annotation is tagged with a level when created, inheriting the
+  currently active view level.  All overlay markers remain visible regardless of
+  level; only interaction (navigation, editing, header display) is filtered to the
+  active level.
+- *Level cycling* -- Press =M-s [= to cycle through levels: =file= -> =defun= ->
+  =line=.  Symmetric with =M-s ]= for display style cycling.
+- *Direct level selection* -- =M-x simply-annotate-set-level= to jump to a
+  specific level via completing-read.
+- *Header level indicator* -- Header-line now shows the active level as =[FILE]=,
+  =[DEFUN]=, or =[LINE]= with annotation count scoped to that level.
+- *Backward-compatible storage* -- Existing annotations without a level default to
+  =defun=.  No database migration required.
+
+*** Improvements
+
+- *Internal naming convention* -- All private functions now use the =simply-annotate--=
+  double-dash prefix, clarifying the public API boundary.
+- *Buffer-local state* -- Source-buffer variables (draft overlay, header state) are
+  now buffer-local, preventing cross-buffer contamination in multi-buffer workflows.
+- *Thread ID robustness* -- Thread IDs now include a timestamp component, reducing
+  collision risk.
+- *Database error reporting* -- Corrupted database files now produce a warning
+  message instead of being silently ignored.
+- *Single database load per update* -- =simply-annotate--update-database= no longer
+  reads the database file twice.
+- *defcustom correctness* -- Fixed =:type= mismatches for highlight face and
+  separator customization variables.  Added missing =:group= to fringe indicator.
+- Removed =C-g= override in annotation buffer that hijacked =keyboard-quit=.
+- Added =;;; simply-annotate.el ends here= footer.
+- Version header updated to match actual release.
+
+** <2025-07-03> *0.6.0*
+
+A little refactoring and tidying up.
+
+** <2025-06-29> *0.5.1*
+
+Raw sexp editing for advanced annotation control.
+
+*** Features
+
+- *Raw sexp editing* -- Edit annotation data structures directly as Elisp for
+  complete control over thread metadata, status, priority, and comments.
+
+*** Key binding changes
+
+- =M-s e=: Edit annotation as raw Elisp sexp
+
+** <2025-06-20> *0.5.0*
+
+Threading system -- conversations, status tracking, and collaboration.
+
+*** Features
+
+- *Threading system* -- Add replies to annotations for conversations
+- *Status management* -- Track progress (open, in-progress, resolved, closed)
+- *Priority levels* -- Set importance (low, normal, high, critical)
+- *Multi-author support* -- Configure team members for collaboration
+- *Tag system* -- Organize with hashtags (#review, #bug, #question)
+- *Org-mode export* -- Convert threads to structured TODO items
+- *Enhanced display* -- Thread info in headers and lists
+- *Author management* -- Flexible prompting modes and author changes
+
+*** Key binding changes
+
+- =M-s r=: Add reply to annotation
+- =M-s s=: Set status
+- =M-s p=: Set priority
+- =M-s t=: Add tag
+- =M-s a=: Change author
+- =M-s o=: Export to org-mode
+
+** <2025-06-20> *0.0.1*
+
+Initial release -- basic annotation functionality.
+
+*** Features
+
+- Persistent annotation storage
+- Navigation commands
+- Org-mode export
+- Customizable highlighting
