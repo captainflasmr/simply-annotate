@@ -175,6 +175,17 @@ Set to nil to show all lines."
   :type '(choice integer (const :tag "No limit" nil))
   :group 'simply-annotate)
 
+(defcustom simply-annotate-inline-fill-column 72
+  "Column at which inline annotation text is word-wrapped.
+Set to nil to disable wrapping."
+  :type '(choice integer (const :tag "No wrapping" nil))
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-inline-default nil
+  "When non-nil, enable inline annotation display when the mode starts."
+  :type 'boolean
+  :group 'simply-annotate)
+
 ;; Threading and Collaboration Customization
 
 (defcustom simply-annotate-default-author
@@ -226,11 +237,12 @@ When enabled, the package remembers the last author used for each file."
   :type '(repeat symbol)
   :group 'simply-annotate)
 
-(defcustom simply-annotate-default-level 'defun
-  "Default annotation level for display and new annotations."
+(defcustom simply-annotate-default-level 'all
+  "Default annotation level for display when the mode starts."
   :type '(choice (const :tag "File-level" file)
                  (const :tag "Defun-level" defun)
-                 (const :tag "Line-level" line))
+                 (const :tag "Line-level" line)
+                 (const :tag "All levels" all))
   :group 'simply-annotate)
 
 ;; Separators and Regexps
@@ -357,7 +369,7 @@ This helps fix corrupted annotations from older versions."
       (setq lines (cl-remove-if
                    (lambda (line)
                      (or (string-match-p "^[┌└─]" line) ; Thread/Box header or footer
-                         (string-match-p "^│?\\s-*[💬↳]" line) ; Comment indicator
+                         (string-match-p "^│?\\s-*\\(comment\\|reply\\):" line) ; Comment indicator
                          (string-match-p "^│?\\s-*Source:" line) ; Source info
                          (string-match-p "^│?\\s-*Thread:" line))) ; Thread info
                    lines))
@@ -416,6 +428,16 @@ This helps fix corrupted annotations from older versions."
 
 ;;; Display Management
 
+(defun simply-annotate--wrap-line (line width)
+  "Word-wrap LINE to WIDTH, returning a list of lines."
+  (if (or (not width) (<= (length line) width))
+      (list line)
+    (with-temp-buffer
+      (insert line)
+      (let ((fill-column width))
+        (fill-region (point-min) (point-max))
+        (split-string (buffer-string) "\n")))))
+
 (defun simply-annotate--inline-text (overlay)
   "Return the inline display string for OVERLAY as a box-drawn block."
   (let* ((data (overlay-get overlay 'simply-annotation))
@@ -442,16 +464,20 @@ This helps fix corrupted annotations from older versions."
              (type (alist-get 'type comment))
              (author (alist-get 'author comment))
              (timestamp (alist-get 'timestamp comment))
-             (prefix (if (string= type "comment") "💬 " "↳ "))
+             (prefix (if (string= type "comment") "" "  "))
              (meta (if (and author timestamp)
                        (format "%s (%s):"
                                (propertize author 'face 'bold)
                                (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
                      ""))
-             (comment-lines (split-string text "\n")))
-        (push (concat prefix meta) formatted-lines)
+             (comment-lines (split-string text "\n"))
+             (wrap-width (when simply-annotate-inline-fill-column
+                           (- simply-annotate-inline-fill-column 4))))
+        (when (not (string-empty-p meta))
+          (push (concat prefix meta) formatted-lines))
         (dolist (line comment-lines)
-          (push (concat "  " line) formatted-lines))))
+          (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
+            (push (concat "  " wrapped) formatted-lines)))))
 
     (setq formatted-lines (reverse formatted-lines))
 
@@ -576,9 +602,11 @@ annotation level.  This layers on top of the current display style."
 ;;; Level Management
 
 (defun simply-annotate--level-match-p (overlay)
-  "Return non-nil if OVERLAY matches the current annotation level."
-  (eq (or (overlay-get overlay 'simply-annotation-level) 'defun)
-      simply-annotate-current-level))
+  "Return non-nil if OVERLAY matches the current annotation level.
+When the current level is `all', every overlay matches."
+  (or (eq simply-annotate-current-level 'all)
+      (eq (or (overlay-get overlay 'simply-annotation-level) 'defun)
+          simply-annotate-current-level)))
 
 (defun simply-annotate--active-overlays ()
   "Return list of overlays matching the current annotation level."
@@ -600,9 +628,10 @@ Only overlays matching the active level are shown."
 
 ;;;###autoload
 (defun simply-annotate-cycle-level-forward ()
-  "Cycle forward through annotation levels."
+  "Cycle forward through annotation levels.
+The cycle includes `all' after the last defined level."
   (interactive)
-  (let* ((levels simply-annotate-levels)
+  (let* ((levels (append simply-annotate-levels '(all)))
          (current-pos (cl-position simply-annotate-current-level levels))
          (next-pos (if current-pos
                        (mod (1+ current-pos) (length levels))
@@ -613,9 +642,10 @@ Only overlays matching the active level are shown."
 
 ;;;###autoload
 (defun simply-annotate-cycle-level-backward ()
-  "Cycle backward through annotation levels."
+  "Cycle backward through annotation levels.
+The cycle includes `all' after the last defined level."
   (interactive)
-  (let* ((levels simply-annotate-levels)
+  (let* ((levels (append simply-annotate-levels '(all)))
          (current-pos (cl-position simply-annotate-current-level levels))
          (next-pos (if current-pos
                        (mod (1- current-pos) (length levels))
@@ -629,7 +659,8 @@ Only overlays matching the active level are shown."
   "Set annotation view to LEVEL."
   (interactive
    (list (intern (completing-read "Level: "
-                                  (mapcar #'symbol-name simply-annotate-levels)
+                                  (mapcar #'symbol-name
+                                          (append simply-annotate-levels '(all)))
                                   nil t))))
   (setq simply-annotate-current-level level)
   (simply-annotate--apply-level-filter)
@@ -763,8 +794,8 @@ In fringe mode, searches the entire current line for overlays."
               (timestamp (alist-get 'timestamp comment))
               (text (alist-get 'text comment))
               (type (alist-get 'type comment)))
-          (format "│ %s %s (%s):\n│ %s"
-                  (if (string= type "comment") "💬" "↳")
+          (format "│ %s%s (%s):\n│ %s"
+                  (if (string= type "comment") "" "  ")
                   (propertize author 'face 'bold)
                   (format-time-string "%m/%d %H:%M" (date-to-time timestamp))
                   (replace-regexp-in-string "\n" "\n│ " text))))
@@ -1104,37 +1135,36 @@ When SELECT is non-nil, move point to the annotation buffer."
 (defun simply-annotate--level-counts ()
   "Return a formatted string showing annotation counts per level.
 The active level is shown in bold."
-  (mapconcat
-   (lambda (level)
-     (let* ((name (upcase (symbol-name level)))
-            (n (cl-count-if
-                (lambda (ov)
-                  (eq (or (overlay-get ov 'simply-annotation-level) 'defun) level))
-                simply-annotate-overlays))
-            (label (format "%s:%d" name n)))
-       (if (eq level simply-annotate-current-level)
-           (propertize label 'face '(bold :height 0.9))
-         (propertize label 'face '(:height 0.9)))))
-   simply-annotate-levels
-   (propertize " | " 'face '(:height 0.9))))
+  (let* ((levels (append simply-annotate-levels '(all)))
+         (current-overlay (simply-annotate--overlay-at-point))
+         (current-num (when current-overlay
+                        (simply-annotate--annotation-number current-overlay))))
+    (mapconcat
+     (lambda (level)
+       (let* ((name (upcase (symbol-name level)))
+              (n (if (eq level 'all)
+                     (length simply-annotate-overlays)
+                   (cl-count-if
+                    (lambda (ov)
+                      (eq (or (overlay-get ov 'simply-annotation-level) 'defun) level))
+                    simply-annotate-overlays)))
+              (label (if (and (eq level simply-annotate-current-level) current-num)
+                         (format "%s: %d/%d" name current-num n)
+                       (format "%s:%d" name n))))
+         (if (eq level simply-annotate-current-level)
+             (propertize label 'face '(bold :height 0.9))
+           (propertize label 'face '(:height 0.9)))))
+     levels
+     (propertize " | " 'face '(:height 0.9)))))
 
 (defun simply-annotate--format-header (&optional text)
-  "Header format showing level counts, current position, and thread info.
+  "Header format showing level counts with embedded position.
 Optional TEXT is appended (e.g. status messages)."
-  (let* ((active (simply-annotate--active-overlays))
-         (count (length active))
-         (total (length simply-annotate-overlays)))
+  (let ((total (length simply-annotate-overlays)))
     (when (> total 0)
       (concat
        " "
        (simply-annotate--level-counts)
-       (propertize " │ " 'face '(:height 0.9))
-       (propertize (format "%s/%d"
-                           (if-let ((overlay (simply-annotate--overlay-at-point)))
-                               (simply-annotate--annotation-number overlay)
-                             "-")
-                           count)
-                   'face '(bold :height 0.9))
        " "
        (if-let* ((overlay (simply-annotate--overlay-at-point))
                  (annotation-data (overlay-get overlay 'simply-annotation))
@@ -1454,8 +1484,8 @@ If WRAP is non-nil, wrap around to the beginning/end."
                              (let ((author (alist-get 'author comment))
                                    (text (alist-get 'text comment))
                                    (type (alist-get 'type comment)))
-                               (format "%s %s: %s"
-                                       (if (string= type "comment") "💬" "↳")
+                               (format "%s%s: %s"
+                                       (if (string= type "comment") "" "  ")
                                        author
                                        (truncate-string-to-width text 40 nil nil "..."))))
                            comments))
@@ -1720,13 +1750,30 @@ If NAV is nil, derive it from point."
       (beginning-of-line)
       (simply-annotate--listing-goto-source))))
 
+(defun simply-annotate--listing-file-at-point ()
+  "If point is on a file-level org heading, return the file path."
+  (save-excursion
+    (beginning-of-line)
+    (when (looking-at "^\\* \\(.+?\\) ([0-9]+)$")
+      (let ((path (match-string-no-properties 1)))
+        (expand-file-name (substitute-in-file-name path))))))
+
 (defun simply-annotate-listing-jump ()
-  "Jump to the source location of the annotation at point."
+  "Jump to the source location of the annotation at point.
+On a file-level heading, open the file.  On an annotation heading,
+jump to the source location."
   (interactive)
-  (let ((props (simply-annotate--listing-nav-props)))
-    (if props
-        (simply-annotate--listing-goto-source props)
-      (org-return))))
+  (let ((file (simply-annotate--listing-file-at-point)))
+    (if file
+        (when (file-exists-p file)
+          (let ((win (display-buffer (find-file-noselect file)
+                                     '(display-buffer-use-some-window
+                                       (inhibit-same-window . t)))))
+            (select-window win)))
+      (let ((props (get-text-property (point) 'simply-annotate-nav)))
+        (if props
+            (simply-annotate--listing-goto-source props)
+          (org-return))))))
 
 (defun simply-annotate-listing-quit ()
   "Quit the annotation listing buffer."
@@ -1755,6 +1802,8 @@ If NAV is nil, derive it from point."
 (defun simply-annotate--setup-annotation-list-mode ()
   "Setup org-mode with listing navigation for the annotation list buffer."
   (org-mode)
+  (visual-line-mode -1)
+  (setq truncate-lines t)
   (simply-annotate-listing-mode 1)
   (org-set-startup-visibility)
   (setq buffer-read-only t))
@@ -1808,7 +1857,7 @@ its annotations grouped by level."
               (dolist (file-key files-with-annotations)
                 (setq total (+ total (length (alist-get file-key db nil nil #'string=)))))
               (insert (format "#+TITLE: All Annotations\n"))
-              (insert (format "#+STARTUP: content\n"))
+              (insert (format "#+STARTUP: show2levels\n"))
               (insert (format "Total: %d annotations across %d files\n\n"
                               total (length files-with-annotations)))
               ;; Each file as a top-level heading
@@ -1972,6 +2021,7 @@ Opens the selected file and enables `simply-annotate-mode'."
         (simply-annotate--cleanup-draft)
         (simply-annotate--load-annotations)
         (setq simply-annotate-current-level simply-annotate-default-level)
+        (setq simply-annotate-inline simply-annotate-inline-default)
         (simply-annotate--apply-level-filter)
         (simply-annotate--setup-header)
         (simply-annotate--update-header)
