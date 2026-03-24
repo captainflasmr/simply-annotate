@@ -110,9 +110,9 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @item
 @strong{Navigation}: Jump between annotations with simple keybindings
 @item
-@strong{Overview}: List all annotations in grep-mode format
+@strong{Overview}: List all annotations in an org-mode buffer with folding
 @item
-@strong{Cross-file}: Browse annotations across multiple files
+@strong{Cross-file}: Browse all annotations across files in a global org-mode overview
 @item
 @strong{Org-mode export}: Convert annotation threads to structured TODO items
 @item
@@ -927,62 +927,88 @@ To see an overview of all annotations in the current buffer:
 M-s l
 @end example
 
-The list now shows rich threading information:
+The listing uses org-mode for full folding support.  The structure is:
 
 @example
-Annotations for myfile.txt:
-Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+#+TITLE: Annotations for myfile.el
+#+STARTUP: show2levels
 
-myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
-┌─ THREAD ─┐
-│ 💬 james dyer (06/19 09:49):
-│   This needs review before release
-│ ↳ jane smith (06/19 10:15):
-│   I'll check this today
-└───────────┘
-Source: function calculateTotal()
+* FILE (1)
+** [OPEN/NORMAL] Line 1 (1 comment)
+*** Region
+~;; file header comment~
+*** Comment - james dyer (06/19 09:49)
+Overall file description
+
+* DEFUN (2)
+** [OPEN/HIGH] Line 15 #review (2 comments)
+*** Region
+~(defun calculate-total ()~
+*** Comment - james dyer (06/19 09:49)
+This needs review before release
+*** Reply - jane smith (06/19 10:15)
+I'll check this today
 @end example
 
-The enhanced listing includes:
+Use @kbd{TAB} and @kbd{S-TAB} for org folding.  Within the listing buffer:
+
 @itemize @bullet
 @item
-Summary statistics (total, threads vs simple, open vs resolved)
+@kbd{n} -- move to next annotation and jump to source
 @item
-Status and priority indicators for each annotation
+@kbd{p} -- move to previous annotation and jump to source
 @item
-Comment counts for threaded annotations
+@kbd{RET} -- jump to source location of annotation at point
 @item
-Visual thread display with author names and timestamps
-@item
-Tag display with hashtag formatting
-@item
-Color coding for different statuses and priorities
+@kbd{q} -- quit the listing buffer
 @end itemize
 
-@section Cross-file Annotation Browsing
+The listing automatically refreshes when annotations are modified (saved,
+edited, replied to, removed, or have properties changed).
+
+@section Global Annotation Overview
 
 @findex simply-annotate-show-all
-To browse annotations across all files, bind @code{simply-annotate-show-all}
-globally since it operates on the annotation database rather than the current
-buffer:
+To see all annotations across all files in a single org-mode buffer, bind
+@code{simply-annotate-show-all} globally:
 
 @lisp
 (global-set-key (kbd "C-c 0") #'simply-annotate-show-all)
 @end lisp
 
-This command now shows:
-@itemize @bullet
-@item
-Completion list with annotation counts per file
-@item
-Thread and status statistics for each file
-@item
-Enhanced grep-mode display with threading information
-@item
-Color-coded status indicators
-@item
-Author information for collaborative workflows
-@end itemize
+This produces a @code{*All Annotations*} buffer with files as top-level
+headings:
+
+@example
+#+TITLE: All Annotations
+#+STARTUP: content
+
+* ~/project/myfile.el (3)
+** FILE (1)
+*** [OPEN/NORMAL] Line 1 (1 comment)
+** DEFUN (2)
+*** [OPEN/HIGH] Line 15 #review (2 comments)
+
+* ~/project/other.el (5)
+** DEFUN (3)
+...
+@end example
+
+The same @kbd{n}/@kbd{p}/@kbd{RET}/@kbd{q} navigation works here.  Jumping to
+an annotation opens the source file in another window.
+
+@section Quick File Jump
+
+@findex simply-annotate-jump-to-file
+For quick navigation without the full overview, bind
+@code{simply-annotate-jump-to-file} globally:
+
+@lisp
+(global-set-key (kbd "C-c 9") #'simply-annotate-jump-to-file)
+@end lisp
+
+This uses @code{completing-read} to show all annotated files with counts, opens
+the selected file, and enables @code{simply-annotate-mode}.
 
 @section Annotation Buffer Features
 
@@ -1251,7 +1277,8 @@ Configure team collaboration and threading features:
   
   :bind
   ("C-c A" . simply-annotate-mode)
-  ("C-c 0" . simply-annotate-show-all))
+  ("C-c 0" . simply-annotate-show-all)
+  ("C-c 9" . simply-annotate-jump-to-file))
 @end lisp
 
 @section Configuration Examples
@@ -1422,7 +1449,8 @@ To enable annotation mode automatically:
   (find-file-hook . simply-annotate-mode)
   :bind
   ("C-c A" . simply-annotate-mode)
-  ("C-c 0" . simply-annotate-show-all))
+  ("C-c 0" . simply-annotate-show-all)
+  ("C-c 9" . simply-annotate-jump-to-file))
 @end lisp
 
 @node Data Storage

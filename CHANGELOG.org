@@ -11,6 +11,39 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-24 Mon> *0.8.0*
+
+Org-mode annotation listing with folding, global overview, and live refresh.
+
+*** Features
+
+- *Org-mode listing* -- =M-s l= now produces an org-mode buffer with full folding
+  support.  Annotation levels are level-1 headings, each annotation is a level-2
+  heading, and the annotated region and comments/replies each get their own
+  sub-headings.  Use =TAB= / =S-TAB= for folding.
+- *Global annotation overview* -- =simply-annotate-show-all= displays all annotations
+  across all files in a single org-mode buffer.  Files are top-level headings that
+  expand into level groups and individual annotations.  Opens with =content= visibility
+  showing all headings.
+- *Quick file jump* -- =simply-annotate-jump-to-file= provides the previous
+  completing-read navigation for quick file switching.  Bind globally for fast access.
+- *Listing navigation* -- =n= / =p= step between annotation headings in the listing
+  buffer and automatically jump to the corresponding source location.  =RET= jumps to
+  source from anywhere within an annotation.  =q= quits.
+- *Live listing refresh* -- The listing buffer automatically updates when annotations
+  are saved, edited, replied to, removed, or have status/priority/tags/author changed.
+
+*** Improvements
+
+- *Removed =M-s 0= from mode map* -- =simply-annotate-show-all= operates on the
+  database rather than the current buffer, so it belongs as a global binding.
+  Recommended: =(global-set-key (kbd "C-c 0") #'simply-annotate-show-all)=.
+
+*** Key binding changes
+
+- =M-s 0=: Removed from mode map (use global binding for =simply-annotate-show-all=)
+- Listing buffer: =n= / =p= / =RET= / =q= for navigation
+
 ** <2026-03-23 Sun> *0.7.1*
 
 Inline display, subtle style, and annotation listing improvements.

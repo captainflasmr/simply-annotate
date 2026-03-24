@@ -53,15 +53,16 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-03-23> *0.7.1*
+** <2026-03-24> *0.8.0*
 
-Inline display, subtle style, and annotation listing improvements.
+Org-mode annotation listing with folding, global overview, and live refresh.
 
-- *Inline display* -- =M-s /= toggles box-drawn annotation blocks in the buffer.  Position with =simply-annotate-inline-position= (='after= or ='above=).
-- *Subtle display style* -- New overline/underline style that brackets annotated regions unobtrusively.
-- *Level-filtered display* -- Display styles now show only annotations at the active level.
-- *Redesigned listing* -- =M-s l= groups annotations by level with counts and auto-syncs level on jump.
-- *Key binding changes* -- =M-s '= for display style, =M-s [=/=]= for level cycling, =M-s /= for inline toggle.
+- *Org-mode listing* -- =M-s l= now uses org-mode with full folding.  Annotations, regions, and comments each have their own collapsible headings.
+- *Global overview* -- =simply-annotate-show-all= shows all annotations across all files in a single org buffer with file-level folding.
+- *Quick file jump* -- =simply-annotate-jump-to-file= provides completing-read navigation for fast file switching.
+- *Listing navigation* -- =n= / =p= step between annotations and jump to source.  =RET= to jump, =q= to quit.
+- *Live refresh* -- Listing buffer updates automatically when annotations are modified.
+- *Full region capture* -- Listing shows the complete annotated region, not just the first line.
 
 See [[file:CHANGELOG.org]] for full version history.
 

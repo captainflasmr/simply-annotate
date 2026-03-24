@@ -92,8 +92,9 @@ and documentation and includes threading and collaboration features.
    • *Smart action*: Context-aware command that adapts to the situation
    • *Rich editing*: Full-featured annotation buffer for longer notes
    • *Navigation*: Jump between annotations with simple keybindings
-   • *Overview*: List all annotations in grep-mode format
-   • *Cross-file*: Browse annotations across multiple files
+   • *Overview*: List all annotations in an org-mode buffer with folding
+   • *Cross-file*: Browse all annotations across files in a global
+     org-mode overview
    • *Org-mode export*: Convert annotation threads to structured TODO
      items
    • *Header-line integration*: Shows annotation count and available
@@ -748,45 +749,77 @@ To see an overview of all annotations in the current buffer:
 
      M-s l
 
-   The list now shows rich threading information:
+   The listing uses org-mode for full folding support.  The structure
+is:
 
-     Annotations for myfile.txt:
-     Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+     #+TITLE: Annotations for myfile.el
+     #+STARTUP: show2levels
 
-     myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
-     ┌─ THREAD ─┐
-     │ 💬 james dyer (06/19 09:49):
-     │   This needs review before release
-     │ ↳ jane smith (06/19 10:15):
-     │   I'll check this today
-     └───────────┘
-     Source: function calculateTotal()
+     * FILE (1)
+     ** [OPEN/NORMAL] Line 1 (1 comment)
+     *** Region
+     ~;; file header comment~
+     *** Comment - james dyer (06/19 09:49)
+     Overall file description
 
-   The enhanced listing includes:
-   • Summary statistics (total, threads vs simple, open vs resolved)
-   • Status and priority indicators for each annotation
-   • Comment counts for threaded annotations
-   • Visual thread display with author names and timestamps
-   • Tag display with hashtag formatting
-   • Color coding for different statuses and priorities
+     * DEFUN (2)
+     ** [OPEN/HIGH] Line 15 #review (2 comments)
+     *** Region
+     ~(defun calculate-total ()~
+     *** Comment - james dyer (06/19 09:49)
+     This needs review before release
+     *** Reply - jane smith (06/19 10:15)
+     I'll check this today
 
-10.2 Cross-file Annotation Browsing
-===================================
+   Use ‘TAB’ and ‘S-TAB’ for org folding.  Within the listing buffer:
 
-To browse annotations across all files, bind ‘simply-annotate-show-all’
-globally since it operates on the annotation database rather than the
-current buffer:
+   • ‘n’ - move to next annotation and jump to source
+   • ‘p’ - move to previous annotation and jump to source
+   • ‘RET’ - jump to source location of annotation at point
+   • ‘q’ - quit the listing buffer
+
+   The listing automatically refreshes when annotations are modified
+(saved, edited, replied to, removed, or have properties changed).
+
+10.2 Global Annotation Overview
+===============================
+
+To see all annotations across all files in a single org-mode buffer,
+bind ‘simply-annotate-show-all’ globally:
 
      (global-set-key (kbd "C-c 0") #'simply-annotate-show-all)
 
-   This command now shows:
-   • Completion list with annotation counts per file
-   • Thread and status statistics for each file
-   • Enhanced grep-mode display with threading information
-   • Color-coded status indicators
-   • Author information for collaborative workflows
+   This produces a ‘*All Annotations*’ buffer with files as top-level
+headings:
 
-10.3 Annotation Buffer Features
+     #+TITLE: All Annotations
+     #+STARTUP: content
+
+     * ~/project/myfile.el (3)
+     ** FILE (1)
+     *** [OPEN/NORMAL] Line 1 (1 comment)
+     ** DEFUN (2)
+     *** [OPEN/HIGH] Line 15 #review (2 comments)
+
+     * ~/project/other.el (5)
+     ** DEFUN (3)
+     ...
+
+   The same ‘n’/‘p’/‘RET’/‘q’ navigation works here.  Jumping to an
+annotation opens the source file in another window.
+
+10.3 Quick File Jump
+====================
+
+For quick navigation without the full overview, bind
+‘simply-annotate-jump-to-file’ globally:
+
+     (global-set-key (kbd "C-c 9") #'simply-annotate-jump-to-file)
+
+   This uses ‘completing-read’ to show all annotated files with counts,
+opens the selected file, and enables ‘simply-annotate-mode’.
+
+10.4 Annotation Buffer Features
 ===============================
 
 The annotation buffer provides a rich editing environment with threading
@@ -802,7 +835,7 @@ support:
    • Provides save (‘C-c C-c’) and cancel (‘C-c C-k’) operations
    • Automatically handles empty annotations (removes them)
 
-10.4 Header-line Integration
+10.5 Header-line Integration
 ============================
 
 The header-line provides real-time information with threading support:
@@ -1021,7 +1054,8 @@ Configure team collaboration and threading features:
 
        :bind
        ("C-c A" . simply-annotate-mode)
-       ("C-c 0" . simply-annotate-show-all))
+       ("C-c 0" . simply-annotate-show-all)
+       ("C-c 9" . simply-annotate-jump-to-file))
 
 13.3 Configuration Examples
 ===========================
@@ -1184,7 +1218,8 @@ To enable annotation mode automatically:
        (find-file-hook . simply-annotate-mode)
        :bind
        ("C-c A" . simply-annotate-mode)
-       ("C-c 0" . simply-annotate-show-all))
+       ("C-c 0" . simply-annotate-show-all)
+       ("C-c 9" . simply-annotate-jump-to-file))
 
 
 File: simply-annotate.info,  Node: Data Storage,  Next: Troubleshooting,  Prev: Customization,  Up: Top
@@ -1477,6 +1512,7 @@ Function Index
 * simply-annotate-edit-sexp:             Advanced Editing.    (line  13)
 * simply-annotate-export-to-org-file:    Org-mode Integration.
                                                               (line  12)
+* simply-annotate-jump-to-file:          Advanced Features.   (line  75)
 * simply-annotate-list:                  Advanced Features.   (line   9)
 * simply-annotate-mode:                  Basic Usage.         (line   9)
 * simply-annotate-next:                  Navigation.          (line   9)
@@ -1493,7 +1529,7 @@ Function Index
                                                               (line  45)
 * simply-annotate-set-level:             Annotation Levels.   (line  57)
 * simply-annotate-show:                  Navigation.          (line  25)
-* simply-annotate-show-all:              Advanced Features.   (line  38)
+* simply-annotate-show-all:              Advanced Features.   (line  48)
 * simply-annotate-smart-action:          Basic Usage.         (line  23)
 * simply-annotate-toggle-inline:         Display Styles.      (line  66)
 
@@ -1513,49 +1549,49 @@ Variable Index
 * priority:                              Advanced Editing.    (line  54)
 * simply-annotate-author-list:           Threading and Collaboration.
                                                               (line  79)
-* simply-annotate-author-list <1>:       Customization.       (line 132)
-* simply-annotate-author-list <2>:       Customization.       (line 133)
-* simply-annotate-buffer-height:         Customization.       (line  93)
-* simply-annotate-buffer-height <1>:     Customization.       (line  94)
-* simply-annotate-buffer-name:           Customization.       (line  90)
-* simply-annotate-buffer-name <1>:       Customization.       (line  91)
-* simply-annotate-default-level:         Customization.       (line 125)
-* simply-annotate-default-level <1>:     Customization.       (line 126)
+* simply-annotate-author-list <1>:       Customization.       (line 133)
+* simply-annotate-author-list <2>:       Customization.       (line 134)
+* simply-annotate-buffer-height:         Customization.       (line  94)
+* simply-annotate-buffer-height <1>:     Customization.       (line  95)
+* simply-annotate-buffer-name:           Customization.       (line  91)
+* simply-annotate-buffer-name <1>:       Customization.       (line  92)
+* simply-annotate-default-level:         Customization.       (line 126)
+* simply-annotate-default-level <1>:     Customization.       (line 127)
 * simply-annotate-display-style:         Display Styles.      (line  30)
-* simply-annotate-display-style <1>:     Customization.       (line  97)
-* simply-annotate-display-style <2>:     Customization.       (line  98)
-* simply-annotate-file:                  Customization.       (line  82)
-* simply-annotate-file <1>:              Customization.       (line  83)
+* simply-annotate-display-style <1>:     Customization.       (line  98)
+* simply-annotate-display-style <2>:     Customization.       (line  99)
+* simply-annotate-file:                  Customization.       (line  83)
+* simply-annotate-file <1>:              Customization.       (line  84)
 * simply-annotate-fringe-face:           Display Styles.      (line  56)
-* simply-annotate-fringe-face <1>:       Customization.       (line 106)
-* simply-annotate-fringe-face <2>:       Customization.       (line 107)
+* simply-annotate-fringe-face <1>:       Customization.       (line 107)
+* simply-annotate-fringe-face <2>:       Customization.       (line 108)
 * simply-annotate-fringe-indicator:      Display Styles.      (line  56)
-* simply-annotate-fringe-indicator <1>:  Customization.       (line 101)
-* simply-annotate-fringe-indicator <2>:  Customization.       (line 102)
-* simply-annotate-highlight-face:        Customization.       (line  86)
-* simply-annotate-highlight-face <1>:    Customization.       (line  87)
-* simply-annotate-inline-max-lines:      Customization.       (line 114)
-* simply-annotate-inline-max-lines <1>:  Customization.       (line 115)
+* simply-annotate-fringe-indicator <1>:  Customization.       (line 102)
+* simply-annotate-fringe-indicator <2>:  Customization.       (line 103)
+* simply-annotate-highlight-face:        Customization.       (line  87)
+* simply-annotate-highlight-face <1>:    Customization.       (line  88)
+* simply-annotate-inline-max-lines:      Customization.       (line 115)
+* simply-annotate-inline-max-lines <1>:  Customization.       (line 116)
 * simply-annotate-inline-position:       Display Styles.      (line  71)
-* simply-annotate-inline-position <1>:   Customization.       (line 110)
-* simply-annotate-inline-position <2>:   Customization.       (line 111)
-* simply-annotate-levels:                Customization.       (line 122)
-* simply-annotate-levels <1>:            Customization.       (line 123)
+* simply-annotate-inline-position <1>:   Customization.       (line 111)
+* simply-annotate-inline-position <2>:   Customization.       (line 112)
+* simply-annotate-levels:                Customization.       (line 123)
+* simply-annotate-levels <1>:            Customization.       (line 124)
 * simply-annotate-priority-levels:       Threading and Collaboration.
                                                               (line  57)
-* simply-annotate-priority-levels <1>:   Customization.       (line 147)
-* simply-annotate-priority-levels <2>:   Customization.       (line 148)
+* simply-annotate-priority-levels <1>:   Customization.       (line 148)
+* simply-annotate-priority-levels <2>:   Customization.       (line 149)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
                                                               (line  79)
-* simply-annotate-prompt-for-author <1>: Customization.       (line 136)
-* simply-annotate-prompt-for-author <2>: Customization.       (line 137)
-* simply-annotate-remember-author-per-file: Customization.    (line 140)
+* simply-annotate-prompt-for-author <1>: Customization.       (line 137)
+* simply-annotate-prompt-for-author <2>: Customization.       (line 138)
+* simply-annotate-remember-author-per-file: Customization.    (line 141)
 * simply-annotate-remember-author-per-file <1>: Customization.
-                                                              (line 141)
+                                                              (line 142)
 * simply-annotate-thread-statuses:       Threading and Collaboration.
                                                               (line  45)
-* simply-annotate-thread-statuses <1>:   Customization.       (line 143)
-* simply-annotate-thread-statuses <2>:   Customization.       (line 144)
+* simply-annotate-thread-statuses <1>:   Customization.       (line 144)
+* simply-annotate-thread-statuses <2>:   Customization.       (line 145)
 * status:                                Advanced Editing.    (line  51)
 * tags:                                  Advanced Editing.    (line  56)
 * text:                                  Advanced Editing.    (line  70)
@@ -1584,7 +1620,7 @@ Concept Index
 * defun level:                           Annotation Levels.   (line   6)
 * embedded comments:                     Display Styles.      (line  66)
 * file level:                            Annotation Levels.   (line   6)
-* header-line:                           Advanced Features.   (line  70)
+* header-line:                           Advanced Features.   (line 102)
 * inline display:                        Display Styles.      (line  66)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
@@ -1598,7 +1634,7 @@ Concept Index
 * sexp editing:                          Advanced Editing.    (line   9)
 * status:                                Threading and Collaboration.
                                                               (line  42)
-* status display:                        Advanced Features.   (line  70)
+* status display:                        Advanced Features.   (line 102)
 * tags:                                  Threading and Collaboration.
                                                               (line  66)
 * team:                                  Threading and Collaboration.
@@ -1612,23 +1648,23 @@ Concept Index
 Tag Table:
 Node: Top792
 Node: Introduction2778
-Node: Installation4544
-Node: Quick Start5152
-Node: Basic Usage6000
-Node: Advanced Editing8613
-Node: Threading and Collaboration12138
-Node: Display Styles16323
-Node: Annotation Levels20224
-Node: Navigation23527
-Node: Advanced Features25169
-Node: Org-mode Integration28222
-Node: Key Bindings30416
-Node: Customization34179
-Node: Data Storage41228
-Node: Troubleshooting44707
-Node: Function Index51130
-Node: Variable Index53460
-Node: Concept Index57614
+Node: Installation4589
+Node: Quick Start5197
+Node: Basic Usage6045
+Node: Advanced Editing8658
+Node: Threading and Collaboration12183
+Node: Display Styles16368
+Node: Annotation Levels20269
+Node: Navigation23572
+Node: Advanced Features25214
+Node: Org-mode Integration28958
+Node: Key Bindings31152
+Node: Customization34915
+Node: Data Storage42060
+Node: Troubleshooting45539
+Node: Function Index51962
+Node: Variable Index54365
+Node: Concept Index58519
 
 End Tag Table
 
