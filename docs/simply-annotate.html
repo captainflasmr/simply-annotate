@@ -151,6 +151,7 @@ Free Documentation License&rdquo;.
     <li><a id="toc-Changing-Display-Styles" href="#Changing-Display-Styles">7.2 Changing Display Styles</a></li>
     <li><a id="toc-Style-Recommendations" href="#Style-Recommendations">7.3 Style Recommendations</a></li>
     <li><a id="toc-Fringe-Customization" href="#Fringe-Customization">7.4 Fringe Customization</a></li>
+    <li><a id="toc-Inline-Display" href="#Inline-Display">7.5 Inline Display</a></li>
   </ul></li>
   <li><a id="toc-Annotation-Levels" href="#Annotation-Levels">8 Annotation Levels</a>
   <ul class="toc-numbered-mark">
@@ -284,7 +285,7 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </li><li><strong class="strong">Tag system</strong>: Categorize with hashtags (<code class="code">#review</code>, <code class="code">#bug</code>, <code class="code">#question</code>)
 </li><li><strong class="strong">Raw sexp editing</strong>: Direct access to annotation data structures for power users
 </li><li><strong class="strong">Annotation levels</strong>: Three-tier annotation system (file, defun, line) for progressive code exploration
-</li><li><strong class="strong">Multiple display styles</strong>: Choose between highlighting, fringe indicators, or both
+</li><li><strong class="strong">Multiple display styles</strong>: Choose between highlighting, fringe indicators, both, or subtle
 </li><li><strong class="strong">Smart action</strong>: Context-aware command that adapts to the situation
 </li><li><strong class="strong">Rich editing</strong>: Full-featured annotation buffer for longer notes
 </li><li><strong class="strong">Navigation</strong>: Jump between annotations with simple keybindings
@@ -353,8 +354,8 @@ Next: <a href="#Basic-Usage" accesskey="n" rel="next">Basic Usage</a>, Previous:
 </li><li> Select some text and press <kbd class="kbd">M-s j</kbd> to create your first annotation
 </li><li> Type your annotation text and press <kbd class="kbd">C-c C-c</kbd> to save
 </li><li> Navigate with <kbd class="kbd">M-n</kbd> (next) and <kbd class="kbd">M-p</kbd> (previous)
-</li><li> Press <kbd class="kbd">M-s ]</kbd> to cycle through different display styles
-</li><li> Press <kbd class="kbd">M-s [</kbd> to cycle through annotation levels (file, defun, line)
+</li><li> Press <kbd class="kbd">M-s '</kbd> to cycle through different display styles
+</li><li> Press <kbd class="kbd">M-s [</kbd> and <kbd class="kbd">M-s ]</kbd> to cycle through annotation levels
 </li><li> Press <kbd class="kbd">M-s r</kbd> to add a reply to any annotation
 </li><li> Press <kbd class="kbd">M-s s</kbd> to set status (open, resolved, etc.)
 </li><li> Press <kbd class="kbd">M-s e</kbd> to edit annotation data structure directly
@@ -897,6 +898,7 @@ allowing you to choose the visual style that best fits your workflow.
 <li><a href="#Changing-Display-Styles" accesskey="2">Changing Display Styles</a></li>
 <li><a href="#Style-Recommendations" accesskey="3">Style Recommendations</a></li>
 <li><a href="#Fringe-Customization" accesskey="4">Fringe Customization</a></li>
+<li><a href="#Inline-Display" accesskey="5">Inline Display</a></li>
 </ul>
 <div class="section-level-extent" id="Available-Styles">
 <h3 class="section"><span>7.1 Available Styles<a class="copiable-link" href="#Available-Styles"> &para;</a></span></h3>
@@ -911,8 +913,14 @@ allowing you to choose the visual style that best fits your workflow.
 <dt><code class="code">both</code></dt>
 <dd><p>Combines both highlighting and fringe indicators (maximum visibility)
 </p></dd>
+<dt><code class="code">subtle</code></dt>
+<dd><p>Uses overline and underline to bracket annotated regions (unobtrusive)
+</p></dd>
 </dl>
 
+<p>Additionally, inline display can be toggled on top of any style
+(see <a class="pxref" href="#Display-Styles">Display Styles</a>).
+</p>
 </div>
 <div class="section-level-extent" id="Changing-Display-Styles">
 <h3 class="section"><span>7.2 Changing Display Styles<a class="copiable-link" href="#Changing-Display-Styles"> &para;</a></span></h3>
@@ -923,7 +931,7 @@ allowing you to choose the visual style that best fits your workflow.
 <p>You can change the display style in several ways:
 </p>
 <ul class="itemize mark-bullet">
-<li>Press <kbd class="kbd">M-s ]</kbd> to cycle through all three styles
+<li>Press <kbd class="kbd">M-s '</kbd> to cycle through all three styles
 </li><li>Set <code class="code">simply-annotate-display-style</code> in your configuration
 </li><li>Use <code class="code">simply-annotate-update-display-style</code> to refresh existing annotations
 </li></ul>
@@ -941,6 +949,9 @@ allowing you to choose the visual style that best fits your workflow.
 </p></dd>
 <dt><strong class="strong">Critical Files</strong></dt>
 <dd><p>Use <code class="code">both</code> style for maximum visibility of important annotations
+</p></dd>
+<dt><strong class="strong">Code Exploration</strong></dt>
+<dd><p>Toggle inline display (<kbd class="kbd">M-s /</kbd>) to read annotations in context without opening the annotation buffer
 </p></dd>
 <dt><strong class="strong">Threading Display</strong></dt>
 <dd><p>All styles work well with threaded annotations and status indicators
@@ -960,6 +971,66 @@ allowing you to choose the visual style that best fits your workflow.
 <li>Choose different symbols: <code class="code">left-triangle</code>, <code class="code">right-triangle</code>, <code class="code">filled-rectangle</code>, or <code class="code">custom</code>
 </li><li>Customize colors with <code class="code">simply-annotate-fringe-face</code>
 </li><li>Define custom bitmaps for unique indicators
+</li></ul>
+
+</div>
+<div class="section-level-extent" id="Inline-Display">
+<h3 class="section"><span>7.5 Inline Display<a class="copiable-link" href="#Inline-Display"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-inline-display"></a>
+<a class="index-entry-id" id="index-embedded-comments"></a>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dtoggle_002dinline"></a>
+<p>Inline display is an overlay that can be toggled on top of any display style
+with <kbd class="kbd">M-s /</kbd> (<code class="code">simply-annotate-toggle-inline</code>).  When active, it
+renders annotation text as a box-drawn block relative to the annotated region.
+</p>
+<a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dposition"></a>
+<p>The position is controlled by <code class="code">simply-annotate-inline-position</code>:
+</p>
+<dl class="table">
+<dt><code class="code">after</code></dt>
+<dd><p>(Default) The block appears after the annotated region:
+</p>
+<div class="example">
+<pre class="example-preformatted">(defun calculate-total (items)
+  ┌─ ✎ [OPEN/NORMAL] ────────
+  │ Sums all item prices.
+  │ Returns zero for empty list.
+  └────────────────────────────
+  (apply #'+ (mapcar #'price items)))
+</pre></div>
+
+</dd>
+<dt><code class="code">above</code></dt>
+<dd><p>The block appears above the annotated region:
+</p>
+<div class="example">
+<pre class="example-preformatted">  ┌─ ✎ [OPEN/NORMAL] ────────
+  │ Sums all item prices.
+  │ Returns zero for empty list.
+  └────────────────────────────
+(defun calculate-total (items)
+  (apply #'+ (mapcar #'price items)))
+</pre></div>
+</dd>
+</dl>
+
+<p>Both inline blocks and the underlying display style (highlight, fringe, both, or subtle)
+are filtered to the active annotation level &mdash; cycling levels with <kbd class="kbd">M-s [</kbd>
+updates which annotations are visible.
+</p>
+<p>Long annotations are truncated after <code class="code">simply-annotate-inline-max-lines</code>
+lines (default 20).  Thread metadata (status, priority, comment count) appears
+in the header.
+</p>
+<p>Customise the appearance with:
+</p>
+<ul class="itemize mark-bullet">
+<li><code class="code">simply-annotate-inline-face</code>: face for the annotation body text
+</li><li><code class="code">simply-annotate-inline-border-face</code>: face for the box-drawing border
+</li><li><code class="code">simply-annotate-inline-max-lines</code>: maximum lines before truncation
+</li><li><code class="code">simply-annotate-inline-position</code>: <code class="code">'after</code> or <code class="code">'above</code>
 </li></ul>
 
 <hr>
@@ -1013,34 +1084,37 @@ specific expressions, variables, or implementation details.
 <div class="section-level-extent" id="How-Levels-Work">
 <h3 class="section"><span>8.2 How Levels Work<a class="copiable-link" href="#How-Levels-Work"> &para;</a></span></h3>
 
-<p>All annotation overlay markers (highlights and fringe indicators) remain visible
-regardless of the active level.  Only <em class="emph">interaction</em> is filtered to the
-active level:
+<p>Only annotations matching the active level are styled.  Annotations at other
+levels have their visual markers (highlights, fringe indicators, inline blocks)
+removed, but the underlying text remains visible:
 </p>
 <ul class="itemize mark-bullet">
-<li><strong class="strong">Navigation</strong>: <kbd class="kbd">M-n</kbd> and <kbd class="kbd">M-p</kbd> skip annotations that don&rsquo;t match
-the active level.
+<li><strong class="strong">Display</strong>: Only overlays matching the active level show highlights,
+fringe indicators, and inline blocks.
+</li><li><strong class="strong">Navigation</strong>: <kbd class="kbd">M-n</kbd> and <kbd class="kbd">M-p</kbd> visit only annotations at the
+active level.
 </li><li><strong class="strong">Editing</strong>: <kbd class="kbd">M-s j</kbd> on annotated text only opens annotations matching
 the active level.
 </li><li><strong class="strong">Header display</strong>: The annotation count and position indicator reflect
 only the active level.
-</li><li><strong class="strong">Visual markers</strong>: All overlays from all levels remain visible at all
-times.
 </li></ul>
 
 </div>
 <div class="section-level-extent" id="Cycling-Levels">
 <h3 class="section"><span>8.3 Cycling Levels<a class="copiable-link" href="#Cycling-Levels"> &para;</a></span></h3>
 
-<a class="index-entry-id" id="index-simply_002dannotate_002dcycle_002dlevel"></a>
-<p>Press <kbd class="kbd">M-s [</kbd> to cycle through levels:
+<a class="index-entry-id" id="index-simply_002dannotate_002dcycle_002dlevel_002dforward"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dcycle_002dlevel_002dbackward"></a>
+<p>Use <kbd class="kbd">M-s ]</kbd> to cycle forward and <kbd class="kbd">M-s [</kbd> to cycle backward through
+levels:
 </p>
 <div class="example">
-<pre class="example-preformatted">file &rArr; defun &rArr; line &rArr; file &rArr; ...
+<pre class="example-preformatted"><kbd class="kbd">M-s ]</kbd>: file &rArr; defun &rArr; line &rArr; file &rArr; ...
+<kbd class="kbd">M-s [</kbd>: line &rArr; defun &rArr; file &rArr; line &rArr; ...
 </pre></div>
 
-<p>The header-line updates to show the active level as <code class="code">[FILE]</code>,
-<code class="code">[DEFUN]</code>, or <code class="code">[LINE]</code> along with the annotation count for that level.
+<p>The header-line shows annotation counts for every level, with the active level
+in bold (e.g. <code class="code">FILE:2 | DEFUN:5 | LINE:3</code>).
 </p>
 </div>
 <div class="section-level-extent" id="Direct-Level-Selection">
@@ -1222,10 +1296,12 @@ Source: function calculateTotal()
 <h3 class="section"><span>10.2 Cross-file Annotation Browsing<a class="copiable-link" href="#Cross_002dfile-Annotation-Browsing"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dshow_002dall"></a>
-<p>To browse annotations across all files:
+<p>To browse annotations across all files, bind <code class="code">simply-annotate-show-all</code>
+globally since it operates on the annotation database rather than the current
+buffer:
 </p>
-<div class="example">
-<pre class="example-preformatted">M-s 0
+<div class="example lisp">
+<pre class="lisp-preformatted">(global-set-key (kbd &quot;C-c 0&quot;) #'simply-annotate-show-all)
 </pre></div>
 
 <p>This command now shows:
@@ -1403,9 +1479,10 @@ Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previ
 <tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="35%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="50%">Export to org-mode</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s -</kbd></td><td width="35%"><code class="code">simply-annotate-remove</code></td><td width="50%">Delete annotation at point</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s l</kbd></td><td width="35%"><code class="code">simply-annotate-list</code></td><td width="50%">List all annotations in current file</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s 0</kbd></td><td width="35%"><code class="code">simply-annotate-show-all</code></td><td width="50%">Browse annotations across all files</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s ]</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-display-style</code></td><td width="50%">Cycle through display styles</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s [</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level</code></td><td width="50%">Cycle through annotation levels</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s [</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level-backward</code></td><td width="50%">Cycle levels backward (line &rArr; defun &rArr; file)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s ]</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level-forward</code></td><td width="50%">Cycle levels forward (file &rArr; defun &rArr; line)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s '</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-display-style</code></td><td width="50%">Cycle through display styles</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s /</kbd></td><td width="35%"><code class="code">simply-annotate-toggle-inline</code></td><td width="50%">Toggle inline annotation display</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-p</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
 </tbody>
@@ -1495,7 +1572,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background &quot;lightblue&quot; :foreground &quot;darkblue&quot;))
@@ -1604,7 +1681,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 </dd>
 <dt><a id="index-simply_002dannotate_002ddisplay_002dstyle-1"></a><span><code class="code">simply-annotate-display-style</code><a class="copiable-link" href="#index-simply_002dannotate_002ddisplay_002dstyle-1"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002ddisplay_002dstyle-2"></a>
-<p>How to display annotations. Options: <code class="code">'highlight</code>, <code class="code">'fringe</code>, <code class="code">'both</code>. Default: <code class="code">'fringe</code>
+<p>How to display annotations. Options: <code class="code">'highlight</code>, <code class="code">'fringe</code>, <code class="code">'both</code>, <code class="code">'subtle</code>. Default: <code class="code">'fringe</code>
 </p>
 </dd>
 <dt><a id="index-simply_002dannotate_002dfringe_002dindicator-1"></a><span><code class="code">simply-annotate-fringe-indicator</code><a class="copiable-link" href="#index-simply_002dannotate_002dfringe_002dindicator-1"> &para;</a></span></dt>
@@ -1615,6 +1692,18 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 <dt><a id="index-simply_002dannotate_002dfringe_002dface-1"></a><span><code class="code">simply-annotate-fringe-face</code><a class="copiable-link" href="#index-simply_002dannotate_002dfringe_002dface-1"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dface-2"></a>
 <p>Face for fringe indicators. Default: <code class="code">'simply-annotate-fringe-face</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dinline_002dposition-1"></a><span><code class="code">simply-annotate-inline-position</code><a class="copiable-link" href="#index-simply_002dannotate_002dinline_002dposition-1"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dposition-2"></a>
+<p>Where to display inline blocks relative to the annotated region.
+Options: <code class="code">'after</code>, <code class="code">'above</code>.  Default: <code class="code">'after</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dinline_002dmax_002dlines"></a><span><code class="code">simply-annotate-inline-max-lines</code><a class="copiable-link" href="#index-simply_002dannotate_002dinline_002dmax_002dlines"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dmax_002dlines-1"></a>
+<p>Maximum number of lines shown for inline annotations.  Lines beyond this limit
+are truncated with a count.  Set to <code class="code">nil</code> to show all lines.  Default: <code class="code">20</code>
 </p></dd>
 </dl>
 
@@ -1962,7 +2051,7 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <h4 class="subsection"><span>15.4.2 Thread Display Corruption<a class="copiable-link" href="#Thread-Display-Corruption"> &para;</a></span></h4>
 
 <ul class="itemize mark-bullet">
-<li>Try <kbd class="kbd">M-s ]</kbd> to refresh display style
+<li>Try <kbd class="kbd">M-s '</kbd> to refresh display style
 </li><li>Check for malformed thread data structures
 </li><li>Use sexp editing mode to inspect and fix thread structure
 </li><li>Verify all required fields are present in thread data
@@ -2132,7 +2221,8 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcancel_002dedit"><code>simply-annotate-cancel-edit</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dchange_002dannotation_002dauthor"><code>simply-annotate-change-annotation-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"><code>simply-annotate-cycle-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel"><code>simply-annotate-cycle-level</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dbackward"><code>simply-annotate-cycle-level-backward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dforward"><code>simply-annotate-cycle-level-forward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dedit_002dsexp"><code>simply-annotate-edit-sexp</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"><code>simply-annotate-export-to-org-file</code></a></td><td class="printindex-index-section"><a href="#Org_002dmode-Integration">Org-mode Integration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist"><code>simply-annotate-list</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
@@ -2149,6 +2239,7 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow"><code>simply-annotate-show</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow_002dall"><code>simply-annotate-show-all</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsmart_002daction"><code>simply-annotate-smart-action</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dtoggle_002dinline"><code>simply-annotate-toggle-inline</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 </table>
 </div>
@@ -2215,6 +2306,11 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-2"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface-1"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines-1"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-1"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-2"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlevels"><code>simply-annotate-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlevels-1"><code>simply-annotate-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
@@ -2270,9 +2366,13 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-D"><b>D</b></a>
  &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-F"><b>F</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-H"><b>H</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-I"><b>I</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-L"><b>L</b></a>
  &nbsp; 
@@ -2308,11 +2408,17 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <tr><td></td><td class="printindex-index-entry"><a href="#index-data-structure-editing">data structure editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-defun-level">defun level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-E">E</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-embedded-comments">embedded comments</a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-F">F</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-file-level">file level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-H">H</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-header_002dline">header-line</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="3"><hr></td></tr>
+<tr><th id="Concept-Index_cp_letter-I">I</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-inline-display">inline display</a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-L">L</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-line-level">line level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
@@ -2350,9 +2456,13 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-D"><b>D</b></a>
  &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-E"><b>E</b></a>
+ &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-F"><b>F</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-H"><b>H</b></a>
+ &nbsp; 
+<a class="summary-letter-printindex" href="#Concept-Index_cp_letter-I"><b>I</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-L"><b>L</b></a>
  &nbsp; 

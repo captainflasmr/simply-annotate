@@ -773,9 +773,11 @@ To see an overview of all annotations in the current buffer:
 10.2 Cross-file Annotation Browsing
 ===================================
 
-To browse annotations across all files:
+To browse annotations across all files, bind ‘simply-annotate-show-all’
+globally since it operates on the annotation database rather than the
+current buffer:
 
-     M-s 0
+     (global-set-key (kbd "C-c 0") #'simply-annotate-show-all)
 
    This command now shows:
    • Completion list with annotation counts per file
@@ -912,8 +914,6 @@ Key         Command                   Description
 ‘M-s -’     ‘simply-annotate-remove’  Delete annotation at point
 ‘M-s l’     ‘simply-annotate-list’    List all annotations in current
                                       file
-‘M-s 0’     ‘simply-annotate-show-all’Browse annotations across all
-                                      files
 ‘M-s [’     ‘simply-annotate-cycle-level-backward’Cycle levels backward (line ⇒
                                       defun ⇒ file)
 ‘M-s ]’     ‘simply-annotate-cycle-level-forward’Cycle levels forward (file ⇒ defun
@@ -1584,7 +1584,7 @@ Concept Index
 * defun level:                           Annotation Levels.   (line   6)
 * embedded comments:                     Display Styles.      (line  66)
 * file level:                            Annotation Levels.   (line   6)
-* header-line:                           Advanced Features.   (line  68)
+* header-line:                           Advanced Features.   (line  70)
 * inline display:                        Display Styles.      (line  66)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
@@ -1598,7 +1598,7 @@ Concept Index
 * sexp editing:                          Advanced Editing.    (line   9)
 * status:                                Threading and Collaboration.
                                                               (line  42)
-* status display:                        Advanced Features.   (line  68)
+* status display:                        Advanced Features.   (line  70)
 * tags:                                  Threading and Collaboration.
                                                               (line  66)
 * team:                                  Threading and Collaboration.
@@ -1621,14 +1621,14 @@ Node: Display Styles16323
 Node: Annotation Levels20224
 Node: Navigation23527
 Node: Advanced Features25169
-Node: Org-mode Integration28048
-Node: Key Bindings30242
-Node: Customization34125
-Node: Data Storage41174
-Node: Troubleshooting44653
-Node: Function Index51076
-Node: Variable Index53406
-Node: Concept Index57560
+Node: Org-mode Integration28222
+Node: Key Bindings30416
+Node: Customization34179
+Node: Data Storage41228
+Node: Troubleshooting44707
+Node: Function Index51130
+Node: Variable Index53460
+Node: Concept Index57614
 
 End Tag Table
 

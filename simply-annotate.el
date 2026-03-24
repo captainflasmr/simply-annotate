@@ -30,7 +30,8 @@
 ;; Quick Start:
 ;;
 ;; (use-package simply-annotate
-;;  :bind ("C-c A" . simply-annotate-mode))
+;;  :bind (("C-c A" . simply-annotate-mode)
+;;         ("C-c 0" . simply-annotate-show-all)))
 ;;
 ;; 1. Open any file
 ;; 2. Enable annotation mode: =C-c A=
@@ -1823,7 +1824,6 @@ Display ANNOTATIONS for FILE-KEY."
     (define-key map (kbd "M-s -") #'simply-annotate-remove)
     (define-key map (kbd "M-s a") #'simply-annotate-change-annotation-author)
     (define-key map (kbd "M-s l") #'simply-annotate-list)
-    (define-key map (kbd "M-s 0") #'simply-annotate-show-all)
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)

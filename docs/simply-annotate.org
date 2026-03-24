@@ -78,6 +78,7 @@ Documentation License”.
   - [[#Changing-Display-Styles][7.2 Changing Display Styles]]
   - [[#Style-Recommendations][7.3 Style Recommendations]]
   - [[#Fringe-Customization][7.4 Fringe Customization]]
+  - [[#Inline-Display][7.5 Inline Display]]
 - [[#Annotation-Levels][8 Annotation Levels]]
   - [[#Level-Overview][8.1 Level Overview]]
   - [[#How-Levels-Work][8.2 How Levels Work]]
@@ -201,7 +202,7 @@ and documentation and includes threading and collaboration features.
 - *Annotation levels*: Three-tier annotation system (file, defun, line)
   for progressive code exploration
 - *Multiple display styles*: Choose between highlighting, fringe
-  indicators, or both
+  indicators, both, or subtle
 - *Smart action*: Context-aware command that adapts to the situation
 - *Rich editing*: Full-featured annotation buffer for longer notes
 - *Navigation*: Jump between annotations with simple keybindings
@@ -277,8 +278,8 @@ Here's how to get started with Simply Annotate:
 3. Select some text and press M-s j to create your first annotation
 4. Type your annotation text and press C-c C-c to save
 5. Navigate with M-n (next) and M-p (previous)
-6. Press M-s ] to cycle through different display styles
-7. Press M-s [ to cycle through annotation levels (file, defun, line)
+6. Press M-s ' to cycle through different display styles
+7. Press M-s [ and M-s ] to cycle through annotation levels
 8. Press M-s r to add a reply to any annotation
 9. Press M-s s to set status (open, resolved, etc.)
 10. Press M-s e to edit annotation data structure directly
@@ -804,6 +805,7 @@ allowing you to choose the visual style that best fits your workflow.
 - [[#Changing-Display-Styles][Changing Display Styles]]
 - [[#Style-Recommendations][Style Recommendations]]
 - [[#Fringe-Customization][Fringe Customization]]
+- [[#Inline-Display][Inline Display]]
 
 <<Available-Styles>>
 *** 7.1 Available Styles [[#Available-Styles][¶]]
@@ -820,6 +822,12 @@ allowing you to choose the visual style that best fits your workflow.
 - =both= :: Combines both highlighting and fringe indicators (maximum
   visibility)
 
+- =subtle= :: Uses overline and underline to bracket annotated regions
+  (unobtrusive)
+
+Additionally, inline display can be toggled on top of any style (see
+[[#Display-Styles][Display Styles]]).
+
 <<Changing-Display-Styles>>
 *** 7.2 Changing Display Styles [[#Changing-Display-Styles][¶]]
 :PROPERTIES:
@@ -828,7 +836,7 @@ allowing you to choose the visual style that best fits your workflow.
 :END:
 You can change the display style in several ways:
 
-- Press M-s ] to cycle through all three styles
+- Press M-s ' to cycle through all three styles
 - Set =simply-annotate-display-style= in your configuration
 - Use =simply-annotate-update-display-style= to refresh existing
   annotations
@@ -848,6 +856,9 @@ You can change the display style in several ways:
 - *Critical Files* :: Use =both= style for maximum visibility of
   important annotations
 
+- *Code Exploration* :: Toggle inline display (M-s /) to read
+  annotations in context without opening the annotation buffer
+
 - *Threading Display* :: All styles work well with threaded annotations
   and status indicators
 
@@ -863,6 +874,56 @@ The fringe display can be customized:
   =filled-rectangle=, or =custom=
 - Customize colors with =simply-annotate-fringe-face=
 - Define custom bitmaps for unique indicators
+
+<<Inline-Display>>
+*** 7.5 Inline Display [[#Inline-Display][¶]]
+:PROPERTIES:
+:CUSTOM_ID: inline-display
+:CLASS: section
+:END:
+Inline display is an overlay that can be toggled on top of any display
+style with M-s / (=simply-annotate-toggle-inline=). When active, it
+renders annotation text as a box-drawn block relative to the annotated
+region.
+
+The position is controlled by =simply-annotate-inline-position=:
+
+- =after= :: (Default) The block appears after the annotated region:
+
+  #+begin_src example-preformatted
+  (defun calculate-total (items)
+    ┌─ ✎ [OPEN/NORMAL] ────────
+    │ Sums all item prices.
+    │ Returns zero for empty list.
+    └────────────────────────────
+    (apply #'+ (mapcar #'price items)))
+  #+end_src
+
+- =above= :: The block appears above the annotated region:
+
+  #+begin_src example-preformatted
+    ┌─ ✎ [OPEN/NORMAL] ────────
+    │ Sums all item prices.
+    │ Returns zero for empty list.
+    └────────────────────────────
+  (defun calculate-total (items)
+    (apply #'+ (mapcar #'price items)))
+  #+end_src
+
+Both inline blocks and the underlying display style (highlight, fringe,
+both, or subtle) are filtered to the active annotation level --- cycling
+levels with M-s [ updates which annotations are visible.
+
+Long annotations are truncated after =simply-annotate-inline-max-lines=
+lines (default 20). Thread metadata (status, priority, comment count)
+appears in the header.
+
+Customise the appearance with:
+
+- =simply-annotate-inline-face=: face for the annotation body text
+- =simply-annotate-inline-border-face=: face for the box-drawing border
+- =simply-annotate-inline-max-lines=: maximum lines before truncation
+- =simply-annotate-inline-position=: ='after= or ='above=
 
 --------------
 
@@ -914,18 +975,17 @@ at a particular granularity.
 :CUSTOM_ID: how-levels-work
 :CLASS: section
 :END:
-All annotation overlay markers (highlights and fringe indicators) remain
-visible regardless of the active level. Only /interaction/ is filtered
-to the active level:
+Only annotations matching the active level are styled. Annotations at
+other levels have their visual markers (highlights, fringe indicators,
+inline blocks) removed, but the underlying text remains visible:
 
-- *Navigation*: M-n and M-p skip annotations that don't match the active
-  level.
+- *Display*: Only overlays matching the active level show highlights,
+  fringe indicators, and inline blocks.
+- *Navigation*: M-n and M-p visit only annotations at the active level.
 - *Editing*: M-s j on annotated text only opens annotations matching the
   active level.
 - *Header display*: The annotation count and position indicator reflect
   only the active level.
-- *Visual markers*: All overlays from all levels remain visible at all
-  times.
 
 <<Cycling-Levels>>
 *** 8.3 Cycling Levels [[#Cycling-Levels][¶]]
@@ -933,14 +993,15 @@ to the active level:
 :CUSTOM_ID: cycling-levels
 :CLASS: section
 :END:
-Press M-s [ to cycle through levels:
+Use M-s ] to cycle forward and M-s [ to cycle backward through levels:
 
 #+begin_src example-preformatted
-file ⇒ defun ⇒ line ⇒ file ⇒ ...
+M-s ]: file ⇒ defun ⇒ line ⇒ file ⇒ ...
+M-s [: line ⇒ defun ⇒ file ⇒ line ⇒ ...
 #+end_src
 
-The header-line updates to show the active level as =[FILE]=, =[DEFUN]=,
-or =[LINE]= along with the annotation count for that level.
+The header-line shows annotation counts for every level, with the active
+level in bold (e.g. =FILE:2 | DEFUN:5 | LINE:3=).
 
 <<Direct-Level-Selection>>
 *** 8.4 Direct Level Selection [[#Direct-Level-Selection][¶]]
@@ -1133,10 +1194,12 @@ The enhanced listing includes:
 :CUSTOM_ID: cross-file-annotation-browsing
 :CLASS: section
 :END:
-To browse annotations across all files:
+To browse annotations across all files, bind =simply-annotate-show-all=
+globally since it operates on the annotation database rather than the
+current buffer:
 
-#+begin_src example-preformatted
-M-s 0
+#+begin_src lisp-preformatted
+(global-set-key (kbd "C-c 0") #'simply-annotate-show-all)
 #+end_src
 
 This command now shows:
@@ -1307,24 +1370,25 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 :END:
 When =simply-annotate-mode= is enabled:
 
-| Key   | Command                                    | Description                          |
-|-------+--------------------------------------------+--------------------------------------|
-| M-s j | =simply-annotate-smart-action=             | Smart create/view/edit annotation    |
-| M-s e | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp    |
-| M-s r | =simply-annotate-reply-to-annotation=      | Add reply to annotation              |
-| M-s s | =simply-annotate-set-annotation-status=    | Set status (open/resolved)           |
-| M-s p | =simply-annotate-set-annotation-priority=  | Set priority (low/high)              |
-| M-s t | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)              |
-| M-s a | =simply-annotate-change-annotation-author= | Change author                        |
-| M-s A | =simply-annotate-reset-session-author=     | Reset session author                 |
-| M-s o | =simply-annotate-export-to-org-file=       | Export to org-mode                   |
-| M-s - | =simply-annotate-remove=                   | Delete annotation at point           |
-| M-s l | =simply-annotate-list=                     | List all annotations in current file |
-| M-s 0 | =simply-annotate-show-all=                 | Browse annotations across all files  |
-| M-s ] | =simply-annotate-cycle-display-style=      | Cycle through display styles         |
-| M-s [ | =simply-annotate-cycle-level=              | Cycle through annotation levels      |
-| M-n   | =simply-annotate-next=                     | Jump to next annotation              |
-| M-p   | =simply-annotate-previous=                 | Jump to previous annotation          |
+| Key   | Command                                    | Description                                 |
+|-------+--------------------------------------------+---------------------------------------------|
+| M-s j | =simply-annotate-smart-action=             | Smart create/view/edit annotation           |
+| M-s e | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp           |
+| M-s r | =simply-annotate-reply-to-annotation=      | Add reply to annotation                     |
+| M-s s | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                  |
+| M-s p | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                     |
+| M-s t | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)                     |
+| M-s a | =simply-annotate-change-annotation-author= | Change author                               |
+| M-s A | =simply-annotate-reset-session-author=     | Reset session author                        |
+| M-s o | =simply-annotate-export-to-org-file=       | Export to org-mode                          |
+| M-s - | =simply-annotate-remove=                   | Delete annotation at point                  |
+| M-s l | =simply-annotate-list=                     | List all annotations in current file        |
+| M-s [ | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file) |
+| M-s ] | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)  |
+| M-s ' | =simply-annotate-cycle-display-style=      | Cycle through display styles                |
+| M-s / | =simply-annotate-toggle-inline=            | Toggle inline annotation display            |
+| M-n   | =simply-annotate-next=                     | Jump to next annotation                     |
+| M-p   | =simply-annotate-previous=                 | Jump to previous annotation                 |
 
 <<Annotation-Buffer-Bindings>>
 *** 12.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
@@ -1417,7 +1481,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1544,8 +1608,8 @@ Configure team collaboration and threading features:
 - <<index-simply_002dannotate_002ddisplay_002dstyle-1>>=simply-annotate-display-style=
   [[#index-simply_002dannotate_002ddisplay_002dstyle-1][¶]] :: 
 
-  How to display annotations. Options: ='highlight=, ='fringe=, ='both=.
-  Default: ='fringe=
+  How to display annotations. Options: ='highlight=, ='fringe=, ='both=,
+  ='subtle=. Default: ='fringe=
 
 - <<index-simply_002dannotate_002dfringe_002dindicator-1>>=simply-annotate-fringe-indicator=
   [[#index-simply_002dannotate_002dfringe_002dindicator-1][¶]] :: 
@@ -1558,6 +1622,19 @@ Configure team collaboration and threading features:
   [[#index-simply_002dannotate_002dfringe_002dface-1][¶]] :: 
 
   Face for fringe indicators. Default: ='simply-annotate-fringe-face=
+
+- <<index-simply_002dannotate_002dinline_002dposition-1>>=simply-annotate-inline-position=
+  [[#index-simply_002dannotate_002dinline_002dposition-1][¶]] :: 
+
+  Where to display inline blocks relative to the annotated region.
+  Options: ='after=, ='above=. Default: ='after=
+
+- <<index-simply_002dannotate_002dinline_002dmax_002dlines>>=simply-annotate-inline-max-lines=
+  [[#index-simply_002dannotate_002dinline_002dmax_002dlines][¶]] :: 
+
+  Maximum number of lines shown for inline annotations. Lines beyond
+  this limit are truncated with a count. Set to =nil= to show all lines.
+  Default: =20=
 
 <<Annotation-Level-Variables>>
 *** 13.5 Annotation Level Variables [[#Annotation-Level-Variables][¶]]
@@ -1944,7 +2021,7 @@ If your annotations aren't being saved between sessions:
 :CUSTOM_ID: thread-display-corruption
 :CLASS: subsection
 :END:
-- Try M-s ] to refresh display style
+- Try M-s ' to refresh display style
 - Check for malformed thread data structures
 - Use sexp editing mode to inspect and fix thread structure
 - Verify all required fields are present in thread data
@@ -2107,7 +2184,8 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                               | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dchange_002dannotation_002dauthor][=simply-annotate-change-annotation-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dcycle_002dlevel][=simply-annotate-cycle-level=]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dbackward][=simply-annotate-cycle-level-backward=]]         | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dforward][=simply-annotate-cycle-level-forward=]]           | [[#Annotation-Levels][Annotation Levels]]                     |
 |                | [[#index-simply_002dannotate_002dedit_002dsexp][=simply-annotate-edit-sexp=]]                                   | [[#Advanced-Editing][Advanced Editing]]                       |
 |                | [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
 |                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
@@ -2124,6 +2202,7 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                                 | [[#Navigation][Navigation]]                                   |
 |                | [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                     | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dsmart_002daction][=simply-annotate-smart-action=]]                             | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dtoggle_002dinline][=simply-annotate-toggle-inline=]]                           | [[#Display-Styles][Display Styles]]                           |
 | -------------- |                                                                                                                 |                                                               |
 
 --------------
@@ -2180,6 +2259,11 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 |                | [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]                               | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]                             | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dmax_002dlines][=simply-annotate-inline-max-lines=]]                       | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dmax_002dlines-1][=simply-annotate-inline-max-lines=]]                     | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dposition][=simply-annotate-inline-position=]]                             | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dinline_002dposition-1][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dposition-2][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dlevels][=simply-annotate-levels=]]                                                   | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dlevels-1][=simply-annotate-levels=]]                                                 | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dpriority_002dlevels][=simply-annotate-priority-levels=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
@@ -2217,7 +2301,7 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 :CLASS: unnumbered
 :END:
 
-| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
+| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-E][*E*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-I][*I*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
 
 |                | Index Entry                                                   | Section                                                       |
 | -------------- |                                                               |                                                               |
@@ -2237,11 +2321,17 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 |                | [[#index-data-structure-editing][data structure editing]]     | [[#Advanced-Editing][Advanced Editing]]                       |
 |                | [[#index-defun-level][defun level]]                           | [[#Annotation-Levels][Annotation Levels]]                     |
 | -------------- |                                                               |                                                               |
+| E              |                                                               |                                                               |
+|                | [[#index-embedded-comments][embedded comments]]               | [[#Display-Styles][Display Styles]]                           |
+| -------------- |                                                               |                                                               |
 | F              |                                                               |                                                               |
 |                | [[#index-file-level][file level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
 | -------------- |                                                               |                                                               |
 | H              |                                                               |                                                               |
 |                | [[#index-header_002dline][header-line]]                       | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                               |                                                               |
+| I              |                                                               |                                                               |
+|                | [[#index-inline-display][inline display]]                     | [[#Display-Styles][Display Styles]]                           |
 | -------------- |                                                               |                                                               |
 | L              |                                                               |                                                               |
 |                | [[#index-line-level][line level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
@@ -2271,4 +2361,4 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 |                | [[#index-workflow][workflow]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 | -------------- |                                                               |                                                               |
 
-| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
+| Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-E][*E*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-I][*I*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |

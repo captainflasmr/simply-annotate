@@ -962,11 +962,13 @@ Color coding for different statuses and priorities
 @section Cross-file Annotation Browsing
 
 @findex simply-annotate-show-all
-To browse annotations across all files:
+To browse annotations across all files, bind @code{simply-annotate-show-all}
+globally since it operates on the annotation database rather than the current
+buffer:
 
-@example
-M-s 0
-@end example
+@lisp
+(global-set-key (kbd "C-c 0") #'simply-annotate-show-all)
+@end lisp
 
 This command now shows:
 @itemize @bullet
@@ -1141,7 +1143,6 @@ When @code{simply-annotate-mode} is enabled:
 @item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
-@item @kbd{M-s 0} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
 @item @kbd{M-s [} @tab @code{simply-annotate-cycle-level-backward} @tab Cycle levels backward (line @result{} defun @result{} file)
 @item @kbd{M-s ]} @tab @code{simply-annotate-cycle-level-forward} @tab Cycle levels forward (file @result{} defun @result{} line)
 @item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
