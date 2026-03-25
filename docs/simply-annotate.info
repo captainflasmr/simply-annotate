@@ -50,7 +50,7 @@ for Emacs with threading and collaboration features.
 * Display Styles::              Different ways to show annotations
 * Annotation Levels::           Layered annotations for progressive exploration
 * Navigation::                  Moving between annotations
-* Advanced Features::           Cross-file annotations and listing
+* Advanced Features::           Cross-file annotations, listing, and dired
 * Org-mode Integration::        Export annotations to org-mode
 * Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
@@ -99,6 +99,8 @@ and documentation and includes threading and collaboration features.
      items
    • *Header-line integration*: Shows annotation count and available
      commands
+   • *Dired integration*: Fringe indicators in dired for files with
+     annotations
 
 
 File: simply-annotate.info,  Node: Installation,  Next: Quick Start,  Prev: Introduction,  Up: Top
@@ -819,7 +821,21 @@ For quick navigation without the full overview, bind
    This uses ‘completing-read’ to show all annotated files with counts,
 opens the selected file, and enables ‘simply-annotate-mode’.
 
-10.4 Annotation Buffer Features
+10.4 Dired Integration
+======================
+
+Enable ‘simply-annotate-dired-mode’ in dired buffers to show fringe
+indicators next to files that have annotations in the database:
+
+     ;; Enable for all dired buffers
+     (add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
+
+   The fringe indicator uses the same symbol and face as annotation
+markers in source buffers (‘simply-annotate-fringe-indicator’ and
+‘simply-annotate-fringe-face’).  Indicators refresh automatically when
+the dired buffer is re-read (e.g. after pressing ‘g’).
+
+10.5 Annotation Buffer Features
 ===============================
 
 The annotation buffer provides a rich editing environment with threading
@@ -835,7 +851,7 @@ support:
    • Provides save (‘C-c C-c’) and cancel (‘C-c C-k’) operations
    • Automatically handles empty annotations (removes them)
 
-10.5 Header-line Integration
+10.6 Header-line Integration
 ============================
 
 The header-line provides real-time information with threading support:
@@ -1509,6 +1525,7 @@ Function Index
 * simply-annotate-cycle-display-style:   Display Styles.      (line  30)
 * simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
 * simply-annotate-cycle-level-forward:   Annotation Levels.   (line  45)
+* simply-annotate-dired-mode:            Advanced Features.   (line  86)
 * simply-annotate-edit-sexp:             Advanced Editing.    (line  13)
 * simply-annotate-export-to-org-file:    Org-mode Integration.
                                                               (line  12)
@@ -1620,7 +1637,7 @@ Concept Index
 * defun level:                           Annotation Levels.   (line   6)
 * embedded comments:                     Display Styles.      (line  66)
 * file level:                            Annotation Levels.   (line   6)
-* header-line:                           Advanced Features.   (line 102)
+* header-line:                           Advanced Features.   (line 116)
 * inline display:                        Display Styles.      (line  66)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
@@ -1634,7 +1651,7 @@ Concept Index
 * sexp editing:                          Advanced Editing.    (line   9)
 * status:                                Threading and Collaboration.
                                                               (line  42)
-* status display:                        Advanced Features.   (line 102)
+* status display:                        Advanced Features.   (line 116)
 * tags:                                  Threading and Collaboration.
                                                               (line  66)
 * team:                                  Threading and Collaboration.
@@ -1647,24 +1664,24 @@ Concept Index
 
 Tag Table:
 Node: Top792
-Node: Introduction2778
-Node: Installation4589
-Node: Quick Start5197
-Node: Basic Usage6045
-Node: Advanced Editing8658
-Node: Threading and Collaboration12183
-Node: Display Styles16368
-Node: Annotation Levels20269
-Node: Navigation23572
-Node: Advanced Features25214
-Node: Org-mode Integration28958
-Node: Key Bindings31152
-Node: Customization34915
-Node: Data Storage42060
-Node: Troubleshooting45539
-Node: Function Index51962
-Node: Variable Index54365
-Node: Concept Index58519
+Node: Introduction2786
+Node: Installation4684
+Node: Quick Start5292
+Node: Basic Usage6140
+Node: Advanced Editing8753
+Node: Threading and Collaboration12278
+Node: Display Styles16463
+Node: Annotation Levels20364
+Node: Navigation23667
+Node: Advanced Features25309
+Node: Org-mode Integration29610
+Node: Key Bindings31804
+Node: Customization35567
+Node: Data Storage42712
+Node: Troubleshooting46191
+Node: Function Index52614
+Node: Variable Index55090
+Node: Concept Index59244
 
 End Tag Table
 

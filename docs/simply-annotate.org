@@ -97,10 +97,11 @@ Documentation License”.
   - [[#Smart-Navigation][9.3 Smart Navigation]]
 - [[#Advanced-Features][10 Advanced Features]]
   - [[#Listing-All-Annotations][10.1 Listing All Annotations]]
-  - [[#Cross_002dfile-Annotation-Browsing][10.2 Cross-file Annotation
-    Browsing]]
-  - [[#Annotation-Buffer-Features][10.3 Annotation Buffer Features]]
-  - [[#Header_002dline-Integration][10.4 Header-line Integration]]
+  - [[#Global-Annotation-Overview][10.2 Global Annotation Overview]]
+  - [[#Quick-File-Jump][10.3 Quick File Jump]]
+  - [[#Dired-Integration][10.4 Dired Integration]]
+  - [[#Annotation-Buffer-Features][10.5 Annotation Buffer Features]]
+  - [[#Header_002dline-Integration][10.6 Header-line Integration]]
 - [[#Org_002dmode-Integration][11 Org-mode Integration]]
   - [[#Exporting-Annotations][11.1 Exporting Annotations]]
   - [[#Export-Format][11.2 Export Format]]
@@ -206,11 +207,14 @@ and documentation and includes threading and collaboration features.
 - *Smart action*: Context-aware command that adapts to the situation
 - *Rich editing*: Full-featured annotation buffer for longer notes
 - *Navigation*: Jump between annotations with simple keybindings
-- *Overview*: List all annotations in grep-mode format
-- *Cross-file*: Browse annotations across multiple files
+- *Overview*: List all annotations in an org-mode buffer with folding
+- *Cross-file*: Browse all annotations across files in a global org-mode
+  overview
 - *Org-mode export*: Convert annotation threads to structured TODO items
 - *Header-line integration*: Shows annotation count and available
   commands
+- *Dired integration*: Fringe indicators in dired for files with
+  annotations
 
 --------------
 
@@ -1146,8 +1150,9 @@ Next: [[#Org_002dmode-Integration][Org-mode Integration]], Previous:
 :CLASS: chapter
 :END:
 - [[#Listing-All-Annotations][Listing All Annotations]]
-- [[#Cross_002dfile-Annotation-Browsing][Cross-file Annotation
-  Browsing]]
+- [[#Global-Annotation-Overview][Global Annotation Overview]]
+- [[#Quick-File-Jump][Quick File Jump]]
+- [[#Dired-Integration][Dired Integration]]
 - [[#Annotation-Buffer-Features][Annotation Buffer Features]]
 - [[#Header_002dline-Integration][Header-line Integration]]
 
@@ -1163,55 +1168,110 @@ To see an overview of all annotations in the current buffer:
 M-s l
 #+end_src
 
-The list now shows rich threading information:
+The listing uses org-mode for full folding support. The structure is:
 
 #+begin_src example-preformatted
-Annotations for myfile.txt:
-Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+,#+TITLE: Annotations for myfile.el
+,#+STARTUP: show2levels
 
-myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
-┌─ THREAD ─┐
-│ 💬 james dyer (06/19 09:49):
-│   This needs review before release
-│ ↳ jane smith (06/19 10:15):
-│   I'll check this today
-└───────────┘
-Source: function calculateTotal()
+,* FILE (1)
+,** [OPEN/NORMAL] Line 1 (1 comment)
+,*** Region
+~;; file header comment~
+,*** Comment - james dyer (06/19 09:49)
+Overall file description
+
+,* DEFUN (2)
+,** [OPEN/HIGH] Line 15 #review (2 comments)
+,*** Region
+~(defun calculate-total ()~
+,*** Comment - james dyer (06/19 09:49)
+This needs review before release
+,*** Reply - jane smith (06/19 10:15)
+I'll check this today
 #+end_src
 
-The enhanced listing includes:
+Use TAB and S-TAB for org folding. Within the listing buffer:
 
-- Summary statistics (total, threads vs simple, open vs resolved)
-- Status and priority indicators for each annotation
-- Comment counts for threaded annotations
-- Visual thread display with author names and timestamps
-- Tag display with hashtag formatting
-- Color coding for different statuses and priorities
+- n -- move to next annotation and jump to source
+- p -- move to previous annotation and jump to source
+- RET -- jump to source location of annotation at point
+- q -- quit the listing buffer
 
-<<Cross_002dfile-Annotation-Browsing>>
-*** 10.2 Cross-file Annotation Browsing [[#Cross_002dfile-Annotation-Browsing][¶]]
+The listing automatically refreshes when annotations are modified
+(saved, edited, replied to, removed, or have properties changed).
+
+<<Global-Annotation-Overview>>
+*** 10.2 Global Annotation Overview [[#Global-Annotation-Overview][¶]]
 :PROPERTIES:
-:CUSTOM_ID: cross-file-annotation-browsing
+:CUSTOM_ID: global-annotation-overview
 :CLASS: section
 :END:
-To browse annotations across all files, bind =simply-annotate-show-all=
-globally since it operates on the annotation database rather than the
-current buffer:
+To see all annotations across all files in a single org-mode buffer,
+bind =simply-annotate-show-all= globally:
 
 #+begin_src lisp-preformatted
 (global-set-key (kbd "C-c 0") #'simply-annotate-show-all)
 #+end_src
 
-This command now shows:
+This produces a =*All Annotations*= buffer with files as top-level
+headings:
 
-- Completion list with annotation counts per file
-- Thread and status statistics for each file
-- Enhanced grep-mode display with threading information
-- Color-coded status indicators
-- Author information for collaborative workflows
+#+begin_src example-preformatted
+,#+TITLE: All Annotations
+,#+STARTUP: content
+
+,* ~/project/myfile.el (3)
+,** FILE (1)
+,*** [OPEN/NORMAL] Line 1 (1 comment)
+,** DEFUN (2)
+,*** [OPEN/HIGH] Line 15 #review (2 comments)
+
+,* ~/project/other.el (5)
+,** DEFUN (3)
+...
+#+end_src
+
+The same n/p/RET/q navigation works here. Jumping to an annotation opens
+the source file in another window.
+
+<<Quick-File-Jump>>
+*** 10.3 Quick File Jump [[#Quick-File-Jump][¶]]
+:PROPERTIES:
+:CUSTOM_ID: quick-file-jump
+:CLASS: section
+:END:
+For quick navigation without the full overview, bind
+=simply-annotate-jump-to-file= globally:
+
+#+begin_src lisp-preformatted
+(global-set-key (kbd "C-c 9") #'simply-annotate-jump-to-file)
+#+end_src
+
+This uses =completing-read= to show all annotated files with counts,
+opens the selected file, and enables =simply-annotate-mode=.
+
+<<Dired-Integration>>
+*** 10.4 Dired Integration [[#Dired-Integration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: dired-integration
+:CLASS: section
+:END:
+Enable =simply-annotate-dired-mode= in dired buffers to show fringe
+indicators next to files that have annotations in the database:
+
+#+begin_src lisp-preformatted
+;; Enable for all dired buffers
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
+#+end_src
+
+The fringe indicator uses the same symbol and face as annotation markers
+in source buffers (=simply-annotate-fringe-indicator= and
+=simply-annotate-fringe-face=). Indicators refresh automatically when
+the dired buffer is re-read (e.g. after pressing g).
 
 <<Annotation-Buffer-Features>>
-*** 10.3 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
+*** 10.5 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-features
 :CLASS: section
@@ -1230,7 +1290,7 @@ support:
 - Automatically handles empty annotations (removes them)
 
 <<Header_002dline-Integration>>
-*** 10.4 Header-line Integration [[#Header_002dline-Integration][¶]]
+*** 10.6 Header-line Integration [[#Header_002dline-Integration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: header-line-integration
 :CLASS: section
@@ -1525,7 +1585,8 @@ Configure team collaboration and threading features:
   
   :bind
   ("C-c A" . simply-annotate-mode)
-  ("C-c 0" . simply-annotate-show-all))
+  ("C-c 0" . simply-annotate-show-all)
+  ("C-c 9" . simply-annotate-jump-to-file))
 #+end_src
 
 <<Configuration-Examples>>
@@ -1779,7 +1840,8 @@ To enable annotation mode automatically:
   (find-file-hook . simply-annotate-mode)
   :bind
   ("C-c A" . simply-annotate-mode)
-  ("C-c 0" . simply-annotate-show-all))
+  ("C-c 0" . simply-annotate-show-all)
+  ("C-c 9" . simply-annotate-jump-to-file))
 #+end_src
 
 --------------
@@ -2186,8 +2248,10 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
 |                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dbackward][=simply-annotate-cycle-level-backward=]]         | [[#Annotation-Levels][Annotation Levels]]                     |
 |                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dforward][=simply-annotate-cycle-level-forward=]]           | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-simply_002dannotate_002ddired_002dmode][=simply-annotate-dired-mode=]]                                 | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dedit_002dsexp][=simply-annotate-edit-sexp=]]                                   | [[#Advanced-Editing][Advanced Editing]]                       |
 |                | [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
+|                | [[#index-simply_002dannotate_002djump_002dto_002dfile][=simply-annotate-jump-to-file=]]                         | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                                 | [[#Navigation][Navigation]]                                   |

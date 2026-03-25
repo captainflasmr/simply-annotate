@@ -53,16 +53,15 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-03-24> *0.8.0*
+** <2026-03-25> *0.8.1*
 
-Org-mode annotation listing with folding, global overview, and live refresh.
+Dired integration, display refinements, and usability improvements.
 
-- *Org-mode listing* -- =M-s l= now uses org-mode with full folding.  Annotations, regions, and comments each have their own collapsible headings.
-- *Global overview* -- =simply-annotate-show-all= shows all annotations across all files in a single org buffer with file-level folding.
-- *Quick file jump* -- =simply-annotate-jump-to-file= provides completing-read navigation for fast file switching.
-- *Listing navigation* -- =n= / =p= step between annotations and jump to source.  =RET= to jump, =q= to quit.
-- *Live refresh* -- Listing buffer updates automatically when annotations are modified.
-- *Full region capture* -- Listing shows the complete annotated region, not just the first line.
+- *Dired integration* -- =simply-annotate-dired-mode= shows fringe indicators next to annotated files in dired.
+- *All-levels display* -- New =all= pseudo-level shows every annotation.  Now the default on startup.
+- *Inline word-wrap* -- Inline comments word-wrap to =simply-annotate-inline-fill-column= (default 72).
+- *Compact rendering* -- No emoji icons, embedded position in header (=DEFUN: 3/5=), silent startup.
+- *C-g to dismiss* -- =C-g= in annotation buffer cancels/hides like =C-c C-k=.
 
 See [[file:CHANGELOG.org]] for full version history.
 
@@ -73,6 +72,20 @@ See [[file:CHANGELOG.org]] for full version history.
 #+begin_src emacs-lisp
 (use-package simply-annotate
   :bind ("C-c A" . simply-annotate-mode))
+#+end_src
+
+** Example Configuration
+
+#+begin_src emacs-lisp
+(use-package simply-annotate
+  :hook
+  (find-file-hook . simply-annotate-mode)
+  :config
+  (setq simply-annotate-inline-position 'above)
+  (setq simply-annotate-inline-default t)
+  :bind (("C-c A" . simply-annotate-mode)
+         ("C-c 0" . simply-annotate-show-all)
+         ("C-c 9" . simply-annotate-jump-to-file)))
 #+end_src
 
 ** Manual Installation

@@ -176,9 +176,11 @@ Free Documentation License&rdquo;.
   <li><a id="toc-Advanced-Features" href="#Advanced-Features">10 Advanced Features</a>
   <ul class="toc-numbered-mark">
     <li><a id="toc-Listing-All-Annotations" href="#Listing-All-Annotations">10.1 Listing All Annotations</a></li>
-    <li><a id="toc-Cross_002dfile-Annotation-Browsing" href="#Cross_002dfile-Annotation-Browsing">10.2 Cross-file Annotation Browsing</a></li>
-    <li><a id="toc-Annotation-Buffer-Features" href="#Annotation-Buffer-Features">10.3 Annotation Buffer Features</a></li>
-    <li><a id="toc-Header_002dline-Integration" href="#Header_002dline-Integration">10.4 Header-line Integration</a></li>
+    <li><a id="toc-Global-Annotation-Overview" href="#Global-Annotation-Overview">10.2 Global Annotation Overview</a></li>
+    <li><a id="toc-Quick-File-Jump" href="#Quick-File-Jump">10.3 Quick File Jump</a></li>
+    <li><a id="toc-Dired-Integration" href="#Dired-Integration">10.4 Dired Integration</a></li>
+    <li><a id="toc-Annotation-Buffer-Features" href="#Annotation-Buffer-Features">10.5 Annotation Buffer Features</a></li>
+    <li><a id="toc-Header_002dline-Integration" href="#Header_002dline-Integration">10.6 Header-line Integration</a></li>
   </ul></li>
   <li><a id="toc-Org_002dmode-Integration" href="#Org_002dmode-Integration">11 Org-mode Integration</a>
   <ul class="toc-numbered-mark">
@@ -289,10 +291,11 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </li><li><strong class="strong">Smart action</strong>: Context-aware command that adapts to the situation
 </li><li><strong class="strong">Rich editing</strong>: Full-featured annotation buffer for longer notes
 </li><li><strong class="strong">Navigation</strong>: Jump between annotations with simple keybindings
-</li><li><strong class="strong">Overview</strong>: List all annotations in grep-mode format
-</li><li><strong class="strong">Cross-file</strong>: Browse annotations across multiple files
+</li><li><strong class="strong">Overview</strong>: List all annotations in an org-mode buffer with folding
+</li><li><strong class="strong">Cross-file</strong>: Browse all annotations across files in a global org-mode overview
 </li><li><strong class="strong">Org-mode export</strong>: Convert annotation threads to structured TODO items
 </li><li><strong class="strong">Header-line integration</strong>: Shows annotation count and available commands
+</li><li><strong class="strong">Dired integration</strong>: Fringe indicators in dired for files with annotations
 </li></ul>
 
 <hr>
@@ -1251,9 +1254,11 @@ Next: <a href="#Org_002dmode-Integration" accesskey="n" rel="next">Org-mode Inte
 
 <ul class="mini-toc">
 <li><a href="#Listing-All-Annotations" accesskey="1">Listing All Annotations</a></li>
-<li><a href="#Cross_002dfile-Annotation-Browsing" accesskey="2">Cross-file Annotation Browsing</a></li>
-<li><a href="#Annotation-Buffer-Features" accesskey="3">Annotation Buffer Features</a></li>
-<li><a href="#Header_002dline-Integration" accesskey="4">Header-line Integration</a></li>
+<li><a href="#Global-Annotation-Overview" accesskey="2">Global Annotation Overview</a></li>
+<li><a href="#Quick-File-Jump" accesskey="3">Quick File Jump</a></li>
+<li><a href="#Dired-Integration" accesskey="4">Dired Integration</a></li>
+<li><a href="#Annotation-Buffer-Features" accesskey="5">Annotation Buffer Features</a></li>
+<li><a href="#Header_002dline-Integration" accesskey="6">Header-line Integration</a></li>
 </ul>
 <div class="section-level-extent" id="Listing-All-Annotations">
 <h3 class="section"><span>10.1 Listing All Annotations<a class="copiable-link" href="#Listing-All-Annotations"> &para;</a></span></h3>
@@ -1265,57 +1270,110 @@ Next: <a href="#Org_002dmode-Integration" accesskey="n" rel="next">Org-mode Inte
 <pre class="example-preformatted">M-s l
 </pre></div>
 
-<p>The list now shows rich threading information:
+<p>The listing uses org-mode for full folding support.  The structure is:
 </p>
 <div class="example">
-<pre class="example-preformatted">Annotations for myfile.txt:
-Total: 3 | Threads: 2 | Simple: 1 | Open: 2 | Resolved: 1
+<pre class="example-preformatted">#+TITLE: Annotations for myfile.el
+#+STARTUP: show2levels
 
-myfile.txt:15:8 [OPEN/HIGH] #review #urgent (2 comments)
-┌─ THREAD ─┐
-│ 💬 james dyer (06/19 09:49):
-│   This needs review before release
-│ ↳ jane smith (06/19 10:15):
-│   I'll check this today
-└───────────┘
-Source: function calculateTotal()
+* FILE (1)
+** [OPEN/NORMAL] Line 1 (1 comment)
+*** Region
+~;; file header comment~
+*** Comment - james dyer (06/19 09:49)
+Overall file description
+
+* DEFUN (2)
+** [OPEN/HIGH] Line 15 #review (2 comments)
+*** Region
+~(defun calculate-total ()~
+*** Comment - james dyer (06/19 09:49)
+This needs review before release
+*** Reply - jane smith (06/19 10:15)
+I'll check this today
 </pre></div>
 
-<p>The enhanced listing includes:
-</p><ul class="itemize mark-bullet">
-<li>Summary statistics (total, threads vs simple, open vs resolved)
-</li><li>Status and priority indicators for each annotation
-</li><li>Comment counts for threaded annotations
-</li><li>Visual thread display with author names and timestamps
-</li><li>Tag display with hashtag formatting
-</li><li>Color coding for different statuses and priorities
+<p>Use <kbd class="kbd">TAB</kbd> and <kbd class="kbd">S-TAB</kbd> for org folding.  Within the listing buffer:
+</p>
+<ul class="itemize mark-bullet">
+<li><kbd class="kbd">n</kbd> &ndash; move to next annotation and jump to source
+</li><li><kbd class="kbd">p</kbd> &ndash; move to previous annotation and jump to source
+</li><li><kbd class="kbd">RET</kbd> &ndash; jump to source location of annotation at point
+</li><li><kbd class="kbd">q</kbd> &ndash; quit the listing buffer
 </li></ul>
 
+<p>The listing automatically refreshes when annotations are modified (saved,
+edited, replied to, removed, or have properties changed).
+</p>
 </div>
-<div class="section-level-extent" id="Cross_002dfile-Annotation-Browsing">
-<h3 class="section"><span>10.2 Cross-file Annotation Browsing<a class="copiable-link" href="#Cross_002dfile-Annotation-Browsing"> &para;</a></span></h3>
+<div class="section-level-extent" id="Global-Annotation-Overview">
+<h3 class="section"><span>10.2 Global Annotation Overview<a class="copiable-link" href="#Global-Annotation-Overview"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dshow_002dall"></a>
-<p>To browse annotations across all files, bind <code class="code">simply-annotate-show-all</code>
-globally since it operates on the annotation database rather than the current
-buffer:
+<p>To see all annotations across all files in a single org-mode buffer, bind
+<code class="code">simply-annotate-show-all</code> globally:
 </p>
 <div class="example lisp">
 <pre class="lisp-preformatted">(global-set-key (kbd &quot;C-c 0&quot;) #'simply-annotate-show-all)
 </pre></div>
 
-<p>This command now shows:
-</p><ul class="itemize mark-bullet">
-<li>Completion list with annotation counts per file
-</li><li>Thread and status statistics for each file
-</li><li>Enhanced grep-mode display with threading information
-</li><li>Color-coded status indicators
-</li><li>Author information for collaborative workflows
-</li></ul>
+<p>This produces a <code class="code">*All Annotations*</code> buffer with files as top-level
+headings:
+</p>
+<div class="example">
+<pre class="example-preformatted">#+TITLE: All Annotations
+#+STARTUP: content
 
+* ~/project/myfile.el (3)
+** FILE (1)
+*** [OPEN/NORMAL] Line 1 (1 comment)
+** DEFUN (2)
+*** [OPEN/HIGH] Line 15 #review (2 comments)
+
+* ~/project/other.el (5)
+** DEFUN (3)
+...
+</pre></div>
+
+<p>The same <kbd class="kbd">n</kbd>/<kbd class="kbd">p</kbd>/<kbd class="kbd">RET</kbd>/<kbd class="kbd">q</kbd> navigation works here.  Jumping to
+an annotation opens the source file in another window.
+</p>
+</div>
+<div class="section-level-extent" id="Quick-File-Jump">
+<h3 class="section"><span>10.3 Quick File Jump<a class="copiable-link" href="#Quick-File-Jump"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002djump_002dto_002dfile"></a>
+<p>For quick navigation without the full overview, bind
+<code class="code">simply-annotate-jump-to-file</code> globally:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">(global-set-key (kbd &quot;C-c 9&quot;) #'simply-annotate-jump-to-file)
+</pre></div>
+
+<p>This uses <code class="code">completing-read</code> to show all annotated files with counts, opens
+the selected file, and enables <code class="code">simply-annotate-mode</code>.
+</p>
+</div>
+<div class="section-level-extent" id="Dired-Integration">
+<h3 class="section"><span>10.4 Dired Integration<a class="copiable-link" href="#Dired-Integration"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002ddired_002dmode"></a>
+<p>Enable <code class="code">simply-annotate-dired-mode</code> in dired buffers to show fringe
+indicators next to files that have annotations in the database:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">;; Enable for all dired buffers
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
+</pre></div>
+
+<p>The fringe indicator uses the same symbol and face as annotation markers in
+source buffers (<code class="code">simply-annotate-fringe-indicator</code> and
+<code class="code">simply-annotate-fringe-face</code>).  Indicators refresh automatically when the
+dired buffer is re-read (e.g. after pressing <kbd class="kbd">g</kbd>).
+</p>
 </div>
 <div class="section-level-extent" id="Annotation-Buffer-Features">
-<h3 class="section"><span>10.3 Annotation Buffer Features<a class="copiable-link" href="#Annotation-Buffer-Features"> &para;</a></span></h3>
+<h3 class="section"><span>10.5 Annotation Buffer Features<a class="copiable-link" href="#Annotation-Buffer-Features"> &para;</a></span></h3>
 
 <p>The annotation buffer provides a rich editing environment with threading support:
 </p>
@@ -1333,7 +1391,7 @@ buffer:
 
 </div>
 <div class="section-level-extent" id="Header_002dline-Integration">
-<h3 class="section"><span>10.4 Header-line Integration<a class="copiable-link" href="#Header_002dline-Integration"> &para;</a></span></h3>
+<h3 class="section"><span>10.6 Header-line Integration<a class="copiable-link" href="#Header_002dline-Integration"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-header_002dline"></a>
 <a class="index-entry-id" id="index-status-display"></a>
@@ -1614,7 +1672,8 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
   
   :bind
   (&quot;C-c A&quot; . simply-annotate-mode)
-  (&quot;C-c 0&quot; . simply-annotate-show-all))
+  (&quot;C-c 0&quot; . simply-annotate-show-all)
+  (&quot;C-c 9&quot; . simply-annotate-jump-to-file))
 </pre></div>
 
 </div>
@@ -1833,7 +1892,8 @@ are truncated with a count.  Set to <code class="code">nil</code> to show all li
   (find-file-hook . simply-annotate-mode)
   :bind
   (&quot;C-c A&quot; . simply-annotate-mode)
-  (&quot;C-c 0&quot; . simply-annotate-show-all))
+  (&quot;C-c 0&quot; . simply-annotate-show-all)
+  (&quot;C-c 9&quot; . simply-annotate-jump-to-file))
 </pre></div>
 
 <hr>
@@ -2223,8 +2283,10 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"><code>simply-annotate-cycle-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dbackward"><code>simply-annotate-cycle-level-backward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dforward"><code>simply-annotate-cycle-level-forward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddired_002dmode"><code>simply-annotate-dired-mode</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dedit_002dsexp"><code>simply-annotate-edit-sexp</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"><code>simply-annotate-export-to-org-file</code></a></td><td class="printindex-index-section"><a href="#Org_002dmode-Integration">Org-mode Integration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002djump_002dto_002dfile"><code>simply-annotate-jump-to-file</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist"><code>simply-annotate-list</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmode"><code>simply-annotate-mode</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dnext"><code>simply-annotate-next</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>

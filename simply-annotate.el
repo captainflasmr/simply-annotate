@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.8.0
+;; Version: 0.8.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -84,6 +84,7 @@
 (declare-function org-mode "org")
 (declare-function org-return "org")
 (declare-function org-set-startup-visibility "org")
+(declare-function dired-get-filename "dired")
 
 (defgroup simply-annotate nil
   "Simple annotation system with threading support."
@@ -1971,6 +1972,7 @@ Opens the selected file and enables `simply-annotate-mode'."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-c") #'simply-annotate-save-annotation-buffer)
     (define-key map (kbd "C-c C-k") #'simply-annotate-cancel-edit)
+    (define-key map (kbd "C-g") #'simply-annotate-cancel-edit)
     (define-key map (kbd "M-s r") #'simply-annotate-reply-to-annotation)
     (define-key map (kbd "M-s s") #'simply-annotate-set-annotation-status)
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
@@ -2028,14 +2030,63 @@ Opens the selected file and enables `simply-annotate-mode'."
         (add-hook 'before-save-hook #'simply-annotate--save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate--save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer nil t)
-        (message "Simply-annotate mode enabled. Loaded %d annotations."
-                 (length simply-annotate-overlays)))
+        (when (> (length simply-annotate-overlays) 0)
+          (message "Simply-annotate: loaded %d annotations."
+                   (length simply-annotate-overlays))))
     (simply-annotate--clear-all-overlays)
     (simply-annotate--cleanup-header)
     (simply-annotate-hide-annotation-buffer)
     (remove-hook 'before-save-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)))
+
+;;; Dired Integration
+
+(defvar-local simply-annotate-dired-overlays nil
+  "List of fringe overlays added by `simply-annotate-dired-mode'.")
+
+(defun simply-annotate--dired-annotated-files ()
+  "Return a set of absolute file paths that have annotations in the database."
+  (let ((db (simply-annotate--load-database)))
+    (when db
+      (mapcar #'car db))))
+
+(defun simply-annotate--dired-mark-annotated ()
+  "Add fringe indicators to dired lines for files with annotations."
+  (simply-annotate--dired-clear-marks)
+  (let ((annotated-files (simply-annotate--dired-annotated-files)))
+    (when annotated-files
+      (save-excursion
+        (goto-char (point-min))
+        (while (not (eobp))
+          (when-let* ((file (ignore-errors (dired-get-filename nil t))))
+            (when (member file annotated-files)
+              (let* ((ov (make-overlay (line-beginning-position)
+                                       (line-end-position)))
+                     (fringe-spec `(left-fringe ,simply-annotate-fringe-indicator
+                                                ,simply-annotate-fringe-face)))
+                (overlay-put ov 'before-string (propertize " " 'display fringe-spec))
+                (overlay-put ov 'simply-annotate-dired t)
+                (push ov simply-annotate-dired-overlays))))
+          (forward-line 1))))))
+
+(defun simply-annotate--dired-clear-marks ()
+  "Remove all simply-annotate fringe overlays from the current dired buffer."
+  (mapc #'delete-overlay simply-annotate-dired-overlays)
+  (setq simply-annotate-dired-overlays nil))
+
+;;;###autoload
+(define-minor-mode simply-annotate-dired-mode
+  "Show fringe indicators in dired for files that have annotations."
+  :lighter " SA-Dir"
+  (if simply-annotate-dired-mode
+      (progn
+        (simply-annotate--dired-mark-annotated)
+        (add-hook 'dired-after-readin-hook
+                  #'simply-annotate--dired-mark-annotated nil t))
+    (simply-annotate--dired-clear-marks)
+    (remove-hook 'dired-after-readin-hook
+                 #'simply-annotate--dired-mark-annotated t)))
 
 (provide 'simply-annotate)
 ;;; simply-annotate.el ends here

@@ -62,7 +62,7 @@ modifying the original content.
 * Display Styles::              Different ways to show annotations
 * Annotation Levels::           Layered annotations for progressive exploration
 * Navigation::                  Moving between annotations
-* Advanced Features::           Cross-file annotations and listing
+* Advanced Features::           Cross-file annotations, listing, and dired
 * Org-mode Integration::        Export annotations to org-mode
 * Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
@@ -117,6 +117,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @strong{Org-mode export}: Convert annotation threads to structured TODO items
 @item
 @strong{Header-line integration}: Shows annotation count and available commands
+@item
+@strong{Dired integration}: Fringe indicators in dired for files with annotations
 @end itemize
 
 @node Installation
@@ -1009,6 +1011,22 @@ For quick navigation without the full overview, bind
 
 This uses @code{completing-read} to show all annotated files with counts, opens
 the selected file, and enables @code{simply-annotate-mode}.
+
+@section Dired Integration
+
+@findex simply-annotate-dired-mode
+Enable @code{simply-annotate-dired-mode} in dired buffers to show fringe
+indicators next to files that have annotations in the database:
+
+@lisp
+;; Enable for all dired buffers
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
+@end lisp
+
+The fringe indicator uses the same symbol and face as annotation markers in
+source buffers (@code{simply-annotate-fringe-indicator} and
+@code{simply-annotate-fringe-face}).  Indicators refresh automatically when the
+dired buffer is re-read (e.g.@: after pressing @kbd{g}).
 
 @section Annotation Buffer Features
 

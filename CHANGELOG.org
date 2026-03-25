@@ -11,6 +11,36 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-25 Tue> *0.8.1*
+
+Dired integration, display refinements, and usability improvements.
+
+*** Features
+
+- *Dired integration* -- =simply-annotate-dired-mode= shows fringe indicators in
+  dired buffers next to files that have annotations.  Enable globally with
+  =(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)=.  Indicators refresh
+  automatically when the dired buffer is re-read.
+- *All-levels display* -- New =all= pseudo-level shows annotations from every level
+  simultaneously.  Accessible via =M-s [= / =M-s ]= cycling and =M-x
+  simply-annotate-set-level=.  Now the default when the mode starts.
+- *Inline default* -- =simply-annotate-inline-default= customisation variable to
+  enable inline annotations on mode startup.
+- *Inline word-wrap* -- Inline comment text is now word-wrapped to
+  =simply-annotate-inline-fill-column= (default 72) so annotations always display
+  as multiline regardless of =truncate-lines= or =visual-line-mode= settings.
+- *C-g to dismiss* -- =C-g= in the annotation buffer now cancels/hides, same as
+  =C-c C-k=.
+
+*** Improvements
+
+- *Compact comment rendering* -- Removed emoji icons from comment/reply display.
+  Comments show author name directly; replies are indented.
+- *No empty meta line* -- Annotations without an author (e.g. auto-generated) no
+  longer produce a blank line before the comment body in inline display.
+- *Header position embedded* -- Current annotation position is now shown within the
+  active level count (e.g. =DEFUN: 3/5=) rather than as a separate indicator.
+
 ** <2026-03-24 Mon> *0.8.0*
 
 Org-mode annotation listing with folding, global overview, and live refresh.
