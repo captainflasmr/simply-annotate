@@ -624,8 +624,9 @@ Archive resolved items, keep open ones visible
 @node Display Styles
 @chapter Display Styles
 
-Simply Annotate supports six different ways to display annotations,
-allowing you to choose the visual style that best fits your workflow.
+Simply Annotate supports five display styles that can be used individually
+or combined as a list.  Styles are processed in order, so later face-based
+styles override earlier ones while fringe styles are independent.
 
 @section Available Styles
 
@@ -643,11 +644,19 @@ Draws a vertical bracket in the left fringe spanning the full annotated
 region.  Uses the configured fringe indicator at the top with a continuous
 vertical bar and a horizontal cap at the bottom.  Customisable via
 @code{simply-annotate-fringe-bracket-face}.
-@item both
-Combines both highlighting and fringe indicators (maximum visibility)
 @item subtle
 Uses overline and underline to bracket annotated regions (unobtrusive)
 @end table
+
+@section Combining Styles
+
+Styles can be combined by setting @code{simply-annotate-display-style} to
+a list:
+
+@lisp
+(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
+@end lisp
 
 Additionally, inline display can be toggled on top of any style
 (@pxref{Display Styles}).
@@ -1264,7 +1273,7 @@ Validation when saving to ensure data integrity
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
+  (simply-annotate-display-style '(highlight fringe)) ; single or combined styles
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1353,7 +1362,7 @@ Height of annotation buffer as fraction of frame height. Default: @code{0.3}
 
 @item simply-annotate-display-style
 @vindex simply-annotate-display-style
-How to display annotations. Options: @code{'highlight}, @code{'tint}, @code{'fringe}, @code{'fringe-bracket}, @code{'both}, @code{'subtle}. Default: @code{'fringe}
+How to display annotations. A single symbol or list of symbols. Options: @code{'highlight}, @code{'tint}, @code{'fringe}, @code{'fringe-bracket}, @code{'subtle}. Default: @code{'fringe}
 
 @item simply-annotate-fringe-indicator
 @vindex simply-annotate-fringe-indicator
@@ -1443,8 +1452,9 @@ Available priority levels for annotations. Default: @code{'("low" "normal" "high
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)
 
-;; Use both for maximum visibility
-(setq simply-annotate-display-style 'both)
+;; Combine styles as a list
+(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
 
 ;; Customize fringe indicators
 (setq simply-annotate-fringe-indicator 'left-triangle)

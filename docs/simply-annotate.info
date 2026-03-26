@@ -490,8 +490,10 @@ File: simply-annotate.info,  Node: Display Styles,  Next: Annotation Levels,  Pr
 7 Display Styles
 ****************
 
-Simply Annotate supports six different ways to display annotations,
-allowing you to choose the visual style that best fits your workflow.
+Simply Annotate supports five display styles that can be used
+individually or combined as a list.  Styles are processed in order, so
+later face-based styles override earlier ones while fringe styles are
+independent.
 
 7.1 Available Styles
 ====================
@@ -510,17 +512,23 @@ allowing you to choose the visual style that best fits your workflow.
      annotated region.  Uses the configured fringe indicator at the top
      with a continuous vertical bar and a horizontal cap at the bottom.
      Customisable via ‘simply-annotate-fringe-bracket-face’.
-‘both’
-     Combines both highlighting and fringe indicators (maximum
-     visibility)
 ‘subtle’
      Uses overline and underline to bracket annotated regions
      (unobtrusive)
 
+7.2 Combining Styles
+====================
+
+Styles can be combined by setting ‘simply-annotate-display-style’ to a
+list:
+
+     (setq simply-annotate-display-style '(highlight fringe))
+     (setq simply-annotate-display-style '(tint fringe-bracket))
+
    Additionally, inline display can be toggled on top of any style
 (*note Display Styles::).
 
-7.2 Changing Display Styles
+7.3 Changing Display Styles
 ===========================
 
 You can change the display style in several ways:
@@ -530,7 +538,7 @@ You can change the display style in several ways:
    • Use ‘simply-annotate-update-display-style’ to refresh existing
      annotations
 
-7.3 Style Recommendations
+7.4 Style Recommendations
 =========================
 
 *Code Review*
@@ -546,7 +554,7 @@ You can change the display style in several ways:
      All styles work well with threaded annotations and status
      indicators
 
-7.4 Fringe Customization
+7.5 Fringe Customization
 ========================
 
 The fringe display can be customized:
@@ -556,7 +564,7 @@ The fringe display can be customized:
    • Customize colors with ‘simply-annotate-fringe-face’
    • Define custom bitmaps for unique indicators
 
-7.5 Inline Display
+7.6 Inline Display
 ==================
 
 Inline display is an overlay that can be toggled on top of any display
@@ -1040,7 +1048,7 @@ File: simply-annotate.info,  Node: Customization,  Next: Data Storage,  Prev: Ke
        :ensure t
        :custom
        ;; Choose display style
-       (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
+       (simply-annotate-display-style '(highlight fringe)) ; single or combined styles
 
        ;; Customize the highlight face
        (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1126,9 +1134,9 @@ Configure team collaboration and threading features:
      ‘0.3’
 
 ‘simply-annotate-display-style’
-     How to display annotations.  Options: ‘'highlight’, ‘'tint’,
-     ‘'fringe’, ‘'fringe-bracket’, ‘'both’, ‘'subtle’.  Default:
-     ‘'fringe’
+     How to display annotations.  A single symbol or list of symbols.
+     Options: ‘'highlight’, ‘'tint’, ‘'fringe’, ‘'fringe-bracket’,
+     ‘'subtle’.  Default: ‘'fringe’
 
 ‘simply-annotate-fringe-indicator’
      Symbol for fringe indicators.  Options: ‘'left-triangle’,
@@ -1212,8 +1220,9 @@ Configure team collaboration and threading features:
      ;; Use traditional highlighting
      (setq simply-annotate-display-style 'highlight)
 
-     ;; Use both for maximum visibility
-     (setq simply-annotate-display-style 'both)
+     ;; Combine styles as a list
+     (setq simply-annotate-display-style '(highlight fringe))
+     (setq simply-annotate-display-style '(tint fringe-bracket))
 
      ;; Customize fringe indicators
      (setq simply-annotate-fringe-indicator 'left-triangle)
@@ -1538,7 +1547,7 @@ Function Index
 * simply-annotate-cancel-edit:           Basic Usage.         (line  72)
 * simply-annotate-change-annotation-author: Threading and Collaboration.
                                                               (line 104)
-* simply-annotate-cycle-display-style:   Display Styles.      (line  39)
+* simply-annotate-cycle-display-style:   Display Styles.      (line  47)
 * simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
 * simply-annotate-cycle-level-forward:   Annotation Levels.   (line  45)
 * simply-annotate-dired-mode:            Advanced Features.   (line  86)
@@ -1564,7 +1573,7 @@ Function Index
 * simply-annotate-show:                  Navigation.          (line  25)
 * simply-annotate-show-all:              Advanced Features.   (line  48)
 * simply-annotate-smart-action:          Basic Usage.         (line  23)
-* simply-annotate-toggle-inline:         Display Styles.      (line  75)
+* simply-annotate-toggle-inline:         Display Styles.      (line  83)
 
 
 File: simply-annotate.info,  Node: Variable Index,  Next: Concept Index,  Prev: Function Index,  Up: Top
@@ -1590,22 +1599,22 @@ Variable Index
 * simply-annotate-buffer-name <1>:       Customization.       (line  92)
 * simply-annotate-default-level:         Customization.       (line 127)
 * simply-annotate-default-level <1>:     Customization.       (line 128)
-* simply-annotate-display-style:         Display Styles.      (line  39)
+* simply-annotate-display-style:         Display Styles.      (line  47)
 * simply-annotate-display-style <1>:     Customization.       (line  98)
 * simply-annotate-display-style <2>:     Customization.       (line  99)
 * simply-annotate-file:                  Customization.       (line  83)
 * simply-annotate-file <1>:              Customization.       (line  84)
-* simply-annotate-fringe-face:           Display Styles.      (line  65)
+* simply-annotate-fringe-face:           Display Styles.      (line  73)
 * simply-annotate-fringe-face <1>:       Customization.       (line 108)
 * simply-annotate-fringe-face <2>:       Customization.       (line 109)
-* simply-annotate-fringe-indicator:      Display Styles.      (line  65)
+* simply-annotate-fringe-indicator:      Display Styles.      (line  73)
 * simply-annotate-fringe-indicator <1>:  Customization.       (line 103)
 * simply-annotate-fringe-indicator <2>:  Customization.       (line 104)
 * simply-annotate-highlight-face:        Customization.       (line  87)
 * simply-annotate-highlight-face <1>:    Customization.       (line  88)
 * simply-annotate-inline-max-lines:      Customization.       (line 116)
 * simply-annotate-inline-max-lines <1>:  Customization.       (line 117)
-* simply-annotate-inline-position:       Display Styles.      (line  80)
+* simply-annotate-inline-position:       Display Styles.      (line  88)
 * simply-annotate-inline-position <1>:   Customization.       (line 112)
 * simply-annotate-inline-position <2>:   Customization.       (line 113)
 * simply-annotate-levels:                Customization.       (line 124)
@@ -1651,10 +1660,10 @@ Concept Index
                                                               (line  11)
 * data structure editing:                Advanced Editing.    (line   9)
 * defun level:                           Annotation Levels.   (line   6)
-* embedded comments:                     Display Styles.      (line  75)
+* embedded comments:                     Display Styles.      (line  83)
 * file level:                            Annotation Levels.   (line   6)
 * header-line:                           Advanced Features.   (line 116)
-* inline display:                        Display Styles.      (line  75)
+* inline display:                        Display Styles.      (line  83)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
                                                               (line  66)
@@ -1687,17 +1696,17 @@ Node: Basic Usage6151
 Node: Advanced Editing8764
 Node: Threading and Collaboration12289
 Node: Display Styles16474
-Node: Annotation Levels20850
-Node: Navigation24153
-Node: Advanced Features25795
-Node: Org-mode Integration30096
-Node: Key Bindings32290
-Node: Customization36053
-Node: Data Storage43492
-Node: Troubleshooting46971
-Node: Function Index53394
-Node: Variable Index55870
-Node: Concept Index60024
+Node: Annotation Levels21090
+Node: Navigation24393
+Node: Advanced Features26035
+Node: Org-mode Integration30336
+Node: Key Bindings32530
+Node: Customization36293
+Node: Data Storage43804
+Node: Troubleshooting47283
+Node: Function Index53706
+Node: Variable Index56182
+Node: Concept Index60336
 
 End Tag Table
 

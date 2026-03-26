@@ -126,18 +126,32 @@ so the bracket renders flat without a filled region in the fringe."
 
 (defcustom simply-annotate-display-style 'fringe
   "How to display annotated text.
-- highlight: Highlight the annotated text (default behavior)
+A single symbol or a list of symbols processed in order.
+Styles are applied sequentially so later face-based styles
+override earlier ones, while fringe styles are independent.
+
+Available styles:
+- highlight: Highlight the annotated text
 - tint: Subtle background tint derived from the current background
 - fringe: Show indicators in the fringe
 - fringe-bracket: Show bracket indicators spanning the annotated region
-- both: Show both fringe indicators and text highlighting
-- subtle: Show a thin left border on annotated text"
+- subtle: Show a thin left border on annotated text
+
+Examples:
+  \\='fringe                        ; single style
+  \\='(highlight fringe)            ; combined highlight and fringe
+  \\='(tint fringe-bracket)         ; tint background with fringe brackets"
   :type '(choice (const :tag "Highlight text" highlight)
                  (const :tag "Background tint" tint)
                  (const :tag "Fringe indicators" fringe)
                  (const :tag "Fringe bracket" fringe-bracket)
-                 (const :tag "Both fringe and highlight" both)
-                 (const :tag "Subtle left border" subtle))
+                 (const :tag "Subtle left border" subtle)
+                 (repeat :tag "Combined styles"
+                         (choice (const highlight)
+                                 (const tint)
+                                 (const fringe)
+                                 (const fringe-bracket)
+                                 (const subtle))))
   :group 'simply-annotate)
 
 (defcustom simply-annotate-tint-amount 20
@@ -566,8 +580,8 @@ This helps fix corrupted annotations from older versions."
   "Add inline annotation text to OVERLAY based on `simply-annotate-inline-position'."
   (let ((text (simply-annotate--inline-text overlay)))
     (if (eq simply-annotate-inline-position 'above)
-        (let ((fringe (when (memq simply-annotate-display-style
-                                  '(fringe fringe-bracket both))
+        (let ((fringe (when (cl-intersection (simply-annotate--display-styles)
+                                              '(fringe fringe-bracket))
                         (overlay-get overlay 'before-string))))
           (overlay-put overlay 'before-string
                        (concat text (or fringe ""))))
@@ -583,6 +597,12 @@ Does a full display re-apply to update inline text."
     (overlay-put overlay 'after-string nil)
     (simply-annotate--apply-display-style overlay)))
 
+(defun simply-annotate--display-styles ()
+  "Return the current display style as a list of symbols.
+Normalises a single symbol to a one-element list."
+  (let ((style simply-annotate-display-style))
+    (if (listp style) style (list style))))
+
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
 Overlays not matching the active level are hidden.
@@ -595,22 +615,20 @@ for matching overlays."
            (not (and (eq simply-annotate-current-level 'all)
                      (eq (overlay-get overlay 'simply-annotation-level) 'file))))
       (progn
-        (pcase simply-annotate-display-style
-          ('highlight
-           (overlay-put overlay 'face simply-annotate-highlight-face))
-          ('tint
-           (let ((bg (simply-annotate--tint-background)))
-             (when bg
-               (overlay-put overlay 'face `(:background ,bg :extend t)))))
-          ('fringe
-           (simply-annotate--add-fringe-indicator overlay))
-          ('fringe-bracket
-           (simply-annotate--add-fringe-bracket overlay))
-          ('both
-           (overlay-put overlay 'face simply-annotate-highlight-face)
-           (simply-annotate--add-fringe-indicator overlay))
-          ('subtle
-           (overlay-put overlay 'face 'simply-annotate-subtle-face)))
+        (dolist (style (simply-annotate--display-styles))
+          (pcase style
+            ('highlight
+             (overlay-put overlay 'face simply-annotate-highlight-face))
+            ('tint
+             (let ((bg (simply-annotate--tint-background)))
+               (when bg
+                 (overlay-put overlay 'face `(:background ,bg :extend t)))))
+            ('fringe
+             (simply-annotate--add-fringe-indicator overlay))
+            ('fringe-bracket
+             (simply-annotate--add-fringe-bracket overlay))
+            ('subtle
+             (overlay-put overlay 'face 'simply-annotate-subtle-face))))
         (when simply-annotate-inline
           (simply-annotate--add-inline-text overlay)))
     (simply-annotate--cleanup-bracket-overlays overlay)
@@ -694,16 +712,19 @@ with vertical bars on intermediate lines."
   (message "Updated display style to: %s" simply-annotate-display-style))
 
 (defun simply-annotate-cycle-display-style ()
-  "Cycle through different annotation display styles."
+  "Cycle through individual display styles.
+For combined styles, use `simply-annotate-display-style' directly."
   (interactive)
-  (setq simply-annotate-display-style
-        (pcase simply-annotate-display-style
-          ('highlight 'tint)
-          ('tint 'fringe)
-          ('fringe 'fringe-bracket)
-          ('fringe-bracket 'both)
-          ('both 'subtle)
-          (_ 'highlight)))
+  (let ((styles (simply-annotate--display-styles)))
+    (setq simply-annotate-display-style
+          (if (= (length styles) 1)
+              (pcase (car styles)
+                ('highlight 'tint)
+                ('tint 'fringe)
+                ('fringe 'fringe-bracket)
+                ('fringe-bracket 'subtle)
+                (_ 'highlight))
+            'highlight)))
   (simply-annotate-update-display-style))
 
 ;;;###autoload
@@ -813,7 +834,7 @@ START and END define the region, TEXT is the annotation content."
   "Get annotation overlay at POS (defaults to point) matching current level.
 In fringe mode, searches the entire current line for overlays."
   (let ((check-pos (or pos (point))))
-    (if (memq simply-annotate-display-style '(fringe fringe-bracket))
+    (if (cl-intersection (simply-annotate--display-styles) '(fringe fringe-bracket))
         (simply-annotate--overlay-on-line check-pos)
       (cl-find-if (lambda (ov)
                     (and (overlay-get ov 'simply-annotation)

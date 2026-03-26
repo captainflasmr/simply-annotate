@@ -20,7 +20,7 @@ The main functional aspects that I felt were important to me that generally diff
 
 - Header-line status display with keybinding reminders
 - Simple intuitive workflow (hopefully)
-- Multiple display styles (highlight, tint, fringe, fringe bracket, both, subtle)
+- Multiple display styles (highlight, tint, fringe, fringe bracket, subtle) that can be combined
 - Annotation editing via a dedicated buffer
 - Lightweight (if possible <1000 lines - [UPDATE], no its not possible, lets try <2000 lines!)
 - Multi-purpose key to show/edit/toggle annotations
@@ -210,16 +210,16 @@ Available prompting modes:
 
 ** Display Styles
 
-Simply Annotate supports six display styles:
+Simply Annotate supports five display styles that can be combined:
 
 - *Highlight*: Traditional background highlighting
 - *Tint*: Subtle background tint derived from the current theme
 - *Fringe*: Shows indicators in the left fringe
 - *Fringe bracket*: Vertical bracket in the fringe spanning the annotated region
-- *Both*: Combines highlighting with fringe indicators
 - *Subtle*: Overline and underline to bracket annotated regions
 
-Change styles with =M-s '= or customize =simply-annotate-display-style=.
+Styles can be combined as a list, e.g. =(setq simply-annotate-display-style '(tint fringe-bracket))=.
+Cycle individual styles with =M-s '= or customize =simply-annotate-display-style=.
 
 ** Viewing Annotations
 
@@ -343,7 +343,7 @@ In the annotation buffer:
   (simply-annotate-file "~/my-annotations.el")
   
   ;; Set display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
+  (simply-annotate-display-style '(highlight fringe)) ; single or combined styles
   
   ;; Customize fringe indicators
   (simply-annotate-fringe-indicator 'right-triangle)
@@ -391,20 +391,16 @@ In the annotation buffer:
 ** Display Style Options
 
 #+begin_src emacs-lisp
-;; Use only fringe indicators (good for minimal visual impact)
+;; Single styles
 (setq simply-annotate-display-style 'fringe)
-
-;; Use fringe brackets spanning the annotated region
 (setq simply-annotate-display-style 'fringe-bracket)
-
-;; Use a subtle background tint (adapts to current theme)
 (setq simply-annotate-display-style 'tint)
-
-;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)
 
-;; Use both for maximum visibility
-(setq simply-annotate-display-style 'both)
+;; Combined styles (processed in order)
+(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
+(setq simply-annotate-display-style '(subtle fringe))
 #+end_src
 
 ** Customization Options

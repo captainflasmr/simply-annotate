@@ -75,10 +75,11 @@ Documentation License”.
     - [[#Document-Collaboration][6.4.2 Document Collaboration]]
 - [[#Display-Styles][7 Display Styles]]
   - [[#Available-Styles][7.1 Available Styles]]
-  - [[#Changing-Display-Styles][7.2 Changing Display Styles]]
-  - [[#Style-Recommendations][7.3 Style Recommendations]]
-  - [[#Fringe-Customization][7.4 Fringe Customization]]
-  - [[#Inline-Display][7.5 Inline Display]]
+  - [[#Combining-Styles][7.2 Combining Styles]]
+  - [[#Changing-Display-Styles][7.3 Changing Display Styles]]
+  - [[#Style-Recommendations][7.4 Style Recommendations]]
+  - [[#Fringe-Customization][7.5 Fringe Customization]]
+  - [[#Inline-Display][7.6 Inline Display]]
 - [[#Annotation-Levels][8 Annotation Levels]]
   - [[#Level-Overview][8.1 Level Overview]]
   - [[#How-Levels-Work][8.2 How Levels Work]]
@@ -802,10 +803,13 @@ Next: [[#Annotation-Levels][Annotation Levels]], Previous:
 :CUSTOM_ID: Display-Styles-1
 :CLASS: chapter
 :END:
-Simply Annotate supports six different ways to display annotations,
-allowing you to choose the visual style that best fits your workflow.
+Simply Annotate supports five display styles that can be used
+individually or combined as a list. Styles are processed in order, so
+later face-based styles override earlier ones while fringe styles are
+independent.
 
 - [[#Available-Styles][Available Styles]]
+- [[#Combining-Styles][Combining Styles]]
 - [[#Changing-Display-Styles][Changing Display Styles]]
 - [[#Style-Recommendations][Style Recommendations]]
 - [[#Fringe-Customization][Fringe Customization]]
@@ -833,17 +837,28 @@ allowing you to choose the visual style that best fits your workflow.
   cap at the bottom. Customisable via
   =simply-annotate-fringe-bracket-face=.
 
-- =both= :: Combines both highlighting and fringe indicators (maximum
-  visibility)
-
 - =subtle= :: Uses overline and underline to bracket annotated regions
   (unobtrusive)
+
+<<Combining-Styles>>
+*** 7.2 Combining Styles [[#Combining-Styles][¶]]
+:PROPERTIES:
+:CUSTOM_ID: combining-styles
+:CLASS: section
+:END:
+Styles can be combined by setting =simply-annotate-display-style= to a
+list:
+
+#+begin_src lisp-preformatted
+(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
+#+end_src
 
 Additionally, inline display can be toggled on top of any style (see
 [[#Display-Styles][Display Styles]]).
 
 <<Changing-Display-Styles>>
-*** 7.2 Changing Display Styles [[#Changing-Display-Styles][¶]]
+*** 7.3 Changing Display Styles [[#Changing-Display-Styles][¶]]
 :PROPERTIES:
 :CUSTOM_ID: changing-display-styles
 :CLASS: section
@@ -856,7 +871,7 @@ You can change the display style in several ways:
   annotations
 
 <<Style-Recommendations>>
-*** 7.3 Style Recommendations [[#Style-Recommendations][¶]]
+*** 7.4 Style Recommendations [[#Style-Recommendations][¶]]
 :PROPERTIES:
 :CUSTOM_ID: style-recommendations
 :CLASS: section
@@ -877,7 +892,7 @@ You can change the display style in several ways:
   and status indicators
 
 <<Fringe-Customization>>
-*** 7.4 Fringe Customization [[#Fringe-Customization][¶]]
+*** 7.5 Fringe Customization [[#Fringe-Customization][¶]]
 :PROPERTIES:
 :CUSTOM_ID: fringe-customization
 :CLASS: section
@@ -890,7 +905,7 @@ The fringe display can be customized:
 - Define custom bitmaps for unique indicators
 
 <<Inline-Display>>
-*** 7.5 Inline Display [[#Inline-Display][¶]]
+*** 7.6 Inline Display [[#Inline-Display][¶]]
 :PROPERTIES:
 :CUSTOM_ID: inline-display
 :CLASS: section
@@ -1551,7 +1566,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
+  (simply-annotate-display-style '(highlight fringe)) ; single or combined styles
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1679,8 +1694,9 @@ Configure team collaboration and threading features:
 - <<index-simply_002dannotate_002ddisplay_002dstyle-1>>=simply-annotate-display-style=
   [[#index-simply_002dannotate_002ddisplay_002dstyle-1][¶]] :: 
 
-  How to display annotations. Options: ='highlight=, ='tint=, ='fringe=,
-  ='fringe-bracket=, ='both=, ='subtle=. Default: ='fringe=
+  How to display annotations. A single symbol or list of symbols.
+  Options: ='highlight=, ='tint=, ='fringe=, ='fringe-bracket=,
+  ='subtle=. Default: ='fringe=
 
 - <<index-simply_002dannotate_002dfringe_002dindicator-1>>=simply-annotate-fringe-indicator=
   [[#index-simply_002dannotate_002dfringe_002dindicator-1][¶]] :: 
@@ -1802,8 +1818,9 @@ Configure team collaboration and threading features:
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)
 
-;; Use both for maximum visibility
-(setq simply-annotate-display-style 'both)
+;; Combine styles as a list
+(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
 
 ;; Customize fringe indicators
 (setq simply-annotate-fringe-indicator 'left-triangle)

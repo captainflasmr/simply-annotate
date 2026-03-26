@@ -148,10 +148,11 @@ Free Documentation License&rdquo;.
   <li><a id="toc-Display-Styles" href="#Display-Styles">7 Display Styles</a>
   <ul class="toc-numbered-mark">
     <li><a id="toc-Available-Styles" href="#Available-Styles">7.1 Available Styles</a></li>
-    <li><a id="toc-Changing-Display-Styles" href="#Changing-Display-Styles">7.2 Changing Display Styles</a></li>
-    <li><a id="toc-Style-Recommendations" href="#Style-Recommendations">7.3 Style Recommendations</a></li>
-    <li><a id="toc-Fringe-Customization" href="#Fringe-Customization">7.4 Fringe Customization</a></li>
-    <li><a id="toc-Inline-Display" href="#Inline-Display">7.5 Inline Display</a></li>
+    <li><a id="toc-Combining-Styles" href="#Combining-Styles">7.2 Combining Styles</a></li>
+    <li><a id="toc-Changing-Display-Styles" href="#Changing-Display-Styles">7.3 Changing Display Styles</a></li>
+    <li><a id="toc-Style-Recommendations" href="#Style-Recommendations">7.4 Style Recommendations</a></li>
+    <li><a id="toc-Fringe-Customization" href="#Fringe-Customization">7.5 Fringe Customization</a></li>
+    <li><a id="toc-Inline-Display" href="#Inline-Display">7.6 Inline Display</a></li>
   </ul></li>
   <li><a id="toc-Annotation-Levels" href="#Annotation-Levels">8 Annotation Levels</a>
   <ul class="toc-numbered-mark">
@@ -893,15 +894,17 @@ Next: <a href="#Annotation-Levels" accesskey="n" rel="next">Annotation Levels</a
 </div>
 <h2 class="chapter" id="Display-Styles-1"><span>7 Display Styles<a class="copiable-link" href="#Display-Styles-1"> &para;</a></span></h2>
 
-<p>Simply Annotate supports six different ways to display annotations,
-allowing you to choose the visual style that best fits your workflow.
+<p>Simply Annotate supports five display styles that can be used individually
+or combined as a list.  Styles are processed in order, so later face-based
+styles override earlier ones while fringe styles are independent.
 </p>
 <ul class="mini-toc">
 <li><a href="#Available-Styles" accesskey="1">Available Styles</a></li>
-<li><a href="#Changing-Display-Styles" accesskey="2">Changing Display Styles</a></li>
-<li><a href="#Style-Recommendations" accesskey="3">Style Recommendations</a></li>
-<li><a href="#Fringe-Customization" accesskey="4">Fringe Customization</a></li>
-<li><a href="#Inline-Display" accesskey="5">Inline Display</a></li>
+<li><a href="#Combining-Styles" accesskey="2">Combining Styles</a></li>
+<li><a href="#Changing-Display-Styles" accesskey="3">Changing Display Styles</a></li>
+<li><a href="#Style-Recommendations" accesskey="4">Style Recommendations</a></li>
+<li><a href="#Fringe-Customization" accesskey="5">Fringe Customization</a></li>
+<li><a href="#Inline-Display" accesskey="6">Inline Display</a></li>
 </ul>
 <div class="section-level-extent" id="Available-Styles">
 <h3 class="section"><span>7.1 Available Styles<a class="copiable-link" href="#Available-Styles"> &para;</a></span></h3>
@@ -924,20 +927,29 @@ region.  Uses the configured fringe indicator at the top with a continuous
 vertical bar and a horizontal cap at the bottom.  Customisable via
 <code class="code">simply-annotate-fringe-bracket-face</code>.
 </p></dd>
-<dt><code class="code">both</code></dt>
-<dd><p>Combines both highlighting and fringe indicators (maximum visibility)
-</p></dd>
 <dt><code class="code">subtle</code></dt>
 <dd><p>Uses overline and underline to bracket annotated regions (unobtrusive)
 </p></dd>
 </dl>
+
+</div>
+<div class="section-level-extent" id="Combining-Styles">
+<h3 class="section"><span>7.2 Combining Styles<a class="copiable-link" href="#Combining-Styles"> &para;</a></span></h3>
+
+<p>Styles can be combined by setting <code class="code">simply-annotate-display-style</code> to
+a list:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
+</pre></div>
 
 <p>Additionally, inline display can be toggled on top of any style
 (see <a class="pxref" href="#Display-Styles">Display Styles</a>).
 </p>
 </div>
 <div class="section-level-extent" id="Changing-Display-Styles">
-<h3 class="section"><span>7.2 Changing Display Styles<a class="copiable-link" href="#Changing-Display-Styles"> &para;</a></span></h3>
+<h3 class="section"><span>7.3 Changing Display Styles<a class="copiable-link" href="#Changing-Display-Styles"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"></a>
 <a class="index-entry-id" id="index-simply_002dannotate_002ddisplay_002dstyle"></a>
@@ -952,7 +964,7 @@ vertical bar and a horizontal cap at the bottom.  Customisable via
 
 </div>
 <div class="section-level-extent" id="Style-Recommendations">
-<h3 class="section"><span>7.3 Style Recommendations<a class="copiable-link" href="#Style-Recommendations"> &para;</a></span></h3>
+<h3 class="section"><span>7.4 Style Recommendations<a class="copiable-link" href="#Style-Recommendations"> &para;</a></span></h3>
 
 <dl class="table">
 <dt><strong class="strong">Code Review</strong></dt>
@@ -974,7 +986,7 @@ vertical bar and a horizontal cap at the bottom.  Customisable via
 
 </div>
 <div class="section-level-extent" id="Fringe-Customization">
-<h3 class="section"><span>7.4 Fringe Customization<a class="copiable-link" href="#Fringe-Customization"> &para;</a></span></h3>
+<h3 class="section"><span>7.5 Fringe Customization<a class="copiable-link" href="#Fringe-Customization"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dindicator"></a>
 <a class="index-entry-id" id="index-simply_002dannotate_002dfringe_002dface"></a>
@@ -989,7 +1001,7 @@ vertical bar and a horizontal cap at the bottom.  Customisable via
 
 </div>
 <div class="section-level-extent" id="Inline-Display">
-<h3 class="section"><span>7.5 Inline Display<a class="copiable-link" href="#Inline-Display"> &para;</a></span></h3>
+<h3 class="section"><span>7.6 Inline Display<a class="copiable-link" href="#Inline-Display"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-inline-display"></a>
 <a class="index-entry-id" id="index-embedded-comments"></a>
@@ -1641,7 +1653,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
+  (simply-annotate-display-style '(highlight fringe)) ; single or combined styles
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background &quot;lightblue&quot; :foreground &quot;darkblue&quot;))
@@ -1751,7 +1763,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 </dd>
 <dt><a id="index-simply_002dannotate_002ddisplay_002dstyle-1"></a><span><code class="code">simply-annotate-display-style</code><a class="copiable-link" href="#index-simply_002dannotate_002ddisplay_002dstyle-1"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002ddisplay_002dstyle-2"></a>
-<p>How to display annotations. Options: <code class="code">'highlight</code>, <code class="code">'tint</code>, <code class="code">'fringe</code>, <code class="code">'fringe-bracket</code>, <code class="code">'both</code>, <code class="code">'subtle</code>. Default: <code class="code">'fringe</code>
+<p>How to display annotations. A single symbol or list of symbols. Options: <code class="code">'highlight</code>, <code class="code">'tint</code>, <code class="code">'fringe</code>, <code class="code">'fringe-bracket</code>, <code class="code">'subtle</code>. Default: <code class="code">'fringe</code>
 </p>
 </dd>
 <dt><a id="index-simply_002dannotate_002dfringe_002dindicator-1"></a><span><code class="code">simply-annotate-fringe-indicator</code><a class="copiable-link" href="#index-simply_002dannotate_002dfringe_002dindicator-1"> &para;</a></span></dt>
@@ -1861,8 +1873,9 @@ are truncated with a count.  Set to <code class="code">nil</code> to show all li
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)
 
-;; Use both for maximum visibility
-(setq simply-annotate-display-style 'both)
+;; Combine styles as a list
+(setq simply-annotate-display-style '(highlight fringe))
+(setq simply-annotate-display-style '(tint fringe-bracket))
 
 ;; Customize fringe indicators
 (setq simply-annotate-fringe-indicator 'left-triangle)
