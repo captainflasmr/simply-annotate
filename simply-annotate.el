@@ -551,30 +551,24 @@ This helps fix corrupted annotations from older versions."
                                   (- (length formatted-lines)
                                      simply-annotate-inline-max-lines))))))
 
-    (let ((header (concat
-                   "  "
-                   (propertize (concat "┌─ " label " "
-                                       (make-string
-                                        (max 1 (- rule-len 4 (string-width label)))
-                                        ?─))
-                               'face 'simply-annotate-inline-border-face)))
+    (let ((header (propertize (concat "┌─ " label " "
+                                     (make-string
+                                      (max 1 (- rule-len 4 (string-width label)))
+                                      ?─))
+                             'face 'simply-annotate-inline-border-face))
           (body (mapconcat
                  (lambda (line)
                    (if (eq line :separator)
-                       (concat "  "
-                               (propertize (concat "├" (make-string (max 1 rule-len) ?─))
-                                           'face 'simply-annotate-inline-border-face))
-                     (concat "  "
-                             (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                       (propertize (concat "├" (make-string (max 1 rule-len) ?─))
+                                   'face 'simply-annotate-inline-border-face)
+                     (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
                              (propertize line 'face 'simply-annotate-inline-face))))
                  formatted-lines "\n"))
-          (footer (concat
-                   "  "
-                   (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
-                               'face 'simply-annotate-inline-border-face))))
-      (if (eq simply-annotate-inline-position 'above)
-          (concat "\n" header "\n" body "\n" footer "\n")
-        (concat "\n" header "\n" body "\n" footer "\n")))))
+          (footer (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
+                              'face 'simply-annotate-inline-border-face)))
+      (let ((result (concat "\n" header "\n" body "\n" footer "\n")))
+      ;; Collapse runs of multiple blank lines to at most one
+      (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result)))))
 
 (defun simply-annotate--add-inline-text (overlay)
   "Add inline annotation text to OVERLAY based on `simply-annotate-inline-position'."
@@ -582,7 +576,13 @@ This helps fix corrupted annotations from older versions."
     (if (eq simply-annotate-inline-position 'above)
         (let ((fringe (when (cl-intersection (simply-annotate--display-styles)
                                               '(fringe fringe-bracket))
-                        (overlay-get overlay 'before-string))))
+                        (overlay-get overlay 'before-string)))
+              (prev-char (and (> (overlay-start overlay) (point-min))
+                              (char-before (overlay-start overlay)))))
+          ;; Skip leading newline when the preceding character is already a newline
+          (when (and prev-char (= prev-char ?\n)
+                     (string-prefix-p "\n" text))
+            (setq text (substring text 1)))
           (overlay-put overlay 'before-string
                        (concat text (or fringe ""))))
       (overlay-put overlay 'after-string text))))
@@ -606,35 +606,33 @@ Normalises a single symbol to a one-element list."
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
 Overlays not matching the active level are hidden.
-File-level annotations are also hidden when viewing at the `all'
-pseudo-level, since they span the entire buffer and would obscure
-smaller annotations.
-When `simply-annotate-inline' is non-nil, also adds inline text
-for matching overlays."
-  (if (and (simply-annotate--level-match-p overlay)
-           (not (and (eq simply-annotate-current-level 'all)
-                     (eq (overlay-get overlay 'simply-annotation-level) 'file))))
-      (progn
-        (dolist (style (simply-annotate--display-styles))
-          (pcase style
-            ('highlight
-             (overlay-put overlay 'face simply-annotate-highlight-face))
-            ('tint
-             (let ((bg (simply-annotate--tint-background)))
-               (when bg
-                 (overlay-put overlay 'face `(:background ,bg :extend t)))))
-            ('fringe
-             (simply-annotate--add-fringe-indicator overlay))
-            ('fringe-bracket
-             (simply-annotate--add-fringe-bracket overlay))
-            ('subtle
-             (overlay-put overlay 'face 'simply-annotate-subtle-face))))
-        (when simply-annotate-inline
-          (simply-annotate--add-inline-text overlay)))
-    (simply-annotate--cleanup-bracket-overlays overlay)
-    (overlay-put overlay 'face nil)
-    (overlay-put overlay 'before-string nil)
-    (overlay-put overlay 'after-string nil)))
+File-level annotations at the `all' pseudo-level skip visual styles
+but still show inline text when enabled."
+  (let ((file-at-all (and (eq simply-annotate-current-level 'all)
+                          (eq (overlay-get overlay 'simply-annotation-level) 'file))))
+    (if (simply-annotate--level-match-p overlay)
+        (progn
+          (unless file-at-all
+            (dolist (style (simply-annotate--display-styles))
+              (pcase style
+                ('highlight
+                 (overlay-put overlay 'face simply-annotate-highlight-face))
+                ('tint
+                 (let ((bg (simply-annotate--tint-background)))
+                   (when bg
+                     (overlay-put overlay 'face `(:background ,bg :extend t)))))
+                ('fringe
+                 (simply-annotate--add-fringe-indicator overlay))
+                ('fringe-bracket
+                 (simply-annotate--add-fringe-bracket overlay))
+                ('subtle
+                 (overlay-put overlay 'face 'simply-annotate-subtle-face)))))
+          (when simply-annotate-inline
+            (simply-annotate--add-inline-text overlay)))
+      (simply-annotate--cleanup-bracket-overlays overlay)
+      (overlay-put overlay 'face nil)
+      (overlay-put overlay 'before-string nil)
+      (overlay-put overlay 'after-string nil))))
 
 (defun simply-annotate--tint-background ()
   "Return a background color slightly lighter than the default."
@@ -830,30 +828,62 @@ START and END define the region, TEXT is the annotation content."
   (mapc #'delete-overlay simply-annotate-overlays)
   (setq simply-annotate-overlays nil))
 
+(defun simply-annotate--most-specific-overlay (candidates)
+  "Return the most specific overlay from CANDIDATES.
+Prefers the smallest region; when at the `all' level, deprioritises
+file-level overlays so more granular annotations take precedence."
+  (when candidates
+    (car (sort candidates
+                (lambda (a b)
+                  (let ((a-file (eq (overlay-get a 'simply-annotation-level) 'file))
+                        (b-file (eq (overlay-get b 'simply-annotation-level) 'file)))
+                    (cond
+                     ;; At 'all level, push file-level to the back
+                     ((and (eq simply-annotate-current-level 'all)
+                           a-file (not b-file))
+                      nil)
+                     ((and (eq simply-annotate-current-level 'all)
+                           b-file (not a-file))
+                      t)
+                     ;; Otherwise prefer smallest region
+                     (t (< (- (overlay-end a) (overlay-start a))
+                            (- (overlay-end b) (overlay-start b)))))))))))
+
 (defun simply-annotate--overlay-at-point (&optional pos)
   "Get annotation overlay at POS (defaults to point) matching current level.
-In fringe mode, searches the entire current line for overlays."
+In fringe mode, searches the entire current line for overlays.
+When multiple overlays match, returns the most specific one.
+File-level overlays are excluded at the `all' pseudo-level so that
+`smart-action' can create granular annotations anywhere in the buffer."
   (let ((check-pos (or pos (point))))
     (if (cl-intersection (simply-annotate--display-styles) '(fringe fringe-bracket))
         (simply-annotate--overlay-on-line check-pos)
-      (cl-find-if (lambda (ov)
-                    (and (overlay-get ov 'simply-annotation)
-                         (simply-annotate--level-match-p ov)))
-                  (overlays-at check-pos)))))
+      (simply-annotate--most-specific-overlay
+       (cl-remove-if-not (lambda (ov)
+                           (and (overlay-get ov 'simply-annotation)
+                                (simply-annotate--level-match-p ov)
+                                (not (and (eq simply-annotate-current-level 'all)
+                                          (eq (overlay-get ov 'simply-annotation-level) 'file)))))
+                         (overlays-at check-pos))))))
 
 (defun simply-annotate--overlay-on-line (&optional pos)
   "Find annotation overlay matching current level on the line containing POS.
-Matches any overlay whose region intersects the current line."
+Matches any overlay whose region intersects the current line.
+When multiple overlays match, returns the most specific one.
+File-level overlays are excluded at the `all' pseudo-level."
   (save-excursion
     (when pos (goto-char pos))
     (let ((line-start (line-beginning-position))
           (line-end (line-end-position)))
-      (cl-find-if (lambda (overlay)
-                    (and (overlay-get overlay 'simply-annotation)
-                         (simply-annotate--level-match-p overlay)
-                         (<= (overlay-start overlay) line-end)
-                         (>= (overlay-end overlay) line-start)))
-                  simply-annotate-overlays))))
+      (simply-annotate--most-specific-overlay
+       (cl-remove-if-not (lambda (overlay)
+                           (and (overlay-get overlay 'simply-annotation)
+                                (simply-annotate--level-match-p overlay)
+                                (not (and (eq simply-annotate-current-level 'all)
+                                          (eq (overlay-get overlay 'simply-annotation-level) 'file)))
+                                (<= (overlay-start overlay) line-end)
+                                (>= (overlay-end overlay) line-start)))
+                         simply-annotate-overlays)))))
 
 ;;; Thread Management
 
@@ -924,33 +954,36 @@ Matches any overlay whose region intersects the current line."
     (when tags
       (setq label (concat label " " (string-join tags ", "))))
 
-    (concat
-     (format "┌─ %s %s" label (make-string (max 1 (- rule-len 4 (string-width label))) ?─))
-     "\n"
-     (mapconcat
-      (lambda (comment)
-        (let* ((author (alist-get 'author comment))
-               (timestamp (alist-get 'timestamp comment))
-               (text (alist-get 'text comment))
-               (type (alist-get 'type comment))
-               (is-reply (not (string= type "comment")))
-               (meta (if (and author timestamp)
-                         (format "%s%s (%s):"
-                                 (if is-reply "↳ " "")
-                                 (propertize author 'face 'bold)
-                                 (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                       (if is-reply "↳" "")))
-               (indent (if (string-empty-p meta) "" " ")))
-          (concat
-           (if (not (string-empty-p meta))
-               (format "│ %s\n" meta)
-             "")
-           (format "│ %s%s"
-                   indent
-                   (replace-regexp-in-string "\n" (concat "\n│ " indent) text)))))
-      comments
-      (format "\n├%s\n" (make-string (max 1 rule-len) ?─)))
-     "\n└" (make-string (max 1 rule-len) ?─) "┘")))
+    (let ((result
+           (concat
+            (format "┌─ %s %s" label (make-string (max 1 (- rule-len 4 (string-width label))) ?─))
+            "\n"
+            (mapconcat
+             (lambda (comment)
+               (let* ((author (alist-get 'author comment))
+                      (timestamp (alist-get 'timestamp comment))
+                      (text (alist-get 'text comment))
+                      (type (alist-get 'type comment))
+                      (is-reply (not (string= type "comment")))
+                      (meta (if (and author timestamp)
+                                (format "%s%s (%s):"
+                                        (if is-reply "↳ " "")
+                                        (propertize author 'face 'bold)
+                                        (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                              (if is-reply "↳" "")))
+                      (indent (if (string-empty-p meta) "" " ")))
+                 (concat
+                  (if (not (string-empty-p meta))
+                      (format "│ %s\n" meta)
+                    "")
+                  (format "│ %s%s"
+                          indent
+                          (replace-regexp-in-string "\n" (concat "\n│ " indent) text)))))
+             comments
+             (format "\n├%s\n" (make-string (max 1 rule-len) ?─)))
+            "\n└" (make-string (max 1 rule-len) ?─) "┘")))
+      ;; Collapse runs of multiple blank lines to at most one
+      (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result))))
 
 ;;; Author Management
 
