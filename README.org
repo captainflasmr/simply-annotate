@@ -53,15 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-03-26> *0.8.2*
+** <2026-03-26> *0.9.0*
 
-Display styles, comment formatting, and usability refinements.
+Nested/hierarchical comment threading.
 
-- *Fringe bracket style* -- New =fringe-bracket= display draws a vertical bracket in the fringe spanning the annotated region.
-- *Tint style* -- New =tint= display applies a subtle background tint derived from the current theme.
-- *Reply indicator* -- Replies show =↳= before the author line in both inline and buffer views.
-- *Consistent formatting* -- Inline and =*Annotation*= buffer use the same compact comment layout.
-- *Overlay detection fix* -- =simply-annotate-smart-action= works from any line within an annotated region.
+- *Nested replies* -- =M-s r= now prompts which comment to reply to, enabling true threaded conversations with arbitrary nesting depth.
+- *Hierarchical display* -- Nested comments render with indentation and =↳= markers in the annotation buffer, inline overlays, listing, and org export.
+- *Database migration* -- =M-x simply-annotate-migrate-threading= upgrades existing annotations, inferring parent-child relationships from the =type= field.
+- *Backward compatible* -- Existing databases work unchanged; comment IDs are assigned lazily on first access.
 
 See [[file:CHANGELOG.org]] for full version history.
 
@@ -159,11 +158,15 @@ For complete control over annotation data structures:
  (status . "open")
  (priority . "high")
  (tags . ("bug" "critical"))
- (comments . (((author . "John Doe")
+ (comments . (((id . "c-1719654600-000001")
+               (parent-id . nil)
+               (author . "John Doe")
                (timestamp . "2025-06-29T10:30:00")
                (text . "Found a critical bug here")
                (type . "comment"))
-              ((author . "Jane Smith")
+              ((id . "c-1719657300-000002")
+               (parent-id . "c-1719654600-000001")
+               (author . "Jane Smith")
                (timestamp . "2025-06-29T11:15:00")
                (text . "I can reproduce this issue")
                (type . "reply")))))
@@ -175,8 +178,12 @@ For complete control over annotation data structures:
 
 1. Place cursor on any annotation
 2. Press =M-s r= to add a reply
-3. Enter your response
-4. The annotation becomes a threaded conversation
+3. If the thread has multiple comments, select which comment to reply to
+4. Enter your response
+5. The reply is nested under the selected comment
+
+Replies support arbitrary nesting depth.  The annotation buffer, inline overlays,
+listing, and org export all display the hierarchy with indentation.
 
 *** Status Management
 

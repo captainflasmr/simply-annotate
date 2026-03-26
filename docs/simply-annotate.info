@@ -273,11 +273,15 @@ structure:
       (status . "open")
       (priority . "high")
       (tags . ("bug" "critical"))
-      (comments . (((author . "John Doe")
+      (comments . (((id . "c-1719654600-000001")
+                    (parent-id . nil)
+                    (author . "John Doe")
                     (timestamp . "2025-06-29T10:30:00")
                     (text . "Found a critical bug here")
                     (type . "comment"))
-                   ((author . "Jane Smith")
+                   ((id . "c-1719657300-000002")
+                    (parent-id . "c-1719654600-000001")
+                    (author . "Jane Smith")
                     (timestamp . "2025-06-29T11:15:00")
                     (text . "I can reproduce this issue")
                     (type . "reply")))))
@@ -304,6 +308,13 @@ structure:
 
 Each comment in the ‘comments’ list must have:
 
+‘id’
+     Unique identifier for the comment (string, e.g.
+     ‘"c-1719654600-000001"’).  Auto-assigned for legacy comments on
+     first access.
+‘parent-id’
+     The ‘id’ of the parent comment this replies to, or ‘nil’ for root
+     comments.  This field encodes the nested reply hierarchy.
 ‘author’
      Author name (string)
 ‘timestamp’
@@ -357,9 +368,9 @@ Lets create a thread!, reply and add in authors
 6.1 Threading System
 ====================
 
-Each annotation can become a threaded conversation with multiple
-replies.  This is perfect for code reviews, collaborative editing, and
-ongoing discussions about specific parts of your code or documents.
+Each annotation can become a threaded conversation with nested replies.
+This is perfect for code reviews, collaborative editing, and ongoing
+discussions about specific parts of your code or documents.
 
 6.1.1 Adding Replies
 --------------------
@@ -368,22 +379,50 @@ To add a reply to any annotation:
 
   1. Place cursor on annotated text
   2. Press ‘M-s r’
-  3. Enter your reply text
-  4. The annotation automatically becomes a threaded conversation
+  3. If the thread has multiple comments, select which comment to reply
+     to from the hierarchical ‘completing-read’ menu
+  4. Enter your reply text
+  5. The reply is nested under the selected comment
+
+   Replies support arbitrary nesting depth.  When the thread has only
+one comment, the reply targets it directly with no extra prompt.
 
 6.1.2 Thread Display
 --------------------
 
-Threaded annotations are displayed with rich formatting:
+Threaded annotations are displayed with hierarchical indentation:
 
-     ┌─ Thread: thread-123456 [OPEN/HIGH] Tags: review, urgent (3 authors)
-     │ 💬 John Doe (06/19 09:49):
-     │   This needs review before release
-     │ ↳ Jane Smith (06/19 10:15):
-     │   I'll check this today
-     │ ↳ Bob Wilson (06/19 11:30):
-     │   Looks good to me, approved
-     └─────
+     ┌─ ✎ [OPEN/HIGH] review, urgent ────────────
+     │ John Doe (06/19 09:49):
+     │  This needs review before release
+     │   ↳ Jane Smith (06/19 10:15):
+     │     I'll check this today
+     │     ↳ Bob Wilson (06/19 10:17):
+     │       Ok!
+     │       ↳ Jane Smith (06/19 18:17):
+     │         Done!
+     │   ↳ Bob Wilson (06/19 11:30):
+     │     Looks good to me, approved
+     └──────────────────────────────────────────┘
+
+   Each depth level adds 2 spaces of indentation.  The same hierarchical
+rendering is used in inline overlays, the listing buffer (nested org
+headings), and org export.
+
+6.1.3 Database Migration
+------------------------
+
+Existing annotations from before version 0.9.0 use a flat comment list
+without ‘id’ or ‘parent-id’ fields.  These are automatically migrated on
+first access: replies (comments with ‘type = "reply"’) become children
+of the root comment.
+
+   To migrate the entire database at once, run:
+
+     M-x simply-annotate-migrate-threading
+
+   This is safe to run multiple times and only modifies threads that
+need updating.
 
 6.2 Status Management
 =====================
@@ -904,14 +943,14 @@ with:
 
    • Each annotation thread as a TODO item
    • Complete metadata preserved in properties
-   • Replies as sub-entries under the main annotation
+   • Replies as nested sub-entries reflecting the comment hierarchy
    • Status, priority, tags, and timestamps included
    • Author information for each comment and reply
 
 11.2 Export Format
 ==================
 
-The exported org-mode structure looks like:
+The exported org-mode structure preserves the nested reply hierarchy:
 
      #+TITLE: Annotations for myfile.el
      #+DATE: 2025-06-19
@@ -931,8 +970,14 @@ The exported org-mode structure looks like:
      ** Reply by Jane Smith (2025-06-19T10:15:00)
      I'll check this today and provide feedback.
 
+     *** Reply by Bob Wilson (2025-06-19T10:17:00)
+     Ok!
+
      ** Reply by Bob Wilson (2025-06-19T11:30:00)
      Security audit completed. Issues documented in SECURITY.md
+
+   Nested replies appear at deeper heading levels (‘**’, ‘***’, etc.),
+making the conversation structure visible and foldable in org-mode.
 
 11.3 Use Cases for Export
 =========================
@@ -1291,11 +1336,15 @@ structures:
                  (status . "open")
                  (priority . "high")
                  (tags . ("review" "urgent"))
-                 (comments . (((author . "John Doe")
+                 (comments . (((id . "c-1719654600-000001")
+                               (parent-id . nil)
+                               (author . "John Doe")
                                (timestamp . "2025-06-29T10:30:00")
                                (text . "This needs refactoring")
                                (type . "comment"))
-                              ((author . "Jane Smith")
+                              ((id . "c-1719655500-000002")
+                               (parent-id . "c-1719654600-000001")
+                               (author . "Jane Smith")
                                (timestamp . "2025-06-29T10:45:00")
                                (text . "I agree, will fix this")
                                (type . "reply"))))))
@@ -1322,8 +1371,13 @@ structures:
      ‘defun’, or ‘line’)
    • *Backward compatibility*: Old annotations without a ‘level’ field
      default to ‘defun’.  No migration required
+   • *Comment IDs*: Comments now include ‘id’ and ‘parent-id’ fields for
+     nested threading.  Legacy comments without these fields are
+     automatically migrated on first access, with replies becoming
+     children of the root comment
    • *Migration*: Annotations are upgraded to thread format when
-     modified
+     modified.  Use ‘M-x simply-annotate-migrate-threading’ to migrate
+     the entire database at once
 
 14.4 Data Management
 ====================
@@ -1543,10 +1597,10 @@ Function Index
 * Menu:
 
 * simply-annotate-add-annotation-tag:    Threading and Collaboration.
-                                                              (line  66)
+                                                              (line  94)
 * simply-annotate-cancel-edit:           Basic Usage.         (line  72)
 * simply-annotate-change-annotation-author: Threading and Collaboration.
-                                                              (line 104)
+                                                              (line 132)
 * simply-annotate-cycle-display-style:   Display Styles.      (line  47)
 * simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
 * simply-annotate-cycle-level-forward:   Annotation Levels.   (line  45)
@@ -1556,6 +1610,8 @@ Function Index
                                                               (line  12)
 * simply-annotate-jump-to-file:          Advanced Features.   (line  75)
 * simply-annotate-list:                  Advanced Features.   (line   9)
+* simply-annotate-migrate-threading:     Threading and Collaboration.
+                                                              (line  55)
 * simply-annotate-mode:                  Basic Usage.         (line   9)
 * simply-annotate-next:                  Navigation.          (line   9)
 * simply-annotate-previous:              Navigation.          (line   9)
@@ -1563,12 +1619,12 @@ Function Index
 * simply-annotate-reply-to-annotation:   Threading and Collaboration.
                                                               (line  18)
 * simply-annotate-reset-session-author:  Threading and Collaboration.
-                                                              (line 104)
+                                                              (line 132)
 * simply-annotate-save-annotation-buffer: Basic Usage.        (line  72)
 * simply-annotate-set-annotation-priority: Threading and Collaboration.
-                                                              (line  57)
+                                                              (line  85)
 * simply-annotate-set-annotation-status: Threading and Collaboration.
-                                                              (line  45)
+                                                              (line  73)
 * simply-annotate-set-level:             Annotation Levels.   (line  57)
 * simply-annotate-show:                  Navigation.          (line  25)
 * simply-annotate-show-all:              Advanced Features.   (line  48)
@@ -1584,13 +1640,15 @@ Variable Index
  [index ]
 * Menu:
 
-* author:                                Advanced Editing.    (line  66)
-* comments:                              Advanced Editing.    (line  58)
-* created:                               Advanced Editing.    (line  49)
-* id:                                    Advanced Editing.    (line  47)
-* priority:                              Advanced Editing.    (line  54)
+* author:                                Advanced Editing.    (line  77)
+* comments:                              Advanced Editing.    (line  62)
+* created:                               Advanced Editing.    (line  53)
+* id:                                    Advanced Editing.    (line  51)
+* id <1>:                                Advanced Editing.    (line  70)
+* parent-id:                             Advanced Editing.    (line  74)
+* priority:                              Advanced Editing.    (line  58)
 * simply-annotate-author-list:           Threading and Collaboration.
-                                                              (line  79)
+                                                              (line 107)
 * simply-annotate-author-list <1>:       Customization.       (line 134)
 * simply-annotate-author-list <2>:       Customization.       (line 135)
 * simply-annotate-buffer-height:         Customization.       (line  94)
@@ -1620,25 +1678,25 @@ Variable Index
 * simply-annotate-levels:                Customization.       (line 124)
 * simply-annotate-levels <1>:            Customization.       (line 125)
 * simply-annotate-priority-levels:       Threading and Collaboration.
-                                                              (line  57)
+                                                              (line  85)
 * simply-annotate-priority-levels <1>:   Customization.       (line 149)
 * simply-annotate-priority-levels <2>:   Customization.       (line 150)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
-                                                              (line  79)
+                                                              (line 107)
 * simply-annotate-prompt-for-author <1>: Customization.       (line 138)
 * simply-annotate-prompt-for-author <2>: Customization.       (line 139)
 * simply-annotate-remember-author-per-file: Customization.    (line 142)
 * simply-annotate-remember-author-per-file <1>: Customization.
                                                               (line 143)
 * simply-annotate-thread-statuses:       Threading and Collaboration.
-                                                              (line  45)
+                                                              (line  73)
 * simply-annotate-thread-statuses <1>:   Customization.       (line 145)
 * simply-annotate-thread-statuses <2>:   Customization.       (line 146)
-* status:                                Advanced Editing.    (line  51)
-* tags:                                  Advanced Editing.    (line  56)
-* text:                                  Advanced Editing.    (line  70)
-* timestamp:                             Advanced Editing.    (line  68)
-* type:                                  Advanced Editing.    (line  72)
+* status:                                Advanced Editing.    (line  55)
+* tags:                                  Advanced Editing.    (line  60)
+* text:                                  Advanced Editing.    (line  81)
+* timestamp:                             Advanced Editing.    (line  79)
+* type:                                  Advanced Editing.    (line  83)
 
 
 File: simply-annotate.info,  Node: Concept Index,  Prev: Variable Index,  Up: Top
@@ -1652,10 +1710,10 @@ Concept Index
 * advanced editing:                      Advanced Editing.    (line   9)
 * annotation levels:                     Annotation Levels.   (line   6)
 * authors:                               Threading and Collaboration.
-                                                              (line  76)
+                                                              (line 104)
 * buffer-local variables:                Troubleshooting.     (line 128)
 * collaboration:                         Threading and Collaboration.
-                                                              (line  76)
+                                                              (line 104)
 * conversations:                         Threading and Collaboration.
                                                               (line  11)
 * data structure editing:                Advanced Editing.    (line   9)
@@ -1666,25 +1724,25 @@ Concept Index
 * inline display:                        Display Styles.      (line  83)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
-                                                              (line  66)
+                                                              (line  94)
 * overlay persistence:                   Troubleshooting.     (line 128)
 * priority:                              Threading and Collaboration.
-                                                              (line  42)
+                                                              (line  70)
 * progressive exploration:               Annotation Levels.   (line   6)
 * replies:                               Threading and Collaboration.
                                                               (line  11)
 * sexp editing:                          Advanced Editing.    (line   9)
 * status:                                Threading and Collaboration.
-                                                              (line  42)
+                                                              (line  70)
 * status display:                        Advanced Features.   (line 116)
 * tags:                                  Threading and Collaboration.
-                                                              (line  66)
+                                                              (line  94)
 * team:                                  Threading and Collaboration.
-                                                              (line  75)
+                                                              (line 103)
 * threading:                             Threading and Collaboration.
                                                               (line  11)
 * workflow:                              Threading and Collaboration.
-                                                              (line  41)
+                                                              (line  69)
 
 
 Tag Table:
@@ -1694,19 +1752,19 @@ Node: Installation4695
 Node: Quick Start5303
 Node: Basic Usage6151
 Node: Advanced Editing8764
-Node: Threading and Collaboration12289
-Node: Display Styles16474
-Node: Annotation Levels21090
-Node: Navigation24393
-Node: Advanced Features26035
-Node: Org-mode Integration30336
-Node: Key Bindings32530
-Node: Customization36293
-Node: Data Storage43804
-Node: Troubleshooting47283
-Node: Function Index53706
-Node: Variable Index56182
-Node: Concept Index60336
+Node: Threading and Collaboration12793
+Node: Display Styles18130
+Node: Annotation Levels22746
+Node: Navigation26049
+Node: Advanced Features27691
+Node: Org-mode Integration31992
+Node: Key Bindings34435
+Node: Customization38198
+Node: Data Storage45709
+Node: Troubleshooting49767
+Node: Function Index56190
+Node: Variable Index58809
+Node: Concept Index63109
 
 End Tag Table
 

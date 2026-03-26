@@ -11,6 +11,34 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-26 Wed> *0.9.0*
+
+Nested/hierarchical comment threading.
+
+*** Features
+
+- *Nested replies* -- Replies can now target any comment in a thread, not just
+  the root.  When replying to a thread with multiple comments, =M-s r= prompts
+  with a hierarchical =completing-read= menu showing the comment tree so you can
+  pick which comment to reply to.  Single-comment threads reply to the root
+  directly with no extra prompt.
+- *Hierarchical display* -- Annotation buffer, inline overlays, listing buffer,
+  and org export all render nested comments with indentation (2 spaces per depth
+  level) and =↳= markers showing the reply structure.
+- *Database migration command* -- =M-x simply-annotate-migrate-threading= scans
+  the entire database and assigns comment IDs, inferring parent-child
+  relationships from the existing =type= field (replies become children of the
+  root comment).  Safe to run multiple times.
+
+*** Data model
+
+- Each comment now carries an =id= (unique string) and =parent-id= (nil for
+  root comments, or a parent comment's id for replies).
+- Comments are still stored as a flat list; the tree structure is built on the
+  fly for display.
+- Legacy comments without =id=/=parent-id= are automatically migrated on first
+  access, with =type = "reply"= comments becoming children of the root comment.
+
 ** <2026-03-26 Wed> *0.8.2*
 
 Display styles, comment formatting, and usability refinements.

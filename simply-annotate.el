@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.8.2
+;; Version: 0.9.0
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -382,6 +382,9 @@ mode changes that would kill buffer-local values.")
 (defvar simply-annotate-reply-mode nil
   "Non-nil when the *Annotation* buffer is in reply mode.")
 
+(defvar simply-annotate-reply-parent-id nil
+  "Comment ID to which the current reply is addressed.")
+
 ;; Threading Variables
 
 (defvar simply-annotate-session-author nil
@@ -489,6 +492,41 @@ This helps fix corrupted annotations from older versions."
         (fill-region (point-min) (point-max))
         (split-string (buffer-string) "\n")))))
 
+(defun simply-annotate--inline-comment-node (node depth formatted-lines wrap-width first-comment-p)
+  "Format comment tree NODE at DEPTH for inline display.
+Appends to FORMATTED-LINES (a list built in reverse).
+WRAP-WIDTH is the fill width.  FIRST-COMMENT-P is a cons cell
+whose car is t if this is the first comment being formatted.
+Returns the updated FORMATTED-LINES."
+  (let* ((comment (car node))
+         (children (cdr node))
+         (text (alist-get 'text comment))
+         (author (alist-get 'author comment))
+         (timestamp (alist-get 'timestamp comment))
+         (is-reply (> depth 0))
+         (indent (make-string (* 2 depth) ?\s))
+         (meta (if (and author timestamp)
+                   (format "%s%s%s (%s):"
+                           indent
+                           (if is-reply "↳ " "")
+                           (propertize author 'face 'bold)
+                           (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                 (concat indent (if is-reply "↳" ""))))
+         (text-prefix (concat indent (if is-reply "  " " ")))
+         (comment-lines (split-string text "\n")))
+    (unless (car first-comment-p)
+      (push :separator formatted-lines))
+    (setcar first-comment-p nil)
+    (when (not (string-empty-p meta))
+      (push meta formatted-lines))
+    (dolist (line comment-lines)
+      (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
+        (push (concat text-prefix wrapped) formatted-lines)))
+    (dolist (child children)
+      (setq formatted-lines
+            (simply-annotate--inline-comment-node child (1+ depth) formatted-lines wrap-width first-comment-p)))
+    formatted-lines))
+
 (defun simply-annotate--inline-text (overlay)
   "Return the inline display string for OVERLAY as a box-drawn block."
   (let* ((data (overlay-get overlay 'simply-annotation))
@@ -507,38 +545,40 @@ This helps fix corrupted annotations from older versions."
                       (when tags
                         (format " %s" (string-join tags ", "))))))))
          (comments (if is-thread
-                       (alist-get 'comments data)
+                       (progn
+                         (simply-annotate--ensure-comment-ids data)
+                         (alist-get 'comments data))
                      (list `((text . ,data) (type . "comment") (author . "System")))))
          (formatted-lines '())
          (label (concat "✎" (or meta "")))
-         (rule-len (max 20 (+ 4 (string-width label)))))
+         (rule-len (max 20 (+ 4 (string-width label))))
+         (wrap-width (when simply-annotate-inline-fill-column
+                       (- simply-annotate-inline-fill-column 4))))
 
-    ;; Format each comment with its metadata and prefix
-    (let ((first-comment t))
-      (dolist (comment comments)
+    ;; Build tree and format recursively
+    (if is-thread
+        (let ((tree (simply-annotate--build-comment-tree comments))
+              (first-flag (cons t nil)))
+          (dolist (root-node tree)
+            (setq formatted-lines
+                  (simply-annotate--inline-comment-node
+                   root-node 0 formatted-lines wrap-width first-flag))))
+      ;; Non-thread: simple flat rendering
+      (let ((comment (car comments)))
         (let* ((text (alist-get 'text comment))
-               (type (alist-get 'type comment))
                (author (alist-get 'author comment))
                (timestamp (alist-get 'timestamp comment))
-               (is-reply (not (string= type "comment")))
-               (meta (if (and author timestamp)
-                         (format "%s%s (%s):"
-                                 (if is-reply "↳ " "")
-                                 (propertize author 'face 'bold)
-                                 (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                       (if is-reply "↳" "")))
-               (comment-lines (split-string text "\n"))
-               (wrap-width (when simply-annotate-inline-fill-column
-                             (- simply-annotate-inline-fill-column 4))))
-          (unless first-comment
-            (push :separator formatted-lines))
-          (setq first-comment nil)
-          (when (not (string-empty-p meta))
-            (push meta formatted-lines))
-          (let ((text-prefix (if (string-empty-p meta) "" " ")))
-            (dolist (line comment-lines)
-              (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
-                (push (concat text-prefix wrapped) formatted-lines)))))))
+               (cmeta (if (and author timestamp)
+                          (format "%s (%s):"
+                                  (propertize author 'face 'bold)
+                                  (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                        ""))
+               (comment-lines (split-string text "\n")))
+          (when (not (string-empty-p cmeta))
+            (push cmeta formatted-lines))
+          (dolist (line comment-lines)
+            (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
+              (push (concat " " wrapped) formatted-lines))))))
 
     (setq formatted-lines (reverse formatted-lines))
 
@@ -887,6 +927,39 @@ File-level overlays are excluded at the `all' pseudo-level."
 
 ;;; Thread Management
 
+(defun simply-annotate--comment-id ()
+  "Generate a unique comment ID."
+  (format "c-%s-%06d" (format-time-string "%s") (random 1000000)))
+
+(defun simply-annotate--ensure-comment-ids (thread)
+  "Ensure all comments in THREAD have id and parent-id fields.
+For legacy comments without these fields, infers the hierarchy from
+the type field: comments with type \"reply\" become children of the
+first root comment.  Returns THREAD."
+  (let* ((comments (alist-get 'comments thread))
+         (needs-migration (cl-some (lambda (c) (not (alist-get 'id c))) comments))
+         (root-id nil))
+    (when needs-migration
+      (setf (alist-get 'comments thread)
+            (mapcar (lambda (comment)
+                      (unless (alist-get 'id comment)
+                        (let ((new-id (simply-annotate--comment-id)))
+                          (push (cons 'id new-id) comment)
+                          ;; Track the first root comment's id
+                          (when (and (not root-id)
+                                     (string= (or (alist-get 'type comment) "comment")
+                                              "comment"))
+                            (setq root-id new-id))))
+                      (unless (assq 'parent-id comment)
+                        ;; Replies become children of the first root comment
+                        (let ((type (or (alist-get 'type comment) "comment")))
+                          (push (cons 'parent-id
+                                      (if (string= type "reply") root-id nil))
+                                comment)))
+                      comment)
+                    comments))))
+  thread)
+
 (defun simply-annotate--create-thread (text &optional author priority tags)
   "Create a new annotation thread with TEXT, AUTHOR, PRIORITY, and TAGS."
   (let ((timestamp (simply-annotate--timestamp))
@@ -896,22 +969,53 @@ File-level overlays are excluded at the `all' pseudo-level."
       (status . "open")
       (priority . ,(or priority "normal"))
       (tags . ,(or tags '()))
-      (comments . (((author . ,(or author (simply-annotate--author-for-context 'annotation)))
+      (comments . (((id . ,(simply-annotate--comment-id))
+                    (parent-id . nil)
+                    (author . ,(or author (simply-annotate--author-for-context 'annotation)))
                     (timestamp . ,timestamp)
                     (text . ,text)
                     (type . "comment")))))))
 
-(defun simply-annotate--add-reply (thread reply-text &optional author)
-  "Add REPLY-TEXT to an existing THREAD with optional AUTHOR."
+(defun simply-annotate--add-reply (thread reply-text &optional author parent-comment-id)
+  "Add REPLY-TEXT to an existing THREAD with optional AUTHOR.
+When PARENT-COMMENT-ID is non-nil, the reply is nested under that comment.
+Otherwise it replies to the first (root) comment."
+  (simply-annotate--ensure-comment-ids thread)
   (let* ((timestamp (simply-annotate--timestamp))
-         (reply `((author . ,(or author (simply-annotate--author-for-context 'reply)))
+         (comments (alist-get 'comments thread))
+         (effective-parent (or parent-comment-id
+                               (alist-get 'id (car comments))))
+         (reply `((id . ,(simply-annotate--comment-id))
+                  (parent-id . ,effective-parent)
+                  (author . ,(or author (simply-annotate--author-for-context 'reply)))
                   (timestamp . ,timestamp)
                   (text . ,reply-text)
-                  (type . "reply")))
-         (comments (alist-get 'comments thread)))
+                  (type . "reply"))))
     (simply-annotate--remember-author (alist-get 'author reply))
     (setf (alist-get 'comments thread) (append comments (list reply)))
     thread))
+
+(defun simply-annotate--build-comment-tree (comments)
+  "Build a tree from flat COMMENTS list using parent-id references.
+Returns a list of root nodes, where each node is (comment . children)
+and children is a recursive list of nodes."
+  (let ((by-parent (make-hash-table :test 'equal)))
+    ;; Group comments by parent-id
+    (dolist (comment comments)
+      (let ((pid (alist-get 'parent-id comment)))
+        (push comment (gethash pid by-parent))))
+    ;; Reverse each bucket to restore insertion order
+    (maphash (lambda (key val)
+               (puthash key (nreverse val) by-parent))
+             by-parent)
+    ;; Recursively build tree from a given parent id
+    (simply-annotate--build-subtree by-parent nil)))
+
+(defun simply-annotate--build-subtree (by-parent parent-id)
+  "Build subtree from BY-PARENT hash for PARENT-ID."
+  (mapcar (lambda (c)
+            (cons c (simply-annotate--build-subtree by-parent (alist-get 'id c))))
+          (gethash parent-id by-parent)))
 
 (defun simply-annotate--set-thread-property (thread property value valid-values)
   "Set PROPERTY of THREAD to VALUE if it's in VALID-VALUES."
@@ -942,12 +1046,48 @@ File-level overlays are excluded at the `all' pseudo-level."
             comment-count
             (if (= comment-count 1) "" "s"))))
 
+(defun simply-annotate--format-comment-node (node depth rule-len)
+  "Format a comment tree NODE at DEPTH for the annotation buffer.
+RULE-LEN is the box-drawing width."
+  (let* ((comment (car node))
+         (children (cdr node))
+         (author (alist-get 'author comment))
+         (timestamp (alist-get 'timestamp comment))
+         (text (alist-get 'text comment))
+         (is-reply (> depth 0))
+         (indent (make-string (* 2 depth) ?\s))
+         (meta (if (and author timestamp)
+                   (format "%s%s%s (%s):"
+                           indent
+                           (if is-reply "↳ " "")
+                           (propertize author 'face 'bold)
+                           (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                 (concat indent (if is-reply "↳" ""))))
+         (text-indent (concat indent (if is-reply "  " "")))
+         (formatted-text (replace-regexp-in-string
+                          "\n" (concat "\n│ " text-indent) text)))
+    (concat
+     (if (not (string-empty-p meta))
+         (format "│ %s\n" meta)
+       "")
+     (format "│ %s%s" text-indent formatted-text)
+     (when children
+       (concat
+        "\n"
+        (mapconcat
+         (lambda (child)
+           (simply-annotate--format-comment-node child (1+ depth) rule-len))
+         children
+         "\n"))))))
+
 (defun simply-annotate--format-thread-full (thread)
   "Format complete THREAD for display in annotation buffer."
+  (simply-annotate--ensure-comment-ids thread)
   (let* ((status (alist-get 'status thread))
          (priority (alist-get 'priority thread))
          (tags (alist-get 'tags thread))
          (comments (alist-get 'comments thread))
+         (tree (simply-annotate--build-comment-tree comments))
          (label (concat "✎ [" (upcase status) "/" (upcase priority) "]"))
          (rule-len (max 20 (+ 4 (string-width label)))))
 
@@ -959,27 +1099,9 @@ File-level overlays are excluded at the `all' pseudo-level."
             (format "┌─ %s %s" label (make-string (max 1 (- rule-len 4 (string-width label))) ?─))
             "\n"
             (mapconcat
-             (lambda (comment)
-               (let* ((author (alist-get 'author comment))
-                      (timestamp (alist-get 'timestamp comment))
-                      (text (alist-get 'text comment))
-                      (type (alist-get 'type comment))
-                      (is-reply (not (string= type "comment")))
-                      (meta (if (and author timestamp)
-                                (format "%s%s (%s):"
-                                        (if is-reply "↳ " "")
-                                        (propertize author 'face 'bold)
-                                        (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                              (if is-reply "↳" "")))
-                      (indent (if (string-empty-p meta) "" " ")))
-                 (concat
-                  (if (not (string-empty-p meta))
-                      (format "│ %s\n" meta)
-                    "")
-                  (format "│ %s%s"
-                          indent
-                          (replace-regexp-in-string "\n" (concat "\n│ " indent) text)))))
-             comments
+             (lambda (node)
+               (simply-annotate--format-comment-node node 0 rule-len))
+             tree
              (format "\n├%s\n" (make-string (max 1 rule-len) ?─)))
             "\n└" (make-string (max 1 rule-len) ?─) "┘")))
       ;; Collapse runs of multiple blank lines to at most one
@@ -1216,12 +1338,15 @@ When SELECT is non-nil, move point to the annotation buffer."
               (cl-return-from simply-annotate-save-annotation-buffer))
           (setq final-data (cond
                             (simply-annotate-reply-mode
-                             (let ((new-thread (simply-annotate--add-reply 
+                             (let ((new-thread (simply-annotate--add-reply
                                                 (if (simply-annotate--thread-p current-data)
                                                     current-data
                                                   (simply-annotate--create-thread current-data))
-                                                content)))
+                                                content
+                                                nil
+                                                simply-annotate-reply-parent-id)))
                                (setq simply-annotate-reply-mode nil)
+                               (setq simply-annotate-reply-parent-id nil)
                                new-thread))
                             ((simply-annotate--thread-p current-data)
                              (simply-annotate--update-thread-first-comment current-data content))
@@ -1572,17 +1697,92 @@ If WRAP is non-nil, wrap around to the beginning/end."
 
 ;;; Threading Commands
 
+(defun simply-annotate--flatten-comment-tree (tree &optional depth)
+  "Flatten comment TREE into an ordered list of (comment . depth) pairs.
+DEPTH defaults to 0 for root nodes."
+  (let ((d (or depth 0))
+        (result '()))
+    (dolist (node tree)
+      (push (cons (car node) d) result)
+      (when (cdr node)
+        (setq result (append (nreverse
+                              (simply-annotate--flatten-comment-tree (cdr node) (1+ d)))
+                             result))))
+    (nreverse result)))
+
+(defun simply-annotate--select-reply-target (thread)
+  "Prompt user to select which comment in THREAD to reply to.
+Returns the comment ID of the selected comment."
+  (simply-annotate--ensure-comment-ids thread)
+  (let* ((comments (alist-get 'comments thread))
+         (tree (simply-annotate--build-comment-tree comments))
+         (flat (simply-annotate--flatten-comment-tree tree))
+         (choices (mapcar
+                   (lambda (pair)
+                     (let* ((comment (car pair))
+                            (depth (cdr pair))
+                            (indent (make-string (* 2 depth) ?\s))
+                            (author (alist-get 'author comment))
+                            (text (alist-get 'text comment))
+                            (preview (truncate-string-to-width
+                                      (car (split-string text "\n")) 50 nil nil "...")))
+                       (cons (format "%s%s%s: %s"
+                                     indent
+                                     (if (> depth 0) "↳ " "")
+                                     (or author "Unknown")
+                                     preview)
+                             (alist-get 'id comment))))
+                   flat))
+         (selected (completing-read "Reply to: " (mapcar #'car choices) nil t))
+         (comment-id (cdr (assoc selected choices))))
+    comment-id))
+
 (defun simply-annotate-reply-to-annotation ()
-  "Enhanced reply function using the *Annotation* buffer."
+  "Enhanced reply function using the *Annotation* buffer.
+When the thread has multiple comments, prompts to select which
+comment to reply to for nested threading."
   (interactive)
   (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
                      simply-annotate-current-overlay
                    (simply-annotate--overlay-at-point))))
     (if overlay
-        (let ((current-data (overlay-get overlay 'simply-annotation)))
+        (let* ((current-data (overlay-get overlay 'simply-annotation))
+               (is-thread (simply-annotate--thread-p current-data))
+               (comments (when is-thread (alist-get 'comments current-data)))
+               (parent-id (cond
+                           ;; Not a thread yet - no parent needed
+                           ((not is-thread) nil)
+                           ;; Single comment - reply to it directly
+                           ((<= (length comments) 1)
+                            (alist-get 'id (car comments)))
+                           ;; Multiple comments - prompt user
+                           (t (simply-annotate--select-reply-target current-data)))))
+          (setq simply-annotate-reply-parent-id parent-id)
           (simply-annotate--update-annotation-buffer current-data overlay 'reply)
           (simply-annotate--show-annotation-buffer t))
       (message "No annotation at point"))))
+
+(defun simply-annotate-migrate-threading ()
+  "Migrate all annotations in the database to nested threading format.
+Assigns comment IDs and infers parent-child relationships from the
+type field: replies become children of the first root comment in
+each thread.  Safe to run multiple times."
+  (interactive)
+  (let* ((db (simply-annotate--load-database))
+         (migrated 0))
+    (if (not db)
+        (message "No annotation database found")
+      (dolist (file-entry db)
+        (dolist (ann (cdr file-entry))
+          (let ((data (alist-get 'text ann)))
+            (when (simply-annotate--thread-p data)
+              (let ((comments (alist-get 'comments data)))
+                (when (cl-some (lambda (c) (not (alist-get 'id c))) comments)
+                  (simply-annotate--ensure-comment-ids data)
+                  (cl-incf migrated)))))))
+      (simply-annotate--save-database db)
+      (message "Migration complete: %d thread%s updated"
+               migrated (if (= migrated 1) "" "s")))))
 
 (defun simply-annotate-set-annotation-status ()
   "Set the status of annotation at point."
@@ -1660,20 +1860,27 @@ If WRAP is non-nil, wrap around to the beginning/end."
 
 (defun simply-annotate--change-thread-author (overlay thread)
   "Change author for THREAD in OVERLAY."
+  (simply-annotate--ensure-comment-ids thread)
   (let* ((comments (alist-get 'comments thread))
+         (tree (simply-annotate--build-comment-tree comments))
+         (flat (simply-annotate--flatten-comment-tree tree))
          (comment-choices (mapcar
-                           (lambda (comment)
-                             (let ((author (alist-get 'author comment))
-                                   (text (alist-get 'text comment))
-                                   (type (alist-get 'type comment)))
-                               (format "%s%s: %s"
-                                       (if (string= type "comment") "" "  ")
+                           (lambda (pair)
+                             (let* ((comment (car pair))
+                                    (depth (cdr pair))
+                                    (indent (make-string (* 2 depth) ?\s))
+                                    (author (alist-get 'author comment))
+                                    (text (alist-get 'text comment)))
+                               (format "%s%s%s: %s"
+                                       indent
+                                       (if (> depth 0) "↳ " "")
                                        author
-                                       (truncate-string-to-width text 40 nil nil "..."))))
-                           comments))
-         (selected (completing-read "Change author for: " comment-choices))
-         (comment-index (cl-position selected comment-choices :test #'string=))
-         (selected-comment (nth comment-index comments))
+                                       (truncate-string-to-width
+                                        (car (split-string text "\n")) 40 nil nil "..."))))
+                           flat))
+         (selected (completing-read "Change author for: " comment-choices nil t))
+         (choice-index (cl-position selected comment-choices :test #'string=))
+         (selected-comment (car (nth choice-index flat)))
          (current-author (alist-get 'author selected-comment))
          (new-author (simply-annotate--select-author current-author current-author)))
     
@@ -1836,18 +2043,31 @@ DEPTH controls heading level offset (default 0)."
     (dolist (line (split-string (string-trim line-content) "\n"))
       (insert (format "~%s~\n" line)))
 
-    ;; Each comment/reply as its own heading
-    (dolist (comment comments)
-      (let* ((comment-author (alist-get 'author comment))
-             (comment-timestamp (alist-get 'timestamp comment))
-             (comment-text (alist-get 'text comment))
-             (comment-type (alist-get 'type comment))
-             (type-label (if (string= comment-type "comment") "Comment" "Reply"))
-             (formatted-time (format-time-string "%m/%d %H:%M"
-                                                 (date-to-time comment-timestamp))))
-        (insert (format "%s %s - %s (%s)\n" h3 type-label comment-author formatted-time))
-        (dolist (line (split-string comment-text "\n"))
-          (insert (format "%s\n" line)))))))
+    ;; Comments as nested headings reflecting thread hierarchy
+    (simply-annotate--ensure-comment-ids thread)
+    (let ((tree (simply-annotate--build-comment-tree
+                 (alist-get 'comments thread))))
+      (simply-annotate--insert-comment-tree tree (+ 3 d)))))
+
+(defun simply-annotate--insert-comment-tree (tree heading-level)
+  "Insert comment TREE nodes as org headings at HEADING-LEVEL.
+Recursively inserts children at deeper heading levels."
+  (dolist (node tree)
+    (let* ((comment (car node))
+           (children (cdr node))
+           (stars (make-string heading-level ?*))
+           (author (alist-get 'author comment))
+           (timestamp (alist-get 'timestamp comment))
+           (text (alist-get 'text comment))
+           (type (alist-get 'type comment))
+           (type-label (if (string= type "comment") "Comment" "Reply"))
+           (formatted-time (format-time-string "%m/%d %H:%M"
+                                               (date-to-time timestamp))))
+      (insert (format "%s %s - %s (%s)\n" stars type-label author formatted-time))
+      (dolist (line (split-string text "\n"))
+        (insert (format "%s\n" line)))
+      (when children
+        (simply-annotate--insert-comment-tree children (1+ heading-level))))))
 
 (defun simply-annotate--insert-simple-annotation (annotation-data line-info file-key level &optional depth)
   "Insert formatted simple ANNOTATION-DATA with LINE-INFO for FILE-KEY at LEVEL.
@@ -2117,17 +2337,37 @@ Opens the selected file and enables `simply-annotate-mode'."
 
 ;;; Org Export
 
+(defun simply-annotate--comment-tree-to-org (tree depth)
+  "Convert comment TREE to org headings at DEPTH (number of stars)."
+  (mapconcat
+   (lambda (node)
+     (let* ((comment (car node))
+            (children (cdr node))
+            (stars (make-string depth ?*))
+            (author (alist-get 'author comment))
+            (timestamp (alist-get 'timestamp comment))
+            (text (alist-get 'text comment)))
+       (concat
+        (format "%s Reply by %s (%s)\n%s\n\n" stars author timestamp text)
+        (when children
+          (simply-annotate--comment-tree-to-org children (1+ depth))))))
+   tree ""))
+
 (defun simply-annotate--thread-to-org (thread)
   "Convert a THREAD to org-mode format."
+  (simply-annotate--ensure-comment-ids thread)
   (let* ((id (alist-get 'id thread))
          (status (alist-get 'status thread))
          (priority (alist-get 'priority thread))
          (tags (alist-get 'tags thread))
          (comments (alist-get 'comments thread))
-         (first-comment (car comments))
+         (tree (simply-annotate--build-comment-tree comments))
+         (first-node (car tree))
+         (first-comment (car first-node))
+         (first-children (cdr first-node))
          (first-text (alist-get 'text first-comment))
-         (replies (cdr comments)))
-    
+         (remaining-roots (cdr tree)))
+
     (concat
      (format "* TODO %s\n" (car (split-string first-text "\n")))
      (format ":PROPERTIES:\n")
@@ -2140,16 +2380,12 @@ Opens the selected file and enables `simply-annotate-mode'."
      (format ":END:\n\n")
      (when (> (length first-text) (length (car (split-string first-text "\n"))))
        (concat (string-join (cdr (split-string first-text "\n")) "\n") "\n\n"))
-     
-     (when replies
-       (mapconcat
-        (lambda (reply)
-          (format "** Reply by %s (%s)\n%s\n\n"
-                  (alist-get 'author reply)
-                  (alist-get 'timestamp reply)
-                  (alist-get 'text reply)))
-        replies
-        "")))))
+     ;; Children of the first comment at ** level
+     (when first-children
+       (simply-annotate--comment-tree-to-org first-children 2))
+     ;; Any additional root-level comments (shouldn't normally happen)
+     (when remaining-roots
+       (simply-annotate--comment-tree-to-org remaining-roots 2)))))
 
 (defun simply-annotate-export-to-org-file (filename)
   "Export all annotations in current buffer to an org file FILENAME."

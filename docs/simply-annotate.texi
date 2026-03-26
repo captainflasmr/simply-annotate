@@ -337,11 +337,15 @@ Annotations are stored as Elisp association lists with the following structure:
  (status . "open")
  (priority . "high")
  (tags . ("bug" "critical"))
- (comments . (((author . "John Doe")
+ (comments . (((id . "c-1719654600-000001")
+               (parent-id . nil)
+               (author . "John Doe")
                (timestamp . "2025-06-29T10:30:00")
                (text . "Found a critical bug here")
                (type . "comment"))
-              ((author . "Jane Smith")
+              ((id . "c-1719657300-000002")
+               (parent-id . "c-1719654600-000001")
+               (author . "Jane Smith")
                (timestamp . "2025-06-29T11:15:00")
                (text . "I can reproduce this issue")
                (type . "reply")))))
@@ -369,6 +373,12 @@ List of comment/reply objects
 Each comment in the @code{comments} list must have:
 
 @vtable @code
+@item id
+Unique identifier for the comment (string, e.g. @code{"c-1719654600-000001"}).
+Auto-assigned for legacy comments on first access.
+@item parent-id
+The @code{id} of the parent comment this replies to, or @code{nil} for root
+comments.  This field encodes the nested reply hierarchy.
 @item author
 Author name (string)
 @item timestamp
@@ -441,7 +451,7 @@ Lets create a thread!, reply and add in authors
 @cindex replies
 @cindex conversations
 
-Each annotation can become a threaded conversation with multiple replies.
+Each annotation can become a threaded conversation with nested replies.
 This is perfect for code reviews, collaborative editing, and ongoing discussions
 about specific parts of your code or documents.
 
@@ -454,27 +464,57 @@ To add a reply to any annotation:
 @item
 Place cursor on annotated text
 @item
-Press @kbd{M-s r} 
+Press @kbd{M-s r}
+@item
+If the thread has multiple comments, select which comment to reply to from the
+hierarchical @code{completing-read} menu
 @item
 Enter your reply text
 @item
-The annotation automatically becomes a threaded conversation
+The reply is nested under the selected comment
 @end enumerate
+
+Replies support arbitrary nesting depth.  When the thread has only one comment,
+the reply targets it directly with no extra prompt.
 
 @subsection Thread Display
 
-Threaded annotations are displayed with rich formatting:
+Threaded annotations are displayed with hierarchical indentation:
 
 @example
-┌─ Thread: thread-123456 [OPEN/HIGH] Tags: review, urgent (3 authors)
-│ 💬 John Doe (06/19 09:49):
-│   This needs review before release
-│ ↳ Jane Smith (06/19 10:15):
-│   I'll check this today  
-│ ↳ Bob Wilson (06/19 11:30):
-│   Looks good to me, approved
-└─────
+┌─ ✎ [OPEN/HIGH] review, urgent ────────────
+│ John Doe (06/19 09:49):
+│  This needs review before release
+│   ↳ Jane Smith (06/19 10:15):
+│     I'll check this today
+│     ↳ Bob Wilson (06/19 10:17):
+│       Ok!
+│       ↳ Jane Smith (06/19 18:17):
+│         Done!
+│   ↳ Bob Wilson (06/19 11:30):
+│     Looks good to me, approved
+└──────────────────────────────────────────┘
 @end example
+
+Each depth level adds 2 spaces of indentation.  The same hierarchical rendering
+is used in inline overlays, the listing buffer (nested org headings), and org
+export.
+
+@subsection Database Migration
+
+@findex simply-annotate-migrate-threading
+Existing annotations from before version 0.9.0 use a flat comment list without
+@code{id} or @code{parent-id} fields.  These are automatically migrated on
+first access: replies (comments with @code{type = "reply"}) become children
+of the root comment.
+
+To migrate the entire database at once, run:
+
+@example
+M-x simply-annotate-migrate-threading
+@end example
+
+This is safe to run multiple times and only modifies threads that need updating.
 
 @section Status Management
 
@@ -1119,7 +1159,7 @@ Each annotation thread as a TODO item
 @item
 Complete metadata preserved in properties
 @item
-Replies as sub-entries under the main annotation
+Replies as nested sub-entries reflecting the comment hierarchy
 @item
 Status, priority, tags, and timestamps included
 @item
@@ -1128,7 +1168,7 @@ Author information for each comment and reply
 
 @section Export Format
 
-The exported org-mode structure looks like:
+The exported org-mode structure preserves the nested reply hierarchy:
 
 @example
 #+TITLE: Annotations for myfile.el
@@ -1149,9 +1189,15 @@ The current implementation has potential security issues.
 ** Reply by Jane Smith (2025-06-19T10:15:00)
 I'll check this today and provide feedback.
 
+*** Reply by Bob Wilson (2025-06-19T10:17:00)
+Ok!
+
 ** Reply by Bob Wilson (2025-06-19T11:30:00)
 Security audit completed. Issues documented in SECURITY.md
 @end example
+
+Nested replies appear at deeper heading levels (@code{**}, @code{***}, etc.),
+making the conversation structure visible and foldable in org-mode.
 
 @section Use Cases for Export
 
@@ -1520,11 +1566,15 @@ With threading support, the storage format includes complete thread structures:
             (status . "open")
             (priority . "high")
             (tags . ("review" "urgent"))
-            (comments . (((author . "John Doe")
+            (comments . (((id . "c-1719654600-000001")
+                          (parent-id . nil)
+                          (author . "John Doe")
                           (timestamp . "2025-06-29T10:30:00")
                           (text . "This needs refactoring")
                           (type . "comment"))
-                         ((author . "Jane Smith")
+                         ((id . "c-1719655500-000002")
+                          (parent-id . "c-1719654600-000001")
+                          (author . "Jane Smith")
                           (timestamp . "2025-06-29T10:45:00")
                           (text . "I agree, will fix this")
                           (type . "reply"))))))
@@ -1552,7 +1602,9 @@ Simply Annotate supports both legacy string annotations and new thread structure
 @item
 @strong{Backward compatibility}: Old annotations without a @code{level} field default to @code{defun}.  No migration required
 @item
-@strong{Migration}: Annotations are upgraded to thread format when modified
+@strong{Comment IDs}: Comments now include @code{id} and @code{parent-id} fields for nested threading.  Legacy comments without these fields are automatically migrated on first access, with replies becoming children of the root comment
+@item
+@strong{Migration}: Annotations are upgraded to thread format when modified.  Use @code{M-x simply-annotate-migrate-threading} to migrate the entire database at once
 @end itemize
 
 @section Data Management
