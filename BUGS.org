@@ -1,0 +1,54 @@
+#+title: BUGS for simply-annotate
+#+author: James Dyer
+#+email: captainflasmr@gmail.com
+#+language: en
+#+options: ':t toc:nil author:nil email:nil num:nil title:nil
+#+startup: showall
+
+This document contains the current bugs/improvements, this is just for me mainly but does include any Issues reported.
+
+* Bugs/Improvements
+
+** TODO add automated unit tests
+
+Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
+
+** TODO annotation buffer could support org-mode syntax
+
+Related to Issue #3. The annotation editing buffer is plain text; optionally deriving from org-mode would give users bold, italics, links, footnotes etc.
+
+** TODO allow user-supplied buffer key function
+
+Related to Issue #2. Currently simply-annotate-file-key hardcodes file path as the key. Making this configurable would enable annotations on non-file buffers (info, nov.el, eww).
+
+** TODO review keymap activation approach
+
+Related to Issues #4 and #5. The minor mode keymap binds single letters which conflicts with normal typing and other packages like Consult. Consider moving default bindings to a prefix or letting users opt-in explicitly.
+
+* Issues
+
+Issues on the [[https://github.com/captainflasmr/simply-annotate/issues][GitHub Issues page]]
+
+** OPEN If an annotation is created outside of simply-annotate-mode, turning on the mode erases it #6
+
+Creating an annotation without the minor mode active, then enabling the mode, reports 0 annotations loaded and the unsaved annotation is lost. Possible fixes: prevent annotation creation outside the mode, save on mode entry, or warn the user.
+
+** OPEN Minor mode activates keymap explicitly, leads to weird outcomes #5
+
+When simply-annotate-mode is active, single-letter bindings in the keymap fire during normal typing. User suggests moving built-in bindings to a separate setup function users call manually.
+
+** OPEN Right way to set key bindings to not interfere with existing bindings, like for Consult #4
+
+Enabling simply-annotate-mode takes over several keybindings that conflict with other packages.
+
+** OPEN Support for org syntax in annotations #3
+
+Request for optional org-mode syntax support in the annotation editing buffer.
+
+** OPEN Support for non-file buffers #2
+
+Request to allow user-supplied key function so annotations can work on non-file buffers (nov.el, Info, etc.). Currently simply-annotate-file-key is hardcoded.
+
+** OPEN More complex threading system #1
+
+Request for nested/reply threading with per-comment reply support, rather than the current flat thread model.
