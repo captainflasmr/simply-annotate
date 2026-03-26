@@ -202,8 +202,8 @@ and documentation and includes threading and collaboration features.
   power users
 - *Annotation levels*: Three-tier annotation system (file, defun, line)
   for progressive code exploration
-- *Multiple display styles*: Choose between highlighting, fringe
-  indicators, both, or subtle
+- *Multiple display styles*: Choose between highlighting, tint, fringe,
+  fringe bracket, both, or subtle
 - *Smart action*: Context-aware command that adapts to the situation
 - *Rich editing*: Full-featured annotation buffer for longer notes
 - *Navigation*: Jump between annotations with simple keybindings
@@ -802,7 +802,7 @@ Next: [[#Annotation-Levels][Annotation Levels]], Previous:
 :CUSTOM_ID: Display-Styles-1
 :CLASS: chapter
 :END:
-Simply Annotate supports three different ways to display annotations,
+Simply Annotate supports six different ways to display annotations,
 allowing you to choose the visual style that best fits your workflow.
 
 - [[#Available-Styles][Available Styles]]
@@ -820,8 +820,18 @@ allowing you to choose the visual style that best fits your workflow.
 - =highlight= :: Traditional background highlighting of annotated text
   (good for emphasis)
 
+- =tint= :: Subtle background colour derived from the current theme,
+  lightened by =simply-annotate-tint-amount= (default 5%). Adapts
+  automatically to any theme.
+
 - =fringe= :: Shows small indicators in the left fringe (minimal visual
   impact)
+
+- =fringe-bracket= :: Draws a vertical bracket in the left fringe
+  spanning the full annotated region. Uses the configured fringe
+  indicator at the top with a continuous vertical bar and a horizontal
+  cap at the bottom. Customisable via
+  =simply-annotate-fringe-bracket-face=.
 
 - =both= :: Combines both highlighting and fringe indicators (maximum
   visibility)
@@ -1541,7 +1551,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
+  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1669,8 +1679,8 @@ Configure team collaboration and threading features:
 - <<index-simply_002dannotate_002ddisplay_002dstyle-1>>=simply-annotate-display-style=
   [[#index-simply_002dannotate_002ddisplay_002dstyle-1][¶]] :: 
 
-  How to display annotations. Options: ='highlight=, ='fringe=, ='both=,
-  ='subtle=. Default: ='fringe=
+  How to display annotations. Options: ='highlight=, ='tint=, ='fringe=,
+  ='fringe-bracket=, ='both=, ='subtle=. Default: ='fringe=
 
 - <<index-simply_002dannotate_002dfringe_002dindicator-1>>=simply-annotate-fringe-indicator=
   [[#index-simply_002dannotate_002dfringe_002dindicator-1][¶]] :: 
@@ -1782,6 +1792,12 @@ Configure team collaboration and threading features:
 #+begin_src lisp-preformatted
 ;; Use only fringe indicators (minimal visual impact)
 (setq simply-annotate-display-style 'fringe)
+
+;; Use fringe brackets spanning the annotated region
+(setq simply-annotate-display-style 'fringe-bracket)
+
+;; Use a subtle background tint (adapts to current theme)
+(setq simply-annotate-display-style 'tint)
 
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)

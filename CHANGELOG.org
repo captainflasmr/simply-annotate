@@ -11,6 +11,29 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-26 Wed> *0.8.2*
+
+Display styles, comment formatting, and usability refinements.
+
+*** Features
+
+- *Fringe bracket display style* -- New =fringe-bracket= style draws a vertical
+  bracket in the fringe spanning the full annotated region.  Uses the configured
+  fringe indicator (triangle) at the top with a continuous vertical bar down to a
+  horizontal cap at the bottom.  Customisable via =simply-annotate-fringe-bracket-face=.
+- *Tint display style* -- New =tint= style applies a subtle background colour
+  derived from the current theme (lightened by =simply-annotate-tint-amount=,
+  default 5%).  Adapts automatically to any theme.
+
+*** Improvements
+
+- *Consistent comment formatting* -- Inline display and =*Annotation*= buffer now
+  use the same compact layout: =✎ [STATUS/PRIORITY]= header, =├= joined
+  separators between comments, matching reply indentation, and =└───┘= footer.
+- *File-level hidden at all* -- File-level annotations are suppressed when
+  viewing at the =all= pseudo-level, preventing whole-buffer overlays from
+  obscuring smaller annotations.
+
 ** <2026-03-25 Tue> *0.8.1*
 
 Dired integration, display refinements, and usability improvements.

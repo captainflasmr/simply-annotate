@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.8.1
+;; Version: 0.8.2
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -80,6 +80,7 @@
 ;;; Customization
 
 (require 'cl-lib)
+(require 'color)
 
 (declare-function org-mode "org")
 (declare-function org-return "org")
@@ -101,6 +102,13 @@
   "Face for highlighted annotated text."
   :group 'simply-annotate)
 
+(defface simply-annotate-fringe-bracket-face
+  '((t (:inherit simply-annotate-highlight-face :background unspecified)))
+  "Face for fringe bracket indicators.
+Uses the foreground of the highlight face with no background,
+so the bracket renders flat without a filled region in the fringe."
+  :group 'simply-annotate)
+
 (defcustom simply-annotate-highlight-face 'simply-annotate-highlight-face
   "Face for highlighted annotated text."
   :type 'face
@@ -119,13 +127,22 @@
 (defcustom simply-annotate-display-style 'fringe
   "How to display annotated text.
 - highlight: Highlight the annotated text (default behavior)
+- tint: Subtle background tint derived from the current background
 - fringe: Show indicators in the fringe
+- fringe-bracket: Show bracket indicators spanning the annotated region
 - both: Show both fringe indicators and text highlighting
 - subtle: Show a thin left border on annotated text"
   :type '(choice (const :tag "Highlight text" highlight)
+                 (const :tag "Background tint" tint)
                  (const :tag "Fringe indicators" fringe)
+                 (const :tag "Fringe bracket" fringe-bracket)
                  (const :tag "Both fringe and highlight" both)
                  (const :tag "Subtle left border" subtle))
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-tint-amount 20
+  "Percentage to lighten the background color for the tint display style."
+  :type 'integer
   :group 'simply-annotate)
 
 (defcustom simply-annotate-fringe-indicator 'right-triangle
@@ -288,6 +305,25 @@ Also used as a regexp in font-lock; avoid special regexp characters."
      #b01111110
      #b00111100
      #b00011000]
+    nil nil 'center)
+  ;; Bracket bitmaps: tall (40 rows) so they fill the character cell.
+  ;; Alignment ensures the horizontal bars sit at the cell edge and
+  ;; the vertical bars extend fully, with no gaps between lines.
+  (define-fringe-bitmap 'simply-annotate-fringe-bracket-top
+    (vconcat (make-vector 3 #b11111100)
+             (make-vector 37 #b10000000))
+    nil nil 'top)
+  (define-fringe-bitmap 'simply-annotate-fringe-bracket-mid
+    (make-vector 40 #b10000000)
+    nil nil 'center)
+  (define-fringe-bitmap 'simply-annotate-fringe-bracket-bot
+    (vconcat (make-vector 37 #b10000000)
+             (make-vector 3 #b11111100))
+    nil nil 'bottom)
+  (define-fringe-bitmap 'simply-annotate-fringe-bracket-single
+    (vconcat (make-vector 3 #b11111100)
+             (make-vector 10 #b10000000)
+             (make-vector 3 #b11111100))
     nil nil 'center))
 
 ;;; Variables
@@ -443,15 +479,19 @@ This helps fix corrupted annotations from older versions."
   "Return the inline display string for OVERLAY as a box-drawn block."
   (let* ((data (overlay-get overlay 'simply-annotation))
          (is-thread (simply-annotate--thread-p data))
+         (tags (when is-thread (alist-get 'tags data)))
          (meta (when is-thread
                  (let ((status (alist-get 'status data))
                        (priority (alist-get 'priority data)))
                    (when (or status priority)
-                     (format " [%s]"
-                             (string-join
-                              (delq nil (list (when status (upcase status))
-                                              (when priority (upcase priority))))
-                              "/"))))))
+                     (concat
+                      (format " [%s]"
+                              (string-join
+                               (delq nil (list (when status (upcase status))
+                                               (when priority (upcase priority))))
+                               "/"))
+                      (when tags
+                        (format " %s" (string-join tags ", "))))))))
          (comments (if is-thread
                        (alist-get 'comments data)
                      (list `((text . ,data) (type . "comment") (author . "System")))))
@@ -460,25 +500,31 @@ This helps fix corrupted annotations from older versions."
          (rule-len (max 20 (+ 4 (string-width label)))))
 
     ;; Format each comment with its metadata and prefix
-    (dolist (comment comments)
-      (let* ((text (alist-get 'text comment))
-             (type (alist-get 'type comment))
-             (author (alist-get 'author comment))
-             (timestamp (alist-get 'timestamp comment))
-             (prefix (if (string= type "comment") "" "  "))
-             (meta (if (and author timestamp)
-                       (format "%s (%s):"
-                               (propertize author 'face 'bold)
-                               (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                     ""))
-             (comment-lines (split-string text "\n"))
-             (wrap-width (when simply-annotate-inline-fill-column
-                           (- simply-annotate-inline-fill-column 4))))
-        (when (not (string-empty-p meta))
-          (push (concat prefix meta) formatted-lines))
-        (dolist (line comment-lines)
-          (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
-            (push (concat "  " wrapped) formatted-lines)))))
+    (let ((first-comment t))
+      (dolist (comment comments)
+        (let* ((text (alist-get 'text comment))
+               (type (alist-get 'type comment))
+               (author (alist-get 'author comment))
+               (timestamp (alist-get 'timestamp comment))
+               (is-reply (not (string= type "comment")))
+               (meta (if (and author timestamp)
+                         (format "%s%s (%s):"
+                                 (if is-reply "↳ " "")
+                                 (propertize author 'face 'bold)
+                                 (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                       (if is-reply "↳" "")))
+               (comment-lines (split-string text "\n"))
+               (wrap-width (when simply-annotate-inline-fill-column
+                             (- simply-annotate-inline-fill-column 4))))
+          (unless first-comment
+            (push :separator formatted-lines))
+          (setq first-comment nil)
+          (when (not (string-empty-p meta))
+            (push meta formatted-lines))
+          (let ((text-prefix (if (string-empty-p meta) "" " ")))
+            (dolist (line comment-lines)
+              (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
+                (push (concat text-prefix wrapped) formatted-lines)))))))
 
     (setq formatted-lines (reverse formatted-lines))
 
@@ -500,9 +546,13 @@ This helps fix corrupted annotations from older versions."
                                'face 'simply-annotate-inline-border-face)))
           (body (mapconcat
                  (lambda (line)
-                   (concat "  "
-                           (propertize "│ " 'face 'simply-annotate-inline-border-face)
-                           (propertize line 'face 'simply-annotate-inline-face)))
+                   (if (eq line :separator)
+                       (concat "  "
+                               (propertize (concat "├" (make-string (max 1 rule-len) ?─))
+                                           'face 'simply-annotate-inline-border-face))
+                     (concat "  "
+                             (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                             (propertize line 'face 'simply-annotate-inline-face))))
                  formatted-lines "\n"))
           (footer (concat
                    "  "
@@ -516,7 +566,8 @@ This helps fix corrupted annotations from older versions."
   "Add inline annotation text to OVERLAY based on `simply-annotate-inline-position'."
   (let ((text (simply-annotate--inline-text overlay)))
     (if (eq simply-annotate-inline-position 'above)
-        (let ((fringe (when (memq simply-annotate-display-style '(fringe both))
+        (let ((fringe (when (memq simply-annotate-display-style
+                                  '(fringe fringe-bracket both))
                         (overlay-get overlay 'before-string))))
           (overlay-put overlay 'before-string
                        (concat text (or fringe ""))))
@@ -526,6 +577,7 @@ This helps fix corrupted annotations from older versions."
   "Refresh display properties of OVERLAY after a data change.
 Does a full display re-apply to update inline text."
   (with-current-buffer (overlay-buffer overlay)
+    (simply-annotate--cleanup-bracket-overlays overlay)
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
     (overlay-put overlay 'after-string nil)
@@ -534,15 +586,26 @@ Does a full display re-apply to update inline text."
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
 Overlays not matching the active level are hidden.
+File-level annotations are also hidden when viewing at the `all'
+pseudo-level, since they span the entire buffer and would obscure
+smaller annotations.
 When `simply-annotate-inline' is non-nil, also adds inline text
 for matching overlays."
-  (if (simply-annotate--level-match-p overlay)
+  (if (and (simply-annotate--level-match-p overlay)
+           (not (and (eq simply-annotate-current-level 'all)
+                     (eq (overlay-get overlay 'simply-annotation-level) 'file))))
       (progn
         (pcase simply-annotate-display-style
           ('highlight
            (overlay-put overlay 'face simply-annotate-highlight-face))
+          ('tint
+           (let ((bg (simply-annotate--tint-background)))
+             (when bg
+               (overlay-put overlay 'face `(:background ,bg :extend t)))))
           ('fringe
            (simply-annotate--add-fringe-indicator overlay))
+          ('fringe-bracket
+           (simply-annotate--add-fringe-bracket overlay))
           ('both
            (overlay-put overlay 'face simply-annotate-highlight-face)
            (simply-annotate--add-fringe-indicator overlay))
@@ -550,9 +613,16 @@ for matching overlays."
            (overlay-put overlay 'face 'simply-annotate-subtle-face)))
         (when simply-annotate-inline
           (simply-annotate--add-inline-text overlay)))
+    (simply-annotate--cleanup-bracket-overlays overlay)
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
     (overlay-put overlay 'after-string nil)))
+
+(defun simply-annotate--tint-background ()
+  "Return a background color slightly lighter than the default."
+  (let ((bg (face-background 'default nil t)))
+    (when (and bg (color-defined-p bg))
+      (color-lighten-name bg simply-annotate-tint-amount))))
 
 (defun simply-annotate--add-fringe-indicator (overlay)
   "Add fringe indicator to OVERLAY."
@@ -566,11 +636,56 @@ for matching overlays."
     (overlay-put overlay 'before-string
                  (propertize " " 'display fringe-spec))))
 
+(defun simply-annotate--cleanup-bracket-overlays (overlay)
+  "Remove auxiliary bracket fringe overlays associated with OVERLAY."
+  (dolist (aux (overlay-get overlay 'simply-annotate-bracket-overlays))
+    (when (overlayp aux)
+      (delete-overlay aux)))
+  (overlay-put overlay 'simply-annotate-bracket-overlays nil))
+
+(defun simply-annotate--add-fringe-bracket (overlay)
+  "Add fringe bracket indicators spanning the full extent of OVERLAY.
+Uses the configured fringe indicator on the first and last lines,
+with vertical bars on intermediate lines."
+  (simply-annotate--cleanup-bracket-overlays overlay)
+  (save-excursion
+    (let* ((start (overlay-start overlay))
+           (end (overlay-end overlay))
+           (start-line (line-number-at-pos start t))
+           (end-line (line-number-at-pos end t))
+           (total-lines (1+ (- end-line start-line)))
+           (cap-bitmap (pcase simply-annotate-fringe-indicator
+                         ('left-triangle 'left-triangle)
+                         ('right-triangle 'right-triangle)
+                         ('filled-rectangle 'filled-rectangle)
+                         ('custom 'simply-annotate-fringe-bitmap)
+                         (_ 'left-triangle)))
+           (aux-overlays nil))
+      (goto-char start)
+      (beginning-of-line)
+      (dotimes (i total-lines)
+        (let* ((bitmap (cond
+                        ((= total-lines 1) cap-bitmap)
+                        ((= i 0) cap-bitmap)
+                        ((= i (1- total-lines)) 'simply-annotate-fringe-bracket-bot)
+                        (t 'simply-annotate-fringe-bracket-mid)))
+               (fringe-spec `(left-fringe ,bitmap simply-annotate-fringe-bracket-face))
+               (indicator (propertize " " 'display fringe-spec)))
+          (if (= i 0)
+              (overlay-put overlay 'before-string indicator)
+            (let ((aux (make-overlay (point) (point))))
+              (overlay-put aux 'before-string indicator)
+              (overlay-put aux 'simply-annotate-bracket t)
+              (push aux aux-overlays))))
+        (forward-line 1))
+      (overlay-put overlay 'simply-annotate-bracket-overlays aux-overlays))))
+
 (defun simply-annotate-update-display-style ()
   "Update display style for all existing annotations."
   (interactive)
   (dolist (overlay simply-annotate-overlays)
     ;; Clear existing display properties
+    (simply-annotate--cleanup-bracket-overlays overlay)
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
     (overlay-put overlay 'after-string nil)
@@ -583,8 +698,10 @@ for matching overlays."
   (interactive)
   (setq simply-annotate-display-style
         (pcase simply-annotate-display-style
-          ('highlight 'fringe)
-          ('fringe 'both)
+          ('highlight 'tint)
+          ('tint 'fringe)
+          ('fringe 'fringe-bracket)
+          ('fringe-bracket 'both)
           ('both 'subtle)
           (_ 'highlight)))
   (simply-annotate-update-display-style))
@@ -621,6 +738,7 @@ Only overlays matching the active level are shown."
              (get-buffer-window simply-annotate-buffer-name))
     (simply-annotate-hide-annotation-buffer))
   (dolist (ov simply-annotate-overlays)
+    (simply-annotate--cleanup-bracket-overlays ov)
     (overlay-put ov 'face nil)
     (overlay-put ov 'before-string nil)
     (overlay-put ov 'after-string nil)
@@ -681,11 +799,13 @@ START and END define the region, TEXT is the annotation content."
 
 (defun simply-annotate--remove-overlay (overlay)
   "Remove annotation OVERLAY."
+  (simply-annotate--cleanup-bracket-overlays overlay)
   (setq simply-annotate-overlays (delq overlay simply-annotate-overlays))
   (delete-overlay overlay))
 
 (defun simply-annotate--clear-all-overlays ()
   "Remove all annotation overlays from buffer."
+  (mapc #'simply-annotate--cleanup-bracket-overlays simply-annotate-overlays)
   (mapc #'delete-overlay simply-annotate-overlays)
   (setq simply-annotate-overlays nil))
 
@@ -693,7 +813,7 @@ START and END define the region, TEXT is the annotation content."
   "Get annotation overlay at POS (defaults to point) matching current level.
 In fringe mode, searches the entire current line for overlays."
   (let ((check-pos (or pos (point))))
-    (if (eq simply-annotate-display-style 'fringe)
+    (if (memq simply-annotate-display-style '(fringe fringe-bracket))
         (simply-annotate--overlay-on-line check-pos)
       (cl-find-if (lambda (ov)
                     (and (overlay-get ov 'simply-annotation)
@@ -701,7 +821,8 @@ In fringe mode, searches the entire current line for overlays."
                   (overlays-at check-pos)))))
 
 (defun simply-annotate--overlay-on-line (&optional pos)
-  "Find annotation overlay matching current level on the line containing POS."
+  "Find annotation overlay matching current level on the line containing POS.
+Matches any overlay whose region intersects the current line."
   (save-excursion
     (when pos (goto-char pos))
     (let ((line-start (line-beginning-position))
@@ -709,8 +830,8 @@ In fringe mode, searches the entire current line for overlays."
       (cl-find-if (lambda (overlay)
                     (and (overlay-get overlay 'simply-annotation)
                          (simply-annotate--level-match-p overlay)
-                         (>= (overlay-start overlay) line-start)
-                         (<= (overlay-start overlay) line-end)))
+                         (<= (overlay-start overlay) line-end)
+                         (>= (overlay-end overlay) line-start)))
                   simply-annotate-overlays))))
 
 ;;; Thread Management
@@ -772,37 +893,43 @@ In fringe mode, searches the entire current line for overlays."
 
 (defun simply-annotate--format-thread-full (thread)
   "Format complete THREAD for display in annotation buffer."
-  (let* ((id (alist-get 'id thread))
-         (status (alist-get 'status thread))
+  (let* ((status (alist-get 'status thread))
          (priority (alist-get 'priority thread))
          (tags (alist-get 'tags thread))
          (comments (alist-get 'comments thread))
-         (header (format "┌─ Thread: %s [%s/%s]" id status priority))
-         (authors (delete-dups (mapcar (lambda (c) (alist-get 'author c)) comments)))
-         (author-count (length authors)))
-    
+         (label (concat "✎ [" (upcase status) "/" (upcase priority) "]"))
+         (rule-len (max 20 (+ 4 (string-width label)))))
+
     (when tags
-      (setq header (concat header (format " Tags: %s" (string-join tags ", ")))))
-    
-    (when (> author-count 1)
-      (setq header (concat header (format " (%d authors)" author-count))))
-    
+      (setq label (concat label " " (string-join tags ", "))))
+
     (concat
-     header "\n"
+     (format "┌─ %s %s" label (make-string (max 1 (- rule-len 4 (string-width label))) ?─))
+     "\n"
      (mapconcat
       (lambda (comment)
-        (let ((author (alist-get 'author comment))
-              (timestamp (alist-get 'timestamp comment))
-              (text (alist-get 'text comment))
-              (type (alist-get 'type comment)))
-          (format "│ %s%s (%s):\n│ %s"
-                  (if (string= type "comment") "" "  ")
-                  (propertize author 'face 'bold)
-                  (format-time-string "%m/%d %H:%M" (date-to-time timestamp))
-                  (replace-regexp-in-string "\n" "\n│ " text))))
+        (let* ((author (alist-get 'author comment))
+               (timestamp (alist-get 'timestamp comment))
+               (text (alist-get 'text comment))
+               (type (alist-get 'type comment))
+               (is-reply (not (string= type "comment")))
+               (meta (if (and author timestamp)
+                         (format "%s%s (%s):"
+                                 (if is-reply "↳ " "")
+                                 (propertize author 'face 'bold)
+                                 (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                       (if is-reply "↳" "")))
+               (indent (if (string-empty-p meta) "" " ")))
+          (concat
+           (if (not (string-empty-p meta))
+               (format "│ %s\n" meta)
+             "")
+           (format "│ %s%s"
+                   indent
+                   (replace-regexp-in-string "\n" (concat "\n│ " indent) text)))))
       comments
-      "\n├─────\n")
-     "\n└─────")))
+      (format "\n├%s\n" (make-string (max 1 rule-len) ?─)))
+     "\n└" (make-string (max 1 rule-len) ?─) "┘")))
 
 ;;; Author Management
 

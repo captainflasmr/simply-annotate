@@ -102,7 +102,7 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @item
 @strong{Annotation levels}: Three-tier annotation system (file, defun, line) for progressive code exploration
 @item
-@strong{Multiple display styles}: Choose between highlighting, fringe indicators, both, or subtle
+@strong{Multiple display styles}: Choose between highlighting, tint, fringe, fringe bracket, both, or subtle
 @item
 @strong{Smart action}: Context-aware command that adapts to the situation
 @item
@@ -624,7 +624,7 @@ Archive resolved items, keep open ones visible
 @node Display Styles
 @chapter Display Styles
 
-Simply Annotate supports three different ways to display annotations,
+Simply Annotate supports six different ways to display annotations,
 allowing you to choose the visual style that best fits your workflow.
 
 @section Available Styles
@@ -632,8 +632,17 @@ allowing you to choose the visual style that best fits your workflow.
 @table @code
 @item highlight
 Traditional background highlighting of annotated text (good for emphasis)
+@item tint
+Subtle background colour derived from the current theme, lightened by
+@code{simply-annotate-tint-amount} (default 5%).  Adapts automatically to
+any theme.
 @item fringe
 Shows small indicators in the left fringe (minimal visual impact)
+@item fringe-bracket
+Draws a vertical bracket in the left fringe spanning the full annotated
+region.  Uses the configured fringe indicator at the top with a continuous
+vertical bar and a horizontal cap at the bottom.  Customisable via
+@code{simply-annotate-fringe-bracket-face}.
 @item both
 Combines both highlighting and fringe indicators (maximum visibility)
 @item subtle
@@ -1255,7 +1264,7 @@ Validation when saving to ensure data integrity
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
+  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background "lightblue" :foreground "darkblue"))
@@ -1344,7 +1353,7 @@ Height of annotation buffer as fraction of frame height. Default: @code{0.3}
 
 @item simply-annotate-display-style
 @vindex simply-annotate-display-style
-How to display annotations. Options: @code{'highlight}, @code{'fringe}, @code{'both}, @code{'subtle}. Default: @code{'fringe}
+How to display annotations. Options: @code{'highlight}, @code{'tint}, @code{'fringe}, @code{'fringe-bracket}, @code{'both}, @code{'subtle}. Default: @code{'fringe}
 
 @item simply-annotate-fringe-indicator
 @vindex simply-annotate-fringe-indicator
@@ -1424,6 +1433,12 @@ Available priority levels for annotations. Default: @code{'("low" "normal" "high
 @lisp
 ;; Use only fringe indicators (minimal visual impact)
 (setq simply-annotate-display-style 'fringe)
+
+;; Use fringe brackets spanning the annotated region
+(setq simply-annotate-display-style 'fringe-bracket)
+
+;; Use a subtle background tint (adapts to current theme)
+(setq simply-annotate-display-style 'tint)
 
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)

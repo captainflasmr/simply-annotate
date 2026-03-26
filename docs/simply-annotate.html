@@ -287,7 +287,7 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </li><li><strong class="strong">Tag system</strong>: Categorize with hashtags (<code class="code">#review</code>, <code class="code">#bug</code>, <code class="code">#question</code>)
 </li><li><strong class="strong">Raw sexp editing</strong>: Direct access to annotation data structures for power users
 </li><li><strong class="strong">Annotation levels</strong>: Three-tier annotation system (file, defun, line) for progressive code exploration
-</li><li><strong class="strong">Multiple display styles</strong>: Choose between highlighting, fringe indicators, both, or subtle
+</li><li><strong class="strong">Multiple display styles</strong>: Choose between highlighting, tint, fringe, fringe bracket, both, or subtle
 </li><li><strong class="strong">Smart action</strong>: Context-aware command that adapts to the situation
 </li><li><strong class="strong">Rich editing</strong>: Full-featured annotation buffer for longer notes
 </li><li><strong class="strong">Navigation</strong>: Jump between annotations with simple keybindings
@@ -893,7 +893,7 @@ Next: <a href="#Annotation-Levels" accesskey="n" rel="next">Annotation Levels</a
 </div>
 <h2 class="chapter" id="Display-Styles-1"><span>7 Display Styles<a class="copiable-link" href="#Display-Styles-1"> &para;</a></span></h2>
 
-<p>Simply Annotate supports three different ways to display annotations,
+<p>Simply Annotate supports six different ways to display annotations,
 allowing you to choose the visual style that best fits your workflow.
 </p>
 <ul class="mini-toc">
@@ -910,8 +910,19 @@ allowing you to choose the visual style that best fits your workflow.
 <dt><code class="code">highlight</code></dt>
 <dd><p>Traditional background highlighting of annotated text (good for emphasis)
 </p></dd>
+<dt><code class="code">tint</code></dt>
+<dd><p>Subtle background colour derived from the current theme, lightened by
+<code class="code">simply-annotate-tint-amount</code> (default 5%).  Adapts automatically to
+any theme.
+</p></dd>
 <dt><code class="code">fringe</code></dt>
 <dd><p>Shows small indicators in the left fringe (minimal visual impact)
+</p></dd>
+<dt><code class="code">fringe-bracket</code></dt>
+<dd><p>Draws a vertical bracket in the left fringe spanning the full annotated
+region.  Uses the configured fringe indicator at the top with a continuous
+vertical bar and a horizontal cap at the bottom.  Customisable via
+<code class="code">simply-annotate-fringe-bracket-face</code>.
 </p></dd>
 <dt><code class="code">both</code></dt>
 <dd><p>Combines both highlighting and fringe indicators (maximum visibility)
@@ -1630,7 +1641,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
   :ensure t
   :custom
   ;; Choose display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, 'both, or 'subtle
+  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
   
   ;; Customize the highlight face
   (simply-annotate-highlight-face '(:background &quot;lightblue&quot; :foreground &quot;darkblue&quot;))
@@ -1740,7 +1751,7 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 </dd>
 <dt><a id="index-simply_002dannotate_002ddisplay_002dstyle-1"></a><span><code class="code">simply-annotate-display-style</code><a class="copiable-link" href="#index-simply_002dannotate_002ddisplay_002dstyle-1"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002ddisplay_002dstyle-2"></a>
-<p>How to display annotations. Options: <code class="code">'highlight</code>, <code class="code">'fringe</code>, <code class="code">'both</code>, <code class="code">'subtle</code>. Default: <code class="code">'fringe</code>
+<p>How to display annotations. Options: <code class="code">'highlight</code>, <code class="code">'tint</code>, <code class="code">'fringe</code>, <code class="code">'fringe-bracket</code>, <code class="code">'both</code>, <code class="code">'subtle</code>. Default: <code class="code">'fringe</code>
 </p>
 </dd>
 <dt><a id="index-simply_002dannotate_002dfringe_002dindicator-1"></a><span><code class="code">simply-annotate-fringe-indicator</code><a class="copiable-link" href="#index-simply_002dannotate_002dfringe_002dindicator-1"> &para;</a></span></dt>
@@ -1840,6 +1851,12 @@ are truncated with a count.  Set to <code class="code">nil</code> to show all li
 <div class="example lisp">
 <pre class="lisp-preformatted">;; Use only fringe indicators (minimal visual impact)
 (setq simply-annotate-display-style 'fringe)
+
+;; Use fringe brackets spanning the annotated region
+(setq simply-annotate-display-style 'fringe-bracket)
+
+;; Use a subtle background tint (adapts to current theme)
+(setq simply-annotate-display-style 'tint)
 
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)

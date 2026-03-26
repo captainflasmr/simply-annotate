@@ -20,7 +20,7 @@ The main functional aspects that I felt were important to me that generally diff
 
 - Header-line status display with keybinding reminders
 - Simple intuitive workflow (hopefully)
-- Multiple display styles (highlight, fringe indicators, or both)
+- Multiple display styles (highlight, tint, fringe, fringe bracket, both, subtle)
 - Annotation editing via a dedicated buffer
 - Lightweight (if possible <1000 lines - [UPDATE], no its not possible, lets try <2000 lines!)
 - Multi-purpose key to show/edit/toggle annotations
@@ -53,15 +53,15 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-03-25> *0.8.1*
+** <2026-03-26> *0.8.2*
 
-Dired integration, display refinements, and usability improvements.
+Display styles, comment formatting, and usability refinements.
 
-- *Dired integration* -- =simply-annotate-dired-mode= shows fringe indicators next to annotated files in dired.
-- *All-levels display* -- New =all= pseudo-level shows every annotation.  Now the default on startup.
-- *Inline word-wrap* -- Inline comments word-wrap to =simply-annotate-inline-fill-column= (default 72).
-- *Compact rendering* -- No emoji icons, embedded position in header (=DEFUN: 3/5=), silent startup.
-- *C-g to dismiss* -- =C-g= in annotation buffer cancels/hides like =C-c C-k=.
+- *Fringe bracket style* -- New =fringe-bracket= display draws a vertical bracket in the fringe spanning the annotated region.
+- *Tint style* -- New =tint= display applies a subtle background tint derived from the current theme.
+- *Reply indicator* -- Replies show =↳= before the author line in both inline and buffer views.
+- *Consistent formatting* -- Inline and =*Annotation*= buffer use the same compact comment layout.
+- *Overlay detection fix* -- =simply-annotate-smart-action= works from any line within an annotated region.
 
 See [[file:CHANGELOG.org]] for full version history.
 
@@ -210,13 +210,16 @@ Available prompting modes:
 
 ** Display Styles
 
-Simply Annotate supports three display styles:
+Simply Annotate supports six display styles:
 
-- *Highlight*: Traditional background highlighting (default)
+- *Highlight*: Traditional background highlighting
+- *Tint*: Subtle background tint derived from the current theme
 - *Fringe*: Shows indicators in the left fringe
+- *Fringe bracket*: Vertical bracket in the fringe spanning the annotated region
 - *Both*: Combines highlighting with fringe indicators
+- *Subtle*: Overline and underline to bracket annotated regions
 
-Change styles with =M-s ]= or customize =simply-annotate-display-style=.
+Change styles with =M-s '= or customize =simply-annotate-display-style=.
 
 ** Viewing Annotations
 
@@ -340,7 +343,7 @@ In the annotation buffer:
   (simply-annotate-file "~/my-annotations.el")
   
   ;; Set display style
-  (simply-annotate-display-style 'both) ; 'highlight, 'fringe, or 'both
+  (simply-annotate-display-style 'both) ; 'highlight, 'tint, 'fringe, 'fringe-bracket, 'both, or 'subtle
   
   ;; Customize fringe indicators
   (simply-annotate-fringe-indicator 'right-triangle)
@@ -390,6 +393,12 @@ In the annotation buffer:
 #+begin_src emacs-lisp
 ;; Use only fringe indicators (good for minimal visual impact)
 (setq simply-annotate-display-style 'fringe)
+
+;; Use fringe brackets spanning the annotated region
+(setq simply-annotate-display-style 'fringe-bracket)
+
+;; Use a subtle background tint (adapts to current theme)
+(setq simply-annotate-display-style 'tint)
 
 ;; Use traditional highlighting
 (setq simply-annotate-display-style 'highlight)
