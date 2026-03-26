@@ -495,13 +495,12 @@ This helps fix corrupted annotations from older versions."
         (fill-region (point-min) (point-max))
         (split-string (buffer-string) "\n")))))
 
-(defun simply-annotate--inline-comment-node (node depth formatted-lines wrap-width continuations last-p)
-  "Format comment tree NODE at DEPTH for inline display.
-Appends to FORMATTED-LINES (a list built in reverse).
-WRAP-WIDTH is the fill width.  CONTINUATIONS is a list of booleans
-tracking which ancestor depths have more siblings.  LAST-P is
-non-nil if this node is the last sibling.
-Returns the updated FORMATTED-LINES."
+(defun simply-annotate--comment-node-lines (node depth &optional continuations last-p wrap-width)
+  "Format comment tree NODE at DEPTH into a flat list of lines.
+CONTINUATIONS is a list of booleans tracking which ancestor depths
+have more siblings.  LAST-P is non-nil if this node is the last
+sibling.  WRAP-WIDTH, when non-nil, word-wraps text lines.
+Returns lines in display order (not reversed)."
   (let* ((comment (car node))
          (children (cdr node))
          (text (alist-get 'text comment))
@@ -510,41 +509,32 @@ Returns the updated FORMATTED-LINES."
          (is-reply (> depth 0))
          (indent (simply-annotate--tree-indent continuations))
          (branch (cond ((not is-reply) "")
-                       (last-p "└ ")
-                       (t "├ ")))
-         (meta (if (and author timestamp)
-                   (if is-reply
-                       (format "%s%s↳ %s (%s):"
-                               indent branch
-                               (propertize author 'face 'bold)
-                               (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                     (format "%s (%s):"
-                             (propertize author 'face 'bold)
-                             (format-time-string "%m/%d %H:%M" (date-to-time timestamp))))
-                 (if is-reply (concat indent branch "↳") "")))
-         (text-cont (simply-annotate--tree-indent
-                     (if is-reply
-                         (append continuations (list (not last-p)))
-                       continuations)))
-         (text-prefix (concat text-cont (if is-reply "  " " ")))
+                       (t "↳ ")))
          (child-conts (if is-reply
                          (append continuations (list (not last-p)))
                        continuations))
-         (comment-lines (split-string text "\n")))
-    (when (not (string-empty-p meta))
-      (push meta formatted-lines))
-    (dolist (line comment-lines)
+         (text-prefix (concat (simply-annotate--tree-indent child-conts) "  "))
+         (lines '()))
+    ;; Author/meta line
+    (when (and author timestamp)
+      (push (format "%s%s%s (%s)"
+                    indent branch
+                    (propertize author 'face 'bold)
+                    (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+            lines))
+    ;; Text body lines (with optional word-wrap)
+    (dolist (line (split-string text "\n"))
       (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
-        (push (concat text-prefix wrapped) formatted-lines)))
+        (push (concat text-prefix wrapped) lines)))
+    ;; Children
     (let ((last-idx (1- (length children)))
           (idx 0))
       (dolist (child children)
-        (setq formatted-lines
-              (simply-annotate--inline-comment-node
-               child (1+ depth) formatted-lines wrap-width
-               child-conts (= idx last-idx)))
+        (dolist (child-line (simply-annotate--comment-node-lines
+                             child (1+ depth) child-conts (= idx last-idx) wrap-width))
+          (push child-line lines))
         (cl-incf idx)))
-    formatted-lines))
+    (nreverse lines)))
 
 (defun simply-annotate--inline-text (overlay)
   "Return the inline display string for OVERLAY as a box-drawn block."
@@ -574,34 +564,21 @@ Returns the updated FORMATTED-LINES."
          (wrap-width (when simply-annotate-inline-fill-column
                        (- simply-annotate-inline-fill-column 4))))
 
-    ;; Build tree and format recursively
+    ;; Build tree and format using common renderer
     (if is-thread
         (let* ((tree (simply-annotate--build-comment-tree comments))
                (last-idx (1- (length tree)))
                (idx 0))
           (dolist (root-node tree)
             (setq formatted-lines
-                  (simply-annotate--inline-comment-node
-                   root-node 0 formatted-lines wrap-width nil (= idx last-idx)))
+                  (append formatted-lines
+                          (simply-annotate--comment-node-lines
+                           root-node 0 nil (= idx last-idx) wrap-width)))
             (cl-incf idx)))
-      ;; Non-thread: simple flat rendering
-      (let ((comment (car comments)))
-        (let* ((text (alist-get 'text comment))
-               (author (alist-get 'author comment))
-               (timestamp (alist-get 'timestamp comment))
-               (cmeta (if (and author timestamp)
-                          (format "%s (%s):"
-                                  (propertize author 'face 'bold)
-                                  (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                        ""))
-               (comment-lines (split-string text "\n")))
-          (when (not (string-empty-p cmeta))
-            (push cmeta formatted-lines))
-          (dolist (line comment-lines)
-            (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
-              (push (concat " " wrapped) formatted-lines))))))
-
-    (setq formatted-lines (reverse formatted-lines))
+      ;; Non-thread: use common renderer with a synthetic node
+      (setq formatted-lines
+            (simply-annotate--comment-node-lines
+             (cons (car comments) nil) 0 nil t wrap-width)))
 
     ;; Handle max lines if necessary
     (when (and simply-annotate-inline-max-lines
@@ -619,8 +596,12 @@ Returns the updated FORMATTED-LINES."
                              'face 'simply-annotate-inline-border-face))
           (body (mapconcat
                  (lambda (line)
-                   (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
-                           (propertize line 'face 'simply-annotate-inline-face)))
+                   (let ((styled-line (copy-sequence line)))
+                     (add-face-text-property
+                      0 (length styled-line)
+                      'simply-annotate-inline-face t styled-line)
+                     (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                             styled-line)))
                  formatted-lines "\n"))
           (footer (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
                               'face 'simply-annotate-inline-border-face)))
@@ -1071,59 +1052,15 @@ nil means last sibling at that depth (draw space)."
   (mapconcat (lambda (has-more) (if has-more "│ " "  "))
              continuations ""))
 
-(defun simply-annotate--format-comment-node (node depth rule-len &optional continuations last-p)
+(defun simply-annotate--format-comment-node (node depth _rule-len &optional continuations last-p)
   "Format a comment tree NODE at DEPTH for the annotation buffer.
-RULE-LEN is the box-drawing width.  CONTINUATIONS is a list of
-booleans tracking which ancestor depths have more siblings.
-LAST-P is non-nil if this node is the last sibling."
-  (let* ((comment (car node))
-         (children (cdr node))
-         (author (alist-get 'author comment))
-         (timestamp (alist-get 'timestamp comment))
-         (text (alist-get 'text comment))
-         (is-reply (> depth 0))
-         (indent (simply-annotate--tree-indent continuations))
-         (branch (cond ((not is-reply) "")
-                       (last-p "└ ")
-                       (t "├ ")))
-         (meta (if (and author timestamp)
-                   (format "%s%s↳ %s (%s):"
-                           indent branch
-                           (propertize author 'face 'bold)
-                           (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                 (concat indent branch "↳")))
-         (text-cont (simply-annotate--tree-indent
-                     (if is-reply
-                         (append continuations (list (not last-p)))
-                       continuations)))
-         (text-prefix (concat text-cont (if is-reply "  " "")))
-         (formatted-text (replace-regexp-in-string
-                          "\n" (concat "\n│ " text-prefix) text))
-         (child-conts (if is-reply
-                         (append continuations (list (not last-p)))
-                       continuations)))
-    (concat
-     (if is-reply
-         (format "│ %s\n" meta)
-       (if (and author timestamp)
-           (format "│ %s (%s):\n"
-                   (propertize author 'face 'bold)
-                   (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-         ""))
-     (format "│ %s%s" text-prefix formatted-text)
-     (when children
-       (let ((last-idx (1- (length children)))
-             (idx 0))
-         (concat
-          "\n"
-          (mapconcat
-           (lambda (child)
-             (prog1
-                 (simply-annotate--format-comment-node
-                  child (1+ depth) rule-len child-conts (= idx last-idx))
-               (cl-incf idx)))
-           children
-           "\n")))))))
+_RULE-LEN is unused but kept for caller compatibility.
+CONTINUATIONS is a list of booleans tracking which ancestor depths
+have more siblings.  LAST-P is non-nil if this node is the last sibling."
+  (mapconcat (lambda (line) (concat "│ " line))
+             (simply-annotate--comment-node-lines
+              node depth continuations last-p nil)
+             "\n"))
 
 (defun simply-annotate--format-thread-full (thread)
   "Format complete THREAD for display in annotation buffer."
@@ -1152,7 +1089,7 @@ LAST-P is non-nil if this node is the last sibling."
                       node 0 rule-len nil (= idx last-idx))
                    (cl-incf idx)))
                tree
-               "\n"))
+               "\n│\n"))
             "\n└" (make-string (max 1 rule-len) ?─) "┘")))
       ;; Collapse runs of multiple blank lines to at most one
       (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result))))
