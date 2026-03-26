@@ -1879,12 +1879,24 @@ If NAV is nil, derive it from point."
       (simply-annotate--listing-goto-source))))
 
 (defun simply-annotate--listing-file-at-point ()
-  "If point is on a file-level org heading, return the file path."
+  "If point is on a file-level org heading, return the file path.
+Handles both flat layout (level-1 with full path) and directory
+hierarchy layout (level-2 filename under level-1 directory)."
   (save-excursion
     (beginning-of-line)
-    (when (looking-at "^\\* \\(.+?\\) ([0-9]+)$")
+    (cond
+     ;; Level-2 heading: filename under a directory heading
+     ((looking-at "^\\*\\* \\(.+?\\) ([0-9]+)$")
+      (let ((filename (match-string-no-properties 1)))
+        (save-excursion
+          (when (re-search-backward "^\\* \\(.+?\\) ([0-9]+)$" nil t)
+            (let ((dir (match-string-no-properties 1)))
+              (expand-file-name (substitute-in-file-name
+                                 (concat dir filename))))))))
+     ;; Level-1 heading: full path (flat layout)
+     ((looking-at "^\\* \\(.+?\\) ([0-9]+)$")
       (let ((path (match-string-no-properties 1)))
-        (expand-file-name (substitute-in-file-name path))))))
+        (expand-file-name (substitute-in-file-name path)))))))
 
 (defun simply-annotate-listing-jump ()
   "Jump to the source location of the annotation at point.
@@ -1967,8 +1979,8 @@ Regenerates the listing from the source buffer's current annotations."
 ;;;###autoload
 (defun simply-annotate-show-all ()
   "Show all annotations across all files in an org-mode buffer.
-Each file is a top-level heading that can be expanded to show
-its annotations grouped by level."
+Files are grouped by directory.  Directories are top-level headings,
+files are second-level, and annotation levels below that."
   (interactive)
   (let* ((db (simply-annotate--load-database)))
     (if (not db)
@@ -1981,23 +1993,40 @@ its annotations grouped by level."
           (with-current-buffer (get-buffer-create buffer-name)
             (let ((inhibit-read-only t))
               (erase-buffer)
-              ;; Header
+              ;; Count totals
               (dolist (file-key files-with-annotations)
                 (setq total (+ total (length (alist-get file-key db nil nil #'string=)))))
               (insert (format "#+TITLE: All Annotations\n"))
               (insert (format "#+STARTUP: show2levels\n"))
               (insert (format "Total: %d annotations across %d files\n\n"
                               total (length files-with-annotations)))
-              ;; Each file as a top-level heading
-              (dolist (file-key files-with-annotations)
-                (let* ((annotations (alist-get file-key db nil nil #'string=))
-                       (count (length annotations))
-                       (source-buffer (when (file-exists-p file-key)
-                                        (find-file-noselect file-key 'nowarn))))
-                  (insert (format "* %s (%d)\n"
-                                  (abbreviate-file-name file-key) count))
-                  (simply-annotate--insert-formatted-annotations
-                   file-key annotations source-buffer 1)))
+              ;; Group files by directory
+              (let ((dir-alist nil))
+                (dolist (file-key files-with-annotations)
+                  (let* ((abbreviated (abbreviate-file-name file-key))
+                         (dir (file-name-directory abbreviated))
+                         (name (file-name-nondirectory abbreviated)))
+                    (push (cons name file-key)
+                          (alist-get dir dir-alist nil nil #'string=))))
+                ;; Sort directories and insert
+                (dolist (dir-entry (sort dir-alist
+                                        (lambda (a b) (string< (car a) (car b)))))
+                  (let* ((dir (car dir-entry))
+                         (files (nreverse (cdr dir-entry)))
+                         (dir-count (cl-reduce #'+ files
+                                               :key (lambda (f)
+                                                      (length (alist-get (cdr f) db nil nil #'string=))))))
+                    (insert (format "* %s (%d)\n" dir dir-count))
+                    (dolist (file-entry files)
+                      (let* ((name (car file-entry))
+                             (file-key (cdr file-entry))
+                             (annotations (alist-get file-key db nil nil #'string=))
+                             (count (length annotations))
+                             (source-buffer (when (file-exists-p file-key)
+                                              (find-file-noselect file-key 'nowarn))))
+                        (insert (format "** %s (%d)\n" name count))
+                        (simply-annotate--insert-formatted-annotations
+                         file-key annotations source-buffer 2))))))
               ;; Setup mode
               (simply-annotate--setup-annotation-list-mode)
               (goto-char (point-min))))
