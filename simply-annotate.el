@@ -385,6 +385,9 @@ mode changes that would kill buffer-local values.")
 (defvar simply-annotate-reply-parent-id nil
   "Comment ID to which the current reply is addressed.")
 
+(defvar simply-annotate-editing-comment-id nil
+  "Comment ID currently being edited, or nil to edit the first comment.")
+
 ;; Threading Variables
 
 (defvar simply-annotate-session-author nil
@@ -492,11 +495,12 @@ This helps fix corrupted annotations from older versions."
         (fill-region (point-min) (point-max))
         (split-string (buffer-string) "\n")))))
 
-(defun simply-annotate--inline-comment-node (node depth formatted-lines wrap-width first-comment-p)
+(defun simply-annotate--inline-comment-node (node depth formatted-lines wrap-width continuations last-p)
   "Format comment tree NODE at DEPTH for inline display.
 Appends to FORMATTED-LINES (a list built in reverse).
-WRAP-WIDTH is the fill width.  FIRST-COMMENT-P is a cons cell
-whose car is t if this is the first comment being formatted.
+WRAP-WIDTH is the fill width.  CONTINUATIONS is a list of booleans
+tracking which ancestor depths have more siblings.  LAST-P is
+non-nil if this node is the last sibling.
 Returns the updated FORMATTED-LINES."
   (let* ((comment (car node))
          (children (cdr node))
@@ -504,27 +508,42 @@ Returns the updated FORMATTED-LINES."
          (author (alist-get 'author comment))
          (timestamp (alist-get 'timestamp comment))
          (is-reply (> depth 0))
-         (indent (make-string (* 2 depth) ?\s))
+         (indent (simply-annotate--tree-indent continuations))
+         (branch (cond ((not is-reply) "")
+                       (last-p "└ ")
+                       (t "├ ")))
          (meta (if (and author timestamp)
-                   (format "%s%s%s (%s):"
-                           indent
-                           (if is-reply "↳ " "")
-                           (propertize author 'face 'bold)
-                           (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                 (concat indent (if is-reply "↳" ""))))
-         (text-prefix (concat indent (if is-reply "  " " ")))
+                   (if is-reply
+                       (format "%s%s↳ %s (%s):"
+                               indent branch
+                               (propertize author 'face 'bold)
+                               (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+                     (format "%s (%s):"
+                             (propertize author 'face 'bold)
+                             (format-time-string "%m/%d %H:%M" (date-to-time timestamp))))
+                 (if is-reply (concat indent branch "↳") "")))
+         (text-cont (simply-annotate--tree-indent
+                     (if is-reply
+                         (append continuations (list (not last-p)))
+                       continuations)))
+         (text-prefix (concat text-cont (if is-reply "  " " ")))
+         (child-conts (if is-reply
+                         (append continuations (list (not last-p)))
+                       continuations))
          (comment-lines (split-string text "\n")))
-    (unless (car first-comment-p)
-      (push :separator formatted-lines))
-    (setcar first-comment-p nil)
     (when (not (string-empty-p meta))
       (push meta formatted-lines))
     (dolist (line comment-lines)
       (dolist (wrapped (simply-annotate--wrap-line line wrap-width))
         (push (concat text-prefix wrapped) formatted-lines)))
-    (dolist (child children)
-      (setq formatted-lines
-            (simply-annotate--inline-comment-node child (1+ depth) formatted-lines wrap-width first-comment-p)))
+    (let ((last-idx (1- (length children)))
+          (idx 0))
+      (dolist (child children)
+        (setq formatted-lines
+              (simply-annotate--inline-comment-node
+               child (1+ depth) formatted-lines wrap-width
+               child-conts (= idx last-idx)))
+        (cl-incf idx)))
     formatted-lines))
 
 (defun simply-annotate--inline-text (overlay)
@@ -557,12 +576,14 @@ Returns the updated FORMATTED-LINES."
 
     ;; Build tree and format recursively
     (if is-thread
-        (let ((tree (simply-annotate--build-comment-tree comments))
-              (first-flag (cons t nil)))
+        (let* ((tree (simply-annotate--build-comment-tree comments))
+               (last-idx (1- (length tree)))
+               (idx 0))
           (dolist (root-node tree)
             (setq formatted-lines
                   (simply-annotate--inline-comment-node
-                   root-node 0 formatted-lines wrap-width first-flag))))
+                   root-node 0 formatted-lines wrap-width nil (= idx last-idx)))
+            (cl-incf idx)))
       ;; Non-thread: simple flat rendering
       (let ((comment (car comments)))
         (let* ((text (alist-get 'text comment))
@@ -598,11 +619,8 @@ Returns the updated FORMATTED-LINES."
                              'face 'simply-annotate-inline-border-face))
           (body (mapconcat
                  (lambda (line)
-                   (if (eq line :separator)
-                       (propertize (concat "├" (make-string (max 1 rule-len) ?─))
-                                   'face 'simply-annotate-inline-border-face)
-                     (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
-                             (propertize line 'face 'simply-annotate-inline-face))))
+                   (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                           (propertize line 'face 'simply-annotate-inline-face)))
                  formatted-lines "\n"))
           (footer (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
                               'face 'simply-annotate-inline-border-face)))
@@ -1046,39 +1064,66 @@ and children is a recursive list of nodes."
             comment-count
             (if (= comment-count 1) "" "s"))))
 
-(defun simply-annotate--format-comment-node (node depth rule-len)
+(defun simply-annotate--tree-indent (continuations)
+  "Build an indent string from CONTINUATIONS, a list of booleans.
+Each t means there are more siblings at that depth (draw │),
+nil means last sibling at that depth (draw space)."
+  (mapconcat (lambda (has-more) (if has-more "│ " "  "))
+             continuations ""))
+
+(defun simply-annotate--format-comment-node (node depth rule-len &optional continuations last-p)
   "Format a comment tree NODE at DEPTH for the annotation buffer.
-RULE-LEN is the box-drawing width."
+RULE-LEN is the box-drawing width.  CONTINUATIONS is a list of
+booleans tracking which ancestor depths have more siblings.
+LAST-P is non-nil if this node is the last sibling."
   (let* ((comment (car node))
          (children (cdr node))
          (author (alist-get 'author comment))
          (timestamp (alist-get 'timestamp comment))
          (text (alist-get 'text comment))
          (is-reply (> depth 0))
-         (indent (make-string (* 2 depth) ?\s))
+         (indent (simply-annotate--tree-indent continuations))
+         (branch (cond ((not is-reply) "")
+                       (last-p "└ ")
+                       (t "├ ")))
          (meta (if (and author timestamp)
-                   (format "%s%s%s (%s):"
-                           indent
-                           (if is-reply "↳ " "")
+                   (format "%s%s↳ %s (%s):"
+                           indent branch
                            (propertize author 'face 'bold)
                            (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
-                 (concat indent (if is-reply "↳" ""))))
-         (text-indent (concat indent (if is-reply "  " "")))
+                 (concat indent branch "↳")))
+         (text-cont (simply-annotate--tree-indent
+                     (if is-reply
+                         (append continuations (list (not last-p)))
+                       continuations)))
+         (text-prefix (concat text-cont (if is-reply "  " "")))
          (formatted-text (replace-regexp-in-string
-                          "\n" (concat "\n│ " text-indent) text)))
+                          "\n" (concat "\n│ " text-prefix) text))
+         (child-conts (if is-reply
+                         (append continuations (list (not last-p)))
+                       continuations)))
     (concat
-     (if (not (string-empty-p meta))
+     (if is-reply
          (format "│ %s\n" meta)
-       "")
-     (format "│ %s%s" text-indent formatted-text)
+       (if (and author timestamp)
+           (format "│ %s (%s):\n"
+                   (propertize author 'face 'bold)
+                   (format-time-string "%m/%d %H:%M" (date-to-time timestamp)))
+         ""))
+     (format "│ %s%s" text-prefix formatted-text)
      (when children
-       (concat
-        "\n"
-        (mapconcat
-         (lambda (child)
-           (simply-annotate--format-comment-node child (1+ depth) rule-len))
-         children
-         "\n"))))))
+       (let ((last-idx (1- (length children)))
+             (idx 0))
+         (concat
+          "\n"
+          (mapconcat
+           (lambda (child)
+             (prog1
+                 (simply-annotate--format-comment-node
+                  child (1+ depth) rule-len child-conts (= idx last-idx))
+               (cl-incf idx)))
+           children
+           "\n")))))))
 
 (defun simply-annotate--format-thread-full (thread)
   "Format complete THREAD for display in annotation buffer."
@@ -1098,11 +1143,16 @@ RULE-LEN is the box-drawing width."
            (concat
             (format "┌─ %s %s" label (make-string (max 1 (- rule-len 4 (string-width label))) ?─))
             "\n"
-            (mapconcat
-             (lambda (node)
-               (simply-annotate--format-comment-node node 0 rule-len))
-             tree
-             (format "\n├%s\n" (make-string (max 1 rule-len) ?─)))
+            (let ((last-idx (1- (length tree)))
+                  (idx 0))
+              (mapconcat
+               (lambda (node)
+                 (prog1
+                     (simply-annotate--format-comment-node
+                      node 0 rule-len nil (= idx last-idx))
+                   (cl-incf idx)))
+               tree
+               "\n"))
             "\n└" (make-string (max 1 rule-len) ?─) "┘")))
       ;; Collapse runs of multiple blank lines to at most one
       (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result))))
@@ -1215,9 +1265,10 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
         (simply-annotate-annotation-mode)))
     buffer))
 
-(defun simply-annotate--update-annotation-buffer (annotation-data overlay &optional mode)
+(defun simply-annotate--update-annotation-buffer (annotation-data overlay &optional mode edit-text)
   "Update annotation buffer with ANNOTATION-DATA and OVERLAY.
-MODE can be 'view, 'edit, or 'sexp (default is 'view)."
+MODE can be \\='view, \\='edit, or \\='sexp (default is \\='view).
+EDIT-TEXT, when non-nil, is the specific comment text to edit."
   (let ((buffer (simply-annotate--get-annotation-buffer))
         (source-buf (current-buffer))
         (mode (or mode 'view)))
@@ -1248,7 +1299,7 @@ MODE can be 'view, 'edit, or 'sexp (default is 'view)."
           (visual-line-mode 1)
           (setq-local buffer-read-only nil)
           (buffer-enable-undo)
-          (let ((text (simply-annotate--annotation-text annotation-data)))
+          (let ((text (or edit-text (simply-annotate--annotation-text annotation-data))))
             (insert (simply-annotate--strip-boilerplate text)))
           (setq simply-annotate-header-end-pos (point-min))
           (setq header-line-format "EDITING: Type annotation text. C-c C-c to save, C-c C-k to cancel."))
@@ -1349,7 +1400,10 @@ When SELECT is non-nil, move point to the annotation buffer."
                                (setq simply-annotate-reply-parent-id nil)
                                new-thread))
                             ((simply-annotate--thread-p current-data)
-                             (simply-annotate--update-thread-first-comment current-data content))
+                             (prog1
+                                 (simply-annotate--update-thread-comment
+                                  current-data content simply-annotate-editing-comment-id)
+                               (setq simply-annotate-editing-comment-id nil)))
                             (t (simply-annotate--create-thread content)))))))
     
     (simply-annotate--finalize-annotation overlay final-data is-draft)))
@@ -1368,16 +1422,25 @@ When SELECT is non-nil, move point to the annotation buffer."
   (simply-annotate-hide-annotation-buffer)
   (message "Annotation cancelled/removed"))
 
+(defun simply-annotate--update-thread-comment (thread content &optional comment-id)
+  "Update a comment in THREAD with CONTENT.
+When COMMENT-ID is non-nil, update the comment with that id.
+Otherwise update the first comment."
+  (let ((thread-copy (copy-alist thread)))
+    (setf (alist-get 'comments thread-copy)
+          (mapcar (lambda (comment)
+                    (let ((c (copy-alist comment)))
+                      (when (if comment-id
+                                (equal (alist-get 'id c) comment-id)
+                              (eq comment (car (alist-get 'comments thread))))
+                        (setf (alist-get 'text c) content))
+                      c))
+                  (alist-get 'comments thread-copy)))
+    thread-copy))
+
 (defun simply-annotate--update-thread-first-comment (thread content)
   "Update the first comment of THREAD with CONTENT."
-  (let ((thread-copy (copy-alist thread)))
-    (let* ((comments (alist-get 'comments thread-copy))
-           (first-comment (copy-alist (car comments)))
-           (rest-comments (cdr comments)))
-      (setf (alist-get 'text first-comment) content)
-      (setf (alist-get 'comments thread-copy)
-            (cons first-comment rest-comments)))
-    thread-copy))
+  (simply-annotate--update-thread-comment thread content nil))
 
 (defun simply-annotate--finalize-annotation (overlay final-data is-draft)
   "Finalize annotation for OVERLAY with FINAL-DATA, handling IS-DRAFT state."
@@ -1639,12 +1702,50 @@ If WRAP is non-nil, wrap around to the beginning/end."
              (end (line-end-position)))
         (simply-annotate--create-new-annotation start end)))))
 
+(defun simply-annotate--select-edit-target (thread)
+  "Prompt user to select which comment in THREAD to edit.
+Returns a cons of (comment-id . comment-text)."
+  (simply-annotate--ensure-comment-ids thread)
+  (let* ((comments (alist-get 'comments thread))
+         (tree (simply-annotate--build-comment-tree comments))
+         (flat (simply-annotate--flatten-comment-tree tree))
+         (choices (mapcar
+                   (lambda (pair)
+                     (let* ((comment (car pair))
+                            (depth (cdr pair))
+                            (indent (make-string (* 2 depth) ?\s))
+                            (author (alist-get 'author comment))
+                            (text (alist-get 'text comment))
+                            (preview (truncate-string-to-width
+                                      (car (split-string text "\n")) 50 nil nil "...")))
+                       (cons (format "%s%s%s: %s"
+                                     indent
+                                     (if (> depth 0) "↳ " "")
+                                     (or author "Unknown")
+                                     preview)
+                             comment)))
+                   flat))
+         (selected (completing-read "Edit comment: " (mapcar #'car choices) nil t))
+         (comment (cdr (assoc selected choices))))
+    (cons (alist-get 'id comment) (alist-get 'text comment))))
+
 (defun simply-annotate--edit-annotation (overlay)
-  "Edit existing annotation OVERLAY."
+  "Edit existing annotation OVERLAY.
+For threads with multiple comments, prompts which comment to edit."
   (goto-char (overlay-start overlay))
-  (let ((annotation-data (overlay-get overlay 'simply-annotation)))
+  (let* ((annotation-data (overlay-get overlay 'simply-annotation))
+         (is-thread (simply-annotate--thread-p annotation-data))
+         (comments (when is-thread (alist-get 'comments annotation-data)))
+         (target (cond
+                  ((not is-thread) nil)
+                  ((<= (length comments) 1) nil)
+                  (t (simply-annotate--select-edit-target annotation-data))))
+         (edit-id (car target))
+         (edit-text (or (cdr target)
+                        (simply-annotate--annotation-text annotation-data))))
+    (setq simply-annotate-editing-comment-id edit-id)
     (simply-annotate--update-header "EDITING")
-    (simply-annotate--update-annotation-buffer annotation-data overlay 'edit)
+    (simply-annotate--update-annotation-buffer annotation-data overlay 'edit edit-text)
     (simply-annotate--show-annotation-buffer t)
     (goto-char simply-annotate-header-end-pos)
     (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))

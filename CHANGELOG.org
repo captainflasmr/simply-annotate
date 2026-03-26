@@ -22,9 +22,16 @@ Nested/hierarchical comment threading.
   with a hierarchical =completing-read= menu showing the comment tree so you can
   pick which comment to reply to.  Single-comment threads reply to the root
   directly with no extra prompt.
+- *Per-comment editing* -- Editing a thread with multiple comments (=C-u M-s j=)
+  now prompts which comment to edit via a hierarchical =completing-read= menu.
+  Single-comment threads edit the comment directly with no extra prompt.
+- *Tree-line display* -- Nested comments are connected with vertical bar
+  characters (=│=, =├=, =└=) like indent-bars or the =tree= command, making the
+  reply hierarchy visually clear.
 - *Hierarchical display* -- Annotation buffer, inline overlays, listing buffer,
-  and org export all render nested comments with indentation (2 spaces per depth
-  level) and =↳= markers showing the reply structure.
+  and org export all render nested comments with indentation and =↳= markers
+  showing the reply structure.  Separator lines between comments have been
+  removed as the nesting provides sufficient visual structure.
 - *Database migration command* -- =M-x simply-annotate-migrate-threading= scans
   the entire database and assigns comment IDs, inferring parent-child
   relationships from the existing =type= field (replies become children of the
