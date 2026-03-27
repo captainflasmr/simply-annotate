@@ -417,6 +417,10 @@ mode changes that would kill buffer-local values.")
   "Generate current timestamp string."
   (format-time-string "%Y-%m-%dT%H:%M:%S"))
 
+(defvar Info-current-file)
+(defvar Info-current-node)
+(declare-function Info-find-node "info" (filename nodename &optional no-going-back strict-case))
+
 (defun simply-annotate-info-file-key ()
   "Get unique key for Info-mode buffers.
 Returns a string identifying both the Info file and the current node."
@@ -424,7 +428,7 @@ Returns a string identifying both the Info file and the current node."
     (require 'info)
     (let ((file (file-name-nondirectory Info-current-file))
           (node Info-current-node))
-      (format "(%s) %s" 
+      (format "(%s) %s"
               (replace-regexp-in-string "\\.info\\(\\.[^.]+\\)?$" "" file)
               node))))
 
@@ -486,8 +490,8 @@ file path or buffer name."
   (and (stringp key) (string-prefix-p "(" key) (string-match-p ")" key)))
 
 (defun simply-annotate--key-directory (key)
-  "Get 'directory' component for KEY.
-For files, this is the directory path. For Info nodes, it is the manual name."
+  "Get directory component for KEY.
+For files, this is the directory path.  For Info nodes, it is the manual name."
   (cond
    ((simply-annotate--key-info-p key)
     (substring key 0 (1+ (string-match-p ")" key))))
@@ -495,8 +499,8 @@ For files, this is the directory path. For Info nodes, it is the manual name."
     (or (file-name-directory (abbreviate-file-name key)) "./"))))
 
 (defun simply-annotate--key-name (key)
-  "Get 'filename' component for KEY.
-For files, this is the filename. For Info nodes, it is the node name."
+  "Get filename component for KEY.
+For files, this is the filename.  For Info nodes, it is the node name."
   (cond
    ((simply-annotate--key-info-p key)
     (string-trim (substring key (1+ (string-match-p ")" key)))))
@@ -711,7 +715,8 @@ Returns lines in display order (not reversed)."
       (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result)))))
 
 (defun simply-annotate--add-inline-text (overlay)
-  "Add inline annotation text to OVERLAY based on `simply-annotate-inline-position'."
+  "Add inline annotation text to OVERLAY.
+Position is controlled by `simply-annotate-inline-position'."
   (let ((text (simply-annotate--inline-text overlay)))
     (if (eq simply-annotate-inline-position 'above)
         (let ((fringe (when (cl-intersection (simply-annotate--display-styles)
