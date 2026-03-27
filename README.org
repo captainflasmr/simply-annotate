@@ -53,6 +53,12 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-03-27> *0.9.3*
+
+Separate command map for prefix-key configuration ([[https://github.com/captainflasmr/simply-annotate/issues/5][GitHub Issue #5]], [[https://github.com/captainflasmr/simply-annotate/issues/4][GitHub Issue #4]]).
+
+- *=simply-annotate-command-map=* -- A standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, =v=, etc.) that users can bind to any prefix key.  This is separate from =simply-annotate-mode-map= (which uses =M-s= prefixed keys) and solves the issue where binding single keys to the mode-map intercepted normal typing.
+
 ** <2026-03-27> *0.9.2*
 
 Fix for annotation loss on mode activation ([[https://github.com/captainflasmr/simply-annotate/issues/6][GitHub Issue #6]]).
@@ -87,18 +93,41 @@ See [[file:CHANGELOG.org]] for full version history.
   :bind ("C-c A" . simply-annotate-mode))
 #+end_src
 
-** Example Configuration
+** Keymap Configuration
+
+Simply Annotate provides two keymaps:
+
+- =simply-annotate-mode-map= -- The minor mode keymap, active when the mode is on.  All bindings use =M-s= prefixed keys (e.g. =M-s j=, =M-s r=) to avoid conflicts.
+- =simply-annotate-command-map= -- A standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, etc.) designed to be bound to a prefix key.
+
+*** Default (M-s prefix)
+
+With the default setup, all commands are available via =M-s= when the mode is active:
 
 #+begin_src emacs-lisp
 (use-package simply-annotate
-  :hook
-  (find-file-hook . simply-annotate-mode)
+  :hook (find-file-hook . simply-annotate-mode))
+#+end_src
+
+*** Custom prefix key (recommended for short keys)
+
+Bind =simply-annotate-command-map= to any prefix for short-key access (e.g., =C-c a j=, =C-c a n=):
+
+#+begin_src emacs-lisp
+(use-package simply-annotate
+  :bind-keymap ("C-c a" . simply-annotate-command-map)
+  :hook (find-file-hook . simply-annotate-mode))
+#+end_src
+
+*** Full example
+
+#+begin_src emacs-lisp
+(use-package simply-annotate
+  :bind-keymap ("C-c a" . simply-annotate-command-map)
+  :hook (find-file-hook . simply-annotate-mode)
   :config
   (setq simply-annotate-inline-position 'above)
-  (setq simply-annotate-inline-default t)
-  :bind (("C-c A" . simply-annotate-mode)
-         ("C-c 0" . simply-annotate-show-all)
-         ("C-c 9" . simply-annotate-jump-to-file)))
+  (setq simply-annotate-inline-default t))
 #+end_src
 
 ** Manual Installation

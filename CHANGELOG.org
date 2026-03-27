@@ -11,6 +11,29 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-27 Fri> *0.9.3*
+
+Separate command map for prefix-key configuration ([[https://github.com/captainflasmr/simply-annotate/issues/5][GitHub Issue #5]], [[https://github.com/captainflasmr/simply-annotate/issues/4][GitHub Issue #4]]).
+
+*** Features
+
+- *=simply-annotate-command-map=* -- A standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, =v=, etc.) that users can bind to any prefix key.  This is separate from =simply-annotate-mode-map= (which uses =M-s= prefixed keys) and solves the issue where binding single keys to the mode-map intercepted normal typing.
+
+  Here is an example setup:
+
+  #+begin_src elisp
+  (use-package simply-annotate
+	:bind-keymap ("\C-ca" . simply-annotate-command-map)
+	:bind (:map simply-annotate-command-map
+				("n" . simply-annotate-smart-action)
+				("]" . simply-annotate-next)
+				("[" . simply-annotate-previous)
+				("a" . simply-annotate-show-all)
+				("d" . simply-annotate-remove))
+	:hook
+	(find-file-hook . simply-annotate-mode))
+  #+end_src
+
 ** <2026-03-27 Fri> *0.9.2*
 
 Fix for annotation loss on mode activation ([[https://github.com/captainflasmr/simply-annotate/issues/6][GitHub Issue #6]]).

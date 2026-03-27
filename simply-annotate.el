@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.2
+;; Version: 0.9.3
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -2571,6 +2571,37 @@ Opens the selected file and enables `simply-annotate-mode'."
   "Mode for displaying and editing annotations."
   (visual-line-mode 1))
 
+(defvar simply-annotate-command-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "j") #'simply-annotate-smart-action)
+    (define-key map (kbd "r") #'simply-annotate-reply-to-annotation)
+    (define-key map (kbd "s") #'simply-annotate-set-annotation-status)
+    (define-key map (kbd "-") #'simply-annotate-remove)
+    (define-key map (kbd "a") #'simply-annotate-change-annotation-author)
+    (define-key map (kbd "l") #'simply-annotate-list)
+    (define-key map (kbd "L") #'simply-annotate-show-all)
+    (define-key map (kbd "f") #'simply-annotate-jump-to-file)
+    (define-key map (kbd "p") #'simply-annotate-set-annotation-priority)
+    (define-key map (kbd "t") #'simply-annotate-add-annotation-tag)
+    (define-key map (kbd "o") #'simply-annotate-export-to-org-file)
+    (define-key map (kbd "e") #'simply-annotate-edit-sexp)
+    (define-key map (kbd "[") #'simply-annotate-cycle-level-backward)
+    (define-key map (kbd "]") #'simply-annotate-cycle-level-forward)
+    (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
+    (define-key map (kbd "/") #'simply-annotate-toggle-inline)
+    (define-key map (kbd "n") #'simply-annotate-next)
+    (define-key map (kbd "v") #'simply-annotate-previous)
+    map)
+  "Command map for Simply Annotate.
+Bind this to a prefix key for short-key access to all commands, e.g.:
+
+  (global-set-key (kbd \"C-c a\") simply-annotate-command-map)
+
+or with `use-package':
+
+  (use-package simply-annotate
+    :bind-keymap (\"C-c a\" . simply-annotate-command-map))")
+
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "M-s j") #'simply-annotate-smart-action)
@@ -2590,7 +2621,12 @@ Opens the selected file and enables `simply-annotate-mode'."
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
-  "Keymap for simply-annotate-mode.")
+  "Keymap for `simply-annotate-mode'.
+This keymap is active whenever the mode is on.  All bindings use
+prefixed keys (M-s, M-n, M-p) to avoid conflicts with normal editing.
+
+For short single-key access, bind `simply-annotate-command-map'
+to a prefix key instead.")
 
 ;;;###autoload
 (define-minor-mode simply-annotate-mode
