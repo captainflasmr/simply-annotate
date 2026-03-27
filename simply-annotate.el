@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.0
+;; Version: 0.9.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -250,6 +250,21 @@ When enabled, the package remembers the last author used for each file."
   :type 'boolean
   :group 'simply-annotate)
 
+(defvar-local simply-annotate-file-key-function nil
+  "Buffer-local function to generate the unique key for annotations.
+When non-nil, this function is called with no arguments and its
+return value (a string) is used as the key for the current buffer.
+This overrides `simply-annotate-file-key-functions` and the default logic.")
+
+(defcustom simply-annotate-file-key-functions
+  '((Info-mode . simply-annotate-info-file-key))
+  "Alist mapping major modes to functions that generate annotation keys.
+Each element is of the form (MAJOR-MODE . FUNCTION).
+These functions are called with no arguments and should return a string key.
+This allows node-specific annotations in modes like Info or nov.el."
+  :type '(alist :key-type symbol :value-type function)
+  :group 'simply-annotate)
+
 (defcustom simply-annotate-thread-statuses
   '("open" "in-progress" "resolved" "closed")
   "Available status values for annotation threads."
@@ -402,6 +417,17 @@ mode changes that would kill buffer-local values.")
   "Generate current timestamp string."
   (format-time-string "%Y-%m-%dT%H:%M:%S"))
 
+(defun simply-annotate-info-file-key ()
+  "Get unique key for Info-mode buffers.
+Returns a string identifying both the Info file and the current node."
+  (when (derived-mode-p 'Info-mode)
+    (require 'info)
+    (let ((file (file-name-nondirectory Info-current-file))
+          (node Info-current-node))
+      (format "(%s) %s" 
+              (replace-regexp-in-string "\\.info\\(\\.[^.]+\\)?$" "" file)
+              node))))
+
 (defun simply-annotate--thread-p (annotation-data)
   "Check if ANNOTATION-DATA is a thread structure."
   (and (listp annotation-data)
@@ -442,8 +468,83 @@ This helps fix corrupted annotations from older versions."
     (simply-annotate--format-thread-summary annotation-data)))
 
 (defun simply-annotate--file-key ()
-  "Get unique key for current file."
-  (or (buffer-file-name) (buffer-name)))
+  "Get unique key for current buffer/file.
+Checks `simply-annotate-file-key-function` (buffer-local) and
+`simply-annotate-file-key-functions` before falling back to
+file path or buffer name."
+  (let ((custom-func (or simply-annotate-file-key-function
+                         (cl-some (lambda (entry)
+                                    (when (derived-mode-p (car entry))
+                                      (cdr entry)))
+                                  simply-annotate-file-key-functions))))
+    (if (and custom-func (functionp custom-func))
+        (funcall custom-func)
+      (or (buffer-file-name) (buffer-name)))))
+
+(defun simply-annotate--key-info-p (key)
+  "Return non-nil if KEY is an Info node key."
+  (and (stringp key) (string-prefix-p "(" key) (string-match-p ")" key)))
+
+(defun simply-annotate--key-directory (key)
+  "Get 'directory' component for KEY.
+For files, this is the directory path. For Info nodes, it is the manual name."
+  (cond
+   ((simply-annotate--key-info-p key)
+    (substring key 0 (1+ (string-match-p ")" key))))
+   (t
+    (or (file-name-directory (abbreviate-file-name key)) "./"))))
+
+(defun simply-annotate--key-name (key)
+  "Get 'filename' component for KEY.
+For files, this is the filename. For Info nodes, it is the node name."
+  (cond
+   ((simply-annotate--key-info-p key)
+    (string-trim (substring key (1+ (string-match-p ")" key)))))
+   (t
+    (file-name-nondirectory (abbreviate-file-name key)))))
+
+(defun simply-annotate--format-jump-name (key)
+  "Format KEY for `completing-read` display to ensure uniqueness.
+For files, includes the directory. For Info nodes, returns the full key."
+  (if (simply-annotate--key-info-p key)
+      key
+    (let ((name (file-name-nondirectory (abbreviate-file-name key)))
+          (dir (file-name-directory (abbreviate-file-name key))))
+      (if dir
+          (format "%s  [%s]" name dir)
+        name))))
+
+(defun simply-annotate--get-key-buffer (key &optional select)
+  "Get (and optionally SELECT) the buffer associated with KEY.
+Returns the buffer if successful, or nil if KEY cannot be resolved."
+  (cond
+   ((simply-annotate--key-info-p key)
+    (let ((manual (substring key 1 (string-match-p ")" key)))
+          (node (string-trim (substring key (1+ (string-match-p ")" key))))))
+      (require 'info)
+      (condition-case err
+          (if select
+              (progn
+                (info (format "(%s)%s" manual node))
+                (current-buffer))
+            (let ((info-buffer (get-buffer-create "*info*")))
+              (with-current-buffer info-buffer
+                (unless (derived-mode-p 'Info-mode)
+                  (Info-mode))
+                (Info-find-node manual node)
+                (current-buffer))))
+        (error
+         (message "Simply-annotate: failed to open Info node %s: %s"
+                  key (error-message-string err))
+         nil))))
+   ((file-exists-p key)
+    (if select
+        (find-file key)
+      (find-file-noselect key)))
+   (t
+    (when-let ((buf (get-buffer key)))
+      (when select (switch-to-buffer buf))
+      buf))))
 
 ;;; Database Operations
 
@@ -1975,7 +2076,9 @@ Uses org-mode for folding with a custom minor mode for navigation."
                 (setq open-count (1+ open-count))))
           (setq open-count (1+ open-count)))))
 
-    (insert (format "#+TITLE: Annotations for %s\n" file-key))
+    (let ((start (point)))
+      (insert (format "#+TITLE: Annotations for %s\n" (simply-annotate--key-name file-key)))
+      (put-text-property start (point) 'simply-annotate-nav (list :file file-key)))
     (insert (format "#+STARTUP: show2levels\n"))
     (insert (format "Total: %d" total))
     (dolist (level simply-annotate-levels)
@@ -2036,15 +2139,17 @@ DEPTH controls heading level offset (default 0)."
 
 (defun simply-annotate--line-info (start-pos end-pos source-buffer _file-key)
   "Get line information from START-POS to END-POS in SOURCE-BUFFER for FILE-KEY."
-  (if source-buffer
+  (if (and source-buffer (buffer-live-p source-buffer))
       (with-current-buffer source-buffer
         (save-excursion
-          (goto-char (min start-pos (point-max)))
-          (list (line-number-at-pos)
-                (current-column)
-                (buffer-substring-no-properties
-                 (min start-pos (point-max))
-                 (min end-pos (point-max))))))
+          (let* ((pmin (point-min))
+                 (pmax (point-max))
+                 (start (max pmin (min start-pos pmax)))
+                 (end (max pmin (min end-pos pmax))))
+            (goto-char start)
+            (list (line-number-at-pos)
+                  (current-column)
+                  (buffer-substring-no-properties start end)))))
     (list 1 0 "Content not available")))
 
 (defun simply-annotate--insert-thread-annotation (thread line-info file-key level &optional depth)
@@ -2150,19 +2255,21 @@ If NAV is nil, derive it from point."
             (line (plist-get props :line))
             (col  (plist-get props :col))
             (level (plist-get props :level)))
-        (when (and file (file-exists-p file))
-          (let ((win (display-buffer (find-file-noselect file)
-                                     '(display-buffer-use-some-window
-                                       (inhibit-same-window . t)))))
-            (with-selected-window win
-              (goto-char (point-min))
-              (forward-line (1- line))
-              (forward-char (max 0 (1- col)))
-              (when (and (boundp 'simply-annotate-current-level)
-                         level
-                         (not (eq simply-annotate-current-level level)))
-                (setq simply-annotate-current-level level)
-                (simply-annotate--apply-level-filter)))))))))
+        (if-let ((source-buf (simply-annotate--get-key-buffer file)))
+            (let ((win (display-buffer source-buf
+                                       '(display-buffer-use-some-window
+                                         (inhibit-same-window . t)))))
+              (with-selected-window win
+                (unless simply-annotate-mode
+                  (simply-annotate-mode 1))
+                (goto-char (point-min))
+                (forward-line (1- line))
+                (forward-char (max 0 (1- col)))
+                (when (and (boundp 'simply-annotate-current-level)
+                           level
+                           (not (eq simply-annotate-current-level level)))
+                  (setq simply-annotate-current-level level)
+                  (simply-annotate--apply-level-filter)))))))))
 
 (defun simply-annotate-listing-next ()
   "Move to the next annotation heading and jump to its source."
@@ -2191,37 +2298,22 @@ If NAV is nil, derive it from point."
       (simply-annotate--listing-goto-source))))
 
 (defun simply-annotate--listing-file-at-point ()
-  "If point is on a file-level org heading, return the file path.
-Handles both flat layout (level-1 with full path) and directory
-hierarchy layout (level-2 filename under level-1 directory)."
-  (save-excursion
-    (beginning-of-line)
-    (cond
-     ;; Level-2 heading: filename under a directory heading
-     ((looking-at "^\\*\\* \\(.+?\\) ([0-9]+)$")
-      (let ((filename (match-string-no-properties 1)))
-        (save-excursion
-          (when (re-search-backward "^\\* \\(.+?\\) ([0-9]+)$" nil t)
-            (let ((dir (match-string-no-properties 1)))
-              (expand-file-name (substitute-in-file-name
-                                 (concat dir filename))))))))
-     ;; Level-1 heading: full path (flat layout)
-     ((looking-at "^\\* \\(.+?\\) ([0-9]+)$")
-      (let ((path (match-string-no-properties 1)))
-        (expand-file-name (substitute-in-file-name path)))))))
+  "Get the file key at point in a listing buffer."
+  (let ((props (simply-annotate--listing-nav-props)))
+    (plist-get props :file)))
 
 (defun simply-annotate-listing-jump ()
   "Jump to the source location of the annotation at point.
 On a file-level heading, open the file.  On an annotation heading,
 jump to the source location."
   (interactive)
-  (let ((file (simply-annotate--listing-file-at-point)))
-    (if file
-        (when (file-exists-p file)
-          (let ((win (display-buffer (find-file-noselect file)
-                                     '(display-buffer-use-some-window
-                                       (inhibit-same-window . t)))))
-            (select-window win)))
+  (let ((file-key (simply-annotate--listing-file-at-point)))
+    (if file-key
+        (when-let ((buf (simply-annotate--get-key-buffer file-key t)))
+          (let ((win (get-buffer-window buf)))
+            (select-window win)
+            (unless simply-annotate-mode
+              (simply-annotate-mode 1))))
       (let ((props (get-text-property (point) 'simply-annotate-nav)))
         (if props
             (simply-annotate--listing-goto-source props)
@@ -2315,9 +2407,8 @@ files are second-level, and annotation levels below that."
               ;; Group files by directory
               (let ((dir-alist nil))
                 (dolist (file-key files-with-annotations)
-                  (let* ((abbreviated (abbreviate-file-name file-key))
-                         (dir (file-name-directory abbreviated))
-                         (name (file-name-nondirectory abbreviated)))
+                  (let* ((dir (simply-annotate--key-directory file-key))
+                         (name (simply-annotate--key-name file-key)))
                     (push (cons name file-key)
                           (alist-get dir dir-alist nil nil #'string=))))
                 ;; Sort directories and insert
@@ -2334,9 +2425,10 @@ files are second-level, and annotation levels below that."
                              (file-key (cdr file-entry))
                              (annotations (alist-get file-key db nil nil #'string=))
                              (count (length annotations))
-                             (source-buffer (when (file-exists-p file-key)
-                                              (find-file-noselect file-key 'nowarn))))
+                             (source-buffer (simply-annotate--get-key-buffer file-key))
+                             (start (point)))
                         (insert (format "** %s (%d)\n" name count))
+                        (put-text-property start (point) 'simply-annotate-nav (list :file file-key))
                         (simply-annotate--insert-formatted-annotations
                          file-key annotations source-buffer 2))))))
               ;; Setup mode
@@ -2358,7 +2450,7 @@ Opens the selected file and enables `simply-annotate-mode'."
                         (let* ((annotations (alist-get file-key db nil nil #'string=))
                                (count (length annotations))
                                (display-name (format "%s (%d annotation%s)"
-                                                     (abbreviate-file-name file-key)
+                                                     (simply-annotate--format-jump-name file-key)
                                                      count
                                                      (if (= count 1) "" "s"))))
                           (cons display-name file-key)))
@@ -2367,9 +2459,8 @@ Opens the selected file and enables `simply-annotate-mode'."
             (message "No annotations found in database")
           (let* ((selected-display (completing-read "Annotated file: "
                                                     file-display-alist nil t))
-                 (selected-file (cdr (assoc selected-display file-display-alist))))
-            (when (and selected-file (file-exists-p selected-file))
-              (find-file selected-file)
+                 (selected-key (cdr (assoc selected-display file-display-alist))))
+            (when (and selected-key (simply-annotate--get-key-buffer selected-key t))
               (unless simply-annotate-mode
                 (simply-annotate-mode 1)))))))))
 
@@ -2436,7 +2527,7 @@ Opens the selected file and enables `simply-annotate-mode'."
         (message "No annotations to export")
       (with-temp-buffer
         (org-mode)
-        (insert (format "#+TITLE: Annotations for %s\n" file-key))
+        (insert (format "#+TITLE: Annotations for %s\n" (simply-annotate--key-name file-key)))
         (insert (format "#+DATE: %s\n\n" (format-time-string "%Y-%m-%d")))
         
         (dolist (ann annotations)
@@ -2523,6 +2614,19 @@ Opens the selected file and enables `simply-annotate-mode'."
     (remove-hook 'before-save-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)))
+
+;;; Info-mode Integration
+
+(defun simply-annotate--info-selection-hook ()
+  "Refresh annotations when a new Info node is selected."
+  (when simply-annotate-mode
+    (simply-annotate--clear-all-overlays)
+    (simply-annotate--cleanup-draft)
+    (simply-annotate--load-annotations)
+    (simply-annotate--apply-level-filter)
+    (simply-annotate--update-header)))
+
+(add-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)
 
 ;;; Dired Integration
 

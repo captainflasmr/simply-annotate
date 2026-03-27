@@ -179,9 +179,10 @@ Annotate]], Up: [[#Top][Simply Annotate]]  
 :CLASS: chapter
 :END:
 Simply Annotate is a lightweight annotation system for Emacs that allows
-you to add persistent notes to any text file without modifying the
-original content. It's perfect for code review, research, note-taking,
-and documentation and includes threading and collaboration features.
+you to add persistent notes to any text file, or specialized non-file
+buffers like =Info-mode= manuals, without modifying the original
+content. It's perfect for code review, research, note-taking, and
+documentation and includes threading and collaboration features.
 
 - [[#Key-Features][Key Features]]
 
@@ -194,6 +195,8 @@ and documentation and includes threading and collaboration features.
 - *Non-intrusive*: Annotations don't modify your original files
 - *Persistent*: Notes survive between Emacs sessions
 - *Threading*: Add replies to annotations for conversations
+- *Support for Non-File Buffers*: Annotate Info manuals or other
+  specialized buffers natively
 - *Status tracking*: Manage annotation lifecycle (open → resolved)
 - *Multi-author support*: Collaborate with team members
 - *Priority levels*: Organize by importance (low, normal, high,

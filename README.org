@@ -53,6 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-03-27> *0.9.1*
+
+Full support for annotating non-file buffers, primarily `Info-mode`.
+
+- *Info mode support* -- You can now reliably annotate Info manuals. Annotations are tracked per-node.
+- *Jump to Info* -- `simply-annotate-jump-to-file` and annotation listings seamlessly navigate to Info manuals, dynamically activating `simply-annotate-mode` to display annotations as they load.
+- *Configurable keys* -- Added `simply-annotate-file-key-functions` (alist) and `simply-annotate-file-key-function` (buffer-local) to allow extending the package to other specialized buffer modes seamlessly.
+
 ** <2026-03-26> *0.9.0*
 
 Nested/hierarchical comment threading.

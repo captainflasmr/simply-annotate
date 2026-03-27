@@ -67,9 +67,10 @@ File: simply-annotate.info,  Node: Introduction,  Next: Installation,  Prev: Top
 **************
 
 Simply Annotate is a lightweight annotation system for Emacs that allows
-you to add persistent notes to any text file without modifying the
-original content.  It's perfect for code review, research, note-taking,
-and documentation and includes threading and collaboration features.
+you to add persistent notes to any text file, or specialized non-file
+buffers like ‘Info-mode’ manuals, without modifying the original
+content.  It's perfect for code review, research, note-taking, and
+documentation and includes threading and collaboration features.
 
 1.1 Key Features
 ================
@@ -77,6 +78,8 @@ and documentation and includes threading and collaboration features.
    • *Non-intrusive*: Annotations don't modify your original files
    • *Persistent*: Notes survive between Emacs sessions
    • *Threading*: Add replies to annotations for conversations
+   • *Support for Non-File Buffers*: Annotate Info manuals or other
+     specialized buffers natively
    • *Status tracking*: Manage annotation lifecycle (open → resolved)
    • *Multi-author support*: Collaborate with team members
    • *Priority levels*: Organize by importance (low, normal, high,
@@ -1748,23 +1751,23 @@ Concept Index
 Tag Table:
 Node: Top792
 Node: Introduction2786
-Node: Installation4695
-Node: Quick Start5303
-Node: Basic Usage6151
-Node: Advanced Editing8764
-Node: Threading and Collaboration12793
-Node: Display Styles18130
-Node: Annotation Levels22746
-Node: Navigation26049
-Node: Advanced Features27691
-Node: Org-mode Integration31992
-Node: Key Bindings34435
-Node: Customization38198
-Node: Data Storage45709
-Node: Troubleshooting49767
-Node: Function Index56190
-Node: Variable Index58809
-Node: Concept Index63109
+Node: Installation4862
+Node: Quick Start5470
+Node: Basic Usage6318
+Node: Advanced Editing8931
+Node: Threading and Collaboration12960
+Node: Display Styles18297
+Node: Annotation Levels22913
+Node: Navigation26216
+Node: Advanced Features27858
+Node: Org-mode Integration32159
+Node: Key Bindings34602
+Node: Customization38365
+Node: Data Storage45876
+Node: Troubleshooting49934
+Node: Function Index56357
+Node: Variable Index58976
+Node: Concept Index63276
 
 End Tag Table
 

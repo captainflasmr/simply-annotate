@@ -9,6 +9,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO Loading Annotations List buffer can take a while and blocks
+
 ** TODO add automated unit tests
 
 Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
@@ -45,10 +47,10 @@ Enabling simply-annotate-mode takes over several keybindings that conflict with 
 
 Request for optional org-mode syntax support in the annotation editing buffer.
 
-** OPEN Support for non-file buffers #2
+** DONE Support for non-file buffers #2
 
 Request to allow user-supplied key function so annotations can work on non-file buffers (nov.el, Info, etc.). Currently simply-annotate-file-key is hardcoded.
 
-** OPEN More complex threading system #1
+** DONE More complex threading system #1
 
 Request for nested/reply threading with per-comment reply support, rather than the current flat thread model.

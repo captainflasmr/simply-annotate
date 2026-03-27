@@ -11,6 +11,16 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-27 Fri> *0.9.1*
+
+Support for annotating non-file buffers, primarily `Info-mode`.
+
+*** Features
+
+- *Info mode support* -- You can now reliably annotate Info manuals. Annotations are tracked per-node.
+- *Jump to Info* -- `simply-annotate-jump-to-file` and annotation listings seamlessly navigate to Info manuals, dynamically activating `simply-annotate-mode` to display annotations as they load.
+- *Configurable keys* -- Added `simply-annotate-file-key-functions` (alist) and `simply-annotate-file-key-function` (buffer-local) to allow extending the package to other specialized buffer modes seamlessly.
+
 ** <2026-03-26 Wed> *0.9.0*
 
 Nested/hierarchical comment threading.
