@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.1
+;; Version: 0.9.2
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -2594,6 +2594,16 @@ Opens the selected file and enables `simply-annotate-mode'."
   :keymap simply-annotate-mode-map
   (if simply-annotate-mode
       (progn
+        ;; Persist any overlays created while the mode was off,
+        ;; so they aren't lost when we clear and reload from the database.
+        (when simply-annotate-overlays
+          (let ((file-key (simply-annotate--file-key)))
+            (when file-key
+              (let* ((new-annotations (simply-annotate--serialize-annotations))
+                     (db (simply-annotate--load-database))
+                     (existing (when db (alist-get file-key db nil nil #'string=)))
+                     (merged (append existing new-annotations)))
+                (simply-annotate--update-database file-key merged)))))
         (simply-annotate--clear-all-overlays)
         (simply-annotate--cleanup-draft)
         (simply-annotate--load-annotations)

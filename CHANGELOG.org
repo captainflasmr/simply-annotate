@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-27 Fri> *0.9.2*
+
+Fix for annotation loss on mode activation ([[https://github.com/captainflasmr/simply-annotate/issues/6][GitHub Issue #6]]).
+
+*** Bug Fixes
+
+- *Annotation loss on mode entry* -- Annotations created while =simply-annotate-mode= was off were silently discarded when the mode was subsequently enabled.  The mode now persists any existing overlays to the database before clearing and reloading, ensuring no annotations are ever lost.
+
 ** <2026-03-27 Fri> *0.9.1*
 
 Support for annotating non-file buffers, primarily `Info-mode`.
