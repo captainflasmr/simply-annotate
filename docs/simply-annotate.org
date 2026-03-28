@@ -38,7 +38,8 @@ Documentation License”.
 - [[#Installation][2 Installation]]
   - [[#Using-MELPA-_0028Recommended_0029][2.1 Using MELPA
     (Recommended)]]
-  - [[#Manual-Installation][2.2 Manual Installation]]
+  - [[#Keymap-Configuration][2.2 Keymap Configuration]]
+  - [[#Manual-Installation][2.3 Manual Installation]]
 - [[#Quick-Start][3 Quick Start]]
 - [[#Basic-Usage][4 Basic Usage]]
   - [[#Enabling-Annotation-Mode][4.1 Enabling Annotation Mode]]
@@ -111,10 +112,13 @@ Documentation License”.
   - [[#Integration-with-Org-Workflows][11.4 Integration with Org
     Workflows]]
 - [[#Key-Bindings][12 Key Bindings]]
-  - [[#Main-Mode-Bindings][12.1 Main Mode Bindings]]
-  - [[#Annotation-Buffer-Bindings][12.2 Annotation Buffer Bindings]]
-  - [[#Smart-Action-Behavior][12.3 Smart Action Behavior]]
-  - [[#Sexp-Editing-Mode][12.4 Sexp Editing Mode]]
+  - [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][12.1
+    Mode Map (=simply-annotate-mode-map=)]]
+  - [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][12.2
+    Command Map (=simply-annotate-command-map=)]]
+  - [[#Annotation-Buffer-Bindings][12.3 Annotation Buffer Bindings]]
+  - [[#Smart-Action-Behavior][12.4 Smart Action Behavior]]
+  - [[#Sexp-Editing-Mode][12.5 Sexp Editing Mode]]
 - [[#Customization][13 Customization]]
   - [[#Basic-Configuration][13.1 Basic Configuration]]
   - [[#Threading-and-Collaboration-Configuration][13.2 Threading and
@@ -235,6 +239,7 @@ Next: [[#Quick-Start][Quick Start]], Previous:
 :CLASS: chapter
 :END:
 - [[#Using-MELPA-_0028Recommended_0029][Using MELPA (Recommended)]]
+- [[#Keymap-Configuration][Keymap Configuration]]
 - [[#Manual-Installation][Manual Installation]]
 
 <<Using-MELPA-_0028Recommended_0029>>
@@ -248,11 +253,59 @@ The easiest way to install Simply Annotate is through MELPA:
 #+begin_src lisp-preformatted
 (use-package simply-annotate
   :ensure t
-  :bind ("C-c A" . simply-annotate-mode))
+  :demand t
+  :hook (find-file-hook . simply-annotate-mode)
+  :config
+  (global-set-key (kbd "M-s") simply-annotate-command-map))
+#+end_src
+
+<<Keymap-Configuration>>
+*** 2.2 Keymap Configuration [[#Keymap-Configuration][¶]]
+:PROPERTIES:
+:CUSTOM_ID: keymap-configuration
+:CLASS: section
+:END:
+Simply Annotate provides two keymaps:
+
+- =simply-annotate-mode-map= :: The minor mode keymap, intentionally
+  minimal. Only binds M-n (next annotation) and M-p (previous
+  annotation) so it won't conflict with other packages.
+
+- =simply-annotate-command-map= :: The main command keymap with short
+  single-key bindings (j, r, n, e, etc.). You bind this to a prefix key
+  of your choice.
+
+The recommended prefix is M-s, which gives you M-s j (smart action), M-s
+r (reply), M-s l (list), etc. All keybindings in this manual assume the
+M-s prefix.
+
+*Important:* Use =:demand t= with =global-set-key= in =:config= for the
+M-s prefix. =:demand t= loads the package immediately so the prefix is
+available everywhere in Emacs from startup.
+
+Do not use =:bind-keymap= for M-s. =:bind-keymap= defers loading by
+creating an autoload proxy --- a temporary non-prefix command that loads
+the package on first keypress. This works well for free keys like C-c a,
+but M-s is already Emacs's =search-map= prefix. The proxy replaces
+=search-map= with a non-prefix command, so any code that subsequently
+tries to bind under M-s will error. Using =global-set-key= in =:config=
+avoids this by binding directly to the real keymap after the package has
+loaded.
+
+If M-s conflicts with other packages (e.g. Consult), use =:bind-keymap=
+with a free prefix like C-c a:
+
+#+begin_src lisp-preformatted
+;; C-c a prefix --- :bind-keymap works well here because
+;; C-c a is a free key with no existing prefix map, and
+;; it defers loading until first use.
+(use-package simply-annotate
+  :bind-keymap ("C-c a" . simply-annotate-command-map)
+  :hook (find-file-hook . simply-annotate-mode))
 #+end_src
 
 <<Manual-Installation>>
-*** 2.2 Manual Installation [[#Manual-Installation][¶]]
+*** 2.3 Manual Installation [[#Manual-Installation][¶]]
 :PROPERTIES:
 :CUSTOM_ID: manual-installation
 :CLASS: section
@@ -260,11 +313,12 @@ The easiest way to install Simply Annotate is through MELPA:
 If you prefer to install manually:
 
 1. Download =simply-annotate.el=
-2. Add to your load path:
+2. Add to your load path and bind the command map:
 
    #+begin_src lisp-preformatted
    (add-to-list 'load-path "/path/to/simply-annotate")
    (require 'simply-annotate)
+   (global-set-key (kbd "M-s") simply-annotate-command-map)
    #+end_src
 
 --------------
@@ -1498,18 +1552,36 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 :CUSTOM_ID: Key-Bindings-1
 :CLASS: chapter
 :END:
-- [[#Main-Mode-Bindings][Main Mode Bindings]]
+- [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][Mode Map
+  (=simply-annotate-mode-map=)]]
+- [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][Command
+  Map (=simply-annotate-command-map=)]]
 - [[#Annotation-Buffer-Bindings][Annotation Buffer Bindings]]
 - [[#Smart-Action-Behavior][Smart Action Behavior]]
 - [[#Sexp-Editing-Mode][Sexp Editing Mode]]
 
-<<Main-Mode-Bindings>>
-*** 12.1 Main Mode Bindings [[#Main-Mode-Bindings][¶]]
+<<Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029>>
+*** 12.1 Mode Map (=simply-annotate-mode-map=) [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][¶]]
 :PROPERTIES:
-:CUSTOM_ID: main-mode-bindings
+:CUSTOM_ID: mode-map-simply-annotate-mode-map
 :CLASS: section
 :END:
-When =simply-annotate-mode= is enabled:
+Always active when =simply-annotate-mode= is enabled:
+
+| Key | Command                    | Description                 |
+|-----+----------------------------+-----------------------------|
+| M-n | =simply-annotate-next=     | Jump to next annotation     |
+| M-p | =simply-annotate-previous= | Jump to previous annotation |
+
+<<Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029>>
+*** 12.2 Command Map (=simply-annotate-command-map=) [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][¶]]
+:PROPERTIES:
+:CUSTOM_ID: command-map-simply-annotate-command-map
+:CLASS: section
+:END:
+Accessed via your chosen prefix key. Examples below use M-s (the
+recommended prefix). See [[#Installation][Installation]], for how to
+bind the prefix.
 
 | Key   | Command                                    | Description                                 |
 |-------+--------------------------------------------+---------------------------------------------|
@@ -1520,38 +1592,34 @@ When =simply-annotate-mode= is enabled:
 | M-s p | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                     |
 | M-s t | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)                     |
 | M-s a | =simply-annotate-change-annotation-author= | Change author                               |
-| M-s A | =simply-annotate-reset-session-author=     | Reset session author                        |
 | M-s o | =simply-annotate-export-to-org-file=       | Export to org-mode                          |
 | M-s - | =simply-annotate-remove=                   | Delete annotation at point                  |
 | M-s l | =simply-annotate-list=                     | List all annotations in current file        |
+| M-s L | =simply-annotate-show-all=                 | Browse annotations across all files         |
+| M-s f | =simply-annotate-jump-to-file=             | Jump to annotated file                      |
 | M-s [ | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file) |
 | M-s ] | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)  |
 | M-s ' | =simply-annotate-cycle-display-style=      | Cycle through display styles                |
 | M-s / | =simply-annotate-toggle-inline=            | Toggle inline annotation display            |
-| M-n   | =simply-annotate-next=                     | Jump to next annotation                     |
-| M-p   | =simply-annotate-previous=                 | Jump to previous annotation                 |
+| M-s n | =simply-annotate-next=                     | Jump to next annotation                     |
+| M-s v | =simply-annotate-previous=                 | Jump to previous annotation                 |
 
 <<Annotation-Buffer-Bindings>>
-*** 12.2 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
+*** 12.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-bindings
 :CLASS: section
 :END:
 In the annotation buffer:
 
-| Key     | Command                                   | Description                 |
-|---------+-------------------------------------------+-----------------------------|
-| C-c C-c | =simply-annotate-save-annotation-buffer=  | Save changes                |
-| C-c C-k | =simply-annotate-cancel-edit=             | Cancel editing              |
-| M-s e   | =simply-annotate-edit-sexp=               | Switch to sexp editing mode |
-| M-s r   | =simply-annotate-reply-to-annotation=     | Add reply                   |
-| M-s s   | =simply-annotate-set-annotation-status=   | Set status                  |
-| M-s p   | =simply-annotate-set-annotation-priority= | Set priority                |
-| M-s t   | =simply-annotate-add-annotation-tag=      | Add tag                     |
-| M-s o   | =simply-annotate-export-to-org-file=      | Export to org-mode          |
+| Key     | Command                                  | Description                  |
+|---------+------------------------------------------+------------------------------|
+| C-c C-c | =simply-annotate-save-annotation-buffer= | Save changes                 |
+| C-c C-k | =simply-annotate-cancel-edit=            | Cancel editing               |
+| C-g     | =simply-annotate-cancel-edit=            | Cancel editing (alternative) |
 
 <<Smart-Action-Behavior>>
-*** 12.3 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
+*** 12.4 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
 :PROPERTIES:
 :CUSTOM_ID: smart-action-behavior
 :CLASS: section
@@ -1566,7 +1634,7 @@ The M-s j key binding changes behavior based on context:
 | Elsewhere                 | Create annotation for current line     |
 
 <<Sexp-Editing-Mode>>
-*** 12.4 Sexp Editing Mode [[#Sexp-Editing-Mode][¶]]
+*** 12.5 Sexp Editing Mode [[#Sexp-Editing-Mode][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sexp-editing-mode
 :CLASS: section

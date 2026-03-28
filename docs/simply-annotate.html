@@ -91,7 +91,8 @@ Free Documentation License&rdquo;.
   <li><a id="toc-Installation" href="#Installation">2 Installation</a>
   <ul class="toc-numbered-mark">
     <li><a id="toc-Using-MELPA-_0028Recommended_0029" href="#Using-MELPA-_0028Recommended_0029">2.1 Using MELPA (Recommended)</a></li>
-    <li><a id="toc-Manual-Installation" href="#Manual-Installation">2.2 Manual Installation</a></li>
+    <li><a id="toc-Keymap-Configuration" href="#Keymap-Configuration">2.2 Keymap Configuration</a></li>
+    <li><a id="toc-Manual-Installation" href="#Manual-Installation">2.3 Manual Installation</a></li>
   </ul></li>
   <li><a id="toc-Quick-Start" href="#Quick-Start">3 Quick Start</a></li>
   <li><a id="toc-Basic-Usage" href="#Basic-Usage">4 Basic Usage</a>
@@ -193,10 +194,11 @@ Free Documentation License&rdquo;.
   </ul></li>
   <li><a id="toc-Key-Bindings" href="#Key-Bindings">12 Key Bindings</a>
   <ul class="toc-numbered-mark">
-    <li><a id="toc-Main-Mode-Bindings" href="#Main-Mode-Bindings">12.1 Main Mode Bindings</a></li>
-    <li><a id="toc-Annotation-Buffer-Bindings" href="#Annotation-Buffer-Bindings">12.2 Annotation Buffer Bindings</a></li>
-    <li><a id="toc-Smart-Action-Behavior" href="#Smart-Action-Behavior">12.3 Smart Action Behavior</a></li>
-    <li><a id="toc-Sexp-Editing-Mode" href="#Sexp-Editing-Mode">12.4 Sexp Editing Mode</a></li>
+    <li><a id="toc-Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029" href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029">12.1 Mode Map (<code class="code">simply-annotate-mode-map</code>)</a></li>
+    <li><a id="toc-Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029" href="#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029">12.2 Command Map (<code class="code">simply-annotate-command-map</code>)</a></li>
+    <li><a id="toc-Annotation-Buffer-Bindings" href="#Annotation-Buffer-Bindings">12.3 Annotation Buffer Bindings</a></li>
+    <li><a id="toc-Smart-Action-Behavior" href="#Smart-Action-Behavior">12.4 Smart Action Behavior</a></li>
+    <li><a id="toc-Sexp-Editing-Mode" href="#Sexp-Editing-Mode">12.5 Sexp Editing Mode</a></li>
   </ul></li>
   <li><a id="toc-Customization" href="#Customization">13 Customization</a>
   <ul class="toc-numbered-mark">
@@ -313,7 +315,8 @@ Next: <a href="#Quick-Start" accesskey="n" rel="next">Quick Start</a>, Previous:
 
 <ul class="mini-toc">
 <li><a href="#Using-MELPA-_0028Recommended_0029" accesskey="1">Using MELPA (Recommended)</a></li>
-<li><a href="#Manual-Installation" accesskey="2">Manual Installation</a></li>
+<li><a href="#Keymap-Configuration" accesskey="2">Keymap Configuration</a></li>
+<li><a href="#Manual-Installation" accesskey="3">Manual Installation</a></li>
 </ul>
 <div class="section-level-extent" id="Using-MELPA-_0028Recommended_0029">
 <h3 class="section"><span>2.1 Using MELPA (Recommended)<a class="copiable-link" href="#Using-MELPA-_0028Recommended_0029"> &para;</a></span></h3>
@@ -323,22 +326,76 @@ Next: <a href="#Quick-Start" accesskey="n" rel="next">Quick Start</a>, Previous:
 <div class="example lisp">
 <pre class="lisp-preformatted">(use-package simply-annotate
   :ensure t
-  :bind (&quot;C-c A&quot; . simply-annotate-mode))
+  :demand t
+  :hook (find-file-hook . simply-annotate-mode)
+  :config
+  (global-set-key (kbd &quot;M-s&quot;) simply-annotate-command-map))
+</pre></div>
+
+</div>
+<div class="section-level-extent" id="Keymap-Configuration">
+<h3 class="section"><span>2.2 Keymap Configuration<a class="copiable-link" href="#Keymap-Configuration"> &para;</a></span></h3>
+
+<p>Simply Annotate provides two keymaps:
+</p>
+<dl class="table">
+<dt><code class="code">simply-annotate-mode-map</code></dt>
+<dd><p>The minor mode keymap, intentionally minimal.  Only binds <kbd class="kbd">M-n</kbd>
+(next annotation) and <kbd class="kbd">M-p</kbd> (previous annotation) so it won&rsquo;t
+conflict with other packages.
+</p>
+</dd>
+<dt><code class="code">simply-annotate-command-map</code></dt>
+<dd><p>The main command keymap with short single-key bindings (<kbd class="kbd">j</kbd>, <kbd class="kbd">r</kbd>,
+<kbd class="kbd">n</kbd>, <kbd class="kbd">e</kbd>, etc.).  You bind this to a prefix key of your choice.
+</p></dd>
+</dl>
+
+<p>The recommended prefix is <kbd class="kbd">M-s</kbd>, which gives you <kbd class="kbd">M-s j</kbd> (smart
+action), <kbd class="kbd">M-s r</kbd> (reply), <kbd class="kbd">M-s l</kbd> (list), etc.  All keybindings
+in this manual assume the <kbd class="kbd">M-s</kbd> prefix.
+</p>
+<p><strong class="strong">Important:</strong> Use <code class="code">:demand t</code> with <code class="code">global-set-key</code> in
+<code class="code">:config</code> for the <kbd class="kbd">M-s</kbd> prefix.  <code class="code">:demand t</code> loads the
+package immediately so the prefix is available everywhere in Emacs from
+startup.
+</p>
+<p>Do not use <code class="code">:bind-keymap</code> for <kbd class="kbd">M-s</kbd>.  <code class="code">:bind-keymap</code>
+defers loading by creating an autoload proxy &mdash; a temporary non-prefix
+command that loads the package on first keypress.  This works well for
+free keys like <kbd class="kbd">C-c a</kbd>, but <kbd class="kbd">M-s</kbd> is already Emacs&rsquo;s
+<code class="code">search-map</code> prefix.  The proxy replaces <code class="code">search-map</code> with a
+non-prefix command, so any code that subsequently tries to bind under
+<kbd class="kbd">M-s</kbd> will error.  Using <code class="code">global-set-key</code> in <code class="code">:config</code>
+avoids this by binding directly to the real keymap after the package has
+loaded.
+</p>
+<p>If <kbd class="kbd">M-s</kbd> conflicts with other packages (e.g. Consult), use
+<code class="code">:bind-keymap</code> with a free prefix like <kbd class="kbd">C-c a</kbd>:
+</p>
+<div class="example lisp">
+<pre class="lisp-preformatted">;; C-c a prefix --- :bind-keymap works well here because
+;; C-c a is a free key with no existing prefix map, and
+;; it defers loading until first use.
+(use-package simply-annotate
+  :bind-keymap (&quot;C-c a&quot; . simply-annotate-command-map)
+  :hook (find-file-hook . simply-annotate-mode))
 </pre></div>
 
 </div>
 <div class="section-level-extent" id="Manual-Installation">
-<h3 class="section"><span>2.2 Manual Installation<a class="copiable-link" href="#Manual-Installation"> &para;</a></span></h3>
+<h3 class="section"><span>2.3 Manual Installation<a class="copiable-link" href="#Manual-Installation"> &para;</a></span></h3>
 
 <p>If you prefer to install manually:
 </p>
 <ol class="enumerate">
 <li> Download <samp class="file">simply-annotate.el</samp>
-</li><li> Add to your load path:
+</li><li> Add to your load path and bind the command map:
 
 <div class="example lisp">
 <pre class="lisp-preformatted">(add-to-list 'load-path &quot;/path/to/simply-annotate&quot;)
 (require 'simply-annotate)
+(global-set-key (kbd &quot;M-s&quot;) simply-annotate-command-map)
 </pre></div>
 </li></ol>
 
@@ -1589,15 +1646,30 @@ Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previ
 <h2 class="chapter" id="Key-Bindings-1"><span>12 Key Bindings<a class="copiable-link" href="#Key-Bindings-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Main-Mode-Bindings" accesskey="1">Main Mode Bindings</a></li>
-<li><a href="#Annotation-Buffer-Bindings" accesskey="2">Annotation Buffer Bindings</a></li>
-<li><a href="#Smart-Action-Behavior" accesskey="3">Smart Action Behavior</a></li>
-<li><a href="#Sexp-Editing-Mode" accesskey="4">Sexp Editing Mode</a></li>
+<li><a href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029" accesskey="1">Mode Map (<code class="code">simply-annotate-mode-map</code>)</a></li>
+<li><a href="#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029" accesskey="2">Command Map (<code class="code">simply-annotate-command-map</code>)</a></li>
+<li><a href="#Annotation-Buffer-Bindings" accesskey="3">Annotation Buffer Bindings</a></li>
+<li><a href="#Smart-Action-Behavior" accesskey="4">Smart Action Behavior</a></li>
+<li><a href="#Sexp-Editing-Mode" accesskey="5">Sexp Editing Mode</a></li>
 </ul>
-<div class="section-level-extent" id="Main-Mode-Bindings">
-<h3 class="section"><span>12.1 Main Mode Bindings<a class="copiable-link" href="#Main-Mode-Bindings"> &para;</a></span></h3>
+<div class="section-level-extent" id="Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029">
+<h3 class="section"><span>12.1 Mode Map (<code class="code">simply-annotate-mode-map</code>)<a class="copiable-link" href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029"> &para;</a></span></h3>
 
-<p>When <code class="code">simply-annotate-mode</code> is enabled:
+<p>Always active when <code class="code">simply-annotate-mode</code> is enabled:
+</p>
+<table class="multitable">
+<thead><tr><th width="15%">Key</th><th width="35%">Command</th><th width="50%">Description</th></tr></thead>
+<tbody><tr><td width="15%"><kbd class="kbd">M-n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-p</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
+</tbody>
+</table>
+
+</div>
+<div class="section-level-extent" id="Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029">
+<h3 class="section"><span>12.2 Command Map (<code class="code">simply-annotate-command-map</code>)<a class="copiable-link" href="#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029"> &para;</a></span></h3>
+
+<p>Accessed via your chosen prefix key.  Examples below use <kbd class="kbd">M-s</kbd> (the
+recommended prefix).  See <a class="xref" href="#Installation">Installation</a>, for how to bind the prefix.
 </p>
 <table class="multitable">
 <thead><tr><th width="15%">Key</th><th width="35%">Command</th><th width="50%">Description</th></tr></thead>
@@ -1608,22 +1680,23 @@ Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previ
 <tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="50%">Set priority (low/high)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="35%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="50%">Add tag (#review, #bug)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s a</kbd></td><td width="35%"><code class="code">simply-annotate-change-annotation-author</code></td><td width="50%">Change author</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s A</kbd></td><td width="35%"><code class="code">simply-annotate-reset-session-author</code></td><td width="50%">Reset session author</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="35%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="50%">Export to org-mode</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s -</kbd></td><td width="35%"><code class="code">simply-annotate-remove</code></td><td width="50%">Delete annotation at point</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s l</kbd></td><td width="35%"><code class="code">simply-annotate-list</code></td><td width="50%">List all annotations in current file</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s L</kbd></td><td width="35%"><code class="code">simply-annotate-show-all</code></td><td width="50%">Browse annotations across all files</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s f</kbd></td><td width="35%"><code class="code">simply-annotate-jump-to-file</code></td><td width="50%">Jump to annotated file</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s [</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level-backward</code></td><td width="50%">Cycle levels backward (line &rArr; defun &rArr; file)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s ]</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level-forward</code></td><td width="50%">Cycle levels forward (file &rArr; defun &rArr; line)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s '</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-display-style</code></td><td width="50%">Cycle through display styles</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s /</kbd></td><td width="35%"><code class="code">simply-annotate-toggle-inline</code></td><td width="50%">Toggle inline annotation display</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-p</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s v</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
 </tbody>
 </table>
 
 </div>
 <div class="section-level-extent" id="Annotation-Buffer-Bindings">
-<h3 class="section"><span>12.2 Annotation Buffer Bindings<a class="copiable-link" href="#Annotation-Buffer-Bindings"> &para;</a></span></h3>
+<h3 class="section"><span>12.3 Annotation Buffer Bindings<a class="copiable-link" href="#Annotation-Buffer-Bindings"> &para;</a></span></h3>
 
 <p>In the annotation buffer:
 </p>
@@ -1631,18 +1704,13 @@ Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previ
 <thead><tr><th width="15%">Key</th><th width="40%">Command</th><th width="45%">Description</th></tr></thead>
 <tbody><tr><td width="15%"><kbd class="kbd">C-c C-c</kbd></td><td width="40%"><code class="code">simply-annotate-save-annotation-buffer</code></td><td width="45%">Save changes</td></tr>
 <tr><td width="15%"><kbd class="kbd">C-c C-k</kbd></td><td width="40%"><code class="code">simply-annotate-cancel-edit</code></td><td width="45%">Cancel editing</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s e</kbd></td><td width="40%"><code class="code">simply-annotate-edit-sexp</code></td><td width="45%">Switch to sexp editing mode</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s r</kbd></td><td width="40%"><code class="code">simply-annotate-reply-to-annotation</code></td><td width="45%">Add reply</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s s</kbd></td><td width="40%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="45%">Set status</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="40%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="45%">Set priority</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="40%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="45%">Add tag</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="40%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="45%">Export to org-mode</td></tr>
+<tr><td width="15%"><kbd class="kbd">C-g</kbd></td><td width="40%"><code class="code">simply-annotate-cancel-edit</code></td><td width="45%">Cancel editing (alternative)</td></tr>
 </tbody>
 </table>
 
 </div>
 <div class="section-level-extent" id="Smart-Action-Behavior">
-<h3 class="section"><span>12.3 Smart Action Behavior<a class="copiable-link" href="#Smart-Action-Behavior"> &para;</a></span></h3>
+<h3 class="section"><span>12.4 Smart Action Behavior<a class="copiable-link" href="#Smart-Action-Behavior"> &para;</a></span></h3>
 
 <p>The <kbd class="kbd">M-s j</kbd> key binding changes behavior based on context:
 </p>
@@ -1657,7 +1725,7 @@ Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previ
 
 </div>
 <div class="section-level-extent" id="Sexp-Editing-Mode">
-<h3 class="section"><span>12.4 Sexp Editing Mode<a class="copiable-link" href="#Sexp-Editing-Mode"> &para;</a></span></h3>
+<h3 class="section"><span>12.5 Sexp Editing Mode<a class="copiable-link" href="#Sexp-Editing-Mode"> &para;</a></span></h3>
 
 <p>When in sexp editing mode (after <kbd class="kbd">M-s e</kbd>):
 </p>
