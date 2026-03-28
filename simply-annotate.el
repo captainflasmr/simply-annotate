@@ -137,11 +137,6 @@ Uses the foreground of the highlight face with no background,
 so the bracket renders flat without a filled region in the fringe."
   :group 'simply-annotate)
 
-(defcustom simply-annotate-highlight-face 'simply-annotate-highlight-face
-  "Face for highlighted annotated text."
-  :type 'face
-  :group 'simply-annotate)
-
 (defcustom simply-annotate-buffer-name "*Annotation*"
   "Name of the buffer to display annotations."
   :type 'string
@@ -193,11 +188,6 @@ Examples:
                  (const :tag "Right triangle" right-triangle)
                  (const :tag "Filled rectangle" filled-rectangle)
                  (const :tag "Custom bitmap" custom))
-  :group 'simply-annotate)
-
-(defcustom simply-annotate-fringe-face 'simply-annotate-fringe-face
-  "Face for fringe indicators."
-  :type 'face
   :group 'simply-annotate)
 
 (defface simply-annotate-subtle-face
@@ -594,14 +584,14 @@ Returns the buffer if successful, or nil if KEY cannot be resolved."
   (when (file-exists-p simply-annotate-file)
     (with-temp-buffer
       (insert-file-contents simply-annotate-file)
-      (let ((content (string-trim (buffer-string))))
-        (unless (string-empty-p content)
-          (condition-case err
-              (car (read-from-string content))
-            (error
-             (message "Simply-annotate: failed to read database %s: %s"
-                      simply-annotate-file (error-message-string err))
-             nil)))))))
+      (goto-char (point-min))
+      (condition-case err
+          (read (current-buffer))
+        (end-of-file nil)
+        (error
+         (message "Simply-annotate: failed to read database %s: %s"
+                  simply-annotate-file (error-message-string err))
+         nil)))))
 
 (defun simply-annotate--save-database (db)
   "Save DB to file."
@@ -798,7 +788,7 @@ but still show inline text when enabled."
             (dolist (style (simply-annotate--display-styles))
               (pcase style
                 ('highlight
-                 (overlay-put overlay 'face simply-annotate-highlight-face))
+                 (overlay-put overlay 'face 'simply-annotate-highlight-face))
                 ('tint
                  (let ((bg (simply-annotate--tint-background)))
                    (when bg
@@ -830,7 +820,7 @@ but still show inline text when enabled."
                    ('filled-rectangle 'filled-rectangle)
                    ('custom 'simply-annotate-fringe-bitmap)
                    (_ 'left-triangle)))
-         (fringe-spec `(left-fringe ,bitmap ,simply-annotate-fringe-face)))
+         (fringe-spec `(left-fringe ,bitmap simply-annotate-fringe-face)))
     (overlay-put overlay 'before-string
                  (propertize " " 'display fringe-spec))))
 
@@ -1195,9 +1185,8 @@ nil means last sibling at that depth (draw space)."
   (mapconcat (lambda (has-more) (if has-more "│ " "  "))
              continuations ""))
 
-(defun simply-annotate--format-comment-node (node depth _rule-len &optional continuations last-p)
+(defun simply-annotate--format-comment-node (node depth &optional continuations last-p)
   "Format a comment tree NODE at DEPTH for the annotation buffer.
-_RULE-LEN is unused but kept for caller compatibility.
 CONTINUATIONS is a list of booleans tracking which ancestor depths
 have more siblings.  LAST-P is non-nil if this node is the last sibling."
   (mapconcat (lambda (line) (concat "│ " line))
@@ -1229,7 +1218,7 @@ have more siblings.  LAST-P is non-nil if this node is the last sibling."
                (lambda (node)
                  (prog1
                      (simply-annotate--format-comment-node
-                      node 0 rule-len nil (= idx last-idx))
+                      node 0 nil (= idx last-idx))
                    (cl-incf idx)))
                tree
                "\n│\n"))
@@ -1462,7 +1451,7 @@ When SELECT is non-nil, move point to the annotation buffer."
               (setq final-data (read (buffer-string)))
               (unless (simply-annotate--thread-p final-data)
                 (user-error "Invalid annotation format: must be a thread alist"))
-              
+
               (when is-draft
                 (unless (alist-get 'id final-data)
                   (setf (alist-get 'id final-data) (format "thread-%s-%06d" (format-time-string "%s") (random 1000000))))
@@ -1473,15 +1462,12 @@ When SELECT is non-nil, move point to the annotation buffer."
                                 (text . "Initial comment text (edited)")
                                 (type . "comment")))))))
           (error
-           (message "Error saving annotation: %s" (error-message-string err))
-           (cl-return-from simply-annotate-save-annotation-buffer)))
+           (message "Error saving annotation: %s" (error-message-string err))))
       ;; Text-based editing mode
       (let ((content (simply-annotate--strip-boilerplate
                       (buffer-substring simply-annotate-header-end-pos (point-max)))))
         (if (string-empty-p content)
-            (progn
-              (simply-annotate--cancel-annotation overlay is-draft)
-              (cl-return-from simply-annotate-save-annotation-buffer))
+            (simply-annotate--cancel-annotation overlay is-draft)
           (setq final-data (cond
                             (simply-annotate-reply-mode
                              (let ((new-thread (simply-annotate--add-reply
@@ -1500,8 +1486,9 @@ When SELECT is non-nil, move point to the annotation buffer."
                                   current-data content simply-annotate-editing-comment-id)
                                (setq simply-annotate-editing-comment-id nil)))
                             (t (simply-annotate--create-thread content)))))))
-    
-    (simply-annotate--finalize-annotation overlay final-data is-draft)))
+
+    (when final-data
+      (simply-annotate--finalize-annotation overlay final-data is-draft))))
 
 (defun simply-annotate--cancel-annotation (overlay is-draft)
   "Cancel annotation editing for OVERLAY, handling IS-DRAFT state."
@@ -2179,8 +2166,9 @@ DEPTH controls heading level offset (default 0)."
                   (simply-annotate--insert-simple-annotation annotation-data line-info file-key level d))))))))))
 
 (defun simply-annotate--sort-annotations (annotations)
-  "Sort ANNOTATIONS by line position, then by status (open items first)."
-  (sort annotations
+  "Sort ANNOTATIONS by line position, then by status (open items first).
+Returns a new sorted list; ANNOTATIONS is not modified."
+  (sort (copy-sequence annotations)
         (lambda (a b)
           (let ((start-a (alist-get 'start a))
                 (start-b (alist-get 'start b))
@@ -2496,7 +2484,7 @@ Uses `outline-mode' to fold headings cheaply, then activates
   "Build `tabulated-list-entries' from ANNOTATIONS in SOURCE-BUFFER for FILE-KEY."
   (let ((line-table (simply-annotate--batch-line-info annotations source-buffer))
         (entries nil))
-    (dolist (ann (simply-annotate--sort-annotations (copy-sequence annotations)))
+    (dolist (ann (simply-annotate--sort-annotations annotations))
       (let* ((start-pos (alist-get 'start ann))
              (data (alist-get 'text ann))
              (raw-level (or (alist-get 'level ann) 'defun))
@@ -2902,7 +2890,8 @@ should bind to a prefix key of your choice (M-s is recommended).")
         (add-hook 'before-save-hook #'simply-annotate--save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate--save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer nil t)
-        (when (> (length simply-annotate-overlays) 0)
+        (add-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)
+        (when simply-annotate-overlays
           (message "Simply-annotate: loaded %d annotations."
                    (length simply-annotate-overlays))))
     (simply-annotate--clear-all-overlays)
@@ -2910,7 +2899,8 @@ should bind to a prefix key of your choice (M-s is recommended).")
     (simply-annotate-hide-annotation-buffer)
     (remove-hook 'before-save-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate--save-annotations t)
-    (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)))
+    (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)
+    (remove-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)))
 
 ;;; Info-mode Integration
 
@@ -2923,7 +2913,6 @@ should bind to a prefix key of your choice (M-s is recommended).")
     (simply-annotate--apply-level-filter)
     (simply-annotate--update-header)))
 
-(add-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)
 
 ;;; Dired Integration
 
@@ -2949,7 +2938,7 @@ should bind to a prefix key of your choice (M-s is recommended).")
               (let* ((ov (make-overlay (line-beginning-position)
                                        (line-end-position)))
                      (fringe-spec `(left-fringe ,simply-annotate-fringe-indicator
-                                                ,simply-annotate-fringe-face)))
+                                                simply-annotate-fringe-face)))
                 (overlay-put ov 'before-string (propertize " " 'display fringe-spec))
                 (overlay-put ov 'simply-annotate-dired t)
                 (push ov simply-annotate-dired-overlays))))
