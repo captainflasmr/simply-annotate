@@ -11,6 +11,10 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 ** TODO Loading Annotations List buffer can take a while and blocks
 
+** TODO Tagging search
+
+** TODO tag display in org annotation buffer
+
 ** TODO add automated unit tests
 
 Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
@@ -19,38 +23,38 @@ Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck).
 
 Related to Issue #3. The annotation editing buffer is plain text; optionally deriving from org-mode would give users bold, italics, links, footnotes etc.
 
-** TODO allow user-supplied buffer key function
+** DONE allow user-supplied buffer key function
 
-Related to Issue #2. Currently simply-annotate-file-key hardcodes file path as the key. Making this configurable would enable annotations on non-file buffers (info, nov.el, eww).
+Related to Issue #2. Fixed in 0.9.1. Added =simply-annotate-file-key-functions= (alist mapping major modes to key generators) and =simply-annotate-file-key-function= (buffer-local override). Info-mode is supported out of the box with per-node annotation tracking.
 
-** TODO review keymap activation approach
+** DONE review keymap activation approach
 
-Related to Issues #4 and #5. The minor mode keymap binds single letters which conflicts with normal typing and other packages like Consult. Consider moving default bindings to a prefix or letting users opt-in explicitly.
+Related to Issues #4 and #5. Fixed in 0.9.3. Added =simply-annotate-command-map=, a standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, etc.) that users bind to their own prefix key. Separate from =simply-annotate-mode-map= which uses =M-s= prefixed keys.
 
 * Issues
 
 Issues on the [[https://github.com/captainflasmr/simply-annotate/issues][GitHub Issues page]]
 
-** OPEN If an annotation is created outside of simply-annotate-mode, turning on the mode erases it #6
+** DONE If an annotation is created outside of simply-annotate-mode, turning on the mode erases it #6
 
-Creating an annotation without the minor mode active, then enabling the mode, reports 0 annotations loaded and the unsaved annotation is lost. Possible fixes: prevent annotation creation outside the mode, save on mode entry, or warn the user.
+Fixed in 0.9.2. Mode activation now persists any existing annotation overlays to the database before clearing and reloading, so annotations created while the mode was off are never lost.
 
-** OPEN Minor mode activates keymap explicitly, leads to weird outcomes #5
+** DONE Minor mode activates keymap explicitly, leads to weird outcomes #5
 
-When simply-annotate-mode is active, single-letter bindings in the keymap fire during normal typing. User suggests moving built-in bindings to a separate setup function users call manually.
+Fixed in 0.9.3. Short-key bindings moved to =simply-annotate-command-map=, a separate prefix keymap. Enabling the minor mode no longer intercepts single-key presses during normal typing.
 
-** OPEN Right way to set key bindings to not interfere with existing bindings, like for Consult #4
+** DONE Right way to set key bindings to not interfere with existing bindings, like for Consult #4
 
-Enabling simply-annotate-mode takes over several keybindings that conflict with other packages.
+Fixed in 0.9.3. =simply-annotate-command-map= can be bound to any prefix (e.g. =C-c a=) giving =C-c a j=, =C-c a r= etc. without interfering with Consult or other packages.
 
 ** OPEN Support for org syntax in annotations #3
 
-Request for optional org-mode syntax support in the annotation editing buffer.
+Partially addressed: listing and export buffers use org-mode. The annotation *editing* buffer still uses fundamental-mode. Org syntax support for comment editing remains on the roadmap.
 
 ** DONE Support for non-file buffers #2
 
-Request to allow user-supplied key function so annotations can work on non-file buffers (nov.el, Info, etc.). Currently simply-annotate-file-key is hardcoded.
+Fixed in 0.9.1. Added =simply-annotate-file-key-functions= alist and =simply-annotate-file-key-function= buffer-local variable. Info-mode supported out of the box with per-node tracking.
 
 ** DONE More complex threading system #1
 
-Request for nested/reply threading with per-comment reply support, rather than the current flat thread model.
+Fixed in 0.9.0. Full nested/hierarchical replies with comment =id= and =parent-id= fields, hierarchical =completing-read= for reply target and comment editing, tree-line display, and automatic legacy database migration.

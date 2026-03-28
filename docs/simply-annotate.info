@@ -118,18 +118,63 @@ The easiest way to install Simply Annotate is through MELPA:
 
      (use-package simply-annotate
        :ensure t
-       :bind ("C-c A" . simply-annotate-mode))
+       :demand t
+       :hook (find-file-hook . simply-annotate-mode)
+       :config
+       (global-set-key (kbd "M-s") simply-annotate-command-map))
 
-2.2 Manual Installation
+2.2 Keymap Configuration
+========================
+
+Simply Annotate provides two keymaps:
+
+‘simply-annotate-mode-map’
+     The minor mode keymap, intentionally minimal.  Only binds ‘M-n’
+     (next annotation) and ‘M-p’ (previous annotation) so it won't
+     conflict with other packages.
+
+‘simply-annotate-command-map’
+     The main command keymap with short single-key bindings (‘j’, ‘r’,
+     ‘n’, ‘e’, etc.).  You bind this to a prefix key of your choice.
+
+   The recommended prefix is ‘M-s’, which gives you ‘M-s j’ (smart
+action), ‘M-s r’ (reply), ‘M-s l’ (list), etc.  All keybindings in this
+manual assume the ‘M-s’ prefix.
+
+   *Important:* Use ‘:demand t’ with ‘global-set-key’ in ‘:config’ for
+the ‘M-s’ prefix.  ‘:demand t’ loads the package immediately so the
+prefix is available everywhere in Emacs from startup.
+
+   Do not use ‘:bind-keymap’ for ‘M-s’.  ‘:bind-keymap’ defers loading
+by creating an autoload proxy -- a temporary non-prefix command that
+loads the package on first keypress.  This works well for free keys like
+‘C-c a’, but ‘M-s’ is already Emacs's ‘search-map’ prefix.  The proxy
+replaces ‘search-map’ with a non-prefix command, so any code that
+subsequently tries to bind under ‘M-s’ will error.  Using
+‘global-set-key’ in ‘:config’ avoids this by binding directly to the
+real keymap after the package has loaded.
+
+   If ‘M-s’ conflicts with other packages (e.g. Consult), use
+‘:bind-keymap’ with a free prefix like ‘C-c a’:
+
+     ;; C-c a prefix --- :bind-keymap works well here because
+     ;; C-c a is a free key with no existing prefix map, and
+     ;; it defers loading until first use.
+     (use-package simply-annotate
+       :bind-keymap ("C-c a" . simply-annotate-command-map)
+       :hook (find-file-hook . simply-annotate-mode))
+
+2.3 Manual Installation
 =======================
 
 If you prefer to install manually:
 
   1. Download ‘simply-annotate.el’
-  2. Add to your load path:
+  2. Add to your load path and bind the command map:
 
           (add-to-list 'load-path "/path/to/simply-annotate")
           (require 'simply-annotate)
+          (global-set-key (kbd "M-s") simply-annotate-command-map)
 
 
 File: simply-annotate.info,  Node: Quick Start,  Next: Basic Usage,  Prev: Installation,  Up: Top
@@ -1009,10 +1054,21 @@ File: simply-annotate.info,  Node: Key Bindings,  Next: Customization,  Prev: Or
 12 Key Bindings
 ***************
 
-12.1 Main Mode Bindings
-=======================
+12.1 Mode Map (‘simply-annotate-mode-map’)
+==========================================
 
-When ‘simply-annotate-mode’ is enabled:
+Always active when ‘simply-annotate-mode’ is enabled:
+
+Key         Command                   Description
+---------------------------------------------------------------------------
+‘M-n’       ‘simply-annotate-next’    Jump to next annotation
+‘M-p’       ‘simply-annotate-previous’Jump to previous annotation
+
+12.2 Command Map (‘simply-annotate-command-map’)
+================================================
+
+Accessed via your chosen prefix key.  Examples below use ‘M-s’ (the
+recommended prefix).  *Note Installation::, for how to bind the prefix.
 
 Key         Command                   Description
 ---------------------------------------------------------------------------
@@ -1023,21 +1079,23 @@ Key         Command                   Description
 ‘M-s p’     ‘simply-annotate-set-annotation-priority’Set priority (low/high)
 ‘M-s t’     ‘simply-annotate-add-annotation-tag’Add tag (#review, #bug)
 ‘M-s a’     ‘simply-annotate-change-annotation-author’Change author
-‘M-s A’     ‘simply-annotate-reset-session-author’Reset session author
 ‘M-s o’     ‘simply-annotate-export-to-org-file’Export to org-mode
 ‘M-s -’     ‘simply-annotate-remove’  Delete annotation at point
 ‘M-s l’     ‘simply-annotate-list’    List all annotations in current
                                       file
+‘M-s L’     ‘simply-annotate-show-all’Browse annotations across all
+                                      files
+‘M-s f’     ‘simply-annotate-jump-to-file’Jump to annotated file
 ‘M-s [’     ‘simply-annotate-cycle-level-backward’Cycle levels backward (line ⇒
                                       defun ⇒ file)
 ‘M-s ]’     ‘simply-annotate-cycle-level-forward’Cycle levels forward (file ⇒ defun
                                       ⇒ line)
 ‘M-s '’     ‘simply-annotate-cycle-display-style’Cycle through display styles
 ‘M-s /’     ‘simply-annotate-toggle-inline’Toggle inline annotation display
-‘M-n’       ‘simply-annotate-next’    Jump to next annotation
-‘M-p’       ‘simply-annotate-previous’Jump to previous annotation
+‘M-s n’     ‘simply-annotate-next’    Jump to next annotation
+‘M-s v’     ‘simply-annotate-previous’Jump to previous annotation
 
-12.2 Annotation Buffer Bindings
+12.3 Annotation Buffer Bindings
 ===============================
 
 In the annotation buffer:
@@ -1046,14 +1104,9 @@ Key         Command                       Description
 ---------------------------------------------------------------------------
 ‘C-c C-c’   ‘simply-annotate-save-annotation-buffer’Save changes
 ‘C-c C-k’   ‘simply-annotate-cancel-edit’ Cancel editing
-‘M-s e’     ‘simply-annotate-edit-sexp’   Switch to sexp editing mode
-‘M-s r’     ‘simply-annotate-reply-to-annotation’Add reply
-‘M-s s’     ‘simply-annotate-set-annotation-status’Set status
-‘M-s p’     ‘simply-annotate-set-annotation-priority’Set priority
-‘M-s t’     ‘simply-annotate-add-annotation-tag’Add tag
-‘M-s o’     ‘simply-annotate-export-to-org-file’Export to org-mode
+‘C-g’       ‘simply-annotate-cancel-edit’ Cancel editing (alternative)
 
-12.3 Smart Action Behavior
+12.4 Smart Action Behavior
 ==========================
 
 The ‘M-s j’ key binding changes behavior based on context:
@@ -1067,7 +1120,7 @@ region)
 annotation
 Elsewhere              Create annotation for current line
 
-12.4 Sexp Editing Mode
+12.5 Sexp Editing Mode
 ======================
 
 When in sexp editing mode (after ‘M-s e’):
@@ -1752,22 +1805,22 @@ Tag Table:
 Node: Top792
 Node: Introduction2786
 Node: Installation4862
-Node: Quick Start5470
-Node: Basic Usage6318
-Node: Advanced Editing8931
-Node: Threading and Collaboration12960
-Node: Display Styles18297
-Node: Annotation Levels22913
-Node: Navigation26216
-Node: Advanced Features27858
-Node: Org-mode Integration32159
-Node: Key Bindings34602
-Node: Customization38365
-Node: Data Storage45876
-Node: Troubleshooting49934
-Node: Function Index56357
-Node: Variable Index58976
-Node: Concept Index63276
+Node: Quick Start7560
+Node: Basic Usage8408
+Node: Advanced Editing11021
+Node: Threading and Collaboration15050
+Node: Display Styles20387
+Node: Annotation Levels25003
+Node: Navigation28306
+Node: Advanced Features29948
+Node: Org-mode Integration34249
+Node: Key Bindings36692
+Node: Customization40795
+Node: Data Storage48306
+Node: Troubleshooting52364
+Node: Function Index58787
+Node: Variable Index61406
+Node: Concept Index65706
 
 End Tag Table
 

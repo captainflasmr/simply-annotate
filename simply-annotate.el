@@ -23,46 +23,68 @@
 ;;
 ;;; Commentary:
 ;;
-;; A lightweight annotation system for Emacs that allows
-;; you to add persistent notes to any text file without modifying the
-;; original content.  Enhanced with threading, collaboration, and org-mode integration.
+;; A lightweight annotation system for Emacs that allows you to add
+;; persistent notes to any text file without modifying the original
+;; content.  Enhanced with threading, collaboration, and org-mode
+;; integration.
 ;;
 ;; Quick Start:
 ;;
-;; (use-package simply-annotate
-;;  :bind (("C-c A" . simply-annotate-mode)
-;;         ("C-c 0" . simply-annotate-show-all)
-;;         ("C-c 9" . simply-annotate-jump-to-file)))
+;;   (use-package simply-annotate
+;;     :bind-keymap ("C-c a" . simply-annotate-command-map)
+;;     :hook (find-file-hook . simply-annotate-mode))
+;;
+;;   (with-eval-after-load 'simply-annotate
+;;     (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
+;;
+;; All commands live in `simply-annotate-command-map', which you bind
+;; to a prefix key of your choice.  With C-c a as the prefix:
 ;;
 ;; 1. Open any file
-;; 2. Enable annotation mode: =C-c A=
-;; 3. Select text and press =M-s j= to create your first annotation
-;; 4. Create some more annotations
-;; 5. Navigate with =M-n= (next) and =M-p= (previous)
+;; 2. Select text and press C-c a j to create your first annotation
+;; 3. Navigate with M-n (next) and M-p (previous)
+;;
+;; Keymap Configuration:
+;;
+;; `simply-annotate-mode-map' is intentionally minimal (only M-n and
+;; M-p for navigation).  All other commands are in
+;; `simply-annotate-command-map':
+;;
+;;   ;; Recommended: C-c a prefix (defers loading until first use)
+;;   :bind-keymap ("C-c a" . simply-annotate-command-map)
+;;
+;;   ;; Alternative: M-s prefix (replaces Emacs search-map)
+;;   ;; Requires :demand t with global-set-key in :config
+;;   ;; Do NOT use :bind-keymap with M-s (see docstring for details)
+;;   :demand t
+;;   :config (global-set-key (kbd "M-s") simply-annotate-command-map)
 ;;
 ;; Threading & Collaboration:
 ;;
+;; All keybindings below use <prefix> to denote your chosen prefix
+;; (e.g. C-c a j means press C-c a then j).
+;;
 ;; * Replies
-;; - Press =M-s r= to add a reply to any annotation
+;; - Press <prefix> r to add a reply to any annotation
 ;; - Creates threaded conversations for code reviews
 ;;
 ;; * Status Management
-;; - Press =M-s s= to set status (open, in-progress, resolved, closed)
-;; - Press =M-s p= to set priority (low, normal, high, critical)
-;; - Press =M-s t= to add tags for organization
+;; - Press <prefix> s to set status (open, in-progress, resolved, closed)
+;; - Press <prefix> p to set priority (low, normal, high, critical)
+;; - Press <prefix> t to add tags for organization
 ;;
 ;; * Author Management
 ;; - Configure team members: (setq simply-annotate-author-list '("John" "Jane" "Bob"))
 ;; - Set prompting behavior: (setq simply-annotate-prompt-for-author 'threads-only)
-;; - Press =M-s a= to change annotation author
+;; - Press <prefix> a to change annotation author
 ;;
 ;; * Editing
-;; - Press =M-s e= to edit the current annotation
+;; - Press <prefix> e to edit the current annotation
 ;; - Edit in a sexp form and then C-c C-c to save
 ;; - Any data field can be edited
 ;;
 ;; * Org-mode Integration
-;; - Press =M-s o= to export annotations to org-mode files
+;; - Press <prefix> o to export annotations to org-mode files
 ;; - Each thread becomes a TODO item with replies as sub-entries
 ;;
 ;; Configuration Examples:
@@ -2571,6 +2593,7 @@ Opens the selected file and enables `simply-annotate-mode'."
   "Mode for displaying and editing annotations."
   (visual-line-mode 1))
 
+;;;###autoload
 (defvar simply-annotate-command-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "j") #'simply-annotate-smart-action)
@@ -2593,40 +2616,58 @@ Opens the selected file and enables `simply-annotate-mode'."
     (define-key map (kbd "v") #'simply-annotate-previous)
     map)
   "Command map for Simply Annotate.
-Bind this to a prefix key for short-key access to all commands, e.g.:
+This keymap contains all annotation commands with short single-key
+bindings.  Bind it to a prefix key of your choice.  The recommended
+prefix is M-s:
 
-  (global-set-key (kbd \"C-c a\") simply-annotate-command-map)
+  (global-set-key (kbd \"M-s\") simply-annotate-command-map)
 
-or with `use-package':
+This gives you M-s j (smart action), M-s r (reply), M-s l (list), etc.
 
+Note: use `global-set-key' in :config for the M-s prefix.
+:bind-keymap defers loading by creating an autoload proxy -- a
+temporary non-prefix command that loads the package on first
+keypress.  This works for free keys like C-c a, but M-s is
+already Emacs's `search-map' prefix.  The proxy replaces
+search-map with a non-prefix command, breaking any code that
+tries to bind under M-s.  `global-set-key' in :config binds
+directly to the real keymap after the package has loaded.
+
+  ;; Recommended: M-s prefix via :demand t + :config
+  ;; :demand t loads immediately so M-s works from startup
   (use-package simply-annotate
-    :bind-keymap (\"C-c a\" . simply-annotate-command-map))")
+    :demand t
+    :hook (find-file-hook . simply-annotate-mode)
+    :config
+    (global-set-key (kbd \"M-s\") simply-annotate-command-map))
+
+  ;; Alternative: C-c a prefix via :bind-keymap
+  ;; Works well here because C-c a is a free key with no
+  ;; existing prefix map, and defers loading until first use
+  (use-package simply-annotate
+    :bind-keymap (\"C-c a\" . simply-annotate-command-map)
+    :hook (find-file-hook . simply-annotate-mode))
+
+Available keys:
+
+  j  smart-action      r  reply           s  status
+  -  remove            a  change author   l  list
+  L  show all          f  jump to file    p  priority
+  t  tag               o  org export      e  edit sexp
+  [  level backward    ]  level forward   \\='  cycle style
+  /  toggle inline     n  next            v  previous")
 
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "M-s j") #'simply-annotate-smart-action)
-    (define-key map (kbd "M-s r") #'simply-annotate-reply-to-annotation)
-    (define-key map (kbd "M-s s") #'simply-annotate-set-annotation-status)
-    (define-key map (kbd "M-s -") #'simply-annotate-remove)
-    (define-key map (kbd "M-s a") #'simply-annotate-change-annotation-author)
-    (define-key map (kbd "M-s l") #'simply-annotate-list)
-    (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
-    (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
-    (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
-    (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
-    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level-backward)
-    (define-key map (kbd "M-s ]") #'simply-annotate-cycle-level-forward)
-    (define-key map (kbd "M-s '") #'simply-annotate-cycle-display-style)
-    (define-key map (kbd "M-s /") #'simply-annotate-toggle-inline)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
   "Keymap for `simply-annotate-mode'.
-This keymap is active whenever the mode is on.  All bindings use
-prefixed keys (M-s, M-n, M-p) to avoid conflicts with normal editing.
+This keymap is intentionally minimal -- it only binds M-n and M-p
+for quick navigation between annotations.
 
-For short single-key access, bind `simply-annotate-command-map'
-to a prefix key instead.")
+All other commands live in `simply-annotate-command-map', which you
+should bind to a prefix key of your choice (M-s is recommended).")
 
 ;;;###autoload
 (define-minor-mode simply-annotate-mode

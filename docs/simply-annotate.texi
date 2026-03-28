@@ -133,7 +133,56 @@ The easiest way to install Simply Annotate is through MELPA:
 @lisp
 (use-package simply-annotate
   :ensure t
-  :bind ("C-c A" . simply-annotate-mode))
+  :demand t
+  :hook (find-file-hook . simply-annotate-mode)
+  :config
+  (global-set-key (kbd "M-s") simply-annotate-command-map))
+@end lisp
+
+@section Keymap Configuration
+
+Simply Annotate provides two keymaps:
+
+@table @code
+@item simply-annotate-mode-map
+The minor mode keymap, intentionally minimal.  Only binds @kbd{M-n}
+(next annotation) and @kbd{M-p} (previous annotation) so it won't
+conflict with other packages.
+
+@item simply-annotate-command-map
+The main command keymap with short single-key bindings (@kbd{j}, @kbd{r},
+@kbd{n}, @kbd{e}, etc.).  You bind this to a prefix key of your choice.
+@end table
+
+The recommended prefix is @kbd{M-s}, which gives you @kbd{M-s j} (smart
+action), @kbd{M-s r} (reply), @kbd{M-s l} (list), etc.  All keybindings
+in this manual assume the @kbd{M-s} prefix.
+
+@strong{Important:} Use @code{:demand t} with @code{global-set-key} in
+@code{:config} for the @kbd{M-s} prefix.  @code{:demand t} loads the
+package immediately so the prefix is available everywhere in Emacs from
+startup.
+
+Do not use @code{:bind-keymap} for @kbd{M-s}.  @code{:bind-keymap}
+defers loading by creating an autoload proxy --- a temporary non-prefix
+command that loads the package on first keypress.  This works well for
+free keys like @kbd{C-c a}, but @kbd{M-s} is already Emacs's
+@code{search-map} prefix.  The proxy replaces @code{search-map} with a
+non-prefix command, so any code that subsequently tries to bind under
+@kbd{M-s} will error.  Using @code{global-set-key} in @code{:config}
+avoids this by binding directly to the real keymap after the package has
+loaded.
+
+If @kbd{M-s} conflicts with other packages (e.g.@: Consult), use
+@code{:bind-keymap} with a free prefix like @kbd{C-c a}:
+
+@lisp
+;; C-c a prefix --- :bind-keymap works well here because
+;; C-c a is a free key with no existing prefix map, and
+;; it defers loading until first use.
+(use-package simply-annotate
+  :bind-keymap ("C-c a" . simply-annotate-command-map)
+  :hook (find-file-hook . simply-annotate-mode))
 @end lisp
 
 @section Manual Installation
@@ -144,11 +193,12 @@ If you prefer to install manually:
 @item
 Download @file{simply-annotate.el}
 @item
-Add to your load path:
+Add to your load path and bind the command map:
 
 @lisp
 (add-to-list 'load-path "/path/to/simply-annotate")
 (require 'simply-annotate)
+(global-set-key (kbd "M-s") simply-annotate-command-map)
 @end lisp
 @end enumerate
 
@@ -1236,9 +1286,20 @@ Version control for tracking annotation history
 @node Key Bindings
 @chapter Key Bindings
 
-@section Main Mode Bindings
+@section Mode Map (@code{simply-annotate-mode-map})
 
-When @code{simply-annotate-mode} is enabled:
+Always active when @code{simply-annotate-mode} is enabled:
+
+@multitable @columnfractions .15 .35 .5
+@headitem Key @tab Command @tab Description
+@item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
+@item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
+@end multitable
+
+@section Command Map (@code{simply-annotate-command-map})
+
+Accessed via your chosen prefix key.  Examples below use @kbd{M-s} (the
+recommended prefix).  @xref{Installation}, for how to bind the prefix.
 
 @multitable @columnfractions .15 .35 .5
 @headitem Key @tab Command @tab Description
@@ -1249,16 +1310,17 @@ When @code{simply-annotate-mode} is enabled:
 @item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
 @item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag (#review, #bug)
 @item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab Change author
-@item @kbd{M-s A} @tab @code{simply-annotate-reset-session-author} @tab Reset session author
 @item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
+@item @kbd{M-s L} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
+@item @kbd{M-s f} @tab @code{simply-annotate-jump-to-file} @tab Jump to annotated file
 @item @kbd{M-s [} @tab @code{simply-annotate-cycle-level-backward} @tab Cycle levels backward (line @result{} defun @result{} file)
 @item @kbd{M-s ]} @tab @code{simply-annotate-cycle-level-forward} @tab Cycle levels forward (file @result{} defun @result{} line)
 @item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
 @item @kbd{M-s /} @tab @code{simply-annotate-toggle-inline} @tab Toggle inline annotation display
-@item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
-@item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
+@item @kbd{M-s n} @tab @code{simply-annotate-next} @tab Jump to next annotation
+@item @kbd{M-s v} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @end multitable
 
 @section Annotation Buffer Bindings
@@ -1269,12 +1331,7 @@ In the annotation buffer:
 @headitem Key @tab Command @tab Description
 @item @kbd{C-c C-c} @tab @code{simply-annotate-save-annotation-buffer} @tab Save changes
 @item @kbd{C-c C-k} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing
-@item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab Switch to sexp editing mode
-@item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply
-@item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status
-@item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority
-@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag
-@item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
+@item @kbd{C-g} @tab @code{simply-annotate-cancel-edit} @tab Cancel editing (alternative)
 @end multitable
 
 @section Smart Action Behavior

@@ -17,21 +17,24 @@ Separate command map for prefix-key configuration ([[https://github.com/captainf
 
 *** Features
 
-- *=simply-annotate-command-map=* -- A standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, =v=, etc.) that users can bind to any prefix key.  This is separate from =simply-annotate-mode-map= (which uses =M-s= prefixed keys) and solves the issue where binding single keys to the mode-map intercepted normal typing.
+- *=simply-annotate-command-map=* -- A standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, =v=, etc.) that users bind to a prefix key of their choice.  =simply-annotate-mode-map= is now intentionally minimal (only =M-n= / =M-p= for navigation) so it won't conflict with Consult or other packages.
 
-  Here is an example setup:
+  Recommended setup:
 
   #+begin_src elisp
   (use-package simply-annotate
-	:bind-keymap ("\C-ca" . simply-annotate-command-map)
-	:bind (:map simply-annotate-command-map
-				("n" . simply-annotate-smart-action)
-				("]" . simply-annotate-next)
-				("[" . simply-annotate-previous)
-				("a" . simply-annotate-show-all)
-				("d" . simply-annotate-remove))
-	:hook
-	(find-file-hook . simply-annotate-mode))
+	:bind-keymap ("C-c a" . simply-annotate-command-map)
+	:hook (find-file-hook . simply-annotate-mode))
+  #+end_src  
+
+  Or with an alternative prefix:
+
+#+begin_src elisp
+  (use-package simply-annotate
+	:demand t
+	:hook (find-file-hook . simply-annotate-mode)
+	:config
+	(global-set-key (kbd "M-s") simply-annotate-command-map))
   #+end_src
 
 ** <2026-03-27 Fri> *0.9.2*
