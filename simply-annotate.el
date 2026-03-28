@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.4
+;; Version: 0.9.6
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -1840,7 +1840,8 @@ For threads with multiple comments, prompts which comment to edit."
   (let ((draft-overlay (simply-annotate--create-overlay start end "")))
     (simply-annotate--update-header "EDITING")
     (overlay-put draft-overlay 'simply-annotation-draft t)
-    (overlay-put draft-overlay 'simply-annotation-level simply-annotate-current-level)
+    (overlay-put draft-overlay 'simply-annotation-level
+                 (if (eq simply-annotate-current-level 'all) 'defun simply-annotate-current-level))
     (setq simply-annotate-draft-overlay draft-overlay)
 
     (simply-annotate--update-annotation-buffer "" draft-overlay 'edit)
@@ -2456,6 +2457,125 @@ Uses `outline-mode' to fold headings cheaply, then activates
         (with-current-buffer source
           (simply-annotate-list))))))
 
+;;; Tabulated annotation listing
+
+(defvar simply-annotate-table-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") #'simply-annotate-table-goto-source)
+    (define-key map (kbd "g") #'simply-annotate-table-refresh)
+    (define-key map (kbd "q") #'quit-window)
+    map)
+  "Keymap for `simply-annotate-table-mode'.")
+
+(define-derived-mode simply-annotate-table-mode tabulated-list-mode "SA-Table"
+  "Major mode for displaying annotations in a sortable table."
+  (setq tabulated-list-format
+        [("Level" 6 t)
+         ("Line" 6 (lambda (a b)
+                     (< (string-to-number (aref (cadr a) 1))
+                        (string-to-number (aref (cadr b) 1)))))
+         ("Status" 12 t)
+         ("Priority" 9 t)
+         ("Cmt" 4 (lambda (a b)
+                    (< (string-to-number (let ((s (aref (cadr a) 4))) (if (string= s "") "0" s)))
+                       (string-to-number (let ((s (aref (cadr b) 4))) (if (string= s "") "0" s))))))
+         ("Tags" 12 t)
+         ("Author" 10 t)
+         ("Comment" 0 t)])
+  (setq tabulated-list-sort-key '("Line" . nil))
+  (tabulated-list-init-header))
+
+(defun simply-annotate--tabulated-entries (annotations source-buffer file-key)
+  "Build `tabulated-list-entries' from ANNOTATIONS in SOURCE-BUFFER for FILE-KEY."
+  (let ((line-table (simply-annotate--batch-line-info annotations source-buffer))
+        (entries nil))
+    (dolist (ann (simply-annotate--sort-annotations (copy-sequence annotations)))
+      (let* ((start-pos (alist-get 'start ann))
+             (data (alist-get 'text ann))
+             (raw-level (or (alist-get 'level ann) 'defun))
+             (level (if (eq raw-level 'all) 'defun raw-level))
+             (line-info (gethash start-pos line-table '(1 0 "")))
+             (line-num (car line-info))
+             (col-num (cadr line-info))
+             (thread-p (simply-annotate--thread-p data))
+             (status (if thread-p (upcase (or (alist-get 'status data) "open")) "OPEN"))
+             (priority (if thread-p (upcase (or (alist-get 'priority data) "normal")) "NORMAL"))
+             (tags (if thread-p
+                       (string-join (or (alist-get 'tags data) nil) ",")
+                     ""))
+             (comments (if thread-p (alist-get 'comments data) nil))
+             (count (if thread-p (length comments) 0))
+             (author (if thread-p
+                        (or (alist-get 'author (car comments)) "")
+                      ""))
+             (first-text (cond
+                          (thread-p
+                           (let ((c (car comments)))
+                             (or (alist-get 'text c) "")))
+                          ((stringp data) data)
+                          (t "")))
+             (summary (string-trim (car (split-string first-text "\n"))))
+             (nav (list :file file-key :line line-num
+                        :col (1+ col-num) :level level)))
+        (push (list nav
+                    (vector
+                     (upcase (symbol-name level))
+                     (number-to-string line-num)
+                     (propertize status 'face
+                                 (pcase status
+                                   ("OPEN" 'warning)
+                                   ("IN-PROGRESS" 'success)
+                                   ("RESOLVED" 'shadow)
+                                   ("CLOSED" 'shadow)
+                                   (_ 'default)))
+                     priority
+                     (if (> count 0) (number-to-string count) "")
+                     tags
+                     author
+                     summary))
+              entries)))
+    (nreverse entries)))
+
+(defun simply-annotate-table-goto-source ()
+  "Jump to the source location of the annotation at point."
+  (interactive)
+  (when-let ((entry (tabulated-list-get-id)))
+    (simply-annotate--listing-goto-source entry)))
+
+(defun simply-annotate-table-refresh ()
+  "Rebuild the annotation table from scratch."
+  (interactive)
+  (let ((source simply-annotate-listing-source))
+    (when (and source (buffer-live-p source))
+      (kill-buffer (current-buffer))
+      (with-current-buffer source
+        (simply-annotate-list-table)))))
+
+;;;###autoload
+(defun simply-annotate-list-table ()
+  "Show annotations for the current buffer in a sortable table.
+Reuses an existing table buffer if one exists; press g to rebuild."
+  (interactive)
+  (let* ((buffer-name "*Annotations Table*")
+         (source-buffer (current-buffer))
+         (existing (get-buffer buffer-name)))
+    (if (and existing
+             (eq source-buffer
+                 (buffer-local-value 'simply-annotate-listing-source existing)))
+        (pop-to-buffer existing)
+      (when existing (kill-buffer existing))
+      (if simply-annotate-overlays
+          (let* ((file-key (or (buffer-file-name) (buffer-name)))
+                 (annotations (simply-annotate--serialize-annotations)))
+            (with-current-buffer (get-buffer-create buffer-name)
+              (simply-annotate-table-mode)
+              (setq tabulated-list-entries
+                    (simply-annotate--tabulated-entries annotations source-buffer file-key))
+              (tabulated-list-print)
+              (setq simply-annotate-listing-source source-buffer))
+            (pop-to-buffer buffer-name))
+        (message "No annotations in buffer")))))
+
 ;;;###autoload
 (defun simply-annotate-list ()
   "Show the annotation listing for the current buffer.
@@ -2463,12 +2583,15 @@ Reuses an existing listing buffer if one exists; press the
 Refresh button or \\[simply-annotate-listing-refresh] to rebuild."
   (interactive)
   (let* ((buffer-name "*Annotations*")
+         (source-buffer (current-buffer))
          (existing (get-buffer buffer-name)))
-    (if existing
+    (if (and existing
+             (eq source-buffer
+                 (buffer-local-value 'simply-annotate-listing-source existing)))
         (pop-to-buffer existing)
+      (when existing (kill-buffer existing))
       (if simply-annotate-overlays
-          (let* ((source-buffer (current-buffer))
-                 (source-file (or (buffer-file-name) (buffer-name)))
+          (let* ((source-file (or (buffer-file-name) (buffer-name)))
                  (annotations (simply-annotate--serialize-annotations))
                  (annotation-buffer (simply-annotate--format-annotations-for-buffer
                                      source-file annotations source-buffer buffer-name)))
@@ -2676,6 +2799,7 @@ Opens the selected file and enables `simply-annotate-mode'."
     (define-key map (kbd "-") #'simply-annotate-remove)
     (define-key map (kbd "a") #'simply-annotate-change-annotation-author)
     (define-key map (kbd "l") #'simply-annotate-list)
+    (define-key map (kbd "T") #'simply-annotate-list-table)
     (define-key map (kbd "L") #'simply-annotate-show-all)
     (define-key map (kbd "f") #'simply-annotate-jump-to-file)
     (define-key map (kbd "p") #'simply-annotate-set-annotation-priority)

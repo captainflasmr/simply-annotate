@@ -1313,6 +1313,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
+@item @kbd{M-s T} @tab @code{simply-annotate-list-table} @tab Sortable table view of annotations
 @item @kbd{M-s L} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
 @item @kbd{M-s f} @tab @code{simply-annotate-jump-to-file} @tab Jump to annotated file
 @item @kbd{M-s [} @tab @code{simply-annotate-cycle-level-backward} @tab Cycle levels backward (line @result{} defun @result{} file)

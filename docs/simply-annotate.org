@@ -1595,6 +1595,7 @@ bind the prefix.
 | M-s o | =simply-annotate-export-to-org-file=       | Export to org-mode                          |
 | M-s - | =simply-annotate-remove=                   | Delete annotation at point                  |
 | M-s l | =simply-annotate-list=                     | List all annotations in current file        |
+| M-s T | =simply-annotate-list-table=               | Sortable table view of annotations          |
 | M-s L | =simply-annotate-show-all=                 | Browse annotations across all files         |
 | M-s f | =simply-annotate-jump-to-file=             | Jump to annotated file                      |
 | M-s [ | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file) |

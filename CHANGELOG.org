@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-28 Sat> *0.9.6*
+
+Tabular annotation listing added.
+
+*** Features
+
+- *Tabular annotation listing* -- =<prefix> T= (=simply-annotate-list-table=) opens a fast, sortable table view of annotations using =tabulated-list-mode=.  Columns: Level, Line, Status, Priority, Comments, Tags, Author, Comment.  Click column headers or press =S= to sort.  =RET= jumps to source, =g= refreshes, =q= quits.
+
 ** <2026-03-28 Sat> *0.9.4*
 
 Org-mode annotation editing and UI improvements ([[https://github.com/captainflasmr/simply-annotate/issues/3][GitHub Issue #3]]).

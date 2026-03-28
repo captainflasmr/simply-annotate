@@ -1083,6 +1083,7 @@ Key         Command                   Description
 ‘M-s -’     ‘simply-annotate-remove’  Delete annotation at point
 ‘M-s l’     ‘simply-annotate-list’    List all annotations in current
                                       file
+‘M-s T’     ‘simply-annotate-list-table’Sortable table view of annotations
 ‘M-s L’     ‘simply-annotate-show-all’Browse annotations across all
                                       files
 ‘M-s f’     ‘simply-annotate-jump-to-file’Jump to annotated file
@@ -1815,12 +1816,12 @@ Node: Navigation28306
 Node: Advanced Features29948
 Node: Org-mode Integration34249
 Node: Key Bindings36692
-Node: Customization40795
-Node: Data Storage48306
-Node: Troubleshooting52364
-Node: Function Index58787
-Node: Variable Index61406
-Node: Concept Index65706
+Node: Customization40878
+Node: Data Storage48389
+Node: Troubleshooting52447
+Node: Function Index58870
+Node: Variable Index61489
+Node: Concept Index65789
 
 End Tag Table
 

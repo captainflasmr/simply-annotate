@@ -53,6 +53,12 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-03-28> *0.9.6*
+
+Tabular annotation listing added..
+
+- *Tabular listing* -- =<prefix> T= opens a fast, sortable table view using =tabulated-list-mode=.  Columns for Level, Line, Status, Priority, Comments, Tags, Author, and Comment.  Click headers to sort.
+
 ** <2026-03-28> *0.9.4*
 
 Org-mode annotation editing and UI improvements ([[https://github.com/captainflasmr/simply-annotate/issues/3][GitHub Issue #3]]).
@@ -329,10 +335,11 @@ When =simply-annotate-mode= is active:
 
 *** Listing All Annotations
 
-- Press =<prefix> l= to open a grep-mode buffer showing all annotations in the current file
+- Press =<prefix> l= to open an org-mode buffer showing all annotations in the current file
 - **Enhanced display**: Shows thread status, priority, comment counts, and author info
-- Click on line numbers, press =Enter= or =n/p= keys to jump directly to annotations
-- Perfect for getting an overview of all your notes and their status
+- Press =Enter= or =n/p= keys to jump directly to annotations.  Press =g= or the =[Refresh]= button to rebuild.
+- Press =<prefix> T= to open a fast sortable table view using =tabulated-list-mode=
+- **Table columns**: Level, Line, Status, Priority, Comments, Tags, Author, Comment -- click headers to sort
 
 *** Cross-file Overview
 
@@ -378,6 +385,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> o= | =simply-annotate-export-to-org-file=       | Export to org-mode file              |
 | =<prefix> -= | =simply-annotate-remove=                   | Delete annotation at point           |
 | =<prefix> l= | =simply-annotate-list=                     | List all annotations in current file |
+| =<prefix> T= | =simply-annotate-list-table=               | Sortable table view of annotations   |
 | =<prefix> L= | =simply-annotate-show-all=                 | Browse annotations across all files  |
 | =<prefix> f= | =simply-annotate-jump-to-file=             | Jump to annotated file               |
 | =<prefix> [= | =simply-annotate-cycle-level-backward=     | Cycle annotation level backward      |
