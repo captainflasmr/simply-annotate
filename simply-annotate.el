@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.3
+;; Version: 0.9.4
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -220,6 +220,15 @@ Uses overline and underline to bracket the annotated region."
 - above: Above the annotated text (as a before-string)"
   :type '(choice (const :tag "After annotated region" after)
                  (const :tag "Above annotated region" above))
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-use-org-editing t
+  "When non-nil, use `org-mode' in the annotation editing buffer.
+This enables org syntax highlighting (bold, italics, links, etc.)
+while writing annotations.  The stored text retains raw org markup.
+Org-mode keybindings like C-c C-c are overridden to save the
+annotation instead.  Set to nil to use `fundamental-mode'."
+  :type 'boolean
   :group 'simply-annotate)
 
 (defcustom simply-annotate-inline-max-lines 20
@@ -1322,13 +1331,27 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 
 ;;; Annotation Buffer Management
 
+(defvar simply-annotate-annotation-mode-map)
+
+(defun simply-annotate--apply-annotation-keymap ()
+  "Apply annotation buffer keybindings on top of the current major mode keymap.
+This uses `make-composed-keymap' so our bindings (C-c C-c, C-c C-k, etc.)
+take priority while the underlying mode's bindings remain accessible."
+  (use-local-map (make-composed-keymap simply-annotate-annotation-mode-map
+                                       (current-local-map))))
+
+(defun simply-annotate--editing-major-mode ()
+  "Activate the appropriate major mode for annotation editing.
+Uses `org-mode' when `simply-annotate-use-org-editing' is non-nil,
+otherwise `fundamental-mode'."
+  (if simply-annotate-use-org-editing
+      (org-mode)
+    (fundamental-mode))
+  (simply-annotate--apply-annotation-keymap))
+
 (defun simply-annotate--get-annotation-buffer ()
   "Get or create the annotation buffer."
-  (let ((buffer (get-buffer-create simply-annotate-buffer-name)))
-    (with-current-buffer buffer
-      (unless (eq major-mode 'simply-annotate-annotation-mode)
-        (simply-annotate-annotation-mode)))
-    buffer))
+  (get-buffer-create simply-annotate-buffer-name))
 
 (defun simply-annotate--update-annotation-buffer (annotation-data overlay &optional mode edit-text)
   "Update annotation buffer with ANNOTATION-DATA and OVERLAY.
@@ -1346,6 +1369,7 @@ EDIT-TEXT, when non-nil, is the specific comment text to edit."
         (cond
          ((eq mode 'sexp)
           (emacs-lisp-mode)
+          (simply-annotate--apply-annotation-keymap)
           (visual-line-mode 1)
           (setq-local buffer-read-only nil)
           (buffer-disable-undo)
@@ -1357,36 +1381,36 @@ EDIT-TEXT, when non-nil, is the specific comment text to edit."
                  (print-level nil) (print-length nil))
             (pp data-to-print (current-buffer)))
           (setq simply-annotate-header-end-pos (point-min))
-          (setq header-line-format "Edit annotation sexp (C-c C-c to save, C-c C-k to cancel)"))
-         
+          (setq header-line-format (propertize " SEXP EDITING: C-c C-c to save, C-c C-k / C-g to cancel. " 'face 'highlight)))
+
          ((eq mode 'edit)
-          (fundamental-mode)
+          (simply-annotate--editing-major-mode)
           (visual-line-mode 1)
           (setq-local buffer-read-only nil)
           (buffer-enable-undo)
           (let ((text (or edit-text (simply-annotate--annotation-text annotation-data))))
             (insert (simply-annotate--strip-boilerplate text)))
           (setq simply-annotate-header-end-pos (point-min))
-          (setq header-line-format "EDITING: Type annotation text. C-c C-c to save, C-c C-k to cancel."))
-         
+          (setq header-line-format (propertize " EDITING: C-c C-c to save, C-c C-k / C-g to cancel. " 'face 'highlight)))
+
          ((eq mode 'reply)
-          (fundamental-mode)
+          (simply-annotate--editing-major-mode)
           (visual-line-mode 1)
           (setq-local buffer-read-only nil)
           (buffer-enable-undo)
           ;; Reply buffer starts empty
           (setq simply-annotate-header-end-pos (point-min))
-          (setq header-line-format "REPLYING: Type reply text. C-c C-c to save, C-c C-k to cancel."))
-         
+          (setq header-line-format (propertize " REPLYING: C-c C-c to save, C-c C-k / C-g to cancel. " 'face 'highlight)))
+
          (t ;; 'view mode
-          (fundamental-mode)
+          (simply-annotate--editing-major-mode)
           (visual-line-mode 1)
           (setq-local buffer-read-only t)
           (if (simply-annotate--thread-p annotation-data)
               (insert (simply-annotate--format-thread-full annotation-data))
             (insert (simply-annotate--annotation-text annotation-data)))
           (setq simply-annotate-header-end-pos (point-min))
-          (setq header-line-format (propertize " VIEW MODE: C-u M-s j to edit, r to reply, q to hide " 'face 'highlight))))
+          (setq header-line-format (propertize " VIEW MODE " 'face 'highlight))))
       
       (goto-char (point-min))
       (setq simply-annotate-source-buffer source-buf
@@ -1625,10 +1649,7 @@ Optional TEXT is appended (e.g. status messages)."
                                annotation-data))))
     
     (unless (equal new-annotation simply-annotate-current-annotation)
-      (setq simply-annotate-current-annotation new-annotation)
-      
-      (when (and (not overlay) (get-buffer-window simply-annotate-buffer-name))
-        (simply-annotate-hide-annotation-buffer)))
+      (setq simply-annotate-current-annotation new-annotation))
     
     (setq header-line-format (simply-annotate--format-header text))
     (force-mode-line-update t)))
@@ -1813,7 +1834,7 @@ For threads with multiple comments, prompts which comment to edit."
     (simply-annotate--update-annotation-buffer annotation-data overlay 'edit edit-text)
     (simply-annotate--show-annotation-buffer t)
     (goto-char simply-annotate-header-end-pos)
-    (message "Editing existing annotation (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
+))
 
 (defun simply-annotate--create-new-annotation (start end)
   "Create new annotation from START to END."
@@ -1822,12 +1843,11 @@ For threads with multiple comments, prompts which comment to edit."
     (overlay-put draft-overlay 'simply-annotation-draft t)
     (overlay-put draft-overlay 'simply-annotation-level simply-annotate-current-level)
     (setq simply-annotate-draft-overlay draft-overlay)
-    
+
     (simply-annotate--update-annotation-buffer "" draft-overlay 'edit)
     (simply-annotate--show-annotation-buffer t)
-    
-    (goto-char simply-annotate-header-end-pos)
-    (message "Enter annotation text (C-c C-c to save, C-c C-k to cancel, C-g to quit)")))
+
+    (goto-char simply-annotate-header-end-pos)))
 
 ;;;###autoload
 (defun simply-annotate-edit-sexp ()
@@ -1840,12 +1860,10 @@ For threads with multiple comments, prompts which comment to edit."
         (progn
           (goto-char (overlay-start overlay))
           (simply-annotate--update-header "EDITING SEXP")
-          
+
           (simply-annotate--update-annotation-buffer (overlay-get overlay 'simply-annotation) overlay 'sexp)
           (simply-annotate--show-annotation-buffer t)
-          (goto-char (point-min))
-          
-          (message "Editing annotation sexp. C-c C-c to save, C-c C-k to cancel."))
+          (goto-char (point-min)))
       (message "No annotation at point to edit."))))
 
 ;;;###autoload

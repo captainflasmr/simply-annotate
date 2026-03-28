@@ -11,6 +11,21 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-28 Sat> *0.9.4*
+
+Org-mode annotation editing and UI improvements ([[https://github.com/captainflasmr/simply-annotate/issues/3][GitHub Issue #3]]).
+
+*** Features
+
+- *Org-mode editing* -- The annotation buffer now uses =org-mode= by default, enabling org syntax highlighting (bold, italics, links, etc.) while writing annotations.  Controlled by =simply-annotate-use-org-editing= (default =t=).  Set to =nil= for =fundamental-mode=.
+- *Annotation keymap composing* -- Annotation buffer keybindings (=C-c C-c=, =C-c C-k=, =C-g=) are now properly layered on top of the active major mode via =make-composed-keymap=, so org-mode bindings remain accessible while our save/cancel keys take priority.
+
+*** Improvements
+
+- *Persistent view window* -- The annotation view window no longer auto-hides when navigating between annotations.  It stays visible until explicitly closed.
+- *Cleaner header lines* -- All annotation buffer header lines use the =highlight= face for consistency.  Removed redundant minibuffer messages that duplicated the header line.
+- *Simplified view mode* -- View mode header line now shows just =VIEW MODE= without keybinding hints.
+
 ** <2026-03-27 Fri> *0.9.3*
 
 Separate command map for prefix-key configuration ([[https://github.com/captainflasmr/simply-annotate/issues/5][GitHub Issue #5]], [[https://github.com/captainflasmr/simply-annotate/issues/4][GitHub Issue #4]]).

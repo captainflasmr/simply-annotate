@@ -53,6 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-03-28> *0.9.4*
+
+Org-mode annotation editing and UI improvements ([[https://github.com/captainflasmr/simply-annotate/issues/3][GitHub Issue #3]]).
+
+- *Org-mode editing* -- The annotation buffer now uses =org-mode= by default for syntax highlighting while writing.  Controlled by =simply-annotate-use-org-editing=.
+- *Persistent view window* -- The annotation view window no longer auto-hides during navigation.
+- *Cleaner UI* -- Consistent header line styling, simplified view mode header, removed redundant minibuffer messages.
+
 ** <2026-03-27> *0.9.3*
 
 Separate command map for prefix-key configuration ([[https://github.com/captainflasmr/simply-annotate/issues/5][GitHub Issue #5]], [[https://github.com/captainflasmr/simply-annotate/issues/4][GitHub Issue #4]]).
