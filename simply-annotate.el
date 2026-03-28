@@ -105,8 +105,7 @@
 (require 'color)
 
 (declare-function org-mode "org")
-(declare-function org-return "org")
-(declare-function org-set-startup-visibility "org")
+(declare-function outline-hide-sublevels "outline")
 (declare-function dired-get-filename "dired")
 
 (defgroup simply-annotate nil
@@ -1547,7 +1546,7 @@ Otherwise update the first comment."
     (simply-annotate-hide-annotation-buffer)
     (when (use-region-p) (deactivate-mark)))
   
-  (simply-annotate--refresh-listing)
+  (simply-annotate--invalidate-listing)
   (let ((author (if (simply-annotate--thread-p final-data)
                     (alist-get 'author (car (alist-get 'comments final-data)))
                   simply-annotate-default-author)))
@@ -1875,7 +1874,7 @@ For threads with multiple comments, prompts which comment to edit."
         (simply-annotate--remove-overlay overlay)
         (simply-annotate--save-annotations)
         (simply-annotate--update-header)
-        (simply-annotate--refresh-listing)
+        (simply-annotate--invalidate-listing)
         (message "Annotation removed"))
     (message "No annotation at point")))
 
@@ -2000,7 +1999,7 @@ each thread.  Safe to run multiple times."
             (simply-annotate--update-annotation-buffer thread overlay 'view)
             (simply-annotate--show-annotation-buffer))
 
-          (simply-annotate--refresh-listing)
+          (simply-annotate--invalidate-listing)
           (message "%s set to: %s" prompt value))
       (message "No annotation at point"))))
 
@@ -2028,7 +2027,7 @@ each thread.  Safe to run multiple times."
               (simply-annotate--update-annotation-buffer thread overlay 'view)
               (simply-annotate--show-annotation-buffer))
 
-            (simply-annotate--refresh-listing)
+            (simply-annotate--invalidate-listing)
             (message "Tag '%s' added" tag)))
       (message "No annotation at point"))))
 
@@ -2074,7 +2073,7 @@ each thread.  Safe to run multiple times."
       (overlay-put overlay 'help-echo (simply-annotate--annotation-summary thread))
       (simply-annotate--refresh-overlay-display overlay)
       (simply-annotate--save-annotations)
-      (simply-annotate--refresh-listing)
+      (simply-annotate--invalidate-listing)
       (message "Author changed from %s to %s" current-author new-author))))
 
 (defun simply-annotate--convert-to-thread-with-author (overlay current-data)
@@ -2087,7 +2086,7 @@ each thread.  Safe to run multiple times."
       (overlay-put overlay 'help-echo (simply-annotate--annotation-summary new-thread))
       (simply-annotate--refresh-overlay-display overlay)
       (simply-annotate--save-annotations)
-      (simply-annotate--refresh-listing)
+      (simply-annotate--invalidate-listing)
       (message "Annotation converted to thread with author: %s" new-author))))
 
 ;;; Export and Listing
@@ -2100,11 +2099,21 @@ Uses org-mode for folding with a custom minor mode for navigation."
       (erase-buffer)
       (simply-annotate--insert-header file-key annotations)
       (simply-annotate--insert-formatted-annotations file-key annotations source-buffer)
-      (simply-annotate--setup-annotation-list-mode)
-      ;; Set after mode setup since org-mode wipes buffer-locals
+      (simply-annotate--finish-annotation-list-mode)
       (setq simply-annotate-listing-source source-buffer)
       (goto-char (point-min)))
     (current-buffer)))
+
+(defun simply-annotate--insert-refresh-button ()
+  "Insert a clickable [Refresh] button at the top of the listing buffer."
+  (let ((start (point)))
+    (insert "[Refresh]")
+    (make-text-button start (point)
+                      'action (lambda (_button)
+                                (simply-annotate-listing-refresh))
+                      'follow-link t
+                      'help-echo "Rebuild the annotation listing")
+    (insert "\n")))
 
 (defun simply-annotate--insert-header (file-key annotations)
   "Insert header with summary stats for FILE-KEY and ANNOTATIONS."
@@ -2121,6 +2130,7 @@ Uses org-mode for folding with a custom minor mode for navigation."
                 (setq open-count (1+ open-count))))
           (setq open-count (1+ open-count)))))
 
+    (simply-annotate--insert-refresh-button)
     (let ((start (point)))
       (insert (format "#+TITLE: Annotations for %s\n" (simply-annotate--key-name file-key)))
       (put-text-property start (point) 'simply-annotate-nav (list :file file-key)))
@@ -2137,7 +2147,8 @@ Uses org-mode for folding with a custom minor mode for navigation."
 (defun simply-annotate--insert-formatted-annotations (file-key annotations source-buffer &optional depth)
   "Insert formatted ANNOTATIONS for FILE-KEY from SOURCE-BUFFER grouped by level.
 DEPTH controls heading level offset (default 0)."
-  (let ((d (or depth 0)))
+  (let ((d (or depth 0))
+        (line-table (simply-annotate--batch-line-info annotations source-buffer)))
     (dolist (level simply-annotate-levels)
       (let ((level-annotations (cl-remove-if-not
                                 (lambda (ann) (eq (or (alist-get 'level ann) 'defun) level))
@@ -2151,9 +2162,9 @@ DEPTH controls heading level offset (default 0)."
           (let ((sorted-annotations (simply-annotate--sort-annotations level-annotations)))
             (dolist (ann sorted-annotations)
               (let* ((start-pos (alist-get 'start ann))
-                     (end-pos (alist-get 'end ann))
                      (annotation-data (alist-get 'text ann))
-                     (line-info (simply-annotate--line-info start-pos end-pos source-buffer file-key)))
+                     (line-info (gethash start-pos line-table
+                                         (list 1 0 "Content not available"))))
 
                 (if (simply-annotate--thread-p annotation-data)
                     (simply-annotate--insert-thread-annotation annotation-data line-info file-key level d)
@@ -2182,20 +2193,36 @@ DEPTH controls heading level offset (default 0)."
                    (t (string< status-a status-b))))
               (< start-a start-b))))))
 
-(defun simply-annotate--line-info (start-pos end-pos source-buffer _file-key)
-  "Get line information from START-POS to END-POS in SOURCE-BUFFER for FILE-KEY."
-  (if (and source-buffer (buffer-live-p source-buffer))
+(defun simply-annotate--batch-line-info (annotations source-buffer)
+  "Pre-compute line info for all ANNOTATIONS from SOURCE-BUFFER in one pass.
+Returns a hash table mapping start positions to (line-number column content)."
+  (let ((table (make-hash-table :test 'eql)))
+    (if (not (and source-buffer (buffer-live-p source-buffer)))
+        (dolist (ann annotations)
+          (puthash (alist-get 'start ann) (list 1 0 "Content not available") table))
       (with-current-buffer source-buffer
         (save-excursion
           (let* ((pmin (point-min))
                  (pmax (point-max))
-                 (start (max pmin (min start-pos pmax)))
-                 (end (max pmin (min end-pos pmax))))
-            (goto-char start)
-            (list (line-number-at-pos)
-                  (current-column)
-                  (buffer-substring-no-properties start end)))))
-    (list 1 0 "Content not available")))
+                 (sorted (sort (copy-sequence annotations)
+                               (lambda (a b) (< (alist-get 'start a) (alist-get 'start b)))))
+                 (cur-line 1)
+                 (cur-pos pmin))
+            (dolist (ann sorted)
+              (let* ((start-pos (alist-get 'start ann))
+                     (end-pos (alist-get 'end ann))
+                     (start (max pmin (min start-pos pmax)))
+                     (end (max pmin (min end-pos pmax))))
+                ;; Count newlines from cur-pos to start (incremental)
+                (setq cur-line (+ cur-line (count-lines cur-pos start)))
+                (setq cur-pos start)
+                (goto-char start)
+                (puthash start-pos
+                         (list cur-line
+                               (current-column)
+                               (buffer-substring-no-properties start end))
+                         table)))))))
+    table))
 
 (defun simply-annotate--insert-thread-annotation (thread line-info file-key level &optional depth)
   "Insert formatted THREAD annotation with LINE-INFO for FILE-KEY at LEVEL.
@@ -2237,6 +2264,17 @@ DEPTH controls heading level offset (default 0)."
                  (alist-get 'comments thread))))
       (simply-annotate--insert-comment-tree tree (+ 3 d)))))
 
+(defun simply-annotate--short-timestamp (timestamp)
+  "Extract a short MM/DD HH:MM display from ISO TIMESTAMP string.
+Avoids the overhead of `date-to-time' + `format-time-string'."
+  (if (and timestamp (>= (length timestamp) 16))
+      (let ((month (substring timestamp 5 7))
+            (day (substring timestamp 8 10))
+            (hour (substring timestamp 11 13))
+            (min (substring timestamp 14 16)))
+        (format "%s/%s %s:%s" month day hour min))
+    (or timestamp "")))
+
 (defun simply-annotate--insert-comment-tree (tree heading-level)
   "Insert comment TREE nodes as org headings at HEADING-LEVEL.
 Recursively inserts children at deeper heading levels."
@@ -2249,8 +2287,7 @@ Recursively inserts children at deeper heading levels."
            (text (alist-get 'text comment))
            (type (alist-get 'type comment))
            (type-label (if (string= type "comment") "Comment" "Reply"))
-           (formatted-time (format-time-string "%m/%d %H:%M"
-                                               (date-to-time timestamp))))
+           (formatted-time (simply-annotate--short-timestamp timestamp)))
       (insert (format "%s %s - %s (%s)\n" stars type-label author formatted-time))
       (dolist (line (split-string text "\n"))
         (insert (format "%s\n" line)))
@@ -2360,9 +2397,8 @@ jump to the source location."
             (unless simply-annotate-mode
               (simply-annotate-mode 1))))
       (let ((props (get-text-property (point) 'simply-annotate-nav)))
-        (if props
-            (simply-annotate--listing-goto-source props)
-          (org-return))))))
+        (when props
+          (simply-annotate--listing-goto-source props))))))
 
 (defun simply-annotate-listing-quit ()
   "Quit the annotation listing buffer."
@@ -2374,6 +2410,7 @@ jump to the source location."
     (define-key map (kbd "n") #'simply-annotate-listing-next)
     (define-key map (kbd "p") #'simply-annotate-listing-prev)
     (define-key map (kbd "RET") #'simply-annotate-listing-jump)
+    (define-key map (kbd "g") #'simply-annotate-listing-refresh)
     (define-key map (kbd "q") #'simply-annotate-listing-quit)
     map)
   "Keymap for simply-annotate-listing-mode.")
@@ -2388,98 +2425,117 @@ jump to the source location."
   :lighter " SA-List"
   :keymap simply-annotate-listing-mode-map)
 
-(defun simply-annotate--setup-annotation-list-mode ()
-  "Setup org-mode with listing navigation for the annotation list buffer."
+(defun simply-annotate--invalidate-listing ()
+  "Kill the cached listing buffer so the next open rebuilds it."
+  (when-let ((buf (get-buffer "*Annotations*")))
+    (kill-buffer buf)))
+
+(defun simply-annotate--finish-annotation-list-mode ()
+  "Finish setting up the annotation list buffer.
+Uses `outline-mode' to fold headings cheaply, then activates
+`org-mode' which only fontifies the visible collapsed headings."
+  (outline-mode)
+  (outline-hide-sublevels 2)
   (org-mode)
   (visual-line-mode -1)
   (setq truncate-lines t)
   (simply-annotate-listing-mode 1)
-  (org-set-startup-visibility)
   (setq buffer-read-only t))
 
-(defun simply-annotate--refresh-listing ()
-  "Refresh the *Annotations* listing buffer if it is visible.
-Regenerates the listing from the source buffer's current annotations."
-  (when-let* ((listing-buf (get-buffer "*Annotations*"))
-              (win (get-buffer-window listing-buf t)))
-    (let ((source (buffer-local-value 'simply-annotate-listing-source listing-buf)))
+(defun simply-annotate-listing-refresh ()
+  "Rebuild the annotation listing buffer from scratch."
+  (interactive)
+  (let* ((buf-name (buffer-name))
+         (is-all (string= buf-name "*All Annotations*"))
+         (listing-buf (current-buffer))
+         (source (buffer-local-value 'simply-annotate-listing-source listing-buf)))
+    (kill-buffer listing-buf)
+    (if is-all
+        (simply-annotate-show-all)
       (when (and source (buffer-live-p source))
         (with-current-buffer source
-          (let* ((file-key (or (buffer-file-name) (buffer-name)))
-                 (annotations (simply-annotate--serialize-annotations)))
-            (simply-annotate--format-annotations-for-buffer
-             file-key annotations source "*Annotations*")))))))
+          (simply-annotate-list))))))
 
 ;;;###autoload
 (defun simply-annotate-list ()
-  "Enhanced version that handles threading."
+  "Show the annotation listing for the current buffer.
+Reuses an existing listing buffer if one exists; press the
+Refresh button or \\[simply-annotate-listing-refresh] to rebuild."
   (interactive)
-  (let ((buffer-name "*Annotations*"))
-    (if simply-annotate-overlays
-        (let* ((source-buffer (current-buffer))
-               (source-file (or (buffer-file-name) (buffer-name)))
-               (annotations (simply-annotate--serialize-annotations))
-               (annotation-buffer (simply-annotate--format-annotations-for-buffer
-                                   source-file annotations source-buffer buffer-name)))
-          (pop-to-buffer annotation-buffer)
-          (goto-char (point-min)))
-      (message "No annotations in buffer"))))
+  (let* ((buffer-name "*Annotations*")
+         (existing (get-buffer buffer-name)))
+    (if existing
+        (pop-to-buffer existing)
+      (if simply-annotate-overlays
+          (let* ((source-buffer (current-buffer))
+                 (source-file (or (buffer-file-name) (buffer-name)))
+                 (annotations (simply-annotate--serialize-annotations))
+                 (annotation-buffer (simply-annotate--format-annotations-for-buffer
+                                     source-file annotations source-buffer buffer-name)))
+            (pop-to-buffer annotation-buffer)
+            (goto-char (point-min)))
+        (message "No annotations in buffer")))))
 
 ;;;###autoload
 (defun simply-annotate-show-all ()
   "Show all annotations across all files in an org-mode buffer.
+Reuses an existing buffer if one exists; press the Refresh button
+or \\[simply-annotate-listing-refresh] to rebuild.
 Files are grouped by directory.  Directories are top-level headings,
 files are second-level, and annotation levels below that."
   (interactive)
-  (let* ((db (simply-annotate--load-database)))
-    (if (not db)
-        (message "No annotations database found")
-      (let ((files-with-annotations (mapcar #'car db))
-            (total 0)
-            (buffer-name "*All Annotations*"))
-        (if (not files-with-annotations)
-            (message "No annotations found in database")
-          (with-current-buffer (get-buffer-create buffer-name)
-            (let ((inhibit-read-only t))
-              (erase-buffer)
-              ;; Count totals
-              (dolist (file-key files-with-annotations)
-                (setq total (+ total (length (alist-get file-key db nil nil #'string=)))))
-              (insert (format "#+TITLE: All Annotations\n"))
-              (insert (format "#+STARTUP: show2levels\n"))
-              (insert (format "Total: %d annotations across %d files\n\n"
-                              total (length files-with-annotations)))
-              ;; Group files by directory
-              (let ((dir-alist nil))
-                (dolist (file-key files-with-annotations)
-                  (let* ((dir (simply-annotate--key-directory file-key))
-                         (name (simply-annotate--key-name file-key)))
-                    (push (cons name file-key)
-                          (alist-get dir dir-alist nil nil #'string=))))
-                ;; Sort directories and insert
-                (dolist (dir-entry (sort dir-alist
-                                        (lambda (a b) (string< (car a) (car b)))))
-                  (let* ((dir (car dir-entry))
-                         (files (nreverse (cdr dir-entry)))
-                         (dir-count (cl-reduce #'+ files
-                                               :key (lambda (f)
-                                                      (length (alist-get (cdr f) db nil nil #'string=))))))
-                    (insert (format "* %s (%d)\n" dir dir-count))
-                    (dolist (file-entry files)
-                      (let* ((name (car file-entry))
-                             (file-key (cdr file-entry))
-                             (annotations (alist-get file-key db nil nil #'string=))
-                             (count (length annotations))
-                             (source-buffer (simply-annotate--get-key-buffer file-key))
-                             (start (point)))
-                        (insert (format "** %s (%d)\n" name count))
-                        (put-text-property start (point) 'simply-annotate-nav (list :file file-key))
-                        (simply-annotate--insert-formatted-annotations
-                         file-key annotations source-buffer 2))))))
-              ;; Setup mode
-              (simply-annotate--setup-annotation-list-mode)
-              (goto-char (point-min))))
-          (pop-to-buffer buffer-name))))))
+  (let ((buffer-name "*All Annotations*"))
+    (if-let ((existing (get-buffer buffer-name)))
+        (pop-to-buffer existing)
+      (let* ((db (simply-annotate--load-database)))
+        (if (not db)
+            (message "No annotations database found")
+          (let ((files-with-annotations (mapcar #'car db))
+                (total 0))
+            (if (not files-with-annotations)
+                (message "No annotations found in database")
+              (with-current-buffer (get-buffer-create buffer-name)
+                (let ((inhibit-read-only t))
+                  (erase-buffer)
+                  ;; Count totals
+                  (dolist (file-key files-with-annotations)
+                    (setq total (+ total (length (alist-get file-key db nil nil #'string=)))))
+                  (simply-annotate--insert-refresh-button)
+                  (insert (format "#+TITLE: All Annotations\n"))
+                  (insert (format "#+STARTUP: show2levels\n"))
+                  (insert (format "Total: %d annotations across %d files\n\n"
+                                  total (length files-with-annotations)))
+                  ;; Group files by directory
+                  (let ((dir-alist nil))
+                    (dolist (file-key files-with-annotations)
+                      (let* ((dir (simply-annotate--key-directory file-key))
+                             (name (simply-annotate--key-name file-key)))
+                        (push (cons name file-key)
+                              (alist-get dir dir-alist nil nil #'string=))))
+                    ;; Sort directories and insert
+                    (dolist (dir-entry (sort dir-alist
+                                            (lambda (a b) (string< (car a) (car b)))))
+                      (let* ((dir (car dir-entry))
+                             (files (nreverse (cdr dir-entry)))
+                             (dir-count (cl-reduce #'+ files
+                                                   :key (lambda (f)
+                                                          (length (alist-get (cdr f) db nil nil #'string=))))))
+                        (insert (format "* %s (%d)\n" dir dir-count))
+                        (dolist (file-entry files)
+                          (let* ((name (car file-entry))
+                                 (file-key (cdr file-entry))
+                                 (annotations (alist-get file-key db nil nil #'string=))
+                                 (count (length annotations))
+                                 (source-buffer (simply-annotate--get-key-buffer file-key))
+                                 (start (point)))
+                            (insert (format "** %s (%d)\n" name count))
+                            (put-text-property start (point) 'simply-annotate-nav (list :file file-key))
+                            (simply-annotate--insert-formatted-annotations
+                             file-key annotations source-buffer 2))))))
+                  ;; Finish mode setup
+                  (simply-annotate--finish-annotation-list-mode)
+                  (goto-char (point-min))))
+              (pop-to-buffer buffer-name))))))))
 
 ;;;###autoload
 (defun simply-annotate-jump-to-file ()
