@@ -126,6 +126,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @node Installation
 @chapter Installation
 
+Requires @strong{Emacs 28.1} or later.  No external dependencies.
+
 @section Using MELPA (Recommended)
 
 The easiest way to install Simply Annotate is through MELPA:
@@ -198,7 +200,9 @@ Add to your load path and bind the command map:
 @lisp
 (add-to-list 'load-path "/path/to/simply-annotate")
 (require 'simply-annotate)
-(global-set-key (kbd "M-s") simply-annotate-command-map)
+(global-set-key (kbd "C-c a") simply-annotate-command-map)
+(add-hook 'find-file-hook #'simply-annotate-mode)
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
 @end lisp
 @end enumerate
 

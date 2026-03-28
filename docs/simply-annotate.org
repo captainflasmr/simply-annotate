@@ -238,6 +238,8 @@ Next: [[#Quick-Start][Quick Start]], Previous:
 :CUSTOM_ID: Installation-1
 :CLASS: chapter
 :END:
+Requires *Emacs 28.1* or later. No external dependencies.
+
 - [[#Using-MELPA-_0028Recommended_0029][Using MELPA (Recommended)]]
 - [[#Keymap-Configuration][Keymap Configuration]]
 - [[#Manual-Installation][Manual Installation]]
@@ -318,7 +320,9 @@ If you prefer to install manually:
    #+begin_src lisp-preformatted
    (add-to-list 'load-path "/path/to/simply-annotate")
    (require 'simply-annotate)
-   (global-set-key (kbd "M-s") simply-annotate-command-map)
+   (global-set-key (kbd "C-c a") simply-annotate-command-map)
+   (add-hook 'find-file-hook #'simply-annotate-mode)
+   (add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
    #+end_src
 
 --------------

@@ -100,6 +100,8 @@ See [[file:CHANGELOG.org]] for full version history.
 
 * Installation
 
+Requires *Emacs 28.1* or later.  No external dependencies.
+
 ** MELPA
 
 #+begin_src emacs-lisp
@@ -153,6 +155,8 @@ If you prefer =M-s= as your prefix, use =:demand t= with =global-set-key= in =:c
 #+begin_src emacs-lisp
 (require 'simply-annotate)
 (global-set-key (kbd "C-c a") simply-annotate-command-map)
+(add-hook 'find-file-hook #'simply-annotate-mode)
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
 #+end_src
 
 * Quick Start

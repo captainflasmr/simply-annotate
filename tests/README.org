@@ -56,7 +56,7 @@ Using the following script to generate a very simple init.el file which is then 
 
 # Default Emacs version if none specified
 VERSION=${1:-"28.2"}
-PACKAGE_PATH="~/source/repos/simply-annotate"
+PACKAGE_PATH="$HOME/source/repos/simply-annotate"
 
 # Create a temporary directory for the test
 TEMP_DIR=$(mktemp -d -t simply-annotate-test-XXXXXX)
@@ -69,9 +69,11 @@ cat > "$INIT_FILE" << EOF
 ;; Add the package to the load path
 (add-to-list 'load-path "$PACKAGE_PATH")
 
-;; Load the package
+;; Load and configure the package
 (require 'simply-annotate)
-(global-set-key (kbd "C-c A") simply-annotate-mode)
+(global-set-key (kbd "C-c a") simply-annotate-command-map)
+(add-hook 'find-file-hook #'simply-annotate-mode)
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
 
 ;; Show a message to confirm we're in test mode
 (message "Testing simply-annotate in vanilla Emacs %s" emacs-version)
@@ -81,6 +83,9 @@ EOF
 echo "Starting Emacs $VERSION with minimal configuration..."
 echo "Testing simply-annotate from: $PACKAGE_PATH"
 echo "Temporary init file: $INIT_FILE"
+
+# Remove any byte-compiled file to avoid cross-version incompatibility
+rm -f "$PACKAGE_PATH/simply-annotate.elc"
 
 # Run the appropriate Emacs version
 "$HOME/bin/emacs-$VERSION" -Q -l "$INIT_FILE"

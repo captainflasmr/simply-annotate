@@ -313,6 +313,8 @@ Next: <a href="#Quick-Start" accesskey="n" rel="next">Quick Start</a>, Previous:
 </div>
 <h2 class="chapter" id="Installation-1"><span>2 Installation<a class="copiable-link" href="#Installation-1"> &para;</a></span></h2>
 
+<p>Requires <strong class="strong">Emacs 28.1</strong> or later.  No external dependencies.
+</p>
 <ul class="mini-toc">
 <li><a href="#Using-MELPA-_0028Recommended_0029" accesskey="1">Using MELPA (Recommended)</a></li>
 <li><a href="#Keymap-Configuration" accesskey="2">Keymap Configuration</a></li>
@@ -395,7 +397,9 @@ loaded.
 <div class="example lisp">
 <pre class="lisp-preformatted">(add-to-list 'load-path &quot;/path/to/simply-annotate&quot;)
 (require 'simply-annotate)
-(global-set-key (kbd &quot;M-s&quot;) simply-annotate-command-map)
+(global-set-key (kbd &quot;C-c a&quot;) simply-annotate-command-map)
+(add-hook 'find-file-hook #'simply-annotate-mode)
+(add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
 </pre></div>
 </li></ol>
 

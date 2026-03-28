@@ -111,6 +111,8 @@ File: simply-annotate.info,  Node: Installation,  Next: Quick Start,  Prev: Intr
 2 Installation
 **************
 
+Requires *Emacs 28.1* or later.  No external dependencies.
+
 2.1 Using MELPA (Recommended)
 =============================
 
@@ -174,7 +176,9 @@ If you prefer to install manually:
 
           (add-to-list 'load-path "/path/to/simply-annotate")
           (require 'simply-annotate)
-          (global-set-key (kbd "M-s") simply-annotate-command-map)
+          (global-set-key (kbd "C-c a") simply-annotate-command-map)
+          (add-hook 'find-file-hook #'simply-annotate-mode)
+          (add-hook 'dired-mode-hook #'simply-annotate-dired-mode)
 
 
 File: simply-annotate.info,  Node: Quick Start,  Next: Basic Usage,  Prev: Installation,  Up: Top
@@ -1806,22 +1810,22 @@ Tag Table:
 Node: Top792
 Node: Introduction2786
 Node: Installation4862
-Node: Quick Start7560
-Node: Basic Usage8408
-Node: Advanced Editing11021
-Node: Threading and Collaboration15050
-Node: Display Styles20387
-Node: Annotation Levels25003
-Node: Navigation28306
-Node: Advanced Features29948
-Node: Org-mode Integration34249
-Node: Key Bindings36692
-Node: Customization40878
-Node: Data Storage48389
-Node: Troubleshooting52447
-Node: Function Index58870
-Node: Variable Index61489
-Node: Concept Index65789
+Node: Quick Start7749
+Node: Basic Usage8597
+Node: Advanced Editing11210
+Node: Threading and Collaboration15239
+Node: Display Styles20576
+Node: Annotation Levels25192
+Node: Navigation28495
+Node: Advanced Features30137
+Node: Org-mode Integration34438
+Node: Key Bindings36881
+Node: Customization41067
+Node: Data Storage48578
+Node: Troubleshooting52636
+Node: Function Index59059
+Node: Variable Index61678
+Node: Concept Index65978
 
 End Tag Table
 
