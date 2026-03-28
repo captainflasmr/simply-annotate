@@ -9,7 +9,7 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO Loading Annotations List buffer can take a while and blocks
+** TODO Project aware commenting
 
 ** TODO Tagging search
 
@@ -19,9 +19,7 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
 
-** TODO annotation buffer could support org-mode syntax
-
-Related to Issue #3. The annotation editing buffer is plain text; optionally deriving from org-mode would give users bold, italics, links, footnotes etc.
+** DONE Loading Annotations List buffer can take a while and blocks
 
 ** DONE allow user-supplied buffer key function
 
@@ -47,9 +45,9 @@ Fixed in 0.9.3. Short-key bindings moved to =simply-annotate-command-map=, a sep
 
 Fixed in 0.9.3. =simply-annotate-command-map= can be bound to any prefix (e.g. =C-c a=) giving =C-c a j=, =C-c a r= etc. without interfering with Consult or other packages.
 
-** OPEN Support for org syntax in annotations #3
+** DONE OPEN Support for org syntax in annotations #3
 
-Partially addressed: listing and export buffers use org-mode. The annotation *editing* buffer still uses fundamental-mode. Org syntax support for comment editing remains on the roadmap.
+The annotation *editing* buffer now uses org-mode with org syntax support for comment editing.
 
 ** DONE Support for non-file buffers #2
 
