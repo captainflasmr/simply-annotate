@@ -3080,12 +3080,32 @@ Clears any surviving overlays and reloads from the database."
   (mapc #'delete-overlay simply-annotate-dired-overlays)
   (setq simply-annotate-dired-overlays nil))
 
+(defvar simply-annotate-dired-mode-map
+  (make-sparse-keymap)
+  "Keymap for `simply-annotate-dired-mode'.
+Populated at mode-enable time with the same prefix key that
+`simply-annotate-command-map' is bound to globally, so that
+annotation commands remain accessible in dired buffers where the
+major-mode keymap may shadow the global binding (e.g. M-s).")
+
+(defun simply-annotate--dired-setup-keymap ()
+  "Mirror the global `simply-annotate-command-map' prefix in the dired keymap.
+This ensures annotation commands are not shadowed by dired's own
+local bindings on the same prefix."
+  (setcdr simply-annotate-dired-mode-map nil)
+  (when-let* ((keys (where-is-internal simply-annotate-command-map
+                                       (list global-map))))
+    (dolist (key keys)
+      (define-key simply-annotate-dired-mode-map key simply-annotate-command-map))))
+
 ;;;###autoload
 (define-minor-mode simply-annotate-dired-mode
   "Show fringe indicators in dired for files that have annotations."
   :lighter " SA-Dir"
+  :keymap simply-annotate-dired-mode-map
   (if simply-annotate-dired-mode
       (progn
+        (simply-annotate--dired-setup-keymap)
         (simply-annotate--dired-mark-annotated)
         (add-hook 'dired-after-readin-hook
                   #'simply-annotate--dired-mark-annotated nil t))
