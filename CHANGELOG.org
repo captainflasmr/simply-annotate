@@ -11,6 +11,20 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-29 Sun> *0.9.8*
+
+Inline pointer, fringe-bracket fixes, revert-buffer support, and code quality.
+
+*** Features
+
+- *Inline pointer* -- A configurable pointer connects inline annotation boxes to the annotated text.  Controlled by =simply-annotate-inline-pointer-after= and =simply-annotate-inline-pointer-above=.  Supports multiline strings for custom shapes (speech bubbles, L-brackets, stems, arrows).  See Commentary for copy-paste examples.
+
+*** Bug Fixes
+
+- *Revert buffer duplication* -- =revert-buffer= no longer creates duplicate annotation overlays.  Annotations are saved and overlays cleared in =before-revert-hook=, then cleanly reloaded in =after-revert-hook=.
+- *Fringe bracket extent* -- Bracket indicators now use the correct bracket-top/single bitmaps and no longer extend past the annotated region when it ends at a newline.
+- *Fringe bracket face* -- =simply-annotate-fringe-bracket-face= now inherits from =simply-annotate-fringe-face= instead of =simply-annotate-highlight-face=, removing the unwanted highlight background.
+
 ** <2026-03-28 Sat> *0.9.6*
 
 Tabular annotation listing added.

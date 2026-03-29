@@ -82,6 +82,8 @@ Documentation License”.
   - [[#Style-Recommendations][7.4 Style Recommendations]]
   - [[#Fringe-Customization][7.5 Fringe Customization]]
   - [[#Inline-Display][7.6 Inline Display]]
+    - [[#Inline-Pointer][7.6.1 Inline Pointer]]
+    - [[#Inline-Customisation][7.6.2 Inline Customisation]]
 - [[#Annotation-Levels][8 Annotation Levels]]
   - [[#Level-Overview][8.1 Level Overview]]
   - [[#How-Levels-Work][8.2 How Levels Work]]
@@ -1055,12 +1057,58 @@ Long annotations are truncated after =simply-annotate-inline-max-lines=
 lines (default 20). Thread metadata (status, priority, comment count)
 appears in the header.
 
+- [[#Inline-Pointer][Inline Pointer]]
+- [[#Inline-Customisation][Inline Customisation]]
+
+<<Inline-Pointer>>
+**** 7.6.1 Inline Pointer [[#Inline-Pointer][¶]]
+:PROPERTIES:
+:CUSTOM_ID: inline-pointer
+:CLASS: subsection
+:END:
+A pointer connects each inline box to the annotated text, making the
+association visually clear. The pointer string is indented to the
+annotation start column. Strings can be multiline (use =\n=). Set to
+=nil= or an empty string to disable.
+
+- =simply-annotate-inline-pointer-after= :: Pointer shown between
+  annotated text and the box below. Default: ="▴"=
+
+- =simply-annotate-inline-pointer-above= :: Pointer shown between the
+  box above and annotated text. Default: ="▾"=
+
+Example pointer styles (see the Commentary section for a full list):
+
+#+begin_src example-preformatted
+;; Simple arrows (default)
+(setq simply-annotate-inline-pointer-after "▴")
+(setq simply-annotate-inline-pointer-above "▾")
+
+;; Heavy L-bracket
+(setq simply-annotate-inline-pointer-after "┃\n┗━▶")
+(setq simply-annotate-inline-pointer-above "┏━▶\n┃")
+
+;; Disabled
+(setq simply-annotate-inline-pointer-after nil)
+(setq simply-annotate-inline-pointer-above nil)
+#+end_src
+
+<<Inline-Customisation>>
+**** 7.6.2 Inline Customisation [[#Inline-Customisation][¶]]
+:PROPERTIES:
+:CUSTOM_ID: inline-customisation
+:CLASS: subsection
+:END:
 Customise the appearance with:
 
 - =simply-annotate-inline-face=: face for the annotation body text
 - =simply-annotate-inline-border-face=: face for the box-drawing border
 - =simply-annotate-inline-max-lines=: maximum lines before truncation
 - =simply-annotate-inline-position=: ='after= or ='above=
+- =simply-annotate-inline-pointer-after=: pointer string for ='after=
+  position
+- =simply-annotate-inline-pointer-above=: pointer string for ='above=
+  position
 
 --------------
 
@@ -1852,6 +1900,20 @@ Configure team collaboration and threading features:
   this limit are truncated with a count. Set to =nil= to show all lines.
   Default: =20=
 
+- <<index-simply_002dannotate_002dinline_002dpointer_002dafter-1>>=simply-annotate-inline-pointer-after=
+  [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-1][¶]] :: 
+
+  Pointer string shown between annotated text and the inline box below.
+  Supports multiline strings (use =\n=). Set to =nil= to disable.
+  Default: ="▴"=
+
+- <<index-simply_002dannotate_002dinline_002dpointer_002dabove-1>>=simply-annotate-inline-pointer-above=
+  [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-1][¶]] :: 
+
+  Pointer string shown between the inline box above and annotated text.
+  Supports multiline strings (use =\n=). Set to =nil= to disable.
+  Default: ="▾"=
+
 <<Annotation-Level-Variables>>
 *** 13.5 Annotation Level Variables [[#Annotation-Level-Variables][¶]]
 :PROPERTIES:
@@ -2500,6 +2562,12 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 |                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]                             | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dinline_002dmax_002dlines][=simply-annotate-inline-max-lines=]]                       | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dinline_002dmax_002dlines-1][=simply-annotate-inline-max-lines=]]                     | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dabove][=simply-annotate-inline-pointer-above=]]               | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-1][=simply-annotate-inline-pointer-above=]]             | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-2][=simply-annotate-inline-pointer-above=]]             | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dafter][=simply-annotate-inline-pointer-after=]]               | [[#Display-Styles][Display Styles]]                           |
+|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-1][=simply-annotate-inline-pointer-after=]]             | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-2][=simply-annotate-inline-pointer-after=]]             | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dinline_002dposition][=simply-annotate-inline-position=]]                             | [[#Display-Styles][Display Styles]]                           |
 |                | [[#index-simply_002dannotate_002dinline_002dposition-1][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dinline_002dposition-2][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |

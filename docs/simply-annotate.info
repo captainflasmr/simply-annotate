@@ -693,13 +693,49 @@ cycling levels with ‘M-s [’ updates which annotations are visible.
 ‘simply-annotate-inline-max-lines’ lines (default 20).  Thread metadata
 (status, priority, comment count) appears in the header.
 
-   Customise the appearance with:
+7.6.1 Inline Pointer
+--------------------
+
+A pointer connects each inline box to the annotated text, making the
+association visually clear.  The pointer string is indented to the
+annotation start column.  Strings can be multiline (use ‘\n’).  Set to
+‘nil’ or an empty string to disable.
+
+‘simply-annotate-inline-pointer-after’
+     Pointer shown between annotated text and the box below.  Default:
+     ‘"▴"’
+‘simply-annotate-inline-pointer-above’
+     Pointer shown between the box above and annotated text.  Default:
+     ‘"▾"’
+
+   Example pointer styles (see the Commentary section for a full list):
+
+     ;; Simple arrows (default)
+     (setq simply-annotate-inline-pointer-after "▴")
+     (setq simply-annotate-inline-pointer-above "▾")
+
+     ;; Heavy L-bracket
+     (setq simply-annotate-inline-pointer-after "┃\n┗━▶")
+     (setq simply-annotate-inline-pointer-above "┏━▶\n┃")
+
+     ;; Disabled
+     (setq simply-annotate-inline-pointer-after nil)
+     (setq simply-annotate-inline-pointer-above nil)
+
+7.6.2 Inline Customisation
+--------------------------
+
+Customise the appearance with:
 
    • ‘simply-annotate-inline-face’: face for the annotation body text
    • ‘simply-annotate-inline-border-face’: face for the box-drawing
      border
    • ‘simply-annotate-inline-max-lines’: maximum lines before truncation
    • ‘simply-annotate-inline-position’: ‘'after’ or ‘'above’
+   • ‘simply-annotate-inline-pointer-after’: pointer string for ‘'after’
+     position
+   • ‘simply-annotate-inline-pointer-above’: pointer string for ‘'above’
+     position
 
 
 File: simply-annotate.info,  Node: Annotation Levels,  Next: Navigation,  Prev: Display Styles,  Up: Top
@@ -1262,6 +1298,16 @@ Configure team collaboration and threading features:
      this limit are truncated with a count.  Set to ‘nil’ to show all
      lines.  Default: ‘20’
 
+‘simply-annotate-inline-pointer-after’
+     Pointer string shown between annotated text and the inline box
+     below.  Supports multiline strings (use ‘\n’).  Set to ‘nil’ to
+     disable.  Default: ‘"▴"’
+
+‘simply-annotate-inline-pointer-above’
+     Pointer string shown between the inline box above and annotated
+     text.  Supports multiline strings (use ‘\n’).  Set to ‘nil’ to
+     disable.  Default: ‘"▾"’
+
 13.5 Annotation Level Variables
 ===============================
 
@@ -1710,14 +1756,14 @@ Variable Index
 * priority:                              Advanced Editing.    (line  58)
 * simply-annotate-author-list:           Threading and Collaboration.
                                                               (line 107)
-* simply-annotate-author-list <1>:       Customization.       (line 134)
-* simply-annotate-author-list <2>:       Customization.       (line 135)
+* simply-annotate-author-list <1>:       Customization.       (line 144)
+* simply-annotate-author-list <2>:       Customization.       (line 145)
 * simply-annotate-buffer-height:         Customization.       (line  94)
 * simply-annotate-buffer-height <1>:     Customization.       (line  95)
 * simply-annotate-buffer-name:           Customization.       (line  91)
 * simply-annotate-buffer-name <1>:       Customization.       (line  92)
-* simply-annotate-default-level:         Customization.       (line 127)
-* simply-annotate-default-level <1>:     Customization.       (line 128)
+* simply-annotate-default-level:         Customization.       (line 137)
+* simply-annotate-default-level <1>:     Customization.       (line 138)
 * simply-annotate-display-style:         Display Styles.      (line  47)
 * simply-annotate-display-style <1>:     Customization.       (line  98)
 * simply-annotate-display-style <2>:     Customization.       (line  99)
@@ -1733,26 +1779,32 @@ Variable Index
 * simply-annotate-highlight-face <1>:    Customization.       (line  88)
 * simply-annotate-inline-max-lines:      Customization.       (line 116)
 * simply-annotate-inline-max-lines <1>:  Customization.       (line 117)
+* simply-annotate-inline-pointer-above:  Display Styles.      (line 121)
+* simply-annotate-inline-pointer-above <1>: Customization.    (line 126)
+* simply-annotate-inline-pointer-above <2>: Customization.    (line 127)
+* simply-annotate-inline-pointer-after:  Display Styles.      (line 121)
+* simply-annotate-inline-pointer-after <1>: Customization.    (line 121)
+* simply-annotate-inline-pointer-after <2>: Customization.    (line 122)
 * simply-annotate-inline-position:       Display Styles.      (line  88)
 * simply-annotate-inline-position <1>:   Customization.       (line 112)
 * simply-annotate-inline-position <2>:   Customization.       (line 113)
-* simply-annotate-levels:                Customization.       (line 124)
-* simply-annotate-levels <1>:            Customization.       (line 125)
+* simply-annotate-levels:                Customization.       (line 134)
+* simply-annotate-levels <1>:            Customization.       (line 135)
 * simply-annotate-priority-levels:       Threading and Collaboration.
                                                               (line  85)
-* simply-annotate-priority-levels <1>:   Customization.       (line 149)
-* simply-annotate-priority-levels <2>:   Customization.       (line 150)
+* simply-annotate-priority-levels <1>:   Customization.       (line 159)
+* simply-annotate-priority-levels <2>:   Customization.       (line 160)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
                                                               (line 107)
-* simply-annotate-prompt-for-author <1>: Customization.       (line 138)
-* simply-annotate-prompt-for-author <2>: Customization.       (line 139)
-* simply-annotate-remember-author-per-file: Customization.    (line 142)
+* simply-annotate-prompt-for-author <1>: Customization.       (line 148)
+* simply-annotate-prompt-for-author <2>: Customization.       (line 149)
+* simply-annotate-remember-author-per-file: Customization.    (line 152)
 * simply-annotate-remember-author-per-file <1>: Customization.
-                                                              (line 143)
+                                                              (line 153)
 * simply-annotate-thread-statuses:       Threading and Collaboration.
                                                               (line  73)
-* simply-annotate-thread-statuses <1>:   Customization.       (line 145)
-* simply-annotate-thread-statuses <2>:   Customization.       (line 146)
+* simply-annotate-thread-statuses <1>:   Customization.       (line 155)
+* simply-annotate-thread-statuses <2>:   Customization.       (line 156)
 * status:                                Advanced Editing.    (line  55)
 * tags:                                  Advanced Editing.    (line  60)
 * text:                                  Advanced Editing.    (line  81)
@@ -1815,17 +1867,17 @@ Node: Basic Usage8597
 Node: Advanced Editing11210
 Node: Threading and Collaboration15239
 Node: Display Styles20576
-Node: Annotation Levels25192
-Node: Navigation28495
-Node: Advanced Features30137
-Node: Org-mode Integration34438
-Node: Key Bindings36881
-Node: Customization41067
-Node: Data Storage48578
-Node: Troubleshooting52636
-Node: Function Index59059
-Node: Variable Index61678
-Node: Concept Index65978
+Node: Annotation Levels26494
+Node: Navigation29797
+Node: Advanced Features31439
+Node: Org-mode Integration35740
+Node: Key Bindings38183
+Node: Customization42369
+Node: Data Storage50330
+Node: Troubleshooting54388
+Node: Function Index60811
+Node: Variable Index63430
+Node: Concept Index68168
 
 End Tag Table
 

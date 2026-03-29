@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.6
+;; Version: 0.9.8
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -104,6 +104,75 @@
 ;; (setq simply-annotate-prompt-for-author 'threads-only)
 ;; (setq simply-annotate-remember-author-per-file t)
 ;;
+;; Inline Pointer Styles:
+;;
+;; When inline display is enabled, a pointer connects the annotation
+;; box to the annotated text.  Customise via
+;; `simply-annotate-inline-pointer-after' (box below text) and
+;; `simply-annotate-inline-pointer-above' (box above text).  Strings
+;; can be multiline (use \n).  Set to nil to disable.
+;;
+;; ;; Simple arrows (default)
+;; (setq simply-annotate-inline-pointer-after "▴")
+;; (setq simply-annotate-inline-pointer-above "▾")
+;;
+;; ;; Larger triangles
+;; (setq simply-annotate-inline-pointer-after "▲")
+;; (setq simply-annotate-inline-pointer-above "▼")
+;;
+;; ;; Tall stems
+;; (setq simply-annotate-inline-pointer-after "  ║")
+;; (setq simply-annotate-inline-pointer-above "  ║")
+;;
+;; ;; Speech bubble tails
+;; (setq simply-annotate-inline-pointer-after " ╰┐")
+;; (setq simply-annotate-inline-pointer-above " ╰┐")
+;;
+;; ;; L-bracket connectors
+;; (setq simply-annotate-inline-pointer-after "│\n╰─")
+;; (setq simply-annotate-inline-pointer-above "╭─\n│")
+;;
+;; (setq simply-annotate-inline-pointer-after "│\n╰──▸")
+;; (setq simply-annotate-inline-pointer-above "╭──▸\n│")
+;;
+;; ;; Heavy L-bracket
+;; (setq simply-annotate-inline-pointer-after "┃\n┗━▶")
+;; (setq simply-annotate-inline-pointer-above "┏━▶\n┃")
+;;
+;; ;; Decorative single char
+;; (setq simply-annotate-inline-pointer-after "●")
+;; (setq simply-annotate-inline-pointer-above "●")
+;;
+;; (setq simply-annotate-inline-pointer-after "◆")
+;; (setq simply-annotate-inline-pointer-above "◆")
+;;
+;; (setq simply-annotate-inline-pointer-after "✦")
+;; (setq simply-annotate-inline-pointer-above "✦")
+;;
+;; (setq simply-annotate-inline-pointer-after "⟡")
+;; (setq simply-annotate-inline-pointer-above "⟡")
+;;
+;; ;; Minimal / subtle
+;; (setq simply-annotate-inline-pointer-after "·")
+;; (setq simply-annotate-inline-pointer-above "·")
+;;
+;; (setq simply-annotate-inline-pointer-after "┊")
+;; (setq simply-annotate-inline-pointer-above "┊")
+;;
+;; (setq simply-annotate-inline-pointer-after "╷")
+;; (setq simply-annotate-inline-pointer-above "╵")
+;;
+;; ;; Bracket pairs
+;; (setq simply-annotate-inline-pointer-after "╰─┤")
+;; (setq simply-annotate-inline-pointer-above "╭─┤")
+;;
+;; ;; Fancy multiline
+;; (setq simply-annotate-inline-pointer-after "│\n│\n╰──▸")
+;; (setq simply-annotate-inline-pointer-above "╭──▸\n│\n│")
+;;
+;; (setq simply-annotate-inline-pointer-after "┃\n┃\n┗━━▶")
+;; (setq simply-annotate-inline-pointer-above "┏━━▶\n┃\n┃")
+;;
 ;;; Code:
 
 ;;; Customization
@@ -131,10 +200,8 @@
   :group 'simply-annotate)
 
 (defface simply-annotate-fringe-bracket-face
-  '((t (:inherit simply-annotate-highlight-face :background unspecified)))
-  "Face for fringe bracket indicators.
-Uses the foreground of the highlight face with no background,
-so the bracket renders flat without a filled region in the fringe."
+  '((t (:inherit simply-annotate-fringe-face)))
+  "Face for fringe bracket indicators."
   :group 'simply-annotate)
 
 (defcustom simply-annotate-buffer-name "*Annotation*"
@@ -243,6 +310,20 @@ Set to nil to disable wrapping."
 (defcustom simply-annotate-inline-default nil
   "When non-nil, enable inline annotation display when the mode starts."
   :type 'boolean
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-inline-pointer-after "▴"
+  "Pointer string shown between annotated text and the inline box below.
+Each line is indented to the annotation start column.  Can be multiline
+for a more prominent indicator.  Set to nil or empty string to disable."
+  :type '(choice string (const :tag "None" nil))
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-inline-pointer-above "▾"
+  "Pointer string shown between the inline box above and annotated text.
+Each line is indented to the annotation start column.  Can be multiline
+for a more prominent indicator.  Set to nil or empty string to disable."
+  :type '(choice string (const :tag "None" nil))
   :group 'simply-annotate)
 
 ;; Threading and Collaboration Customization
@@ -738,14 +819,41 @@ Returns lines in display order (not reversed)."
           (footer (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
                               'face 'simply-annotate-inline-border-face)))
       (let ((result (concat "\n" header "\n" body "\n" footer "\n")))
-      ;; Collapse runs of multiple blank lines to at most one
-      (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result)))))
+        ;; Collapse runs of multiple blank lines to at most one
+        (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result)))))
 
 (defun simply-annotate--add-inline-text (overlay)
   "Add inline annotation text to OVERLAY.
-Position is controlled by `simply-annotate-inline-position'."
-  (let ((text (simply-annotate--inline-text overlay)))
-    (if (eq simply-annotate-inline-position 'above)
+Position is controlled by `simply-annotate-inline-position'.
+Pointer is controlled by `simply-annotate-inline-pointer-after'
+and `simply-annotate-inline-pointer-above'."
+  (let* ((position simply-annotate-inline-position)
+         (pointer-str (if (eq position 'above)
+                          simply-annotate-inline-pointer-above
+                        simply-annotate-inline-pointer-after))
+         (text (simply-annotate--inline-text overlay)))
+    ;; Insert pointer when configured
+    (when (and pointer-str (not (string-empty-p pointer-str)))
+      (let* ((col (save-excursion
+                    (goto-char (overlay-start overlay))
+                    (current-column)))
+             (indent (make-string col ?\s))
+             (pointer-block
+              (propertize
+               (mapconcat (lambda (line) (concat indent line))
+                          (split-string pointer-str "\n")
+                          "\n")
+               'face 'simply-annotate-inline-border-face)))
+        (if (eq position 'above)
+            ;; Pointer at bottom of box, pointing down to text
+            (setq text (concat text pointer-block "\n"))
+          ;; Pointer at top of box, pointing up to text
+          ;; text starts with \n; inject pointer after it
+          (setq text (concat (substring text 0 1)
+                             pointer-block "\n"
+                             (substring text 1))))))
+    ;; Apply to overlay
+    (if (eq position 'above)
         (let ((fringe (when (cl-intersection (simply-annotate--display-styles)
                                               '(fringe fringe-bracket))
                         (overlay-get overlay 'before-string)))
@@ -840,21 +948,22 @@ with vertical bars on intermediate lines."
     (let* ((start (overlay-start overlay))
            (end (overlay-end overlay))
            (start-line (line-number-at-pos start t))
-           (end-line (line-number-at-pos end t))
+           ;; If end is at the very start of a line, the annotation
+           ;; doesn't actually span that line — use the previous line.
+           (end-line (line-number-at-pos
+                      (if (and (> end start)
+                               (= (char-before end) ?\n))
+                          (1- end)
+                        end)
+                      t))
            (total-lines (1+ (- end-line start-line)))
-           (cap-bitmap (pcase simply-annotate-fringe-indicator
-                         ('left-triangle 'left-triangle)
-                         ('right-triangle 'right-triangle)
-                         ('filled-rectangle 'filled-rectangle)
-                         ('custom 'simply-annotate-fringe-bitmap)
-                         (_ 'left-triangle)))
            (aux-overlays nil))
       (goto-char start)
       (beginning-of-line)
       (dotimes (i total-lines)
         (let* ((bitmap (cond
-                        ((= total-lines 1) cap-bitmap)
-                        ((= i 0) cap-bitmap)
+                        ((= total-lines 1) 'simply-annotate-fringe-bracket-single)
+                        ((= i 0) 'simply-annotate-fringe-bracket-top)
                         ((= i (1- total-lines)) 'simply-annotate-fringe-bracket-bot)
                         (t 'simply-annotate-fringe-bracket-mid)))
                (fringe-spec `(left-fringe ,bitmap simply-annotate-fringe-bracket-face))
@@ -2890,6 +2999,8 @@ should bind to a prefix key of your choice (M-s is recommended).")
         (add-hook 'before-save-hook #'simply-annotate--save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate--save-annotations nil t)
         (add-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer nil t)
+        (add-hook 'before-revert-hook #'simply-annotate--before-revert nil t)
+        (add-hook 'after-revert-hook #'simply-annotate--after-revert nil t)
         (add-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)
         (when simply-annotate-overlays
           (message "Simply-annotate: loaded %d annotations."
@@ -2897,10 +3008,30 @@ should bind to a prefix key of your choice (M-s is recommended).")
     (simply-annotate--clear-all-overlays)
     (simply-annotate--cleanup-header)
     (simply-annotate-hide-annotation-buffer)
+    (remove-hook 'before-revert-hook #'simply-annotate--before-revert t)
+    (remove-hook 'after-revert-hook #'simply-annotate--after-revert t)
     (remove-hook 'before-save-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)
     (remove-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)))
+
+;;; Buffer Revert
+
+(defun simply-annotate--before-revert ()
+  "Save annotations and clear overlays before `revert-buffer'.
+Clearing overlays here prevents the mode-enable persist logic from
+re-merging them into the database if the mode is re-activated during revert."
+  (simply-annotate--save-annotations)
+  (simply-annotate--clear-all-overlays))
+
+(defun simply-annotate--after-revert ()
+  "Reload annotations after `revert-buffer'.
+Clears any surviving overlays and reloads from the database."
+  (simply-annotate--clear-all-overlays)
+  (simply-annotate--cleanup-draft)
+  (simply-annotate--load-annotations)
+  (simply-annotate--apply-level-filter)
+  (simply-annotate--update-header))
 
 ;;; Info-mode Integration
 

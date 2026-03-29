@@ -19,6 +19,8 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
 
+** DONE on a file reload a new overlay is added
+
 ** DONE Loading Annotations List buffer can take a while and blocks
 
 ** DONE allow user-supplied buffer key function

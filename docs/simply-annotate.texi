@@ -851,6 +851,40 @@ Long annotations are truncated after @code{simply-annotate-inline-max-lines}
 lines (default 20).  Thread metadata (status, priority, comment count) appears
 in the header.
 
+@subsection Inline Pointer
+
+@vindex simply-annotate-inline-pointer-after
+@vindex simply-annotate-inline-pointer-above
+A pointer connects each inline box to the annotated text, making the
+association visually clear.  The pointer string is indented to the
+annotation start column.  Strings can be multiline (use @code{\n}).
+Set to @code{nil} or an empty string to disable.
+
+@table @code
+@item simply-annotate-inline-pointer-after
+Pointer shown between annotated text and the box below.  Default: @code{"▴"}
+@item simply-annotate-inline-pointer-above
+Pointer shown between the box above and annotated text.  Default: @code{"▾"}
+@end table
+
+Example pointer styles (see the Commentary section for a full list):
+
+@example
+;; Simple arrows (default)
+(setq simply-annotate-inline-pointer-after "▴")
+(setq simply-annotate-inline-pointer-above "▾")
+
+;; Heavy L-bracket
+(setq simply-annotate-inline-pointer-after "┃\n┗━▶")
+(setq simply-annotate-inline-pointer-above "┏━▶\n┃")
+
+;; Disabled
+(setq simply-annotate-inline-pointer-after nil)
+(setq simply-annotate-inline-pointer-above nil)
+@end example
+
+@subsection Inline Customisation
+
 Customise the appearance with:
 
 @itemize @bullet
@@ -862,6 +896,10 @@ Customise the appearance with:
 @code{simply-annotate-inline-max-lines}: maximum lines before truncation
 @item
 @code{simply-annotate-inline-position}: @code{'after} or @code{'above}
+@item
+@code{simply-annotate-inline-pointer-after}: pointer string for @code{'after} position
+@item
+@code{simply-annotate-inline-pointer-above}: pointer string for @code{'above} position
 @end itemize
 
 @node Annotation Levels
@@ -1491,6 +1529,16 @@ Options: @code{'after}, @code{'above}.  Default: @code{'after}
 @vindex simply-annotate-inline-max-lines
 Maximum number of lines shown for inline annotations.  Lines beyond this limit
 are truncated with a count.  Set to @code{nil} to show all lines.  Default: @code{20}
+
+@item simply-annotate-inline-pointer-after
+@vindex simply-annotate-inline-pointer-after
+Pointer string shown between annotated text and the inline box below.
+Supports multiline strings (use @code{\n}).  Set to @code{nil} to disable.  Default: @code{"▴"}
+
+@item simply-annotate-inline-pointer-above
+@vindex simply-annotate-inline-pointer-above
+Pointer string shown between the inline box above and annotated text.
+Supports multiline strings (use @code{\n}).  Set to @code{nil} to disable.  Default: @code{"▾"}
 @end vtable
 
 @section Annotation Level Variables

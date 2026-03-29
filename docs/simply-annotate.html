@@ -154,7 +154,11 @@ Free Documentation License&rdquo;.
     <li><a id="toc-Changing-Display-Styles" href="#Changing-Display-Styles">7.3 Changing Display Styles</a></li>
     <li><a id="toc-Style-Recommendations" href="#Style-Recommendations">7.4 Style Recommendations</a></li>
     <li><a id="toc-Fringe-Customization" href="#Fringe-Customization">7.5 Fringe Customization</a></li>
-    <li><a id="toc-Inline-Display" href="#Inline-Display">7.6 Inline Display</a></li>
+    <li><a id="toc-Inline-Display" href="#Inline-Display">7.6 Inline Display</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Inline-Pointer" href="#Inline-Pointer">7.6.1 Inline Pointer</a></li>
+      <li><a id="toc-Inline-Customisation" href="#Inline-Customisation">7.6.2 Inline Customisation</a></li>
+    </ul></li>
   </ul></li>
   <li><a id="toc-Annotation-Levels" href="#Annotation-Levels">8 Annotation Levels</a>
   <ul class="toc-numbered-mark">
@@ -1157,6 +1161,49 @@ updates which annotations are visible.
 lines (default 20).  Thread metadata (status, priority, comment count) appears
 in the header.
 </p>
+<ul class="mini-toc">
+<li><a href="#Inline-Pointer" accesskey="1">Inline Pointer</a></li>
+<li><a href="#Inline-Customisation" accesskey="2">Inline Customisation</a></li>
+</ul>
+<div class="subsection-level-extent" id="Inline-Pointer">
+<h4 class="subsection"><span>7.6.1 Inline Pointer<a class="copiable-link" href="#Inline-Pointer"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dpointer_002dafter"></a>
+<a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dpointer_002dabove"></a>
+<p>A pointer connects each inline box to the annotated text, making the
+association visually clear.  The pointer string is indented to the
+annotation start column.  Strings can be multiline (use <code class="code">\n</code>).
+Set to <code class="code">nil</code> or an empty string to disable.
+</p>
+<dl class="table">
+<dt><code class="code">simply-annotate-inline-pointer-after</code></dt>
+<dd><p>Pointer shown between annotated text and the box below.  Default: <code class="code">&quot;▴&quot;</code>
+</p></dd>
+<dt><code class="code">simply-annotate-inline-pointer-above</code></dt>
+<dd><p>Pointer shown between the box above and annotated text.  Default: <code class="code">&quot;▾&quot;</code>
+</p></dd>
+</dl>
+
+<p>Example pointer styles (see the Commentary section for a full list):
+</p>
+<div class="example">
+<pre class="example-preformatted">;; Simple arrows (default)
+(setq simply-annotate-inline-pointer-after &quot;▴&quot;)
+(setq simply-annotate-inline-pointer-above &quot;▾&quot;)
+
+;; Heavy L-bracket
+(setq simply-annotate-inline-pointer-after &quot;┃\n┗━▶&quot;)
+(setq simply-annotate-inline-pointer-above &quot;┏━▶\n┃&quot;)
+
+;; Disabled
+(setq simply-annotate-inline-pointer-after nil)
+(setq simply-annotate-inline-pointer-above nil)
+</pre></div>
+
+</div>
+<div class="subsection-level-extent" id="Inline-Customisation">
+<h4 class="subsection"><span>7.6.2 Inline Customisation<a class="copiable-link" href="#Inline-Customisation"> &para;</a></span></h4>
+
 <p>Customise the appearance with:
 </p>
 <ul class="itemize mark-bullet">
@@ -1164,9 +1211,12 @@ in the header.
 </li><li><code class="code">simply-annotate-inline-border-face</code>: face for the box-drawing border
 </li><li><code class="code">simply-annotate-inline-max-lines</code>: maximum lines before truncation
 </li><li><code class="code">simply-annotate-inline-position</code>: <code class="code">'after</code> or <code class="code">'above</code>
+</li><li><code class="code">simply-annotate-inline-pointer-after</code>: pointer string for <code class="code">'after</code> position
+</li><li><code class="code">simply-annotate-inline-pointer-above</code>: pointer string for <code class="code">'above</code> position
 </li></ul>
 
 <hr>
+</div>
 </div>
 </div>
 <div class="chapter-level-extent" id="Annotation-Levels">
@@ -1911,6 +1961,18 @@ Options: <code class="code">'after</code>, <code class="code">'above</code>.  De
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dmax_002dlines-1"></a>
 <p>Maximum number of lines shown for inline annotations.  Lines beyond this limit
 are truncated with a count.  Set to <code class="code">nil</code> to show all lines.  Default: <code class="code">20</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dinline_002dpointer_002dafter-1"></a><span><code class="code">simply-annotate-inline-pointer-after</code><a class="copiable-link" href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-1"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dpointer_002dafter-2"></a>
+<p>Pointer string shown between annotated text and the inline box below.
+Supports multiline strings (use <code class="code">\n</code>).  Set to <code class="code">nil</code> to disable.  Default: <code class="code">&quot;▴&quot;</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dinline_002dpointer_002dabove-1"></a><span><code class="code">simply-annotate-inline-pointer-above</code><a class="copiable-link" href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-1"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dpointer_002dabove-2"></a>
+<p>Pointer string shown between the inline box above and annotated text.
+Supports multiline strings (use <code class="code">\n</code>).  Set to <code class="code">nil</code> to disable.  Default: <code class="code">&quot;▾&quot;</code>
 </p></dd>
 </dl>
 
@@ -2533,6 +2595,12 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface-1"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines-1"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-1"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-2"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-1"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-2"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-1"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-2"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
