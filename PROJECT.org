@@ -1,0 +1,367 @@
+#+title: Project-Aware Annotations
+#+author: James Dyer
+#+date: 2026-03-29
+#+startup: showall
+
+* Overview
+
+Two connected features that move simply-annotate from a personal-notes tool to a project-scoped, team-shareable annotation layer:
+
+1. *Per-project databases* -- annotations stored at the project root, committable to version control
+2. *Project-scoped views* -- show-all, tabulated list, and jump-to-file filtered to the current project
+
+Both features use Emacs built-in =project.el= (available since Emacs 28.1, which is already our minimum version).
+
+* 1. Per-Project Databases
+
+** Current Architecture
+
+All annotations live in a single global file:
+
+#+begin_src elisp
+(defcustom simply-annotate-file
+  (expand-file-name "simply-annotations.el" user-emacs-directory)
+  "File to store annotations."
+  :type 'file
+  :group 'simply-annotate)
+#+end_src
+
+Every load/save operation goes through three functions that all reference this single path:
+- =simply-annotate--load-database= -- reads and returns the alist from =simply-annotate-file=
+- =simply-annotate--save-database= -- writes an alist to =simply-annotate-file=
+- =simply-annotate--update-database= -- loads, modifies, and saves back to =simply-annotate-file=
+
+Callers never touch the file directly; they go through these three functions.  This is the key leverage point -- we only need to change how these three functions resolve the database path.
+
+** Design: Database Resolution Strategy
+
+New defcustom controlling where annotations are stored:
+
+#+begin_src elisp
+(defcustom simply-annotate-database-strategy 'global
+  "Where to store annotations.
+`global'  -- single file at `simply-annotate-file' (current behaviour)
+`project' -- per-project file at project root, falling back to global
+`both'    -- write to project database when in a project, read from
+             both project and global (union)"
+  :type '(choice (const :tag "Global only" global)
+                 (const :tag "Project first, global fallback" project)
+                 (const :tag "Both (union reads)" both))
+  :group 'simply-annotate)
+#+end_src
+
+New defcustom for the project-local database filename:
+
+#+begin_src elisp
+(defcustom simply-annotate-project-file ".simply-annotations.el"
+  "Filename for per-project annotation databases.
+Placed at the project root detected by `project-current'."
+  :type 'string
+  :group 'simply-annotate)
+#+end_src
+
+** Database Path Resolution
+
+New internal function that determines which database file to use for the current buffer:
+
+#+begin_src elisp
+(defun simply-annotate--database-path ()
+  "Return the database file path for the current context.
+When `simply-annotate-database-strategy' is `global', always returns
+`simply-annotate-file'.  When `project' or `both', returns the project-local
+path if inside a recognised project, otherwise falls back to `simply-annotate-file'."
+  (if (eq simply-annotate-database-strategy 'global)
+      simply-annotate-file
+    (if-let* ((proj (project-current nil))
+              (root (project-root proj)))
+        (expand-file-name simply-annotate-project-file root)
+      simply-annotate-file)))
+#+end_src
+
+** Changes to Core Functions
+
+*** =simply-annotate--load-database=
+
+Currently reads from =simply-annotate-file=.  Change to:
+
+- ='global= -- read =simply-annotate-file= (no change)
+- ='project= -- read =simply-annotate--database-path= (project file, fallback to global)
+- ='both= -- read project file AND global file, merge the two alists with project taking precedence for duplicate file-keys
+
+#+begin_src elisp
+(defun simply-annotate--load-database ()
+  "Load annotations from the appropriate database file(s)."
+  (if (eq simply-annotate-database-strategy 'both)
+      (let ((project-db (simply-annotate--read-db (simply-annotate--database-path)))
+            (global-db (simply-annotate--read-db simply-annotate-file)))
+        (simply-annotate--merge-databases project-db global-db))
+    (simply-annotate--read-db (simply-annotate--database-path))))
+#+end_src
+
+New helper functions:
+
+#+begin_src elisp
+(defun simply-annotate--read-db (path)
+  "Read and return the annotation alist from PATH, or nil."
+  (when (file-exists-p path)
+    (with-temp-buffer
+      (insert-file-contents path)
+      (goto-char (point-min))
+      (condition-case err
+          (read (current-buffer))
+        (end-of-file nil)
+        (error
+         (message "Simply-annotate: failed to read database %s: %s"
+                  path (error-message-string err))
+         nil)))))
+
+(defun simply-annotate--merge-databases (primary secondary)
+  "Merge PRIMARY and SECONDARY database alists.
+PRIMARY entries win when both contain the same file-key."
+  (let ((merged (copy-alist (or primary '()))))
+    (dolist (entry (or secondary '()))
+      (unless (alist-get (car entry) merged nil nil #'string=)
+        (push entry merged)))
+    merged))
+#+end_src
+
+*** =simply-annotate--save-database= and =--update-database=
+
+These always write to =simply-annotate--database-path=.  In ='both= mode, writes go to the project database when inside a project, global database otherwise.  This means the global database is read-only when you're in a project with ='both= strategy -- annotations migrate to the project database on save.
+
+#+begin_src elisp
+(defun simply-annotate--save-database (db)
+  "Save DB to the appropriate database file."
+  (let ((path (simply-annotate--database-path)))
+    (with-temp-file path
+      (insert ";;; Simply Annotate Database\n")
+      (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
+      (prin1 db (current-buffer))
+      (insert "\n"))))
+#+end_src
+
+=simply-annotate--update-database= needs no structural change -- it already calls =--load-database= and =--save-database= which will now go through the right path.  However, there is a subtlety in ='both= mode: =--load-database= returns a merged view (project + global), but =--save-database= writes to the project file only.  This means the first save will effectively migrate global annotations into the project database for files that get touched.  This is acceptable -- even desirable -- but should be documented.
+
+** File Key Handling
+
+Currently file keys are absolute paths (=/home/jdyer/source/repos/simply-annotate/simply-annotate.el=).  For project databases that will be committed to version control, keys should be project-relative (=simply-annotate.el=).
+
+This requires a change to =simply-annotate--file-key= when in project mode:
+
+#+begin_src elisp
+(defun simply-annotate--file-key ()
+  "Get unique key for current buffer/file."
+  (let ((custom-func (or simply-annotate-file-key-function
+                         (cl-some (lambda (entry)
+                                    (when (derived-mode-p (car entry))
+                                      (cdr entry)))
+                                  simply-annotate-file-key-functions))))
+    (if (and custom-func (functionp custom-func))
+        (funcall custom-func)
+      (let ((raw-key (or (buffer-file-name) (buffer-name))))
+        (if (and (not (eq simply-annotate-database-strategy 'global))
+                 (buffer-file-name))
+            (if-let* ((proj (project-current nil))
+                      (root (project-root proj)))
+                (file-relative-name raw-key root)
+              raw-key)
+          raw-key)))))
+#+end_src
+
+*** Migration consideration
+
+When switching an existing project from =global= to =project= strategy, the global database has absolute-path keys and the project database needs relative keys.  An interactive migration command would handle this:
+
+#+begin_src elisp
+(defun simply-annotate-migrate-to-project ()
+  "Migrate annotations for the current project from global to project database.
+Copies annotations whose file-keys fall under the current project root
+into a new project-local database with relative keys."
+  (interactive)
+  ;; Read global database
+  ;; Filter entries whose keys start with project root
+  ;; Rewrite keys to relative paths
+  ;; Write to project database file
+  ;; Optionally remove migrated entries from global database
+  )
+#+end_src
+
+** .gitignore Considerations
+
+The project database file (=.simply-annotations.el=) is meant to be committed.  But some users may want it ignored.  This is a documentation concern, not a code concern.  The texi/README should note:
+
+- To share annotations with your team: commit =.simply-annotations.el=
+- To keep annotations private: add =.simply-annotations.el= to =.gitignore=
+
+* 2. Project-Scoped Views
+
+** Current State
+
+- =simply-annotate-show-all= -- dumps entire global database, grouped by directory
+- =simply-annotate-list-table= -- shows annotations for current buffer only
+- =simply-annotate-jump-to-file= -- completing-read over all files in database
+
+None of these have a concept of "current project".
+
+** New Commands
+
+*** =simply-annotate-show-project=
+
+Like =show-all= but filtered to files in the current project.  Keybinding: =P= in command map.
+
+#+begin_src elisp
+(defun simply-annotate-show-project ()
+  "Show annotations for all files in the current project."
+  (interactive)
+  (if-let* ((proj (project-current t))
+            (root (project-root proj)))
+      ;; Load database, filter to entries whose keys are under root
+      ;; (or are relative paths when using project strategy)
+      ;; Reuse the show-all rendering with filtered db
+      (simply-annotate--show-filtered
+       (format "*Annotations: %s*" (file-name-nondirectory (directory-file-name root)))
+       (simply-annotate--project-annotations root))
+    (message "Not in a project")))
+#+end_src
+
+This requires extracting the rendering logic from =show-all= into a shared function:
+
+#+begin_src elisp
+(defun simply-annotate--show-filtered (buffer-name db)
+  "Display annotations from DB in a buffer called BUFFER-NAME.
+Shared rendering logic used by both `show-all' and `show-project'."
+  ;; The existing show-all body, parameterised on buffer-name and db
+  )
+#+end_src
+
+=show-all= becomes a thin wrapper:
+
+#+begin_src elisp
+(defun simply-annotate-show-all ()
+  "Show all annotations across all files."
+  (interactive)
+  (let ((db (simply-annotate--load-database)))
+    (if db
+        (simply-annotate--show-filtered "*All Annotations*" db)
+      (message "No annotations database found"))))
+#+end_src
+
+*** =simply-annotate-list-project-table=
+
+Like =list-table= but spanning all project files.  Keybinding: =C-t= in command map (=T= is already the per-buffer table).
+
+#+begin_src elisp
+(defun simply-annotate-list-project-table ()
+  "Show a sortable table of all annotations in the current project."
+  (interactive)
+  (if-let* ((proj (project-current t))
+            (root (project-root proj)))
+      ;; Load project annotations
+      ;; Build tabulated-list entries across all project files
+      ;; Add a "File" column to the existing column set
+      (simply-annotate--show-table
+       (format "*Annotations Table: %s*" (file-name-nondirectory (directory-file-name root)))
+       (simply-annotate--project-annotations root)
+       t)  ; multi-file flag to include File column
+    (message "Not in a project")))
+#+end_src
+
+Similarly, the existing =list-table= should be refactored to share rendering logic.
+
+*** Enhanced =simply-annotate-jump-to-file=
+
+Add project-scoping to the existing completing-read:
+
+#+begin_src elisp
+(defun simply-annotate-jump-to-file (&optional all)
+  "Jump to an annotated file via completing-read.
+When inside a project, only shows project files unless ALL is
+non-nil (prefix arg)."
+  (interactive "P")
+  (let* ((db (simply-annotate--load-database))
+         (filtered-db (if (and (not all) (project-current nil))
+                          (simply-annotate--project-annotations
+                           (project-root (project-current)))
+                        db)))
+    ;; existing completing-read logic using filtered-db
+    ))
+#+end_src
+
+With prefix arg (=C-u M-s f=) it shows all files as before.  Without prefix arg in a project, it shows only project files.
+
+** Shared Helper: Project Annotation Filter
+
+#+begin_src elisp
+(defun simply-annotate--project-annotations (root)
+  "Return database entries for files under ROOT.
+Handles both absolute keys (global strategy) and relative keys (project strategy)."
+  (let ((db (simply-annotate--load-database)))
+    (when db
+      (cl-remove-if-not
+       (lambda (entry)
+         (let ((key (car entry)))
+           (or
+            ;; Relative key (project strategy)
+            (not (file-name-absolute-p key))
+            ;; Absolute key under project root
+            (string-prefix-p (expand-file-name root) (expand-file-name key)))))
+       db))))
+#+end_src
+
+** Command Map Additions
+
+#+begin_src elisp
+(define-key map (kbd "P") #'simply-annotate-show-project)
+(define-key map (kbd "C-t") #'simply-annotate-list-project-table)
+#+end_src
+
+=jump-to-file= (=f=) gets project-scoping automatically via prefix arg.
+
+* Implementation Order
+
+** Phase 1: Storage Layer (per-project databases)
+
+1. Add =simply-annotate-database-strategy= and =simply-annotate-project-file= defcustoms
+2. Add =simply-annotate--database-path= resolution function
+3. Add =simply-annotate--read-db= helper (extract from current =--load-database=)
+4. Add =simply-annotate--merge-databases= helper
+5. Modify =--load-database= to use strategy dispatch
+6. Modify =--save-database= to use =--database-path=
+7. Modify =--file-key= to return relative paths in project mode
+8. Add =simply-annotate-migrate-to-project= interactive command
+9. Test: global strategy still works identically (no regression)
+10. Test: project strategy creates and reads =.simply-annotations.el= at project root
+11. Test: both strategy merges correctly, project takes precedence
+
+** Phase 2: Project-scoped views
+
+1. Extract =show-all= rendering into =--show-filtered=
+2. Add =simply-annotate-show-project= using =--show-filtered=
+3. Add =simply-annotate--project-annotations= filter helper
+4. Modify =jump-to-file= to accept prefix arg for all vs project
+5. Extract =list-table= rendering to support multi-file mode
+6. Add =simply-annotate-list-project-table=
+7. Add keybindings to command map
+8. Update docstrings and texinfo
+
+* Edge Cases and Considerations
+
+** project.el Detection
+
+=project-current= returns nil outside recognised projects.  Every project-aware function must fall back gracefully to global behaviour.  The =(project-current nil)= form (no prompt) is used everywhere except the interactive commands which use =(project-current t)= to prompt the user.
+
+** Relative vs Absolute Keys
+
+In project mode, keys are relative (=src/foo.el=).  In global mode, keys are absolute (=/home/user/project/src/foo.el=).  The =--project-annotations= filter handles both.  The =--get-key-buffer= function already handles absolute paths; it needs a small change to resolve relative keys against the project root.
+
+** Info and Dired Keys
+
+Info keys like =(emacs)Buffers= and dired buffer names are not file paths.  The relative-key logic in =--file-key= only activates when =buffer-file-name= is non-nil, so these are unaffected.
+
+** Simultaneous Global and Project Access
+
+In ='both= mode, =show-all= returns the merged union.  =show-project= returns only project entries.  Writes always go to the project database.  This means annotations from the global database appear in project views but, once the annotated file is saved, they migrate to the project database.
+
+** Performance
+
+=project-current= is called frequently (every load/save).  In project.el, =project-current= caches per-directory, so repeated calls for the same directory are fast.  No performance concern expected.
