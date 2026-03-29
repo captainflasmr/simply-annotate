@@ -616,76 +616,44 @@ Enable the mode globally if you wish for all files!
 
 There is a manual!, just run ~M-x info~ or ~C-h i~ and search for =simply-annotate=
 
-* Alternative package comparison
+* Alternative Annotation Package Comparison
 
-** 1. *annotate.el*
+A cross-cutting view of key features across popular Emacs annotation packages.
 
-*Pros*:
-- Mature and battle-tested with extensive user base
-- Sophisticated query language for filtering annotations
-- Flexible annotation positioning (inline, new line, based on font size)
-- Comprehensive customization options
-- Support for annotation expansion macros
-- Database switching functionality
-
-*simply-annotate* differentiates by:
-- *Header-line status display* - UX status and keybindings
-- *Multiple display styles* - fringe indicators, highlighting, or both
-- *Smart action command* - context-aware annotation management
-- *Annotation buffer* - with auto-show, editing and navigation
-- *Lightweight implementation* - provides core functionality
-- *Raw sexp editing* - direct access to data structures for power users
-
-** 2. *org-annotate-file*
-
-*Pros*:
-- Full org-mode integration with all org features (outlines, babel, etc.)
-- Leverages existing org-mode knowledge
-- Long-standing package with proven workflow
-
-*simply-annotate* differentiates by:
-- *Visual overlay highlighting* vs text-only annotations
-- *Fringe indicator option* for minimal visual impact
-- *Interactive annotation buffer* that updates automatically
-- *Simpler annotation format* that's less prone to corruption
-- *Better multi-line support* without org-mode formatting requirements
-- *More responsive user interface* with immediate visual feedback
-- *Advanced editing capabilities* including raw sexp manipulation
-
-** 3. *org-remark* (formerly org-marginalia)
-
-*Pros*:
-- Modern design with active development
-- Sophisticated highlighting system with multiple highlight types
-- Full org-mode integration for rich note-taking
-- Good for research and academic workflows
-- Support for multiple document types (PDFs, EPUBs, web pages)
-
-*simply-annotate* differentiates by:
-- *Focused on text files* rather than multi-format documents
-- *Lighter weight* with faster startup and operation
-- *Flexible display options* including unobtrusive fringe mode
-- *Simpler annotation model* - text-centric rather than highlight-centric
-- *More straightforward workflow* without requiring org-mode knowledge
-- *Direct data structure access* through sexp editing
-
-** 4. *org-noter*
-
-*Pros*:
-- Excellent for PDF and document annotation workflows
-- Synchronized scrolling between document and notes
-- Strong academic and research focus
-- Good integration with document viewers (PDF-tools, DocView, nov.el)
-
-*simply-annotate* differentiates by:
-- *General-purpose file annotation* vs document-specific workflows
-- *Simpler mental model* - annotate any text file directly
-- *Lightweight operation* without requiring document viewer setup
-- *Better for source code* and plain text file workflows
-- *More immediate annotation access* without session management
-- *Project-friendly storage* that travels with files
-- *Smart context-aware commands* that adapt to current situation
-- *Power-user features* like direct sexp editing for complex manipulations
+| Feature                        | [[https://github.com/mihaiolteanu/annotate][annotate.el]] | [[https://github.com/bastibe/org-annotate-file][org-annotate-file]] | [[https://github.com/nobiot/org-remark][org-remark]] | [[https://github.com/weirdNox/org-noter][org-noter]] | [[https://github.com/captainflasmr/simply-annotate][simply-annotate]] |
+|--------------------------------+-------------+-------------------+------------+-----------+-----------------|
+| Non-intrusive (no file edits)  | Yes         | Yes               | Yes        | Yes       | Yes             |
+| Persistent across sessions     | Yes         | Yes               | Yes        | Yes       | Yes             |
+| Highlight overlay display      | Yes         | No                | Yes        | No        | Yes             |
+| Fringe indicators              | No          | No                | No         | No        | Yes             |
+| Fringe bracket display         | No          | No                | No         | No        | Yes             |
+| Tint / subtle display styles   | No          | No                | No         | No        | Yes             |
+| Combined display styles        | No          | No                | No         | No        | Yes             |
+| Inline box-drawn display       | Yes         | No                | No         | No        | Yes             |
+| Inline pointer connector       | No          | No                | No         | No        | Yes             |
+| Threaded conversations         | No          | No                | No         | No        | Yes             |
+| Nested replies                 | No          | No                | No         | No        | Yes             |
+| Status tracking                | No          | No                | No         | No        | Yes             |
+| Priority levels                | No          | No                | No         | No        | Yes             |
+| Tag system                     | No          | No                | No         | No        | Yes             |
+| Multi-author / collaboration   | No          | No                | No         | No        | Yes             |
+| Annotation levels (file/defun) | No          | No                | No         | No        | Yes             |
+| Smart context-aware action     | No          | No                | No         | No        | Yes             |
+| Header-line status display     | No          | No                | No         | No        | Yes             |
+| Dedicated annotation buffer    | No          | Yes               | Yes        | Yes       | Yes             |
+| Raw sexp editing               | No          | No                | No         | No        | Yes             |
+| Annotation query / filtering   | Yes         | No                | No         | No        | No              |
+| Org-mode listing               | No          | No                | No         | No        | Yes             |
+| Tabular listing (sortable)     | No          | No                | No         | No        | Yes             |
+| Dired integration              | No          | No                | No         | No        | Yes             |
+| Info-mode support              | No          | No                | No         | No        | Yes             |
+| Org-mode export                | No          | Yes               | Yes        | Yes       | Yes             |
+| PDF / EPUB annotation          | No          | No                | Yes        | Yes       | No              |
+| Full org-mode integration      | No          | Yes               | Yes        | Yes       | No              |
+| Database switching             | Yes         | No                | No         | No        | No              |
+| No external dependencies       | Yes         | No                | No         | No        | Yes             |
+| MELPA                          | Yes         | Yes               | Yes        | Yes       | No              |
+| Emacs requirement              | 24.4        | N/A               | 27.1       | 24.4      | 28.1            |
 
 * Contributing
 
