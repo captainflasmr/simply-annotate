@@ -53,6 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-03-29> *1.0.0*
+
+Project-aware annotations.
+
+- *Per-project databases* -- Store annotations at the project root (=.simply-annotations.el=) so they can be committed alongside your code.  Three strategies: =global= (default), =project=, =both=.  Controlled by =simply-annotate-database-strategy=.
+- *Project-scoped views* -- =<prefix> P= for project org listing, =<prefix> C-t= for project sortable table with File column, =<prefix> f= defaults to project files.
+- *Database migration* -- =M-x simply-annotate-migrate-to-project= to move global annotations into a project database with relative keys.
+
 ** <2026-03-29> *0.9.8*
 
 Inline pointer implementation.

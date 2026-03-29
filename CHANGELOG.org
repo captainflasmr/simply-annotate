@@ -11,6 +11,20 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-29 Sun> *1.0.0*
+
+Project-aware annotations -- per-project databases and project-scoped views.
+
+*** Features
+
+- *Per-project databases* -- New =simply-annotate-database-strategy= defcustom with three modes: =global= (single database, existing behaviour), =project= (database at project root, detectable by =project.el=), and =both= (merge project and global, project wins on conflicts).  Project databases use relative file keys, making them portable and committable to version control.
+- *Project database filename* -- =simply-annotate-project-file= defcustom (default =.simply-annotations.el=) controls the filename placed at the project root.
+- *Project annotation listing* -- =<prefix> P= (=simply-annotate-show-project=) shows an org-mode listing of all annotations in the current project, grouped by directory and file.
+- *Project annotation table* -- =<prefix> C-t= (=simply-annotate-list-project-table=) opens a sortable =tabulated-list-mode= table spanning all project files, with an additional File column.
+- *Project-scoped file jump* -- =<prefix> f= (=simply-annotate-jump-to-file=) now defaults to project files when using =project= or =both= strategy.  Use =C-u <prefix> f= to show all files.
+- *Database migration* -- =M-x simply-annotate-migrate-to-project= migrates annotations from the global database into a project-local database, converting absolute paths to relative keys and removing migrated entries from the global file.
+- *Dired keymap fix* -- =simply-annotate-dired-mode= now mirrors the global command map prefix in its own keymap, so annotation commands are not shadowed by dired's local =M-s= bindings.
+
 ** <2026-03-29 Sun> *0.9.8*
 
 Inline pointer, fringe-bracket fixes, revert-buffer support, and code quality.

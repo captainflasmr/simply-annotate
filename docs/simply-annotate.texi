@@ -63,6 +63,7 @@ modifying the original content.
 * Annotation Levels::           Layered annotations for progressive exploration
 * Navigation::                  Moving between annotations
 * Advanced Features::           Cross-file annotations, listing, and dired
+* Project-Aware Annotations::   Per-project databases and project-scoped views
 * Org-mode Integration::        Export annotations to org-mode
 * Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
@@ -1229,6 +1230,97 @@ Context-sensitive help text
 Automatic updates when annotations, threads, or levels change
 @end itemize
 
+@node Project-Aware Annotations
+@chapter Project-Aware Annotations
+
+By default, all annotations are stored in a single global database file.
+Version 1.0.0 adds project-aware storage and project-scoped views, using
+Emacs built-in @code{project.el} (available since Emacs 28.1).
+
+@section Database Strategy
+
+@vindex simply-annotate-database-strategy
+The @code{simply-annotate-database-strategy} variable controls where
+annotations are stored:
+
+@vtable @code
+@item global
+Single database at @code{simply-annotate-file} (default, existing behaviour).
+
+@item project
+Per-project database at the project root, falling back to the global
+database for files not inside a recognised project.  File keys are stored
+as project-relative paths, making the database portable and committable.
+
+@item both
+Write to the project database when inside a project; read from both
+project and global databases, with project entries taking precedence on
+conflicts.  Annotations from the global database migrate to the project
+database when their files are next saved.
+@end vtable
+
+@vindex simply-annotate-project-file
+The @code{simply-annotate-project-file} variable (default
+@code{.simply-annotations.el}) sets the filename placed at the project root.
+
+@subsection Setup
+
+@example
+;; Store annotations at the project root
+(setq simply-annotate-database-strategy 'project)
+
+;; Or merge project and global databases
+(setq simply-annotate-database-strategy 'both)
+@end example
+
+To share annotations with your team, commit @file{.simply-annotations.el}.
+To keep annotations private, add it to @file{.gitignore}.
+
+@section Migrating to a Project Database
+
+@findex simply-annotate-migrate-to-project
+When switching from @code{global} to @code{project} strategy, existing
+annotations live in the global database with absolute file paths.  The
+migration command copies matching annotations into a project-local
+database with relative keys:
+
+@example
+M-x simply-annotate-migrate-to-project
+@end example
+
+This command:
+@enumerate
+@item
+Reads the global database
+@item
+Finds entries whose file paths fall under the current project root
+@item
+Writes them to the project database with relative keys
+@item
+Removes migrated entries from the global database
+@end enumerate
+
+You must have a file open inside the target project before running this
+command, so that @code{project-current} can detect the project root.
+
+@section Project-Scoped Views
+
+@findex simply-annotate-show-project
+@code{simply-annotate-show-project} (@kbd{P} in the command map) shows
+an org-mode listing of all annotations in the current project, grouped
+by directory and file.  Like @code{simply-annotate-show-all} but filtered
+to the current project.
+
+@findex simply-annotate-list-project-table
+@code{simply-annotate-list-project-table} (@kbd{C-t} in the command map)
+opens a sortable table spanning all project files, with columns for File,
+Level, Line, Status, Priority, Comments, Tags, Author, and Comment.
+
+@findex simply-annotate-jump-to-file
+@code{simply-annotate-jump-to-file} (@kbd{f} in the command map) defaults
+to project files when using @code{project} or @code{both} strategy.  Use
+a prefix argument (@kbd{C-u f}) to show all files across all databases.
+
 @node Org-mode Integration
 @chapter Org-mode Integration
 
@@ -1357,7 +1449,9 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
 @item @kbd{M-s T} @tab @code{simply-annotate-list-table} @tab Sortable table view of annotations
 @item @kbd{M-s L} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files
-@item @kbd{M-s f} @tab @code{simply-annotate-jump-to-file} @tab Jump to annotated file
+@item @kbd{M-s P} @tab @code{simply-annotate-show-project} @tab Browse annotations in current project
+@item @kbd{M-s C-t} @tab @code{simply-annotate-list-project-table} @tab Sortable project-wide table
+@item @kbd{M-s f} @tab @code{simply-annotate-jump-to-file} @tab Jump to annotated file (project-scoped)
 @item @kbd{M-s [} @tab @code{simply-annotate-cycle-level-backward} @tab Cycle levels backward (line @result{} defun @result{} file)
 @item @kbd{M-s ]} @tab @code{simply-annotate-cycle-level-forward} @tab Cycle levels forward (file @result{} defun @result{} line)
 @item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
@@ -1489,12 +1583,32 @@ Configure team collaboration and threading features:
 (setq simply-annotate-remember-author-per-file t)       ; Remember per project
 @end lisp
 
+@subsection Project-Aware Setup
+@lisp
+;; Per-project databases (committable to version control)
+(setq simply-annotate-database-strategy 'project)
+
+;; Or merge project and global
+(setq simply-annotate-database-strategy 'both)
+@end lisp
+
 @section Core Customization Variables
 
 @vtable @code
 @item simply-annotate-file
 @vindex simply-annotate-file
-File to store annotations. Default: @file{~/.emacs.d/simply-annotations.el}
+File to store annotations in global mode. Default: @file{~/.emacs.d/simply-annotations.el}
+
+@item simply-annotate-database-strategy
+@vindex simply-annotate-database-strategy
+Where to store annotations. @code{global} (single file), @code{project}
+(per-project file at project root), or @code{both} (merge project and
+global). Default: @code{global}
+
+@item simply-annotate-project-file
+@vindex simply-annotate-project-file
+Filename for per-project annotation databases, placed at the project root.
+Default: @code{.simply-annotations.el}
 
 @item simply-annotate-highlight-face
 @vindex simply-annotate-highlight-face

@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 0.9.8
+;; Version: 1.0.0
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -173,6 +173,26 @@
 ;; (setq simply-annotate-inline-pointer-after "┃\n┃\n┗━━▶")
 ;; (setq simply-annotate-inline-pointer-above "┏━━▶\n┃\n┃")
 ;;
+;; Project-Aware Annotations:
+;;
+;; By default, annotations are stored in a single global database.
+;; Set `simply-annotate-database-strategy' to use per-project databases
+;; that can be committed alongside your code:
+;;
+;; ;; Store annotations at the project root (.simply-annotations.el)
+;; (setq simply-annotate-database-strategy 'project)
+;;
+;; ;; Or merge project and global databases (project wins on conflicts)
+;; (setq simply-annotate-database-strategy 'both)
+;;
+;; Project-scoped commands (require project.el, built-in since Emacs 28.1):
+;; - <prefix> P   show annotations for the current project (org listing)
+;; - <prefix> C-t show annotations for the current project (sortable table)
+;; - <prefix> f   jump to annotated file (project-scoped, C-u for all)
+;;
+;; To migrate existing global annotations into a project database:
+;;   M-x simply-annotate-migrate-to-project
+;;
 ;;; Code:
 
 ;;; Customization
@@ -183,6 +203,8 @@
 (declare-function org-mode "org")
 (declare-function outline-hide-sublevels "outline")
 (declare-function dired-get-filename "dired")
+(declare-function project-current "project")
+(declare-function project-root "project")
 
 (defgroup simply-annotate nil
   "Simple annotation system with threading support."
@@ -190,8 +212,25 @@
 
 (defcustom simply-annotate-file
   (expand-file-name "simply-annotations.el" user-emacs-directory)
-  "File to store annotations."
+  "File to store annotations in global mode."
   :type 'file
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-database-strategy 'global
+  "Where to store annotations.
+`global'  -- single file at `simply-annotate-file' (default)
+`project' -- per-project file at project root, falling back to global
+`both'    -- write to project database when in a project, read from
+             both project and global (union)"
+  :type '(choice (const :tag "Global only" global)
+                 (const :tag "Project first, global fallback" project)
+                 (const :tag "Both (union reads)" both))
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-project-file ".simply-annotations.el"
+  "Filename for per-project annotation databases.
+Placed at the project root detected by `project-current'."
+  :type 'string
   :group 'simply-annotate)
 
 (defface simply-annotate-highlight-face
@@ -581,9 +620,12 @@ This helps fix corrupted annotations from older versions."
 
 (defun simply-annotate--file-key ()
   "Get unique key for current buffer/file.
-Checks `simply-annotate-file-key-function` (buffer-local) and
-`simply-annotate-file-key-functions` before falling back to
-file path or buffer name."
+Checks `simply-annotate-file-key-function' (buffer-local) and
+`simply-annotate-file-key-functions' before falling back to file
+path or buffer name.  When `simply-annotate-database-strategy' is
+not `global' and the buffer visits a file inside a recognised
+project, returns a project-relative path so the annotation
+database is portable."
   (let ((custom-func (or simply-annotate-file-key-function
                          (cl-some (lambda (entry)
                                     (when (derived-mode-p (car entry))
@@ -591,7 +633,14 @@ file path or buffer name."
                                   simply-annotate-file-key-functions))))
     (if (and custom-func (functionp custom-func))
         (funcall custom-func)
-      (or (buffer-file-name) (buffer-name)))))
+      (let ((raw-key (or (buffer-file-name) (buffer-name))))
+        (if (and (not (eq simply-annotate-database-strategy 'global))
+                 (buffer-file-name))
+            (if-let* ((proj (project-current nil))
+                      (root (project-root proj)))
+                (file-relative-name raw-key root)
+              raw-key)
+          raw-key)))))
 
 (defun simply-annotate--key-info-p (key)
   "Return non-nil if KEY is an Info node key."
@@ -626,61 +675,110 @@ For files, includes the directory. For Info nodes, returns the full key."
           (format "%s  [%s]" name dir)
         name))))
 
+(defun simply-annotate--resolve-key-path (key)
+  "Resolve KEY to an absolute file path.
+Relative keys are resolved against the current project root.
+Returns KEY unchanged if it is absolute, an Info key, or a buffer name."
+  (if (or (simply-annotate--key-info-p key)
+          (file-name-absolute-p key))
+      key
+    (if-let* ((proj (project-current nil))
+              (root (project-root proj)))
+        (expand-file-name key root)
+      key)))
+
 (defun simply-annotate--get-key-buffer (key &optional select)
   "Get (and optionally SELECT) the buffer associated with KEY.
-Returns the buffer if successful, or nil if KEY cannot be resolved."
-  (cond
-   ((simply-annotate--key-info-p key)
-    (let ((manual (substring key 1 (string-match-p ")" key)))
-          (node (string-trim (substring key (1+ (string-match-p ")" key))))))
-      (require 'info)
-      (condition-case err
-          (if select
-              (progn
-                (info (format "(%s)%s" manual node))
-                (current-buffer))
-            (let ((info-buffer (get-buffer-create "*info*")))
-              (with-current-buffer info-buffer
-                (unless (derived-mode-p 'Info-mode)
-                  (Info-mode))
-                (Info-find-node manual node)
-                (current-buffer))))
-        (error
-         (message "Simply-annotate: failed to open Info node %s: %s"
-                  key (error-message-string err))
-         nil))))
-   ((file-exists-p key)
-    (if select
-        (find-file key)
-      (find-file-noselect key)))
-   (t
-    (when-let ((buf (get-buffer key)))
-      (when select (switch-to-buffer buf))
-      buf))))
+Returns the buffer if successful, or nil if KEY cannot be resolved.
+Relative keys are resolved against the current project root."
+  (let ((resolved (simply-annotate--resolve-key-path key)))
+    (cond
+     ((simply-annotate--key-info-p resolved)
+      (let ((manual (substring resolved 1 (string-match-p ")" resolved)))
+            (node (string-trim (substring resolved (1+ (string-match-p ")" resolved))))))
+        (require 'info)
+        (condition-case err
+            (if select
+                (progn
+                  (info (format "(%s)%s" manual node))
+                  (current-buffer))
+              (let ((info-buffer (get-buffer-create "*info*")))
+                (with-current-buffer info-buffer
+                  (unless (derived-mode-p 'Info-mode)
+                    (Info-mode))
+                  (Info-find-node manual node)
+                  (current-buffer))))
+          (error
+           (message "Simply-annotate: failed to open Info node %s: %s"
+                    resolved (error-message-string err))
+           nil))))
+     ((file-exists-p resolved)
+      (if select
+          (find-file resolved)
+        (find-file-noselect resolved)))
+     (t
+      (when-let ((buf (get-buffer resolved)))
+        (when select (switch-to-buffer buf))
+        buf)))))
 
 ;;; Database Operations
 
-(defun simply-annotate--load-database ()
-  "Load annotations from database file."
-  (when (file-exists-p simply-annotate-file)
+(defun simply-annotate--database-path ()
+  "Return the database file path for the current context.
+When `simply-annotate-database-strategy' is `global', always returns
+`simply-annotate-file'.  When `project' or `both', returns the
+project-local path if inside a recognised project, otherwise falls
+back to `simply-annotate-file'."
+  (if (eq simply-annotate-database-strategy 'global)
+      simply-annotate-file
+    (if-let* ((proj (project-current nil))
+              (root (project-root proj)))
+        (expand-file-name simply-annotate-project-file root)
+      simply-annotate-file)))
+
+(defun simply-annotate--read-db (path)
+  "Read and return the annotation alist from PATH, or nil."
+  (when (file-exists-p path)
     (with-temp-buffer
-      (insert-file-contents simply-annotate-file)
+      (insert-file-contents path)
       (goto-char (point-min))
       (condition-case err
           (read (current-buffer))
         (end-of-file nil)
         (error
          (message "Simply-annotate: failed to read database %s: %s"
-                  simply-annotate-file (error-message-string err))
+                  path (error-message-string err))
          nil)))))
 
+(defun simply-annotate--merge-databases (primary secondary)
+  "Merge PRIMARY and SECONDARY database alists.
+PRIMARY entries win when both contain the same file-key."
+  (let ((merged (copy-alist (or primary '()))))
+    (dolist (entry (or secondary '()))
+      (unless (alist-get (car entry) merged nil nil #'string=)
+        (push entry merged)))
+    merged))
+
+(defun simply-annotate--load-database ()
+  "Load annotations from the appropriate database file(s).
+Respects `simply-annotate-database-strategy':
+`global'  -- reads `simply-annotate-file'
+`project' -- reads project-local file, falling back to global
+`both'    -- merges project and global, project wins on conflicts"
+  (if (eq simply-annotate-database-strategy 'both)
+      (let ((project-db (simply-annotate--read-db (simply-annotate--database-path)))
+            (global-db (simply-annotate--read-db simply-annotate-file)))
+        (simply-annotate--merge-databases project-db global-db))
+    (simply-annotate--read-db (simply-annotate--database-path))))
+
 (defun simply-annotate--save-database (db)
-  "Save DB to file."
-  (with-temp-file simply-annotate-file
-    (insert ";;; Simply Annotate Database\n")
-    (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
-    (prin1 db (current-buffer))
-    (insert "\n")))
+  "Save DB to the appropriate database file."
+  (let ((path (simply-annotate--database-path)))
+    (with-temp-file path
+      (insert ";;; Simply Annotate Database\n")
+      (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
+      (prin1 db (current-buffer))
+      (insert "\n"))))
 
 (defun simply-annotate--update-database (file-key annotations)
   "Update database with ANNOTATIONS for FILE-KEY."
@@ -691,10 +789,11 @@ Returns the buffer if successful, or nil if KEY cannot be resolved."
         (setq db (cl-remove-if (lambda (entry)
                                  (string= (car entry) file-key))
                                db)))
-      (if db
-          (simply-annotate--save-database db)
-        (when (file-exists-p simply-annotate-file)
-          (delete-file simply-annotate-file))))))
+      (let ((path (simply-annotate--database-path)))
+        (if db
+            (simply-annotate--save-database db)
+          (when (file-exists-p path)
+            (delete-file path)))))))
 
 ;;; Display Management
 
@@ -2646,14 +2745,21 @@ Uses `outline-mode' to fold headings cheaply, then activates
   (when-let ((entry (tabulated-list-get-id)))
     (simply-annotate--listing-goto-source entry)))
 
+(defvar-local simply-annotate-table-project-root nil
+  "Project root for project-scoped table buffers.
+Nil for single-buffer tables.")
+
 (defun simply-annotate-table-refresh ()
   "Rebuild the annotation table from scratch."
   (interactive)
-  (let ((source simply-annotate-listing-source))
-    (when (and source (buffer-live-p source))
-      (kill-buffer (current-buffer))
-      (with-current-buffer source
-        (simply-annotate-list-table)))))
+  (let ((source simply-annotate-listing-source)
+        (project-root-val simply-annotate-table-project-root))
+    (kill-buffer (current-buffer))
+    (if project-root-val
+        (simply-annotate--show-project-table project-root-val)
+      (when (and source (buffer-live-p source))
+        (with-current-buffer source
+          (simply-annotate-list-table))))))
 
 ;;;###autoload
 (defun simply-annotate-list-table ()
@@ -2676,9 +2782,120 @@ Reuses an existing table buffer if one exists; press g to rebuild."
               (setq tabulated-list-entries
                     (simply-annotate--tabulated-entries annotations source-buffer file-key))
               (tabulated-list-print)
-              (setq simply-annotate-listing-source source-buffer))
+              (setq simply-annotate-listing-source source-buffer)
+              (setq simply-annotate-table-project-root nil))
             (pop-to-buffer buffer-name))
         (message "No annotations in buffer")))))
+
+(define-derived-mode simply-annotate-project-table-mode tabulated-list-mode "SA-ProjTable"
+  "Major mode for displaying project-wide annotations in a sortable table."
+  (setq tabulated-list-format
+        [("File" 25 t)
+         ("Level" 6 t)
+         ("Line" 6 (lambda (a b)
+                     (< (string-to-number (aref (cadr a) 2))
+                        (string-to-number (aref (cadr b) 2)))))
+         ("Status" 12 t)
+         ("Priority" 9 t)
+         ("Cmt" 4 (lambda (a b)
+                    (< (string-to-number (let ((s (aref (cadr a) 5))) (if (string= s "") "0" s)))
+                       (string-to-number (let ((s (aref (cadr b) 5))) (if (string= s "") "0" s))))))
+         ("Tags" 12 t)
+         ("Author" 10 t)
+         ("Comment" 0 t)])
+  (setq tabulated-list-sort-key '("File" . nil))
+  (let ((map simply-annotate-project-table-mode-map))
+    (define-key map (kbd "RET") #'simply-annotate-table-goto-source)
+    (define-key map (kbd "g") #'simply-annotate-table-refresh)
+    (define-key map (kbd "q") #'quit-window))
+  (tabulated-list-init-header))
+
+(defun simply-annotate--project-tabulated-entries (db)
+  "Build `tabulated-list-entries' from a multi-file DB alist.
+Each entry includes a File column."
+  (let ((entries nil))
+    (dolist (db-entry db)
+      (let* ((file-key (car db-entry))
+             (annotations (cdr db-entry))
+             (source-buffer (simply-annotate--get-key-buffer file-key))
+             (line-table (simply-annotate--batch-line-info annotations source-buffer))
+             (short-name (simply-annotate--key-name file-key)))
+        (dolist (ann (simply-annotate--sort-annotations annotations))
+          (let* ((start-pos (alist-get 'start ann))
+                 (data (alist-get 'text ann))
+                 (raw-level (or (alist-get 'level ann) 'defun))
+                 (level (if (eq raw-level 'all) 'defun raw-level))
+                 (line-info (gethash start-pos line-table '(1 0 "")))
+                 (line-num (car line-info))
+                 (col-num (cadr line-info))
+                 (thread-p (simply-annotate--thread-p data))
+                 (status (if thread-p (upcase (or (alist-get 'status data) "open")) "OPEN"))
+                 (priority (if thread-p (upcase (or (alist-get 'priority data) "normal")) "NORMAL"))
+                 (tags (if thread-p
+                           (string-join (or (alist-get 'tags data) nil) ",")
+                         ""))
+                 (comments (if thread-p (alist-get 'comments data) nil))
+                 (count (if thread-p (length comments) 0))
+                 (author (if thread-p
+                            (or (alist-get 'author (car comments)) "")
+                          ""))
+                 (first-text (cond
+                              (thread-p
+                               (let ((c (car comments)))
+                                 (or (alist-get 'text c) "")))
+                              ((stringp data) data)
+                              (t "")))
+                 (summary (string-trim (car (split-string first-text "\n"))))
+                 (nav (list :file file-key :line line-num
+                            :col (1+ col-num) :level level)))
+            (push (list nav
+                        (vector
+                         short-name
+                         (upcase (symbol-name level))
+                         (number-to-string line-num)
+                         (propertize status 'face
+                                     (pcase status
+                                       ("OPEN" 'warning)
+                                       ("IN-PROGRESS" 'success)
+                                       ("RESOLVED" 'shadow)
+                                       ("CLOSED" 'shadow)
+                                       (_ 'default)))
+                         priority
+                         (if (> count 0) (number-to-string count) "")
+                         tags
+                         author
+                         summary))
+                  entries)))))
+    (nreverse entries)))
+
+(defun simply-annotate--show-project-table (root)
+  "Show a project-wide annotation table for project at ROOT."
+  (let* ((project-name (file-name-nondirectory (directory-file-name root)))
+         (buffer-name (format "*Annotations Table: %s*" project-name))
+         (db (simply-annotate--project-annotations root)))
+    (when (get-buffer buffer-name)
+      (kill-buffer buffer-name))
+    (if (not db)
+        (message "No annotations found for project %s" project-name)
+      (with-current-buffer (get-buffer-create buffer-name)
+        (simply-annotate-project-table-mode)
+        (setq tabulated-list-entries
+              (simply-annotate--project-tabulated-entries db))
+        (tabulated-list-print)
+        (setq simply-annotate-listing-source nil)
+        (setq simply-annotate-table-project-root root))
+      (pop-to-buffer buffer-name))))
+
+;;;###autoload
+(defun simply-annotate-list-project-table ()
+  "Show a sortable table of all annotations in the current project.
+Like `simply-annotate-list-table' but spanning all project files,
+with an additional File column."
+  (interactive)
+  (if-let* ((proj (project-current t))
+            (root (project-root proj)))
+      (simply-annotate--show-project-table root)
+    (message "Not in a project")))
 
 ;;;###autoload
 (defun simply-annotate-list ()
@@ -2703,6 +2920,78 @@ Refresh button or \\[simply-annotate-listing-refresh] to rebuild."
             (goto-char (point-min)))
         (message "No annotations in buffer")))))
 
+(defun simply-annotate--project-annotations (root)
+  "Return database entries for files under ROOT.
+Handles both absolute keys (global strategy) and relative keys
+\(project strategy)."
+  (let ((db (simply-annotate--load-database))
+        (expanded-root (expand-file-name root)))
+    (when db
+      (cl-remove-if-not
+       (lambda (entry)
+         (let ((key (car entry)))
+           (or
+            ;; Relative key (project strategy)
+            (not (file-name-absolute-p key))
+            ;; Absolute key under project root
+            (string-prefix-p expanded-root (expand-file-name key)))))
+       db))))
+
+(defun simply-annotate--show-filtered (buffer-name title db)
+  "Display annotations from DB in a buffer called BUFFER-NAME.
+TITLE is inserted as the org #+TITLE header.  Shared rendering
+logic used by `simply-annotate-show-all' and `simply-annotate-show-project'."
+  (if-let ((existing (get-buffer buffer-name)))
+      (pop-to-buffer existing)
+    (if (not db)
+        (message "No annotations database found")
+      (let ((files-with-annotations (mapcar #'car db))
+            (total 0))
+        (if (not files-with-annotations)
+            (message "No annotations found in database")
+          (with-current-buffer (get-buffer-create buffer-name)
+            (let ((inhibit-read-only t))
+              (erase-buffer)
+              ;; Count totals
+              (dolist (file-key files-with-annotations)
+                (setq total (+ total (length (alist-get file-key db nil nil #'string=)))))
+              (simply-annotate--insert-refresh-button)
+              (insert (format "#+TITLE: %s\n" title))
+              (insert (format "#+STARTUP: show2levels\n"))
+              (insert (format "Total: %d annotations across %d files\n\n"
+                              total (length files-with-annotations)))
+              ;; Group files by directory
+              (let ((dir-alist nil))
+                (dolist (file-key files-with-annotations)
+                  (let* ((dir (simply-annotate--key-directory file-key))
+                         (name (simply-annotate--key-name file-key)))
+                    (push (cons name file-key)
+                          (alist-get dir dir-alist nil nil #'string=))))
+                ;; Sort directories and insert
+                (dolist (dir-entry (sort dir-alist
+                                        (lambda (a b) (string< (car a) (car b)))))
+                  (let* ((dir (car dir-entry))
+                         (files (nreverse (cdr dir-entry)))
+                         (dir-count (cl-reduce #'+ files
+                                               :key (lambda (f)
+                                                      (length (alist-get (cdr f) db nil nil #'string=))))))
+                    (insert (format "* %s (%d)\n" dir dir-count))
+                    (dolist (file-entry files)
+                      (let* ((name (car file-entry))
+                             (file-key (cdr file-entry))
+                             (annotations (alist-get file-key db nil nil #'string=))
+                             (count (length annotations))
+                             (source-buffer (simply-annotate--get-key-buffer file-key))
+                             (start (point)))
+                        (insert (format "** %s (%d)\n" name count))
+                        (put-text-property start (point) 'simply-annotate-nav (list :file file-key))
+                        (simply-annotate--insert-formatted-annotations
+                         file-key annotations source-buffer 2))))))
+              ;; Finish mode setup
+              (simply-annotate--finish-annotation-list-mode)
+              (goto-char (point-min))))
+          (pop-to-buffer buffer-name))))))
+
 ;;;###autoload
 (defun simply-annotate-show-all ()
   "Show all annotations across all files in an org-mode buffer.
@@ -2711,65 +3000,40 @@ or \\[simply-annotate-listing-refresh] to rebuild.
 Files are grouped by directory.  Directories are top-level headings,
 files are second-level, and annotation levels below that."
   (interactive)
-  (let ((buffer-name "*All Annotations*"))
-    (if-let ((existing (get-buffer buffer-name)))
-        (pop-to-buffer existing)
-      (let* ((db (simply-annotate--load-database)))
-        (if (not db)
-            (message "No annotations database found")
-          (let ((files-with-annotations (mapcar #'car db))
-                (total 0))
-            (if (not files-with-annotations)
-                (message "No annotations found in database")
-              (with-current-buffer (get-buffer-create buffer-name)
-                (let ((inhibit-read-only t))
-                  (erase-buffer)
-                  ;; Count totals
-                  (dolist (file-key files-with-annotations)
-                    (setq total (+ total (length (alist-get file-key db nil nil #'string=)))))
-                  (simply-annotate--insert-refresh-button)
-                  (insert (format "#+TITLE: All Annotations\n"))
-                  (insert (format "#+STARTUP: show2levels\n"))
-                  (insert (format "Total: %d annotations across %d files\n\n"
-                                  total (length files-with-annotations)))
-                  ;; Group files by directory
-                  (let ((dir-alist nil))
-                    (dolist (file-key files-with-annotations)
-                      (let* ((dir (simply-annotate--key-directory file-key))
-                             (name (simply-annotate--key-name file-key)))
-                        (push (cons name file-key)
-                              (alist-get dir dir-alist nil nil #'string=))))
-                    ;; Sort directories and insert
-                    (dolist (dir-entry (sort dir-alist
-                                            (lambda (a b) (string< (car a) (car b)))))
-                      (let* ((dir (car dir-entry))
-                             (files (nreverse (cdr dir-entry)))
-                             (dir-count (cl-reduce #'+ files
-                                                   :key (lambda (f)
-                                                          (length (alist-get (cdr f) db nil nil #'string=))))))
-                        (insert (format "* %s (%d)\n" dir dir-count))
-                        (dolist (file-entry files)
-                          (let* ((name (car file-entry))
-                                 (file-key (cdr file-entry))
-                                 (annotations (alist-get file-key db nil nil #'string=))
-                                 (count (length annotations))
-                                 (source-buffer (simply-annotate--get-key-buffer file-key))
-                                 (start (point)))
-                            (insert (format "** %s (%d)\n" name count))
-                            (put-text-property start (point) 'simply-annotate-nav (list :file file-key))
-                            (simply-annotate--insert-formatted-annotations
-                             file-key annotations source-buffer 2))))))
-                  ;; Finish mode setup
-                  (simply-annotate--finish-annotation-list-mode)
-                  (goto-char (point-min))))
-              (pop-to-buffer buffer-name))))))))
+  (simply-annotate--show-filtered
+   "*All Annotations*"
+   "All Annotations"
+   (simply-annotate--load-database)))
 
 ;;;###autoload
-(defun simply-annotate-jump-to-file ()
-  "Jump to an annotated file via completing-read.
-Opens the selected file and enables `simply-annotate-mode'."
+(defun simply-annotate-show-project ()
+  "Show annotations for all files in the current project.
+Like `simply-annotate-show-all' but filtered to the current project
+as detected by `project-current'."
   (interactive)
-  (let* ((db (simply-annotate--load-database)))
+  (if-let* ((proj (project-current t))
+            (root (project-root proj)))
+      (simply-annotate--show-filtered
+       (format "*Annotations: %s*"
+               (file-name-nondirectory (directory-file-name root)))
+       (format "Project Annotations: %s"
+               (file-name-nondirectory (directory-file-name root)))
+       (simply-annotate--project-annotations root))
+    (message "Not in a project")))
+
+;;;###autoload
+(defun simply-annotate-jump-to-file (&optional all)
+  "Jump to an annotated file via completing-read.
+Opens the selected file and enables `simply-annotate-mode'.
+When inside a project, only shows project files unless ALL is
+non-nil (prefix argument)."
+  (interactive "P")
+  (let* ((db (if (and (not all)
+                      (not (eq simply-annotate-database-strategy 'global))
+                      (project-current nil))
+                 (simply-annotate--project-annotations
+                  (project-root (project-current)))
+               (simply-annotate--load-database))))
     (if (not db)
         (message "No annotations database found")
       (let* ((files-with-annotations (mapcar #'car db))
@@ -2905,6 +3169,8 @@ Opens the selected file and enables `simply-annotate-mode'."
     (define-key map (kbd "l") #'simply-annotate-list)
     (define-key map (kbd "T") #'simply-annotate-list-table)
     (define-key map (kbd "L") #'simply-annotate-show-all)
+    (define-key map (kbd "P") #'simply-annotate-show-project)
+    (define-key map (kbd "C-t") #'simply-annotate-list-project-table)
     (define-key map (kbd "f") #'simply-annotate-jump-to-file)
     (define-key map (kbd "p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "t") #'simply-annotate-add-annotation-tag)
@@ -2954,7 +3220,8 @@ Available keys:
 
   j  smart-action      r  reply           s  status
   -  remove            a  change author   l  list
-  L  show all          f  jump to file    p  priority
+  T  table             L  show all        P  show project
+  C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp
   [  level backward    ]  level forward   \\='  cycle style
   /  toggle inline     n  next            v  previous")
@@ -3043,6 +3310,53 @@ Clears any surviving overlays and reloads from the database."
     (simply-annotate--load-annotations)
     (simply-annotate--apply-level-filter)
     (simply-annotate--update-header)))
+
+
+;;; Project Migration
+
+;;;###autoload
+(defun simply-annotate-migrate-to-project ()
+  "Migrate annotations for the current project from global to project database.
+Copies annotations whose file-keys fall under the current project root
+into a new project-local database with relative keys.  Migrated entries
+are removed from the global database."
+  (interactive)
+  (let* ((proj (project-current t))
+         (root (project-root proj))
+         (global-db (simply-annotate--read-db simply-annotate-file))
+         (project-path (expand-file-name simply-annotate-project-file root))
+         (project-db (simply-annotate--read-db project-path))
+         (expanded-root (expand-file-name root))
+         (migrated 0)
+         (remaining nil))
+    (unless global-db
+      (user-error "No global annotations database found"))
+    (dolist (entry global-db)
+      (let ((key (car entry))
+            (annotations (cdr entry)))
+        (if (and (not (simply-annotate--key-info-p key))
+                 (file-name-absolute-p key)
+                 (string-prefix-p expanded-root (expand-file-name key)))
+            (let ((rel-key (file-relative-name key root)))
+              (setf (alist-get rel-key project-db nil nil #'string=) annotations)
+              (setq migrated (1+ migrated)))
+          (push entry remaining))))
+    (if (zerop migrated)
+        (message "No annotations found for project %s" root)
+      (with-temp-file project-path
+        (insert ";;; Simply Annotate Database\n")
+        (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
+        (prin1 project-db (current-buffer))
+        (insert "\n"))
+      (if remaining
+          (with-temp-file simply-annotate-file
+            (insert ";;; Simply Annotate Database\n")
+            (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
+            (prin1 (nreverse remaining) (current-buffer))
+            (insert "\n"))
+        (when (file-exists-p simply-annotate-file)
+          (delete-file simply-annotate-file)))
+      (message "Migrated %d annotation(s) to %s" migrated project-path))))
 
 
 ;;; Dired Integration
