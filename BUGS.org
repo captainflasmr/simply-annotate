@@ -9,7 +9,9 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO Project aware commenting
+** DOING Project aware commenting
+
+** TODO dired annotations
 
 ** TODO Tagging search
 
