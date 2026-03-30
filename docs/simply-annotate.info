@@ -1087,11 +1087,45 @@ current project.
 
    ‘simply-annotate-list-project-table’ (‘C-t’ in the command map) opens
 a sortable table spanning all project files, with columns for File,
-Level, Line, Status, Priority, Comments, Tags, Author, and Comment.
+Level, Stale, Line, Status, Priority, Comments, Tags, Author, and
+Comment.
 
    ‘simply-annotate-jump-to-file’ (‘f’ in the command map) defaults to
 project files when using ‘project’ or ‘both’ strategy.  Use a prefix
 argument (‘C-u f’) to show all files across all databases.
+
+11.4 Stale Annotation Detection
+===============================
+
+When the text under an annotation changes (refactoring, edits, or
+merges), the annotation may no longer apply to the correct content.
+Simply Annotate detects this by storing a content hash of the annotated
+text region.
+
+11.4.1 How It Works
+-------------------
+
+Each annotation records a ‘text-hash’ (computed via ‘sxhash-equal’) when
+saved.  When the file is next opened and annotations are deserialized,
+the stored hash is compared against the current text at that position.
+If they differ, the annotation is flagged as stale.
+
+11.4.2 Visual Indicators
+------------------------
+
+Stale annotations are indicated in several ways:
+
+   • *Inline display* - A ‘[STALE]’ marker appears in the inline
+     annotation label.
+   • *Tooltips* - The help-echo tooltip is prepended with ‘[STALE]’.
+   • *Table views* - Both single-buffer and project tables include a
+     "Stale" column showing ‘Yes’ (stale), ‘?’ (no stored hash), or
+     blank (fresh).
+   • *Face* - Stale markers use ‘simply-annotate-stale-face’ (tomato
+     foreground, italic).
+
+   Annotations created before stale detection was added will show ‘?’
+(unknown) until they are next saved, at which point a hash is recorded.
 
 
 File: simply-annotate.info,  Node: Org-mode Integration,  Next: Key Bindings,  Prev: Project-Aware Annotations,  Up: Top
@@ -1412,6 +1446,10 @@ Configure team collaboration and threading features:
      Pointer string shown between the inline box above and annotated
      text.  Supports multiline strings (use ‘\n’).  Set to ‘nil’ to
      disable.  Default: ‘"▾"’
+
+‘simply-annotate-stale-face’
+     Face used for stale annotation markers.  Default: tomato
+     foreground, italic.
 
 14.5 Annotation Level Variables
 ===============================
@@ -1822,7 +1860,7 @@ Function Index
                                                               (line  12)
 * simply-annotate-jump-to-file:          Advanced Features.   (line  75)
 * simply-annotate-jump-to-file <1>:      Project-Aware Annotations.
-                                                              (line  78)
+                                                              (line  79)
 * simply-annotate-list:                  Advanced Features.   (line   9)
 * simply-annotate-list-project-table:    Project-Aware Annotations.
                                                               (line  74)
@@ -1875,8 +1913,8 @@ Variable Index
                                                               (line  20)
 * simply-annotate-author-list:           Threading and Collaboration.
                                                               (line 107)
-* simply-annotate-author-list <1>:       Customization.       (line 162)
-* simply-annotate-author-list <2>:       Customization.       (line 163)
+* simply-annotate-author-list <1>:       Customization.       (line 166)
+* simply-annotate-author-list <2>:       Customization.       (line 167)
 * simply-annotate-buffer-height:         Customization.       (line 112)
 * simply-annotate-buffer-height <1>:     Customization.       (line 113)
 * simply-annotate-buffer-name:           Customization.       (line 109)
@@ -1885,8 +1923,8 @@ Variable Index
                                                               (line  13)
 * simply-annotate-database-strategy <1>: Customization.       (line  96)
 * simply-annotate-database-strategy <2>: Customization.       (line  97)
-* simply-annotate-default-level:         Customization.       (line 155)
-* simply-annotate-default-level <1>:     Customization.       (line 156)
+* simply-annotate-default-level:         Customization.       (line 159)
+* simply-annotate-default-level <1>:     Customization.       (line 160)
 * simply-annotate-display-style:         Display Styles.      (line  47)
 * simply-annotate-display-style <1>:     Customization.       (line 116)
 * simply-annotate-display-style <2>:     Customization.       (line 117)
@@ -1911,27 +1949,29 @@ Variable Index
 * simply-annotate-inline-position:       Display Styles.      (line  88)
 * simply-annotate-inline-position <1>:   Customization.       (line 130)
 * simply-annotate-inline-position <2>:   Customization.       (line 131)
-* simply-annotate-levels:                Customization.       (line 152)
-* simply-annotate-levels <1>:            Customization.       (line 153)
+* simply-annotate-levels:                Customization.       (line 156)
+* simply-annotate-levels <1>:            Customization.       (line 157)
 * simply-annotate-priority-levels:       Threading and Collaboration.
                                                               (line  85)
-* simply-annotate-priority-levels <1>:   Customization.       (line 177)
-* simply-annotate-priority-levels <2>:   Customization.       (line 178)
+* simply-annotate-priority-levels <1>:   Customization.       (line 181)
+* simply-annotate-priority-levels <2>:   Customization.       (line 182)
 * simply-annotate-project-file:          Project-Aware Annotations.
                                                               (line  32)
 * simply-annotate-project-file <1>:      Customization.       (line 101)
 * simply-annotate-project-file <2>:      Customization.       (line 102)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
                                                               (line 107)
-* simply-annotate-prompt-for-author <1>: Customization.       (line 166)
-* simply-annotate-prompt-for-author <2>: Customization.       (line 167)
-* simply-annotate-remember-author-per-file: Customization.    (line 170)
+* simply-annotate-prompt-for-author <1>: Customization.       (line 170)
+* simply-annotate-prompt-for-author <2>: Customization.       (line 171)
+* simply-annotate-remember-author-per-file: Customization.    (line 174)
 * simply-annotate-remember-author-per-file <1>: Customization.
-                                                              (line 171)
+                                                              (line 175)
+* simply-annotate-stale-face:            Customization.       (line 149)
+* simply-annotate-stale-face <1>:        Customization.       (line 150)
 * simply-annotate-thread-statuses:       Threading and Collaboration.
                                                               (line  73)
-* simply-annotate-thread-statuses <1>:   Customization.       (line 173)
-* simply-annotate-thread-statuses <2>:   Customization.       (line 174)
+* simply-annotate-thread-statuses <1>:   Customization.       (line 177)
+* simply-annotate-thread-statuses <2>:   Customization.       (line 178)
 * status:                                Advanced Editing.    (line  55)
 * tags:                                  Advanced Editing.    (line  60)
 * text:                                  Advanced Editing.    (line  81)
@@ -1998,14 +2038,14 @@ Node: Annotation Levels26573
 Node: Navigation29876
 Node: Advanced Features31518
 Node: Project-Aware Annotations35824
-Node: Org-mode Integration38966
-Node: Key Bindings41417
-Node: Customization45868
-Node: Data Storage54495
-Node: Troubleshooting58553
-Node: Function Index64976
-Node: Variable Index68159
-Node: Concept Index73894
+Node: Org-mode Integration40261
+Node: Key Bindings42712
+Node: Customization47163
+Node: Data Storage55911
+Node: Troubleshooting59969
+Node: Function Index66392
+Node: Variable Index69575
+Node: Concept Index75456
 
 End Tag Table
 

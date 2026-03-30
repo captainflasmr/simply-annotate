@@ -197,6 +197,11 @@ Free Documentation License&rdquo;.
     </ul></li>
     <li><a id="toc-Migrating-to-a-Project-Database" href="#Migrating-to-a-Project-Database">11.2 Migrating to a Project Database</a></li>
     <li><a id="toc-Project_002dScoped-Views" href="#Project_002dScoped-Views">11.3 Project-Scoped Views</a></li>
+    <li><a id="toc-Stale-Annotation-Detection" href="#Stale-Annotation-Detection">11.4 Stale Annotation Detection</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-How-It-Works" href="#How-It-Works">11.4.1 How It Works</a></li>
+      <li><a id="toc-Visual-Indicators" href="#Visual-Indicators">11.4.2 Visual Indicators</a></li>
+    </ul></li>
   </ul></li>
   <li><a id="toc-Org_002dmode-Integration" href="#Org_002dmode-Integration">12 Org-mode Integration</a>
   <ul class="toc-numbered-mark">
@@ -1616,6 +1621,7 @@ Emacs built-in <code class="code">project.el</code> (available since Emacs 28.1)
 <li><a href="#Database-Strategy" accesskey="1">Database Strategy</a></li>
 <li><a href="#Migrating-to-a-Project-Database" accesskey="2">Migrating to a Project Database</a></li>
 <li><a href="#Project_002dScoped-Views" accesskey="3">Project-Scoped Views</a></li>
+<li><a href="#Stale-Annotation-Detection" accesskey="4">Stale Annotation Detection</a></li>
 </ul>
 <div class="section-level-extent" id="Database-Strategy">
 <h3 class="section"><span>11.1 Database Strategy<a class="copiable-link" href="#Database-Strategy"> &para;</a></span></h3>
@@ -1703,14 +1709,55 @@ to the current project.
 <a class="index-entry-id" id="index-simply_002dannotate_002dlist_002dproject_002dtable"></a>
 <p><code class="code">simply-annotate-list-project-table</code> (<kbd class="kbd">C-t</kbd> in the command map)
 opens a sortable table spanning all project files, with columns for File,
-Level, Line, Status, Priority, Comments, Tags, Author, and Comment.
+Level, Stale, Line, Status, Priority, Comments, Tags, Author, and Comment.
 </p>
 <a class="index-entry-id" id="index-simply_002dannotate_002djump_002dto_002dfile-1"></a>
 <p><code class="code">simply-annotate-jump-to-file</code> (<kbd class="kbd">f</kbd> in the command map) defaults
 to project files when using <code class="code">project</code> or <code class="code">both</code> strategy.  Use
 a prefix argument (<kbd class="kbd">C-u f</kbd>) to show all files across all databases.
 </p>
+</div>
+<div class="section-level-extent" id="Stale-Annotation-Detection">
+<h3 class="section"><span>11.4 Stale Annotation Detection<a class="copiable-link" href="#Stale-Annotation-Detection"> &para;</a></span></h3>
+
+<p>When the text under an annotation changes (refactoring, edits, or merges),
+the annotation may no longer apply to the correct content.  Simply Annotate
+detects this by storing a content hash of the annotated text region.
+</p>
+<ul class="mini-toc">
+<li><a href="#How-It-Works" accesskey="1">How It Works</a></li>
+<li><a href="#Visual-Indicators" accesskey="2">Visual Indicators</a></li>
+</ul>
+<div class="subsection-level-extent" id="How-It-Works">
+<h4 class="subsection"><span>11.4.1 How It Works<a class="copiable-link" href="#How-It-Works"> &para;</a></span></h4>
+
+<p>Each annotation records a <code class="code">text-hash</code> (computed via <code class="code">sxhash-equal</code>)
+when saved.  When the file is next opened and annotations are deserialized,
+the stored hash is compared against the current text at that position.  If
+they differ, the annotation is flagged as stale.
+</p>
+</div>
+<div class="subsection-level-extent" id="Visual-Indicators">
+<h4 class="subsection"><span>11.4.2 Visual Indicators<a class="copiable-link" href="#Visual-Indicators"> &para;</a></span></h4>
+
+<p>Stale annotations are indicated in several ways:
+</p>
+<ul class="itemize mark-bullet">
+<li><strong class="strong">Inline display</strong> &ndash; A &lsquo;<samp class="samp">[STALE]</samp>&rsquo; marker appears in the inline
+annotation label.
+</li><li><strong class="strong">Tooltips</strong> &ndash; The help-echo tooltip is prepended with &lsquo;<samp class="samp">[STALE]</samp>&rsquo;.
+</li><li><strong class="strong">Table views</strong> &ndash; Both single-buffer and project tables include a
+&ldquo;Stale&rdquo; column showing &lsquo;<samp class="samp">Yes</samp>&rsquo; (stale), &lsquo;<samp class="samp">?</samp>&rsquo; (no stored hash),
+or blank (fresh).
+</li><li><strong class="strong">Face</strong> &ndash; Stale markers use <code class="code">simply-annotate-stale-face</code>
+(tomato foreground, italic).
+</li></ul>
+
+<p>Annotations created before stale detection was added will show &lsquo;<samp class="samp">?</samp>&rsquo;
+(unknown) until they are next saved, at which point a hash is recorded.
+</p>
 <hr>
+</div>
 </div>
 </div>
 <div class="chapter-level-extent" id="Org_002dmode-Integration">
@@ -2122,6 +2169,11 @@ Supports multiline strings (use <code class="code">\n</code>).  Set to <code cla
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dinline_002dpointer_002dabove-2"></a>
 <p>Pointer string shown between the inline box above and annotated text.
 Supports multiline strings (use <code class="code">\n</code>).  Set to <code class="code">nil</code> to disable.  Default: <code class="code">&quot;▾&quot;</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dstale_002dface"></a><span><code class="code">simply-annotate-stale-face</code><a class="copiable-link" href="#index-simply_002dannotate_002dstale_002dface"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dstale_002dface-1"></a>
+<p>Face used for stale annotation markers.  Default: tomato foreground, italic.
 </p></dd>
 </dl>
 
@@ -2784,6 +2836,8 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile"><code>simply-annotate-remember-author-per-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1"><code>simply-annotate-remember-author-per-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dstale_002dface"><code>simply-annotate-stale-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dstale_002dface-1"><code>simply-annotate-stale-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses-1"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses-2"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>

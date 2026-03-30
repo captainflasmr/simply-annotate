@@ -23,6 +23,7 @@ Project-aware annotations -- per-project databases and project-scoped views.
 - *Project annotation table* -- =<prefix> C-t= (=simply-annotate-list-project-table=) opens a sortable =tabulated-list-mode= table spanning all project files, with an additional File column.
 - *Project-scoped file jump* -- =<prefix> f= (=simply-annotate-jump-to-file=) now defaults to project files when using =project= or =both= strategy.  Use =C-u <prefix> f= to show all files.
 - *Database migration* -- =M-x simply-annotate-migrate-to-project= migrates annotations from the global database into a project-local database, converting absolute paths to relative keys and removing migrated entries from the global file.
+- *Stale annotation detection* -- Annotations store a content hash of the annotated text region.  When the underlying text changes (refactoring, edits), annotations are flagged as stale with a =[STALE]= marker in inline display, help-echo tooltips, and a dedicated "Stale" column in both single-buffer and project table views.  Stale annotations use =simply-annotate-stale-face= (tomato, italic).  Annotations without a stored hash show =?= (unknown) until re-saved.
 - *Dired keymap fix* -- =simply-annotate-dired-mode= now mirrors the global command map prefix in its own keymap, so annotation commands are not shadowed by dired's local =M-s= bindings.
 
 ** <2026-03-29 Sun> *0.9.8*

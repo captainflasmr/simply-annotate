@@ -316,6 +316,11 @@ Uses overline and underline to bracket the annotated region."
   "Face for inline annotation border characters."
   :group 'simply-annotate)
 
+(defface simply-annotate-stale-face
+  '((t (:foreground "tomato" :slant italic)))
+  "Face for the stale indicator on annotations whose text has changed."
+  :group 'simply-annotate)
+
 (defcustom simply-annotate-inline-position 'after
   "Where to display inline annotation blocks relative to the annotated region.
 - after: Below the annotated text (as an after-string)
@@ -871,7 +876,10 @@ Returns lines in display order (not reversed)."
                          (alist-get 'comments data))
                      (list `((text . ,data) (type . "comment") (author . "System")))))
          (formatted-lines '())
-         (label (concat "✎" (or meta "")))
+         (stale-p (eq (overlay-get overlay 'simply-annotate-stale) t))
+         (label (concat "✎" (or meta "")
+                        (when stale-p
+                          (propertize " [STALE]" 'face 'simply-annotate-stale-face))))
          (rule-len (max 20 (+ 4 (string-width label))))
          (wrap-width (when simply-annotate-inline-fill-column
                        (- simply-annotate-inline-fill-column 4))))
@@ -1488,18 +1496,48 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 
 ;;; Serialization
 
+(defun simply-annotate--annotation-stale-p (ann source-buffer)
+  "Return stale status for annotation ANN given SOURCE-BUFFER.
+Returns t if stale, nil if fresh, or `unknown' if no hash stored."
+  (let ((stored-hash (alist-get 'text-hash ann))
+        (start (alist-get 'start ann))
+        (end (alist-get 'end ann)))
+    (cond
+     ((null stored-hash) 'unknown)
+     ((not (and source-buffer (buffer-live-p source-buffer))) 'unknown)
+     (t (let* ((pmax (with-current-buffer source-buffer (point-max)))
+               (s (min start pmax))
+               (e (min end pmax))
+               (current-hash (with-current-buffer source-buffer
+                               (sxhash-equal
+                                (buffer-substring-no-properties s e)))))
+          (if (/= stored-hash current-hash) t nil))))))
+
 (defun simply-annotate--serialize-annotations ()
-  "Convert buffer annotations to serializable format."
+  "Convert buffer annotations to serializable format.
+Includes a `text-hash' of the annotated region for stale detection.
+When an annotation is stale, the original hash is preserved so
+the stale state persists across saves and reverts."
   (mapcar (lambda (overlay)
-            `((start . ,(overlay-start overlay))
-              (end . ,(overlay-end overlay))
-              (text . ,(overlay-get overlay 'simply-annotation))
-              (level . ,(or (overlay-get overlay 'simply-annotation-level)
-                            simply-annotate-default-level))))
+            (let* ((s (overlay-start overlay))
+                   (e (overlay-end overlay))
+                   (stale (overlay-get overlay 'simply-annotate-stale))
+                   (hash (if (eq stale t)
+                             (overlay-get overlay 'simply-annotate-stored-hash)
+                           (sxhash-equal
+                            (buffer-substring-no-properties s e)))))
+              `((start . ,s)
+                (end . ,e)
+                (text . ,(overlay-get overlay 'simply-annotation))
+                (level . ,(or (overlay-get overlay 'simply-annotation-level)
+                              simply-annotate-default-level))
+                (text-hash . ,hash))))
           simply-annotate-overlays))
 
 (defun simply-annotate--deserialize-annotations (annotations)
-  "Restore ANNOTATIONS from serialized format."
+  "Restore ANNOTATIONS from serialized format.
+Detects stale annotations by comparing stored `text-hash' against
+the current buffer text at the annotation position."
   (dolist (ann annotations)
     (let ((start (alist-get 'start ann))
           (end (alist-get 'end ann))
@@ -1509,8 +1547,22 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
                  (<= start (point-max))
                  (<= end (point-max))
                  (> end start))
-        (let ((ov (simply-annotate--create-overlay start end text)))
+        (let* ((ov (simply-annotate--create-overlay start end text))
+               (stored-hash (alist-get 'text-hash ann))
+               (current-hash (sxhash-equal
+                              (buffer-substring-no-properties start end)))
+               (stale (cond
+                       ((null stored-hash) 'unknown)
+                       ((/= stored-hash current-hash) t)
+                       (t nil))))
           (overlay-put ov 'simply-annotation-level level)
+          (overlay-put ov 'simply-annotate-stale stale)
+          (when stored-hash
+            (overlay-put ov 'simply-annotate-stored-hash stored-hash))
+          (when (eq stale t)
+            (overlay-put ov 'help-echo
+                         (concat "[STALE: underlying text changed] "
+                                 (or (overlay-get ov 'help-echo) ""))))
           (push ov simply-annotate-overlays))))))
 
 (defun simply-annotate--save-annotations ()
@@ -2674,14 +2726,15 @@ Uses `outline-mode' to fold headings cheaply, then activates
   "Major mode for displaying annotations in a sortable table."
   (setq tabulated-list-format
         [("Level" 6 t)
+         ("Stale" 5 t)
          ("Line" 6 (lambda (a b)
-                     (< (string-to-number (aref (cadr a) 1))
-                        (string-to-number (aref (cadr b) 1)))))
+                     (< (string-to-number (aref (cadr a) 2))
+                        (string-to-number (aref (cadr b) 2)))))
          ("Status" 12 t)
          ("Priority" 9 t)
          ("Cmt" 4 (lambda (a b)
-                    (< (string-to-number (let ((s (aref (cadr a) 4))) (if (string= s "") "0" s)))
-                       (string-to-number (let ((s (aref (cadr b) 4))) (if (string= s "") "0" s))))))
+                    (< (string-to-number (let ((s (aref (cadr a) 5))) (if (string= s "") "0" s)))
+                       (string-to-number (let ((s (aref (cadr b) 5))) (if (string= s "") "0" s))))))
          ("Tags" 12 t)
          ("Author" 10 t)
          ("Comment" 0 t)])
@@ -2700,6 +2753,11 @@ Uses `outline-mode' to fold headings cheaply, then activates
              (line-info (gethash start-pos line-table '(1 0 "")))
              (line-num (car line-info))
              (col-num (cadr line-info))
+             (stale (simply-annotate--annotation-stale-p ann source-buffer))
+             (stale-str (pcase stale
+                          ('t (propertize "Yes" 'face 'simply-annotate-stale-face))
+                          ('unknown "?")
+                          (_ "")))
              (thread-p (simply-annotate--thread-p data))
              (status (if thread-p (upcase (or (alist-get 'status data) "open")) "OPEN"))
              (priority (if thread-p (upcase (or (alist-get 'priority data) "normal")) "NORMAL"))
@@ -2723,6 +2781,7 @@ Uses `outline-mode' to fold headings cheaply, then activates
         (push (list nav
                     (vector
                      (upcase (symbol-name level))
+                     stale-str
                      (number-to-string line-num)
                      (propertize status 'face
                                  (pcase status
@@ -2750,16 +2809,26 @@ Uses `outline-mode' to fold headings cheaply, then activates
 Nil for single-buffer tables.")
 
 (defun simply-annotate-table-refresh ()
-  "Rebuild the annotation table from scratch."
+  "Rebuild the annotation table in place, preserving the window."
   (interactive)
   (let ((source simply-annotate-listing-source)
-        (project-root-val simply-annotate-table-project-root))
-    (kill-buffer (current-buffer))
+        (project-root-val simply-annotate-table-project-root)
+        (pos (point)))
     (if project-root-val
-        (simply-annotate--show-project-table project-root-val)
+        (let ((db (simply-annotate--project-annotations project-root-val)))
+          (setq tabulated-list-entries
+                (if db (simply-annotate--project-tabulated-entries db) nil))
+          (tabulated-list-print)
+          (goto-char (min pos (point-max))))
       (when (and source (buffer-live-p source))
-        (with-current-buffer source
-          (simply-annotate-list-table))))))
+        (let* ((file-key (with-current-buffer source
+                           (or (buffer-file-name) (buffer-name))))
+               (annotations (with-current-buffer source
+                              (simply-annotate--serialize-annotations))))
+          (setq tabulated-list-entries
+                (simply-annotate--tabulated-entries annotations source file-key))
+          (tabulated-list-print)
+          (goto-char (min pos (point-max))))))))
 
 ;;;###autoload
 (defun simply-annotate-list-table ()
@@ -2792,14 +2861,15 @@ Reuses an existing table buffer if one exists; press g to rebuild."
   (setq tabulated-list-format
         [("File" 25 t)
          ("Level" 6 t)
+         ("Stale" 5 t)
          ("Line" 6 (lambda (a b)
-                     (< (string-to-number (aref (cadr a) 2))
-                        (string-to-number (aref (cadr b) 2)))))
+                     (< (string-to-number (aref (cadr a) 3))
+                        (string-to-number (aref (cadr b) 3)))))
          ("Status" 12 t)
          ("Priority" 9 t)
          ("Cmt" 4 (lambda (a b)
-                    (< (string-to-number (let ((s (aref (cadr a) 5))) (if (string= s "") "0" s)))
-                       (string-to-number (let ((s (aref (cadr b) 5))) (if (string= s "") "0" s))))))
+                    (< (string-to-number (let ((s (aref (cadr a) 6))) (if (string= s "") "0" s)))
+                       (string-to-number (let ((s (aref (cadr b) 6))) (if (string= s "") "0" s))))))
          ("Tags" 12 t)
          ("Author" 10 t)
          ("Comment" 0 t)])
@@ -2846,12 +2916,18 @@ Each entry includes a File column."
                               ((stringp data) data)
                               (t "")))
                  (summary (string-trim (car (split-string first-text "\n"))))
+                 (stale (simply-annotate--annotation-stale-p ann source-buffer))
+                 (stale-str (pcase stale
+                              ('t (propertize "Yes" 'face 'simply-annotate-stale-face))
+                              ('unknown "?")
+                              (_ "")))
                  (nav (list :file file-key :line line-num
                             :col (1+ col-num) :level level)))
             (push (list nav
                         (vector
                          short-name
                          (upcase (symbol-name level))
+                         stale-str
                          (number-to-string line-num)
                          (propertize status 'face
                                      (pcase status

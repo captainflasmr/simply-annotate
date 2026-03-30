@@ -1314,12 +1314,47 @@ to the current project.
 @findex simply-annotate-list-project-table
 @code{simply-annotate-list-project-table} (@kbd{C-t} in the command map)
 opens a sortable table spanning all project files, with columns for File,
-Level, Line, Status, Priority, Comments, Tags, Author, and Comment.
+Level, Stale, Line, Status, Priority, Comments, Tags, Author, and Comment.
 
 @findex simply-annotate-jump-to-file
 @code{simply-annotate-jump-to-file} (@kbd{f} in the command map) defaults
 to project files when using @code{project} or @code{both} strategy.  Use
 a prefix argument (@kbd{C-u f}) to show all files across all databases.
+
+@section Stale Annotation Detection
+
+When the text under an annotation changes (refactoring, edits, or merges),
+the annotation may no longer apply to the correct content.  Simply Annotate
+detects this by storing a content hash of the annotated text region.
+
+@subsection How It Works
+
+Each annotation records a @code{text-hash} (computed via @code{sxhash-equal})
+when saved.  When the file is next opened and annotations are deserialized,
+the stored hash is compared against the current text at that position.  If
+they differ, the annotation is flagged as stale.
+
+@subsection Visual Indicators
+
+Stale annotations are indicated in several ways:
+
+@itemize @bullet
+@item
+@strong{Inline display} -- A @samp{[STALE]} marker appears in the inline
+annotation label.
+@item
+@strong{Tooltips} -- The help-echo tooltip is prepended with @samp{[STALE]}.
+@item
+@strong{Table views} -- Both single-buffer and project tables include a
+``Stale'' column showing @samp{Yes} (stale), @samp{?} (no stored hash),
+or blank (fresh).
+@item
+@strong{Face} -- Stale markers use @code{simply-annotate-stale-face}
+(tomato foreground, italic).
+@end itemize
+
+Annotations created before stale detection was added will show @samp{?}
+(unknown) until they are next saved, at which point a hash is recorded.
 
 @node Org-mode Integration
 @chapter Org-mode Integration
@@ -1653,6 +1688,10 @@ Supports multiline strings (use @code{\n}).  Set to @code{nil} to disable.  Defa
 @vindex simply-annotate-inline-pointer-above
 Pointer string shown between the inline box above and annotated text.
 Supports multiline strings (use @code{\n}).  Set to @code{nil} to disable.  Default: @code{"▾"}
+
+@item simply-annotate-stale-face
+@vindex simply-annotate-stale-face
+Face used for stale annotation markers.  Default: tomato foreground, italic.
 @end vtable
 
 @section Annotation Level Variables

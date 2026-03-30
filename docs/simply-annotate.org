@@ -113,6 +113,9 @@ Documentation License”.
   - [[#Migrating-to-a-Project-Database][11.2 Migrating to a Project
     Database]]
   - [[#Project_002dScoped-Views][11.3 Project-Scoped Views]]
+  - [[#Stale-Annotation-Detection][11.4 Stale Annotation Detection]]
+    - [[#How-It-Works][11.4.1 How It Works]]
+    - [[#Visual-Indicators][11.4.2 Visual Indicators]]
 - [[#Org_002dmode-Integration][12 Org-mode Integration]]
   - [[#Exporting-Annotations][12.1 Exporting Annotations]]
   - [[#Export-Format][12.2 Export Format]]
@@ -1513,6 +1516,7 @@ Emacs built-in =project.el= (available since Emacs 28.1).
 - [[#Database-Strategy][Database Strategy]]
 - [[#Migrating-to-a-Project-Database][Migrating to a Project Database]]
 - [[#Project_002dScoped-Views][Project-Scoped Views]]
+- [[#Stale-Annotation-Detection][Stale Annotation Detection]]
 
 <<Database-Strategy>>
 *** 11.1 Database Strategy [[#Database-Strategy][¶]]
@@ -1598,11 +1602,56 @@ project.
 
 =simply-annotate-list-project-table= (C-t in the command map) opens a
 sortable table spanning all project files, with columns for File, Level,
-Line, Status, Priority, Comments, Tags, Author, and Comment.
+Stale, Line, Status, Priority, Comments, Tags, Author, and Comment.
 
 =simply-annotate-jump-to-file= (f in the command map) defaults to
 project files when using =project= or =both= strategy. Use a prefix
 argument (C-u f) to show all files across all databases.
+
+<<Stale-Annotation-Detection>>
+*** 11.4 Stale Annotation Detection [[#Stale-Annotation-Detection][¶]]
+:PROPERTIES:
+:CUSTOM_ID: stale-annotation-detection
+:CLASS: section
+:END:
+When the text under an annotation changes (refactoring, edits, or
+merges), the annotation may no longer apply to the correct content.
+Simply Annotate detects this by storing a content hash of the annotated
+text region.
+
+- [[#How-It-Works][How It Works]]
+- [[#Visual-Indicators][Visual Indicators]]
+
+<<How-It-Works>>
+**** 11.4.1 How It Works [[#How-It-Works][¶]]
+:PROPERTIES:
+:CUSTOM_ID: how-it-works
+:CLASS: subsection
+:END:
+Each annotation records a =text-hash= (computed via =sxhash-equal=) when
+saved. When the file is next opened and annotations are deserialized,
+the stored hash is compared against the current text at that position.
+If they differ, the annotation is flagged as stale.
+
+<<Visual-Indicators>>
+**** 11.4.2 Visual Indicators [[#Visual-Indicators][¶]]
+:PROPERTIES:
+:CUSTOM_ID: visual-indicators
+:CLASS: subsection
+:END:
+Stale annotations are indicated in several ways:
+
+- *Inline display* -- A ‘=[STALE]=' marker appears in the inline
+  annotation label.
+- *Tooltips* -- The help-echo tooltip is prepended with ‘=[STALE]='.
+- *Table views* -- Both single-buffer and project tables include a
+  “Stale” column showing ‘=Yes=' (stale), ‘=?=' (no stored hash), or
+  blank (fresh).
+- *Face* -- Stale markers use =simply-annotate-stale-face= (tomato
+  foreground, italic).
+
+Annotations created before stale detection was added will show ‘=?='
+(unknown) until they are next saved, at which point a hash is recorded.
 
 --------------
 
@@ -2064,6 +2113,12 @@ Configure team collaboration and threading features:
   Pointer string shown between the inline box above and annotated text.
   Supports multiline strings (use =\n=). Set to =nil= to disable.
   Default: ="▾"=
+
+- <<index-simply_002dannotate_002dstale_002dface>>=simply-annotate-stale-face=
+  [[#index-simply_002dannotate_002dstale_002dface][¶]] :: 
+
+  Face used for stale annotation markers. Default: tomato foreground,
+  italic.
 
 <<Annotation-Level-Variables>>
 *** 14.5 Annotation Level Variables [[#Annotation-Level-Variables][¶]]
@@ -2749,6 +2804,8 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 |                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile][=simply-annotate-remember-author-per-file=]]   | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1][=simply-annotate-remember-author-per-file=]] | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dstale_002dface][=simply-annotate-stale-face=]]                                       | [[#Customization][Customization]]                             |
+|                | [[#index-simply_002dannotate_002dstale_002dface-1][=simply-annotate-stale-face=]]                                     | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dthread_002dstatuses][=simply-annotate-thread-statuses=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dthread_002dstatuses-1][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
 |                | [[#index-simply_002dannotate_002dthread_002dstatuses-2][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
