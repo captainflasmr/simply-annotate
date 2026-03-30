@@ -116,6 +116,8 @@ Documentation License”.
   - [[#Stale-Annotation-Detection][11.4 Stale Annotation Detection]]
     - [[#How-It-Works][11.4.1 How It Works]]
     - [[#Visual-Indicators][11.4.2 Visual Indicators]]
+  - [[#Position-Tracking][11.5 Position Tracking]]
+    - [[#How-It-Works-1][11.5.1 How It Works]]
 - [[#Org_002dmode-Integration][12 Org-mode Integration]]
   - [[#Exporting-Annotations][12.1 Exporting Annotations]]
   - [[#Export-Format][12.2 Export Format]]
@@ -1517,6 +1519,7 @@ Emacs built-in =project.el= (available since Emacs 28.1).
 - [[#Migrating-to-a-Project-Database][Migrating to a Project Database]]
 - [[#Project_002dScoped-Views][Project-Scoped Views]]
 - [[#Stale-Annotation-Detection][Stale Annotation Detection]]
+- [[#Position-Tracking][Position Tracking]]
 
 <<Database-Strategy>>
 *** 11.1 Database Strategy [[#Database-Strategy][¶]]
@@ -1652,6 +1655,38 @@ Stale annotations are indicated in several ways:
 
 Annotations created before stale detection was added will show ‘=?='
 (unknown) until they are next saved, at which point a hash is recorded.
+
+<<Position-Tracking>>
+*** 11.5 Position Tracking [[#Position-Tracking][¶]]
+:PROPERTIES:
+:CUSTOM_ID: position-tracking
+:CLASS: section
+:END:
+When a file is edited externally (another editor, git operations,
+merges), lines added or removed above an annotation cause the stored
+positions to drift. Simply Annotate handles this automatically.
+
+- [[#How-It-Works-1][How It Works]]
+
+<<How-It-Works-1>>
+**** 11.5.1 How It Works [[#How-It-Works-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: how-it-works-1
+:CLASS: subsection
+:END:
+Each annotation stores a =text-context= field --- up to 150 characters
+of the annotated text. During deserialization, if the content hash does
+not match at the stored position, the buffer is searched for the stored
+context. The closest match to the original position is selected and the
+hash is verified at the new location.
+
+- If the text is found verbatim at a new position, the overlay is
+  silently relocated there and a ‘=[MOVED]=' marker is shown in inline
+  display.
+- If the text is not found (i.e. the annotated text itself was
+  modified), the annotation falls through to stale detection.
+- On the next save, the relocated position is written to the database
+  and the ‘=[MOVED]=' indicator clears.
 
 --------------
 

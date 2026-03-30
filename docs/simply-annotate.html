@@ -202,6 +202,10 @@ Free Documentation License&rdquo;.
       <li><a id="toc-How-It-Works" href="#How-It-Works">11.4.1 How It Works</a></li>
       <li><a id="toc-Visual-Indicators" href="#Visual-Indicators">11.4.2 Visual Indicators</a></li>
     </ul></li>
+    <li><a id="toc-Position-Tracking" href="#Position-Tracking">11.5 Position Tracking</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-How-It-Works-1" href="#How-It-Works-1">11.5.1 How It Works</a></li>
+    </ul></li>
   </ul></li>
   <li><a id="toc-Org_002dmode-Integration" href="#Org_002dmode-Integration">12 Org-mode Integration</a>
   <ul class="toc-numbered-mark">
@@ -1622,6 +1626,7 @@ Emacs built-in <code class="code">project.el</code> (available since Emacs 28.1)
 <li><a href="#Migrating-to-a-Project-Database" accesskey="2">Migrating to a Project Database</a></li>
 <li><a href="#Project_002dScoped-Views" accesskey="3">Project-Scoped Views</a></li>
 <li><a href="#Stale-Annotation-Detection" accesskey="4">Stale Annotation Detection</a></li>
+<li><a href="#Position-Tracking" accesskey="5">Position Tracking</a></li>
 </ul>
 <div class="section-level-extent" id="Database-Strategy">
 <h3 class="section"><span>11.1 Database Strategy<a class="copiable-link" href="#Database-Strategy"> &para;</a></span></h3>
@@ -1756,6 +1761,36 @@ or blank (fresh).
 <p>Annotations created before stale detection was added will show &lsquo;<samp class="samp">?</samp>&rsquo;
 (unknown) until they are next saved, at which point a hash is recorded.
 </p>
+</div>
+</div>
+<div class="section-level-extent" id="Position-Tracking">
+<h3 class="section"><span>11.5 Position Tracking<a class="copiable-link" href="#Position-Tracking"> &para;</a></span></h3>
+
+<p>When a file is edited externally (another editor, git operations, merges),
+lines added or removed above an annotation cause the stored positions to
+drift.  Simply Annotate handles this automatically.
+</p>
+<ul class="mini-toc">
+<li><a href="#How-It-Works-1" accesskey="1">How It Works</a></li>
+</ul>
+<div class="subsection-level-extent" id="How-It-Works-1">
+<h4 class="subsection"><span>11.5.1 How It Works<a class="copiable-link" href="#How-It-Works-1"> &para;</a></span></h4>
+
+<p>Each annotation stores a <code class="code">text-context</code> field &mdash; up to 150 characters
+of the annotated text.  During deserialization, if the content hash does
+not match at the stored position, the buffer is searched for the stored
+context.  The closest match to the original position is selected and the
+hash is verified at the new location.
+</p>
+<ul class="itemize mark-bullet">
+<li>If the text is found verbatim at a new position, the overlay is silently
+relocated there and a &lsquo;<samp class="samp">[MOVED]</samp>&rsquo; marker is shown in inline display.
+</li><li>If the text is not found (i.e. the annotated text itself was modified),
+the annotation falls through to stale detection.
+</li><li>On the next save, the relocated position is written to the database and
+the &lsquo;<samp class="samp">[MOVED]</samp>&rsquo; indicator clears.
+</li></ul>
+
 <hr>
 </div>
 </div>

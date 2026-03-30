@@ -877,9 +877,12 @@ Returns lines in display order (not reversed)."
                      (list `((text . ,data) (type . "comment") (author . "System")))))
          (formatted-lines '())
          (stale-p (eq (overlay-get overlay 'simply-annotate-stale) t))
+         (relocated-p (overlay-get overlay 'simply-annotate-relocated))
          (label (concat "✎" (or meta "")
                         (when stale-p
-                          (propertize " [STALE]" 'face 'simply-annotate-stale-face))))
+                          (propertize " [STALE]" 'face 'simply-annotate-stale-face))
+                        (when relocated-p
+                          (propertize " [MOVED]" 'face 'font-lock-warning-face))))
          (rule-len (max 20 (+ 4 (string-width label))))
          (wrap-width (when simply-annotate-inline-fill-column
                        (- simply-annotate-inline-fill-column 4))))
@@ -1515,9 +1518,9 @@ Returns t if stale, nil if fresh, or `unknown' if no hash stored."
 
 (defun simply-annotate--serialize-annotations ()
   "Convert buffer annotations to serializable format.
-Includes a `text-hash' of the annotated region for stale detection.
-When an annotation is stale, the original hash is preserved so
-the stale state persists across saves and reverts."
+Includes a `text-hash' and `text-context' for stale detection and
+position recovery.  When an annotation is stale, the original hash
+and context are preserved so the stale state persists across saves."
   (mapcar (lambda (overlay)
             (let* ((s (overlay-start overlay))
                    (e (overlay-end overlay))
@@ -1525,19 +1528,52 @@ the stale state persists across saves and reverts."
                    (hash (if (eq stale t)
                              (overlay-get overlay 'simply-annotate-stored-hash)
                            (sxhash-equal
-                            (buffer-substring-no-properties s e)))))
+                            (buffer-substring-no-properties s e))))
+                   (context (if (eq stale t)
+                                (overlay-get overlay 'simply-annotate-text-context)
+                              (simply-annotate--make-context s e))))
               `((start . ,s)
                 (end . ,e)
                 (text . ,(overlay-get overlay 'simply-annotation))
                 (level . ,(or (overlay-get overlay 'simply-annotation-level)
                               simply-annotate-default-level))
-                (text-hash . ,hash))))
+                (text-hash . ,hash)
+                ,@(when context `((text-context . ,context))))))
           simply-annotate-overlays))
+
+(defun simply-annotate--make-context (start end)
+  "Return the buffer text between START and END, truncated for storage.
+Keeps up to 150 characters to allow reliable relocation."
+  (let ((text (buffer-substring-no-properties start (min end (point-max)))))
+    (if (> (length text) 150)
+        (substring text 0 150)
+      text)))
+
+(defun simply-annotate--relocate-annotation (context original-start region-length)
+  "Search for CONTEXT in the current buffer and return (START . END) or nil.
+ORIGINAL-START is used to prefer the closest match when duplicates exist.
+REGION-LENGTH is the original annotation length."
+  (when (and context (> (length context) 0))
+    (save-excursion
+      (goto-char (point-min))
+      (let ((matches nil)
+            (search-text context))
+        (while (search-forward search-text nil t)
+          (push (match-beginning 0) matches))
+        (when matches
+          (let* ((best (car (sort matches
+                                  (lambda (a b)
+                                    (< (abs (- a original-start))
+                                       (abs (- b original-start)))))))
+                 (new-end (min (+ best region-length) (point-max))))
+            (cons best new-end)))))))
 
 (defun simply-annotate--deserialize-annotations (annotations)
   "Restore ANNOTATIONS from serialized format.
-Detects stale annotations by comparing stored `text-hash' against
-the current buffer text at the annotation position."
+When the text hash mismatches at the stored position, attempts to
+relocate the annotation by searching for the stored text-context.
+If relocation succeeds, the overlay is placed at the new position.
+If relocation fails, the annotation is marked stale."
   (dolist (ann annotations)
     (let ((start (alist-get 'start ann))
           (end (alist-get 'end ann))
@@ -1547,23 +1583,52 @@ the current buffer text at the annotation position."
                  (<= start (point-max))
                  (<= end (point-max))
                  (> end start))
-        (let* ((ov (simply-annotate--create-overlay start end text))
-               (stored-hash (alist-get 'text-hash ann))
+        (let* ((stored-hash (alist-get 'text-hash ann))
+               (context (alist-get 'text-context ann))
                (current-hash (sxhash-equal
                               (buffer-substring-no-properties start end)))
-               (stale (cond
-                       ((null stored-hash) 'unknown)
-                       ((/= stored-hash current-hash) t)
-                       (t nil))))
-          (overlay-put ov 'simply-annotation-level level)
-          (overlay-put ov 'simply-annotate-stale stale)
-          (when stored-hash
-            (overlay-put ov 'simply-annotate-stored-hash stored-hash))
-          (when (eq stale t)
-            (overlay-put ov 'help-echo
-                         (concat "[STALE: underlying text changed] "
-                                 (or (overlay-get ov 'help-echo) ""))))
-          (push ov simply-annotate-overlays))))))
+               (hash-match (and stored-hash (= stored-hash current-hash)))
+               (relocated nil)
+               (actual-start start)
+               (actual-end end)
+               (stale nil))
+          ;; Attempt relocation when hash mismatches
+          (when (and stored-hash (not hash-match))
+            (let ((new-pos (simply-annotate--relocate-annotation
+                            context start (- end start))))
+              (if new-pos
+                  (let* ((ns (car new-pos))
+                         (ne (cdr new-pos))
+                         (new-hash (sxhash-equal
+                                    (buffer-substring-no-properties ns ne))))
+                    (if (= stored-hash new-hash)
+                        (setq actual-start ns
+                              actual-end ne
+                              relocated t)
+                      ;; Found the text but region hash differs (partial match)
+                      (setq stale t)))
+                ;; Context not found anywhere
+                (setq stale t))))
+          (when (null stored-hash)
+            (setq stale 'unknown))
+          (let ((ov (simply-annotate--create-overlay actual-start actual-end text)))
+            (overlay-put ov 'simply-annotation-level level)
+            (overlay-put ov 'simply-annotate-stale stale)
+            (when stored-hash
+              (overlay-put ov 'simply-annotate-stored-hash stored-hash))
+            (when context
+              (overlay-put ov 'simply-annotate-text-context context))
+            (when relocated
+              (overlay-put ov 'simply-annotate-relocated t))
+            (when (eq stale t)
+              (overlay-put ov 'help-echo
+                           (concat "[STALE: underlying text changed] "
+                                   (or (overlay-get ov 'help-echo) ""))))
+            (when relocated
+              (overlay-put ov 'help-echo
+                           (concat "[RELOCATED: text moved] "
+                                   (or (overlay-get ov 'help-echo) ""))))
+            (push ov simply-annotate-overlays)))))))
 
 (defun simply-annotate--save-annotations ()
   "Save current buffer's annotations."
