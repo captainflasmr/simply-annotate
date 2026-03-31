@@ -20,7 +20,7 @@ The main functional aspects that I felt were important to me that generally diff
 
 - Header-line status display with keybinding reminders
 - Simple intuitive workflow (hopefully)
-- Multiple display styles (highlight, tint, fringe, fringe bracket, subtle) that can be combined
+- Multiple display styles (highlight, tint, fringe, fringe-bracket, bar, bracket, subtle) that can be combined
 - Annotation editing via a dedicated buffer
 - Lightweight (if possible <1000 lines - [UPDATE], no its not possible, lets try <2000 lines!)
 - Multi-purpose key to show/edit/toggle annotations
@@ -53,7 +53,15 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-03-31> *1.1.0*
+** <2026-03-31> *1.1.1*
++
++New text-based display styles and alignment improvements.
++
++- *Bar & Bracket styles* -- New =bar= and =bracket= styles provide bold text-based indicators in the left margin.  =bracket= (now the default) outlines regions with corners (=┏ =, =┗ =), while =bar= uses a solid line (=┃ =).
++- *Perfect alignment* -- Text-based indicators now use auxiliary overlays for pixel-perfect margin alignment, regardless of where annotations start mid-line.
++- *Refresh command* -- =<prefix> g= refreshes all overlays in the buffer, fixing any misalignments caused by heavy editing.
++
++** <2026-03-31> *1.1.0*
 
 Kanban board view.
 
@@ -310,6 +318,8 @@ Simply Annotate supports five display styles that can be combined:
 - *Tint*: Subtle background tint derived from the current theme
 - *Fringe*: Shows indicators in the left fringe
 - *Fringe bracket*: Vertical bracket in the fringe spanning the annotated region
+- *Bar*: Solid heavy vertical bar in the left margin of every line
+- *Bracket*: Box-drawing corners outlining the annotated region (default)
 - *Subtle*: Overline and underline to bracket annotated regions
 
 Styles can be combined as a list, e.g. =(setq simply-annotate-display-style '(tint fringe-bracket))=.
@@ -423,6 +433,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> K= | =simply-annotate-kanban=                   | Kanban board of project annotations  |
 | =<prefix> n= | =simply-annotate-next=                     | Jump to next annotation              |
 | =<prefix> v= | =simply-annotate-previous=                 | Jump to previous annotation          |
+| =<prefix> g= | =simply-annotate-update-display-style=      | Refresh all annotation overlays       |
 
 ** Annotation Buffer
 
@@ -557,7 +568,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
   (setq simply-annotate-inline-pointer-after "┏━▶\n┃")
 
   (setq simply-annotate-database-strategy 'both)
-  (setq simply-annotate-display-style '(fringe-bracket))
+  (setq simply-annotate-display-style '(bracket))
   (setq simply-annotate-inline-default t))
 
 (with-eval-after-load 'simply-annotate

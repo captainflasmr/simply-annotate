@@ -965,6 +965,10 @@ independent.
   cap at the bottom. Customisable via
   =simply-annotate-fringe-bracket-face=.
 
+- =bar= :: Draws a solid heavy vertical bar (=┃ =) in the left margin of every annotated line.
+
+- =bracket= :: Outlines annotated regions with heavy box-drawing corners (=┏ =, =┃ =, =┗ =) for multi-line annotations, or a single =┠ = indicator for single-line annotations. This is now the default display style.
+
 - =subtle= :: Uses overline and underline to bracket annotated regions
   (unobtrusive)
 
@@ -1960,6 +1964,7 @@ bind the prefix.
 | M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations         |
 | M-s n   | =simply-annotate-next=                     | Jump to next annotation                     |
 | M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                 |
+| M-s g   | =simply-annotate-update-display-style=      | Refresh all annotation overlays             |
 
 <<Annotation-Buffer-Bindings>>
 *** 14.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]

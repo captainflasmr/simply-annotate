@@ -744,6 +744,13 @@ Draws a vertical bracket in the left fringe spanning the full annotated
 region.  Uses the configured fringe indicator at the top with a continuous
 vertical bar and a horizontal cap at the bottom.  Customisable via
 @code{simply-annotate-fringe-bracket-face}.
+
+@item bar
+Draws a solid heavy vertical bar (@code{┃ }) in the left margin of every annotated line.
+
+@item bracket
+Outlines annotated regions with heavy box-drawing corners (@code{┏ }, @code{┃ }, @code{┗ }) for multi-line annotations, or a single @code{┠ } indicator for single-line annotations. This is now the default display style.
+
 @item subtle
 Uses overline and underline to bracket annotated regions (unobtrusive)
 @end table
@@ -1605,6 +1612,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s K} @tab @code{simply-annotate-kanban} @tab Kanban board of project annotations
 @item @kbd{M-s n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-s v} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
+@item @kbd{M-s g} @tab @code{simply-annotate-update-display-style} @tab Refresh all annotation overlays
 @end multitable
 
 @section Annotation Buffer Bindings

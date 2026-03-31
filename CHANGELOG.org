@@ -11,6 +11,16 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-03-31 Tue> *1.1.1*
+
+New text-based display styles and alignment improvements.
+
+*** Features
+
+- *Bar display style* -- New =bar= style draws a solid heavy vertical bar (=┃ =) in the left margin of every annotated line.  Uses bold weight for maximum visibility.
+- *Bracket display style* -- New =bracket= style (now the default) outlines annotated regions with heavy box-drawing corners (=┏ =, =┃ =, =┗ =) for multi-line annotations, or a single =┠ = indicator for single-line annotations.
+- *Refresh command* -- =<prefix> g= (=simply-annotate-update-display-style=) now refreshes all annotation overlays in the current buffer.  Useful if text-based indicators become misaligned during editing.
+
 ** <2026-03-31 Mon> *1.1.0*
 
 Kanban board view for project annotations.

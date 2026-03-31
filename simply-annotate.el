@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 1.1.0
+;; Version: 1.1.1
 ;; Package-Requires: ((emacs "28.1"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -253,7 +253,7 @@ Placed at the project root detected by `project-current'."
   :type 'float
   :group 'simply-annotate)
 
-(defcustom simply-annotate-display-style 'fringe
+(defcustom simply-annotate-display-style 'bracket
   "How to display annotated text.
 A single symbol or a list of symbols processed in order.
 Styles are applied sequentially so later face-based styles
@@ -264,6 +264,8 @@ Available styles:
 - tint: Subtle background tint derived from the current background
 - fringe: Show indicators in the fringe
 - fringe-bracket: Show bracket indicators spanning the annotated region
+- bar: Show a vertical bar on the left of the annotated region
+- bracket: Show a bracket outlining the annotated region
 - subtle: Show a thin left border on annotated text
 
 Examples:
@@ -274,12 +276,16 @@ Examples:
                  (const :tag "Background tint" tint)
                  (const :tag "Fringe indicators" fringe)
                  (const :tag "Fringe bracket" fringe-bracket)
+                 (const :tag "Vertical bar" bar)
+                 (const :tag "Bracket outline" bracket)
                  (const :tag "Subtle left border" subtle)
                  (repeat :tag "Combined styles"
                          (choice (const highlight)
                                  (const tint)
                                  (const fringe)
                                  (const fringe-bracket)
+                                 (const bar)
+                                 (const bracket)
                                  (const subtle))))
   :group 'simply-annotate)
 
@@ -304,6 +310,13 @@ Examples:
     (t (:overline "gray" :underline (:style line :color "gray"))))
   "Face for subtle annotation display.
 Uses overline and underline to bracket the annotated region."
+  :group 'simply-annotate)
+
+(defface simply-annotate-bar-face
+  '((((background dark)) (:foreground "gray40" :weight bold))
+    (((background light)) (:foreground "gray75" :weight bold))
+    (t (:inherit font-lock-comment-face :weight bold)))
+  "Face for the bar display style."
   :group 'simply-annotate)
 
 (defface simply-annotate-inline-face
@@ -356,14 +369,14 @@ Set to nil to disable wrapping."
   :type 'boolean
   :group 'simply-annotate)
 
-(defcustom simply-annotate-inline-pointer-after "▴"
+(defcustom simply-annotate-inline-pointer-after "▲"
   "Pointer string shown between annotated text and the inline box below.
 Each line is indented to the annotation start column.  Can be multiline
 for a more prominent indicator.  Set to nil or empty string to disable."
   :type '(choice string (const :tag "None" nil))
   :group 'simply-annotate)
 
-(defcustom simply-annotate-inline-pointer-above "▾"
+(defcustom simply-annotate-inline-pointer-above "▼"
   "Pointer string shown between the inline box above and annotated text.
 Each line is indented to the annotation start column.  Can be multiline
 for a more prominent indicator.  Set to nil or empty string to disable."
@@ -1015,11 +1028,17 @@ but still show inline text when enabled."
                  (simply-annotate--add-fringe-indicator overlay))
                 ('fringe-bracket
                  (simply-annotate--add-fringe-bracket overlay))
+                ('bar
+                 (simply-annotate--add-bar-indicator overlay))
+                ('bracket
+                 (simply-annotate--add-bracket-indicator overlay))
                 ('subtle
                  (overlay-put overlay 'face 'simply-annotate-subtle-face)))))
           (when simply-annotate-inline
             (simply-annotate--add-inline-text overlay)))
       (simply-annotate--cleanup-bracket-overlays overlay)
+      (simply-annotate--cleanup-bar-overlays overlay)
+      (simply-annotate--cleanup-bracket-text-overlays overlay)
       (overlay-put overlay 'face nil)
       (overlay-put overlay 'before-string nil)
       (overlay-put overlay 'after-string nil))))
@@ -1048,7 +1067,6 @@ but still show inline text when enabled."
     (when (overlayp aux)
       (delete-overlay aux)))
   (overlay-put overlay 'simply-annotate-bracket-overlays nil))
-
 (defun simply-annotate--add-fringe-bracket (overlay)
   "Add fringe bracket indicators spanning the full extent of OVERLAY.
 Uses the configured fringe indicator on the first and last lines,
@@ -1058,8 +1076,6 @@ with vertical bars on intermediate lines."
     (let* ((start (overlay-start overlay))
            (end (overlay-end overlay))
            (start-line (line-number-at-pos start t))
-           ;; If end is at the very start of a line, the annotation
-           ;; doesn't actually span that line — use the previous line.
            (end-line (line-number-at-pos
                       (if (and (> end start)
                                (= (char-before end) ?\n))
@@ -1087,12 +1103,88 @@ with vertical bars on intermediate lines."
         (forward-line 1))
       (overlay-put overlay 'simply-annotate-bracket-overlays aux-overlays))))
 
+(defun simply-annotate--cleanup-bar-overlays (overlay)
+  "Remove auxiliary bar overlays associated with OVERLAY."
+  (dolist (aux (overlay-get overlay 'simply-annotate-bar-overlays))
+    (when (overlayp aux)
+      (delete-overlay aux)))
+  (overlay-put overlay 'simply-annotate-bar-overlays nil))
+
+(defun simply-annotate--add-bar-indicator (overlay)
+  "Add a vertical bar indicator spanning the full extent of OVERLAY.
+Uses a vertical bar character on every line of the annotated region."
+  (simply-annotate--cleanup-bar-overlays overlay)
+  (save-excursion
+    (let* ((start (overlay-start overlay))
+           (end (overlay-end overlay))
+           (start-line (line-number-at-pos start t))
+           (end-line (line-number-at-pos
+                      (if (and (> end start)
+                               (= (char-before end) ?\n))
+                          (1- end)
+                        end)
+                      t))
+           (total-lines (1+ (- end-line start-line)))
+           (aux-overlays nil)
+           (bar-char (propertize "┃ " 'face 'simply-annotate-bar-face)))
+      (goto-char start)
+      (beginning-of-line)
+      (dotimes (i total-lines)
+        (let ((aux (make-overlay (point) (point))))
+          (overlay-put aux 'before-string bar-char)
+          (overlay-put aux 'simply-annotate-bar t)
+          (push aux aux-overlays))
+        (forward-line 1))
+      (overlay-put overlay 'simply-annotate-bar-overlays aux-overlays))))
+
+(defun simply-annotate--cleanup-bracket-text-overlays (overlay)
+  "Remove auxiliary bracket text overlays associated with OVERLAY."
+  (dolist (aux (overlay-get overlay 'simply-annotate-bracket-text-overlays))
+    (when (overlayp aux)
+      (delete-overlay aux)))
+  (overlay-put overlay 'simply-annotate-bracket-text-overlays nil))
+
+(defun simply-annotate--add-bracket-indicator (overlay)
+  "Add a bracket indicator spanning the full extent of OVERLAY.
+Uses box-drawing characters (┏, ┃, ┗) on the left of the annotated region."
+  (simply-annotate--cleanup-bracket-text-overlays overlay)
+  (save-excursion
+    (let* ((start (overlay-start overlay))
+           (end (overlay-end overlay))
+           (start-line (line-number-at-pos start t))
+           (end-line (line-number-at-pos
+                      (if (and (> end start)
+                               (= (char-before end) ?\n))
+                          (1- end)
+                        end)
+                      t))
+           (total-lines (1+ (- end-line start-line)))
+           (aux-overlays nil)
+           (face 'simply-annotate-bar-face))
+      (goto-char start)
+      (beginning-of-line)
+      (dotimes (i total-lines)
+        (let* ((char (cond
+                      ((= total-lines 1) "┠ ")
+                      ((= i 0) "┏ ")
+                      ((= i (1- total-lines)) "┗ ")
+                      (t "┃ ")))
+               (indicator (propertize char 'face face))
+               (aux (make-overlay (point) (point))))
+          (overlay-put aux 'before-string indicator)
+          (overlay-put aux 'simply-annotate-bracket-text t)
+          (push aux aux-overlays))
+        (forward-line 1))
+      (overlay-put overlay 'simply-annotate-bracket-text-overlays aux-overlays))))
+
 (defun simply-annotate-update-display-style ()
   "Update display style for all existing annotations."
   (interactive)
   (dolist (overlay simply-annotate-overlays)
     ;; Clear existing display properties
     (simply-annotate--cleanup-bracket-overlays overlay)
+    (simply-annotate--cleanup-bar-overlays overlay)
+    (simply-annotate--cleanup-bracket-text-overlays overlay)
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
     (overlay-put overlay 'after-string nil)
@@ -1111,7 +1203,9 @@ For combined styles, use `simply-annotate-display-style' directly."
                 ('highlight 'tint)
                 ('tint 'fringe)
                 ('fringe 'fringe-bracket)
-                ('fringe-bracket 'subtle)
+                ('fringe-bracket 'bar)
+                ('bar 'bracket)
+                ('bracket 'subtle)
                 (_ 'highlight))
             'highlight)))
   (simply-annotate-update-display-style))
@@ -1149,6 +1243,8 @@ Only overlays matching the active level are shown."
     (simply-annotate-hide-annotation-buffer))
   (dolist (ov simply-annotate-overlays)
     (simply-annotate--cleanup-bracket-overlays ov)
+    (simply-annotate--cleanup-bar-overlays ov)
+    (simply-annotate--cleanup-bracket-text-overlays ov)
     (overlay-put ov 'face nil)
     (overlay-put ov 'before-string nil)
     (overlay-put ov 'after-string nil)
@@ -1210,12 +1306,16 @@ START and END define the region, TEXT is the annotation content."
 (defun simply-annotate--remove-overlay (overlay)
   "Remove annotation OVERLAY."
   (simply-annotate--cleanup-bracket-overlays overlay)
+  (simply-annotate--cleanup-bar-overlays overlay)
+  (simply-annotate--cleanup-bracket-text-overlays overlay)
   (setq simply-annotate-overlays (delq overlay simply-annotate-overlays))
   (delete-overlay overlay))
 
 (defun simply-annotate--clear-all-overlays ()
   "Remove all annotation overlays from buffer."
   (mapc #'simply-annotate--cleanup-bracket-overlays simply-annotate-overlays)
+  (mapc #'simply-annotate--cleanup-bar-overlays simply-annotate-overlays)
+  (mapc #'simply-annotate--cleanup-bracket-text-overlays simply-annotate-overlays)
   (mapc #'delete-overlay simply-annotate-overlays)
   (setq simply-annotate-overlays nil))
 
@@ -4102,6 +4202,7 @@ non-nil (prefix argument)."
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "n") #'simply-annotate-next)
     (define-key map (kbd "v") #'simply-annotate-previous)
+    (define-key map (kbd "g") #'simply-annotate-update-display-style)
     map)
   "Command map for Simply Annotate.
 This keymap contains all annotation commands with short single-key
@@ -4144,7 +4245,8 @@ Available keys:
   C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp
   [  level backward    ]  level forward   \\='  cycle style
-  /  toggle inline     n  next            v  previous")
+  /  toggle inline     n  next            v  previous
+  g  refresh")
 
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))
