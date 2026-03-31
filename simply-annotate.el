@@ -3048,10 +3048,13 @@ with an additional File column."
     (define-key map (kbd "q") #'quit-window)
     (define-key map (kbd "n") #'simply-annotate-kanban-next-card)
     (define-key map (kbd "p") #'simply-annotate-kanban-prev-card)
+    (define-key map (kbd "f") #'simply-annotate-kanban-next-column)
+    (define-key map (kbd "b") #'simply-annotate-kanban-prev-column)
     (define-key map (kbd "TAB") #'simply-annotate-kanban-next-column)
     (define-key map (kbd "<backtab>") #'simply-annotate-kanban-prev-column)
     (define-key map (kbd "}") #'simply-annotate-kanban-move-right)
     (define-key map (kbd "{") #'simply-annotate-kanban-move-left)
+    (define-key map (kbd "F") #'simply-annotate-kanban-toggle-follow)
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
 
@@ -3065,7 +3068,12 @@ Annotations are grouped into columns by their status."
           (:eval (propertize "{/}" 'face 'help-key-binding)) " move  "
           (:eval (propertize "s" 'face 'help-key-binding)) " status  "
           (:eval (propertize "n/p" 'face 'help-key-binding)) " row  "
-          (:eval (propertize "TAB" 'face 'help-key-binding)) " col  "
+          (:eval (propertize "f/b" 'face 'help-key-binding)) " col  "
+          (:eval (propertize "F" 'face 'help-key-binding)) " follow"
+          (:eval (if simply-annotate-kanban-follow
+                     (propertize "[ON]" 'face 'success)
+                   ""))
+          "  "
           (:eval (propertize "g" 'face 'help-key-binding)) " refresh  "
           (:eval (propertize "q" 'face 'help-key-binding)) " quit"))
   (add-hook 'post-command-hook #'simply-annotate-kanban--highlight-card nil t))
@@ -3084,6 +3092,9 @@ Annotations are grouped into columns by their status."
 
 (defvar-local simply-annotate-kanban-card-coords nil
   "Hash table mapping card ID to (COLUMN . ROW).")
+
+(defvar-local simply-annotate-kanban-follow nil
+  "When non-nil, navigating cards also jumps to the source annotation.")
 
 (defvar-local simply-annotate-kanban--highlight-overlays nil
   "List of overlays used to highlight the current card.")
@@ -3116,7 +3127,25 @@ Annotations are grouped into columns by their status."
                   (goto-char end))
               (goto-char (or (next-single-property-change
                               (point) 'simply-annotate-kanban-card)
-                             (point-max))))))))))
+                             (point-max)))))))
+        ;; Follow mode: show source in other window
+        (when simply-annotate-kanban-follow
+          (let ((nav (alist-get cid simply-annotate-kanban-cards)))
+            (when nav
+              (save-selected-window
+                (simply-annotate--listing-goto-source nav))))))))
+
+(defun simply-annotate-kanban-toggle-follow ()
+  "Toggle follow mode -- automatically jump to source when navigating cards."
+  (interactive)
+  (setq simply-annotate-kanban-follow (not simply-annotate-kanban-follow))
+  (message "Kanban follow %s" (if simply-annotate-kanban-follow "ON" "OFF"))
+  ;; Immediately follow if turning on and on a card
+  (when simply-annotate-kanban-follow
+    (when-let* ((cid (get-text-property (point) 'simply-annotate-kanban-card))
+                (nav (alist-get cid simply-annotate-kanban-cards)))
+      (save-selected-window
+        (simply-annotate--listing-goto-source nav)))))
 
 ;;;###autoload
 (defun simply-annotate-kanban ()
@@ -3136,11 +3165,12 @@ Annotations are grouped into columns by their status."
         (message "No annotations found for project %s" project-name)
       (with-current-buffer (get-buffer-create buffer-name)
         (simply-annotate-kanban-mode)
-        (setq simply-annotate-kanban-project-root root)
-        (simply-annotate--kanban-render db)
-        (goto-char (point-min))
-        (simply-annotate-kanban-next-card))
-      (pop-to-buffer buffer-name))))
+        (setq simply-annotate-kanban-project-root root))
+      ;; Display first so window-width is correct for the target window
+      (pop-to-buffer buffer-name)
+      (simply-annotate--kanban-render db)
+      (goto-char (point-min))
+      (simply-annotate-kanban-next-card))))
 
 (defun simply-annotate--kanban-group-by-status (db statuses)
   "Group annotations from DB into lists keyed by STATUS.
@@ -3377,7 +3407,7 @@ Returns (LINES CARD-MAP NEXT-ID) where LINES is a list of
             (goto-char pos)))))))
 
 (defun simply-annotate-kanban-next-column ()
-  "Move point to the same row in the next column, or the last card if shorter."
+  "Move point to the same row in the next column, wrapping around."
   (interactive)
   (let ((current-id (get-text-property (point) 'simply-annotate-kanban-card))
         (grid simply-annotate-kanban-card-grid)
@@ -3388,40 +3418,37 @@ Returns (LINES CARD-MAP NEXT-ID) where LINES is a list of
       (when-let* ((coord (gethash current-id simply-annotate-kanban-card-coords))
                   (col-idx (car coord))
                   (row (cdr coord)))
-        ;; Find next non-empty column
-        (let ((target-col nil))
-          (cl-loop for c from (1+ col-idx) below num-cols
-                   when (aref grid c)
-                   do (setq target-col c) and return nil)
-          (when target-col
-            (let* ((col-cards (aref grid target-col))
-                   (target-row (min row (1- (length col-cards))))
-                   (target-id (nth target-row col-cards)))
-              (when-let ((pos (simply-annotate-kanban--card-position target-id)))
-                (goto-char pos)))))))))
+        ;; Search columns to the right, then wrap from the left
+        (cl-loop for i from 1 below num-cols
+                 for c = (mod (+ col-idx i) num-cols)
+                 for col-cards = (aref grid c)
+                 when (and col-cards (< row (length col-cards)))
+                 do (when-let ((pos (simply-annotate-kanban--card-position
+                                     (nth row col-cards))))
+                      (goto-char pos))
+                 and return nil)))))
 
 (defun simply-annotate-kanban-prev-column ()
-  "Move point to the same row in the previous column, or the last card if shorter."
+  "Move point to the same row in the previous column, wrapping around."
   (interactive)
   (let ((current-id (get-text-property (point) 'simply-annotate-kanban-card))
-        (grid simply-annotate-kanban-card-grid))
+        (grid simply-annotate-kanban-card-grid)
+        (num-cols (length simply-annotate-kanban-card-grid)))
     (if (null current-id)
         (when-let ((first (car simply-annotate-kanban-card-positions)))
           (goto-char (car first)))
       (when-let* ((coord (gethash current-id simply-annotate-kanban-card-coords))
                   (col-idx (car coord))
                   (row (cdr coord)))
-        ;; Find previous non-empty column
-        (let ((target-col nil))
-          (cl-loop for c downfrom (1- col-idx) to 0
-                   when (aref grid c)
-                   do (setq target-col c) and return nil)
-          (when target-col
-            (let* ((col-cards (aref grid target-col))
-                   (target-row (min row (1- (length col-cards))))
-                   (target-id (nth target-row col-cards)))
-              (when-let ((pos (simply-annotate-kanban--card-position target-id)))
-                (goto-char pos)))))))))
+        ;; Search columns to the left, then wrap from the right
+        (cl-loop for i from 1 below num-cols
+                 for c = (mod (- col-idx i) num-cols)
+                 for col-cards = (aref grid c)
+                 when (and col-cards (< row (length col-cards)))
+                 do (when-let ((pos (simply-annotate-kanban--card-position
+                                     (nth row col-cards))))
+                      (goto-char pos))
+                 and return nil)))))
 
 ;; Kanban actions
 
