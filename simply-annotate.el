@@ -2672,7 +2672,11 @@ If NAV is nil, derive it from point."
                            level
                            (not (eq simply-annotate-current-level level)))
                   (setq simply-annotate-current-level level)
-                  (simply-annotate--apply-level-filter)))))))))
+                  (simply-annotate--apply-level-filter))
+                ;; Pulse the annotation overlay at this position
+                (when-let ((ov (simply-annotate--overlay-at-point)))
+                  (pulse-momentary-highlight-region
+                   (overlay-start ov) (overlay-end ov))))))))))
 
 (defun simply-annotate-listing-next ()
   "Move to the next annotation heading and jump to its source."
@@ -3159,6 +3163,7 @@ Annotations are grouped into columns by their status."
   "Toggle follow mode -- automatically jump to source when navigating cards."
   (interactive)
   (setq simply-annotate-kanban-follow (not simply-annotate-kanban-follow))
+  (force-mode-line-update)
   (message "Kanban follow %s" (if simply-annotate-kanban-follow "ON" "OFF"))
   ;; Immediately follow if turning on and on a card
   (when simply-annotate-kanban-follow
