@@ -3060,7 +3060,7 @@ with an additional File column."
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
 
-(defvar-local simply-annotate-kanban-expand-all nil
+(defvar-local simply-annotate-kanban-expand-all t
   "When non-nil, all cards are rendered in expanded view.")
 
 (defvar-local simply-annotate-kanban-expanded-cards nil
@@ -3173,6 +3173,7 @@ Annotations are grouped into columns by their status."
   (interactive)
   (setq simply-annotate-kanban-expand-all
         (not simply-annotate-kanban-expand-all))
+  (clrhash simply-annotate-kanban-expanded-cards)
   (let ((cid (get-text-property (point) 'simply-annotate-kanban-card)))
     (simply-annotate-kanban--refresh-preserving-card cid))
   (message "Expand all %s" (if simply-annotate-kanban-expand-all "ON" "OFF")))
@@ -3297,10 +3298,14 @@ Returns alist of (STATUS . cards) where each card is
     (concat truncated (make-string (max 0 (- width (string-width truncated))) ?\s))))
 
 (defun simply-annotate--kanban-card-expanded-p (cid)
-  "Return non-nil if card CID should be rendered expanded."
-  (or simply-annotate-kanban-expand-all
-      (and simply-annotate-kanban-expanded-cards
-           (gethash cid simply-annotate-kanban-expanded-cards))))
+  "Return non-nil if card CID should be rendered expanded.
+When `expand-all' is on, individual toggles act as opt-out (collapse).
+When `expand-all' is off, individual toggles act as opt-in (expand)."
+  (let ((toggled (and simply-annotate-kanban-expanded-cards
+                  (gethash cid simply-annotate-kanban-expanded-cards))))
+    (if simply-annotate-kanban-expand-all
+        (not toggled)
+      toggled)))
 
 (defun simply-annotate--kanban-wrap-text (text width)
   "Wrap TEXT to WIDTH display columns, returning a list of strings."
