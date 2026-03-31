@@ -37,17 +37,18 @@
 
 - Dired keymap fix: =simply-annotate-dired-mode= mirrors global prefix via =where-is-internal=
 
+** Phase 4: Kanban Board View (v1.1.0)
+
+- =simply-annotate-kanban= (=K=) -- project-scoped kanban board grouped by status columns
+- Box-drawn cards with priority indicator, summary, and file location
+- Org-table-style navigation: =n= / =p= vertical, =TAB= / =S-TAB= horizontal
+- Card highlighting via =post-command-hook= (bold face)
+- Status changes from board: =s= (set), =}= (move right), ={= (move left)
+- Auto-conversion of plain string annotations to thread format on status change
+- =RET= jump to source, =g= refresh in place
+- =simply-annotate-kanban-mode= derived from =special-mode=
+
 * Future Ideas
-
-** Kanban Board View
-
-Use annotation statuses (open, in-progress, resolved, closed) as kanban columns.  Display a board view showing annotations grouped by status, with the ability to drag/move between columns.  Could leverage =tabulated-list-mode= or a custom buffer rendering.
-
-Considerations:
-- Scope: per-buffer, per-project, or global
-- Column customisation (user-defined statuses as columns)
-- Navigation: jump to source from any card
-- Status change: move annotation between columns directly from the board
 
 ** Merge Conflict Handling
 

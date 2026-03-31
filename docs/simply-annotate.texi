@@ -64,6 +64,7 @@ modifying the original content.
 * Navigation::                  Moving between annotations
 * Advanced Features::           Cross-file annotations, listing, and dired
 * Project-Aware Annotations::   Per-project databases and project-scoped views
+* Kanban Board::                Visual board view grouped by status
 * Org-mode Integration::        Export annotations to org-mode
 * Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
@@ -122,6 +123,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @strong{Header-line integration}: Shows annotation count and available commands
 @item
 @strong{Dired integration}: Fringe indicators in dired for files with annotations
+@item
+@strong{Kanban board}: Visual board view of project annotations grouped by status columns
 @end itemize
 
 @node Installation
@@ -1382,6 +1385,88 @@ On the next save, the relocated position is written to the database and
 the @samp{[MOVED]} indicator clears.
 @end itemize
 
+@node Kanban Board
+@chapter Kanban Board
+
+@cindex kanban
+@cindex board view
+@cindex status columns
+
+@findex simply-annotate-kanban
+The kanban board (@kbd{M-s K} or @code{simply-annotate-kanban}) displays
+project annotations as cards arranged in columns by status.  It requires
+a project detectable by @code{project.el}.
+
+@section Board Layout
+
+The board renders four columns corresponding to the thread statuses
+(@code{open}, @code{in-progress}, @code{resolved}, @code{closed}).
+Each card shows:
+
+@itemize @bullet
+@item
+Priority indicator with colour coding (critical = red, high = orange, etc.)
+@item
+First line of the annotation text as a summary
+@item
+Source file and line number
+@end itemize
+
+@example
+ OPEN (3)            IN-PROGRESS (1)     RESOLVED (0)        CLOSED (0)
+────────────────────────────────────────────────────────────────────────
+┌──────────────────┐ ┌──────────────────┐
+│ [normal] Review.. │ │ [high] Fix bug.. │
+│ src/main.el:42   │ │ src/util.el:15   │
+└──────────────────┘ └──────────────────┘
+┌──────────────────┐
+│ [low] Add docs.. │
+│ README.org:10    │
+└──────────────────┘
+@end example
+
+@section Navigation
+
+Navigation follows an org-table-style grid:
+
+@table @kbd
+@item n
+Move to the next card in the same column (down)
+@item p
+Move to the previous card in the same column (up)
+@item TAB
+Move to the same row in the next column (right).  If the target column
+is shorter, clamps to its last card.
+@item S-TAB
+Move to the same row in the previous column (left), with the same
+clamping behaviour.
+@end table
+
+The card under point is highlighted with bold face, providing visual
+feedback for which card is active.
+
+@section Actions
+
+@table @kbd
+@item RET
+Jump to the annotation's source file and position.
+@item s
+Set the card's status via @code{completing-read}.
+@item @}
+Move the card one status column to the right (e.g.@: open @result{}
+in-progress).
+@item @{
+Move the card one status column to the left (e.g.@: in-progress
+@result{} open).
+@item g
+Refresh the board in place, preserving cursor position.
+@item q
+Quit the kanban buffer.
+@end table
+
+Plain string annotations (legacy format) are automatically converted to
+thread format when their status is changed from the board.
+
 @node Org-mode Integration
 @chapter Org-mode Integration
 
@@ -1517,6 +1602,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s ]} @tab @code{simply-annotate-cycle-level-forward} @tab Cycle levels forward (file @result{} defun @result{} line)
 @item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
 @item @kbd{M-s /} @tab @code{simply-annotate-toggle-inline} @tab Toggle inline annotation display
+@item @kbd{M-s K} @tab @code{simply-annotate-kanban} @tab Kanban board of project annotations
 @item @kbd{M-s n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-s v} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @end multitable

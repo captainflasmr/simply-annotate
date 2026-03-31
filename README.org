@@ -53,6 +53,12 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-03-31> *1.1.0*
+
+Kanban board view.
+
+- *Kanban board* -- =<prefix> K= opens a kanban board of project annotations grouped by status columns (open, in-progress, resolved, closed).  Cards show priority, summary, and file location.  Navigate with =n= / =p= (vertical), =TAB= / =S-TAB= (between columns).  Change status with =s=, =}=, ={=.  =RET= jumps to source.
+
 ** <2026-03-29> *1.0.0*
 
 Project-aware annotations.
@@ -412,6 +418,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> ]= | =simply-annotate-cycle-level-forward=      | Cycle annotation level forward       |
 | =<prefix> '= | =simply-annotate-cycle-display-style=      | Cycle through display styles         |
 | =<prefix> /= | =simply-annotate-toggle-inline=            | Toggle inline annotation display     |
+| =<prefix> K= | =simply-annotate-kanban=                   | Kanban board of project annotations  |
 | =<prefix> n= | =simply-annotate-next=                     | Jump to next annotation              |
 | =<prefix> v= | =simply-annotate-previous=                 | Jump to previous annotation          |
 
@@ -531,6 +538,30 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 
 (setq simply-annotate-fringe-face 'my-fringe-face)
 #+end_src
+
+** My Current Configuration
+
+#+begin_src elisp
+(use-package simply-annotate
+  :demand t
+  :hook (find-file-hook . simply-annotate-mode)
+  :config
+  (global-set-key (kbd "M-s") simply-annotate-command-map)
+  (setq simply-annotate-inline-position 'above)
+  (setq simply-annotate-tint-amount 40)
+  
+  ;; ;; Heavy L-bracket
+  (setq simply-annotate-inline-pointer-above "┃\n┗━▶")
+  (setq simply-annotate-inline-pointer-after "┏━▶\n┃")
+
+  (setq simply-annotate-database-strategy 'both)
+  (setq simply-annotate-display-style '(fringe-bracket))
+  (setq simply-annotate-inline-default t))
+
+(with-eval-after-load 'simply-annotate
+  (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
+#+end_src
+
 
 * Tips and Tricks
 
@@ -655,6 +686,7 @@ A cross-cutting view of key features across popular Emacs annotation packages.
 | Annotation query / filtering   | Yes         | No                | No         | No        | No              |
 | Org-mode listing               | No          | No                | No         | No        | Yes             |
 | Tabular listing (sortable)     | No          | No                | No         | No        | Yes             |
+| Kanban board view              | No          | No                | No         | No        | Yes             |
 | Dired integration              | No          | No                | No         | No        | Yes             |
 | Info-mode support              | No          | No                | No         | No        | Yes             |
 | Org-mode export                | No          | Yes               | Yes        | Yes       | Yes             |
