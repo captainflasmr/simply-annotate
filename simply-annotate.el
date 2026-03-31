@@ -3057,6 +3057,7 @@ with an additional File column."
     (define-key map (kbd "F") #'simply-annotate-kanban-toggle-follow)
     (define-key map (kbd "e") #'simply-annotate-kanban-toggle-expand)
     (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
+    (define-key map (kbd "a") #'simply-annotate-kanban-filter-by-author)
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
 
@@ -3065,6 +3066,9 @@ with an additional File column."
 
 (defvar-local simply-annotate-kanban-expanded-cards nil
   "Hash table of card IDs that are individually expanded.")
+
+(defvar-local simply-annotate-kanban-filter-author nil
+  "When non-nil, only show cards by this author.")
 
 (define-derived-mode simply-annotate-kanban-mode special-mode "SA-Kanban"
   "Major mode for displaying annotations as a kanban board.
@@ -3078,6 +3082,12 @@ Annotations are grouped into columns by their status."
           (:eval (propertize "n/p" 'face 'help-key-binding)) " row  "
           (:eval (propertize "f/b" 'face 'help-key-binding)) " col  "
           (:eval (propertize "e/E" 'face 'help-key-binding)) " expand  "
+          (:eval (propertize "a" 'face 'help-key-binding)) " author"
+          (:eval (if simply-annotate-kanban-filter-author
+                     (propertize (concat "[" simply-annotate-kanban-filter-author "]")
+                                 'face 'success)
+                   ""))
+          "  "
           (:eval (propertize "F" 'face 'help-key-binding)) " follow"
           (:eval (if simply-annotate-kanban-follow
                      (propertize "[ON]" 'face 'success)
@@ -3203,6 +3213,39 @@ The card is identified by its source file and position."
                       (simply-annotate-kanban--card-position (car entry))))))
           (when new-pos (goto-char new-pos)))))))
 
+(defun simply-annotate--kanban-collect-authors (db)
+  "Return a sorted list of unique author names from DB."
+  (let ((authors nil))
+    (dolist (db-entry db)
+      (dolist (ann (cdr db-entry))
+        (let* ((data (alist-get 'text ann)))
+          (when (simply-annotate--thread-p data)
+            (let ((author (alist-get 'author (car (alist-get 'comments data)))))
+              (when (and author (not (string-empty-p author))
+                         (not (member author authors)))
+                (push author authors)))))))
+    (sort authors #'string<)))
+
+(defun simply-annotate-kanban-filter-by-author ()
+  "Filter kanban cards by author.  Select from available authors or clear filter."
+  (interactive)
+  (let* ((root simply-annotate-kanban-project-root)
+         (db (when root (simply-annotate--project-annotations root)))
+         (authors (when db (simply-annotate--kanban-collect-authors db)))
+         (choices (cons "[All]" authors))
+         (selection (completing-read
+                     (format "Filter by author%s: "
+                             (if simply-annotate-kanban-filter-author
+                                 (format " [current: %s]"
+                                         simply-annotate-kanban-filter-author)
+                               ""))
+                     choices nil t)))
+    (setq simply-annotate-kanban-filter-author
+          (unless (string= selection "[All]") selection))
+    (simply-annotate-kanban-refresh)
+    (message "Filter: %s"
+             (or simply-annotate-kanban-filter-author "all authors"))))
+
 ;;;###autoload
 (defun simply-annotate-kanban ()
   "Show a kanban board of project annotations grouped by status."
@@ -3263,10 +3306,17 @@ Returns alist of (STATUS . cards) where each card is
                  (nav (list :file file-key :line line-num
                             :col (1+ col-num) :level level
                             :start start-pos))
+                 (author (if thread-p
+                             (or (alist-get 'author (car comments)) "")
+                           ""))
                  (card (list nav priority summary location data)))
-            (let ((group (assoc status groups #'string=)))
-              (when group
-                (setcdr group (append (cdr group) (list card)))))))))
+            ;; Apply author filter if set
+            (when (or (null simply-annotate-kanban-filter-author)
+                      (string-equal-ignore-case
+                       author simply-annotate-kanban-filter-author))
+              (let ((group (assoc status groups #'string=)))
+                (when group
+                  (setcdr group (append (cdr group) (list card))))))))))
     groups))
 
 (defun simply-annotate--kanban-status-face (status)
