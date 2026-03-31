@@ -3062,6 +3062,7 @@ with an additional File column."
     (define-key map (kbd "e") #'simply-annotate-kanban-toggle-expand)
     (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
     (define-key map (kbd "a") #'simply-annotate-kanban-filter-by-author)
+    (define-key map (kbd "l") #'simply-annotate-kanban-filter-by-level)
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
 
@@ -3073,6 +3074,9 @@ with an additional File column."
 
 (defvar-local simply-annotate-kanban-filter-author nil
   "When non-nil, only show cards by this author.")
+
+(defvar-local simply-annotate-kanban-filter-level nil
+  "When non-nil, only show cards at this annotation level (symbol).")
 
 (define-derived-mode simply-annotate-kanban-mode special-mode "SA-Kanban"
   "Major mode for displaying annotations as a kanban board.
@@ -3089,6 +3093,12 @@ Annotations are grouped into columns by their status."
           (:eval (propertize "a" 'face 'help-key-binding)) " author"
           (:eval (if simply-annotate-kanban-filter-author
                      (propertize (concat "[" simply-annotate-kanban-filter-author "]")
+                                 'face 'success)
+                   ""))
+          "  "
+          (:eval (propertize "l" 'face 'help-key-binding)) " level"
+          (:eval (if simply-annotate-kanban-filter-level
+                     (propertize (concat "[" (symbol-name simply-annotate-kanban-filter-level) "]")
                                  'face 'success)
                    ""))
           "  "
@@ -3251,6 +3261,24 @@ The card is identified by its source file and position."
     (message "Filter: %s"
              (or simply-annotate-kanban-filter-author "all authors"))))
 
+(defun simply-annotate-kanban-filter-by-level ()
+  "Filter kanban cards by annotation level.  Select from available levels or clear."
+  (interactive)
+  (let* ((levels (mapcar #'symbol-name simply-annotate-levels))
+         (choices (cons "[All]" levels))
+         (selection (completing-read
+                     (format "Filter by level%s: "
+                             (if simply-annotate-kanban-filter-level
+                                 (format " [current: %s]"
+                                         simply-annotate-kanban-filter-level)
+                               ""))
+                     choices nil t)))
+    (setq simply-annotate-kanban-filter-level
+          (unless (string= selection "[All]") (intern selection)))
+    (simply-annotate-kanban-refresh)
+    (message "Level filter: %s"
+             (or simply-annotate-kanban-filter-level "all levels"))))
+
 ;;;###autoload
 (defun simply-annotate-kanban ()
   "Show a kanban board of project annotations grouped by status."
@@ -3315,10 +3343,12 @@ Returns alist of (STATUS . cards) where each card is
                              (or (alist-get 'author (car comments)) "")
                            ""))
                  (card (list nav priority summary location data)))
-            ;; Apply author filter if set
-            (when (or (null simply-annotate-kanban-filter-author)
-                      (string-equal-ignore-case
-                       author simply-annotate-kanban-filter-author))
+            ;; Apply filters
+            (when (and (or (null simply-annotate-kanban-filter-author)
+                           (string-equal-ignore-case
+                            author simply-annotate-kanban-filter-author))
+                       (or (null simply-annotate-kanban-filter-level)
+                           (eq level simply-annotate-kanban-filter-level)))
               (let ((group (assoc status groups #'string=)))
                 (when group
                   (setcdr group (append (cdr group) (list card))))))))))
