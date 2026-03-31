@@ -3055,8 +3055,16 @@ with an additional File column."
     (define-key map (kbd "}") #'simply-annotate-kanban-move-right)
     (define-key map (kbd "{") #'simply-annotate-kanban-move-left)
     (define-key map (kbd "F") #'simply-annotate-kanban-toggle-follow)
+    (define-key map (kbd "e") #'simply-annotate-kanban-toggle-expand)
+    (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
+
+(defvar-local simply-annotate-kanban-expand-all nil
+  "When non-nil, all cards are rendered in expanded view.")
+
+(defvar-local simply-annotate-kanban-expanded-cards nil
+  "Hash table of card IDs that are individually expanded.")
 
 (define-derived-mode simply-annotate-kanban-mode special-mode "SA-Kanban"
   "Major mode for displaying annotations as a kanban board.
@@ -3069,6 +3077,7 @@ Annotations are grouped into columns by their status."
           (:eval (propertize "s" 'face 'help-key-binding)) " status  "
           (:eval (propertize "n/p" 'face 'help-key-binding)) " row  "
           (:eval (propertize "f/b" 'face 'help-key-binding)) " col  "
+          (:eval (propertize "e/E" 'face 'help-key-binding)) " expand  "
           (:eval (propertize "F" 'face 'help-key-binding)) " follow"
           (:eval (if simply-annotate-kanban-follow
                      (propertize "[ON]" 'face 'success)
@@ -3076,6 +3085,7 @@ Annotations are grouped into columns by their status."
           "  "
           (:eval (propertize "g" 'face 'help-key-binding)) " refresh  "
           (:eval (propertize "q" 'face 'help-key-binding)) " quit"))
+  (setq simply-annotate-kanban-expanded-cards (make-hash-table))
   (add-hook 'post-command-hook #'simply-annotate-kanban--highlight-card nil t))
 
 (defvar-local simply-annotate-kanban-project-root nil
@@ -3147,6 +3157,51 @@ Annotations are grouped into columns by their status."
       (save-selected-window
         (simply-annotate--listing-goto-source nav)))))
 
+(defun simply-annotate-kanban-toggle-expand ()
+  "Toggle expanded view for the card at point."
+  (interactive)
+  (when-let ((cid (get-text-property (point) 'simply-annotate-kanban-card)))
+    (unless simply-annotate-kanban-expanded-cards
+      (setq simply-annotate-kanban-expanded-cards (make-hash-table)))
+    (if (gethash cid simply-annotate-kanban-expanded-cards)
+        (remhash cid simply-annotate-kanban-expanded-cards)
+      (puthash cid t simply-annotate-kanban-expanded-cards))
+    (simply-annotate-kanban--refresh-preserving-card cid)))
+
+(defun simply-annotate-kanban-toggle-expand-all ()
+  "Toggle expanded view for all cards."
+  (interactive)
+  (setq simply-annotate-kanban-expand-all
+        (not simply-annotate-kanban-expand-all))
+  (let ((cid (get-text-property (point) 'simply-annotate-kanban-card)))
+    (simply-annotate-kanban--refresh-preserving-card cid))
+  (message "Expand all %s" (if simply-annotate-kanban-expand-all "ON" "OFF")))
+
+(defun simply-annotate-kanban--refresh-preserving-card (target-cid)
+  "Refresh the kanban board, relocating point to the card matching TARGET-CID.
+The card is identified by its source file and position."
+  (let* ((nav (when target-cid
+                (alist-get target-cid simply-annotate-kanban-cards)))
+         (file-key (when nav (plist-get nav :file)))
+         (start-pos (when nav (plist-get nav :start)))
+         (root simply-annotate-kanban-project-root))
+    (when root
+      (let ((db (simply-annotate--project-annotations root)))
+        (if db
+            (simply-annotate--kanban-render db)
+          (let ((inhibit-read-only t)) (erase-buffer)
+               (insert "No annotations"))))
+      ;; Relocate to the same card by source identity
+      (when (and file-key start-pos)
+        (let ((new-pos nil))
+          (dolist (entry simply-annotate-kanban-cards)
+            (let ((nav2 (cdr entry)))
+              (when (and (string= (plist-get nav2 :file) file-key)
+                         (= (plist-get nav2 :start) start-pos))
+                (setq new-pos
+                      (simply-annotate-kanban--card-position (car entry))))))
+          (when new-pos (goto-char new-pos)))))))
+
 ;;;###autoload
 (defun simply-annotate-kanban ()
   "Show a kanban board of project annotations grouped by status."
@@ -3175,7 +3230,7 @@ Annotations are grouped into columns by their status."
 (defun simply-annotate--kanban-group-by-status (db statuses)
   "Group annotations from DB into lists keyed by STATUS.
 Returns alist of (STATUS . cards) where each card is
-\(NAV PRIORITY SUMMARY LOCATION)."
+\(NAV PRIORITY SUMMARY LOCATION DATA)."
   (let ((groups (mapcar (lambda (s) (cons s nil)) statuses)))
     (dolist (db-entry db)
       (let* ((file-key (car db-entry))
@@ -3207,7 +3262,7 @@ Returns alist of (STATUS . cards) where each card is
                  (nav (list :file file-key :line line-num
                             :col (1+ col-num) :level level
                             :start start-pos))
-                 (card (list nav priority summary location)))
+                 (card (list nav priority summary location data)))
             (let ((group (assoc status groups #'string=)))
               (when group
                 (setcdr group (append (cdr group) (list card)))))))))
@@ -3231,33 +3286,57 @@ Returns alist of (STATUS . cards) where each card is
     (_ nil)))
 
 (defun simply-annotate--kanban-truncate (str width)
-  "Truncate STR to WIDTH, adding ellipsis if too long."
-  (if (> (length str) width)
-      (concat (substring str 0 (max 0 (- width 1))) "…")
+  "Truncate STR to WIDTH display columns, adding ellipsis if too long."
+  (if (> (string-width str) width)
+      (concat (truncate-string-to-width str (max 0 (- width 1))) "…")
     str))
 
 (defun simply-annotate--kanban-pad (str width)
-  "Pad STR to exactly WIDTH characters, truncating if needed."
+  "Pad STR to exactly WIDTH display columns, truncating if needed."
   (let ((truncated (simply-annotate--kanban-truncate str width)))
-    (concat truncated (make-string (max 0 (- width (length truncated))) ?\s))))
+    (concat truncated (make-string (max 0 (- width (string-width truncated))) ?\s))))
+
+(defun simply-annotate--kanban-card-expanded-p (cid)
+  "Return non-nil if card CID should be rendered expanded."
+  (or simply-annotate-kanban-expand-all
+      (and simply-annotate-kanban-expanded-cards
+           (gethash cid simply-annotate-kanban-expanded-cards))))
+
+(defun simply-annotate--kanban-wrap-text (text width)
+  "Wrap TEXT to WIDTH display columns, returning a list of strings."
+  (let ((lines nil)
+        (remaining (string-trim text)))
+    (while (> (string-width remaining) 0)
+      (if (<= (string-width remaining) width)
+          (progn (push remaining lines)
+                 (setq remaining ""))
+        (let* ((trunc (truncate-string-to-width remaining width))
+               (trunc-len (length trunc))
+               (break-pos (or (let ((pos (string-match-p "\\s-" (reverse trunc))))
+                                (when pos (- trunc-len pos)))
+                              trunc-len)))
+          (push (substring remaining 0 break-pos) lines)
+          (setq remaining (string-trim-left (substring remaining break-pos))))))
+    (nreverse lines)))
 
 (defun simply-annotate--kanban-build-column (cards col-width card-id-start)
-  "Build column lines from CARDS at COL-WIDTH.
+  "Build column card blocks from CARDS at COL-WIDTH.
 CARD-ID-START is the first card ID to assign.
-Returns (LINES CARD-MAP NEXT-ID) where LINES is a list of
-\(STRING . CARD-ID-OR-NIL), CARD-MAP is an alist of
-\(CARD-ID . NAV-PLIST), and NEXT-ID is the next available ID."
+Returns (BLOCKS CARD-MAP NEXT-ID) where BLOCKS is a list of
+card blocks, each block being a list of (STRING . CARD-ID),
+CARD-MAP is an alist of (CARD-ID . NAV-PLIST), and NEXT-ID
+is the next available ID."
   (let ((inner (- col-width 2))
-        (lines nil)
+        (blocks nil)
         (card-map nil)
         (cid card-id-start))
     (dolist (card cards)
-      (when lines
-        (push (cons (make-string col-width ?\s) nil) lines))
       (let* ((nav (nth 0 card))
              (priority (nth 1 card))
              (summary (nth 2 card))
              (location (nth 3 card))
+             (data (nth 4 card))
+             (expanded (simply-annotate--kanban-card-expanded-p cid))
              (prio-face (simply-annotate--kanban-priority-face priority))
              (badge (format "[%s]" priority))
              (badge-len (length badge))
@@ -3267,24 +3346,81 @@ Returns (LINES CARD-MAP NEXT-ID) where LINES is a list of
                                 (propertize badge 'face prio-face)
                               badge))
              (line1-content (concat badge-display " " summary-trunc))
-             (line1-visual-len (+ badge-len 1 (length summary-trunc)))
+             (line1-visual-len (+ badge-len 1 (string-width summary-trunc)))
              (line1-pad (max 0 (- inner line1-visual-len)))
              (line1 (concat "│" line1-content
                             (make-string line1-pad ?\s) "│"))
              (loc-trunc (simply-annotate--kanban-truncate location (- inner 1)))
              (loc-display (propertize loc-trunc 'face 'font-lock-comment-face))
-             (loc-pad (max 0 (- inner 1 (length loc-trunc))))
+             (loc-pad (max 0 (- inner 1 (string-width loc-trunc))))
              (line2 (concat "│ " loc-display
                             (make-string loc-pad ?\s) "│"))
+             (thread-p (simply-annotate--thread-p data))
+             (comments (when thread-p (alist-get 'comments data)))
+             (author (if thread-p
+                         (or (alist-get 'author (car comments)) "")
+                       ""))
+             (author-str (when (and author (not (string-empty-p author)))
+                           (simply-annotate--kanban-truncate
+                            author (- inner 1))))
              (top (concat "┌" (make-string inner ?─) "┐"))
-             (bot (concat "└" (make-string inner ?─) "┘")))
+             (bot (concat "└" (make-string inner ?─) "┘"))
+             (block nil))
         (push (cons cid nav) card-map)
-        (push (cons top cid) lines)
-        (push (cons line1 cid) lines)
-        (push (cons line2 cid) lines)
-        (push (cons bot cid) lines)
+        (push (cons top cid) block)
+        (push (cons line1 cid) block)
+        (push (cons line2 cid) block)
+        ;; Author line (always shown)
+        (when author-str
+          (let* ((author-display (propertize author-str 'face 'font-lock-type-face))
+                 (apad (max 0 (- inner 1 (string-width author-str)))))
+            (push (cons (concat "│ " author-display
+                                (make-string apad ?\s) "│")
+                        cid)
+                  block)))
+        ;; Expanded: full text, tags, comments
+        (when expanded
+          (let* ((tags (when thread-p (alist-get 'tags data)))
+                 (full-text (cond
+                              (thread-p (or (alist-get 'text (car comments)) ""))
+                              ((stringp data) data)
+                              (t "")))
+                 (sep (concat "├" (make-string inner ?─) "┤"))
+                 (text-width (- inner 2)))
+            ;; Separator
+            (push (cons sep cid) block)
+            ;; Full annotation text wrapped
+            (let ((wrapped (simply-annotate--kanban-wrap-text full-text text-width)))
+              (dolist (wline wrapped)
+                (let* ((wtrunc (simply-annotate--kanban-truncate wline text-width))
+                       (wpad (max 0 (- text-width (string-width wtrunc)))))
+                  (push (cons (concat "│ " wtrunc
+                                      (make-string wpad ?\s) " │")
+                              cid)
+                        block))))
+            ;; Tags
+            (when (and tags (> (length tags) 0))
+              (let* ((tag-str (mapconcat (lambda (tg) (concat "#" tg)) tags " "))
+                     (tag-trunc (simply-annotate--kanban-truncate tag-str (- inner 1)))
+                     (tag-display (propertize tag-trunc 'face 'font-lock-constant-face))
+                     (tpad (max 0 (- inner 1 (string-width tag-trunc)))))
+                (push (cons (concat "│ " tag-display
+                                    (make-string tpad ?\s) "│")
+                            cid)
+                      block)))
+            ;; Reply count
+            (when (and comments (> (length comments) 1))
+              (let* ((reply-str (format "%d replies" (1- (length comments))))
+                     (rpad (max 0 (- inner 1 (string-width reply-str)))))
+                (push (cons (concat "│ "
+                                    (propertize reply-str 'face 'font-lock-comment-face)
+                                    (make-string rpad ?\s) "│")
+                            cid)
+                      block)))))
+        (push (cons bot cid) block)
+        (push (nreverse block) blocks)
         (setq cid (1+ cid))))
-    (list (nreverse lines) (nreverse card-map) cid)))
+    (list (nreverse blocks) (nreverse card-map) cid)))
 
 (defun simply-annotate--kanban-render (db)
   "Render the kanban board from DB into the current buffer."
@@ -3345,25 +3481,44 @@ Returns (LINES CARD-MAP NEXT-ID) where LINES is a list of
       (when (> c 0) (insert gap))
       (insert (propertize (make-string col-width ?─) 'face 'shadow)))
     (insert "\n")
-    ;; Card rows
-    (let ((max-lines (apply #'max 0 (mapcar #'length columns)))
-          (blank (cons (make-string col-width ?\s) nil)))
-      (dotimes (row max-lines)
-        (dotimes (c num-cols)
-          (when (> c 0) (insert gap))
-          (let* ((col (nth c columns))
-                 (cell (if (< row (length col)) (nth row col) blank))
-                 (text (car cell))
-                 (cid (cdr cell))
-                 (start (point)))
-            (insert text)
-            (when cid
-              (put-text-property start (point)
-                                'simply-annotate-kanban-card cid)
-              (unless (gethash cid seen-cards)
-                (puthash cid t seen-cards)
-                (push (cons start cid) card-positions)))))
-        (insert "\n")))
+    ;; Card rows -- iterate by card index, padding blocks to equal height
+    (let* ((max-cards (apply #'max 0 (mapcar #'length columns)))
+           (blank-line (cons (make-string col-width ?\s) nil)))
+      (dotimes (card-idx max-cards)
+        ;; Find the tallest block at this card index across all columns
+        (let ((max-height 0))
+          (dotimes (c num-cols)
+            (let ((col-blocks (nth c columns)))
+              (when (< card-idx (length col-blocks))
+                (setq max-height
+                      (max max-height (length (nth card-idx col-blocks)))))))
+          ;; Render each line of this card row
+          (dotimes (line-idx max-height)
+            (dotimes (c num-cols)
+              (when (> c 0) (insert gap))
+              (let* ((col-blocks (nth c columns))
+                     (block (when (< card-idx (length col-blocks))
+                              (nth card-idx col-blocks)))
+                     (cell (if (and block (< line-idx (length block)))
+                               (nth line-idx block)
+                             blank-line))
+                     (text (car cell))
+                     (cid (cdr cell))
+                     (start (point)))
+                (insert text)
+                (when cid
+                  (put-text-property start (point)
+                                    'simply-annotate-kanban-card cid)
+                  (unless (gethash cid seen-cards)
+                    (puthash cid t seen-cards)
+                    (push (cons start cid) card-positions)))))
+            (insert "\n"))
+          ;; Blank separator line between card rows
+          (when (< card-idx (1- max-cards))
+            (dotimes (c num-cols)
+              (when (> c 0) (insert gap))
+              (insert (make-string col-width ?\s)))
+            (insert "\n")))))
     (setq simply-annotate-kanban-card-positions
           (nreverse card-positions))))
 
@@ -3497,6 +3652,15 @@ Plain string annotations are auto-converted to threads."
                       (overlay-put ov 'simply-annotation data)))
                   (simply-annotate-update-display-style))))
             (simply-annotate-kanban-refresh)
+            ;; Re-find the moved card by its source location
+            (let ((target-pos nil))
+              (dolist (entry simply-annotate-kanban-cards)
+                (let ((nav2 (cdr entry)))
+                  (when (and (string= (plist-get nav2 :file) file-key)
+                             (= (plist-get nav2 :start) start-pos))
+                    (setq target-pos
+                          (simply-annotate-kanban--card-position (car entry))))))
+              (when target-pos (goto-char target-pos)))
             (message "Status: %s" new-status)))))))
 
 (defun simply-annotate-kanban-set-status ()

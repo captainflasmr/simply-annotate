@@ -18,9 +18,11 @@ Kanban board view for project annotations.
 *** Features
 
 - *Kanban board* -- =<prefix> K= (=simply-annotate-kanban=) opens a kanban board showing project annotations grouped by status (open, in-progress, resolved, closed) as side-by-side columns with box-drawn cards.  Cards display priority, summary, and file location.  Requires a project detectable by =project.el=.
-- *Card navigation* -- Org-table-style navigation: =n= / =p= move vertically within a column, =TAB= / =S-TAB= move horizontally between columns (clamping to the last card if the target column is shorter).
+- *Card navigation* -- Org-table-style navigation: =n= / =p= move vertically within a column, =f= / =b= or =TAB= / =S-TAB= move horizontally between columns on the same row with wrapping.
 - *Card highlighting* -- The card under point is highlighted with bold face via =post-command-hook=, providing clear visual feedback for which card is active.
-- *Status changes from board* -- =s= sets status via completing-read, =}= moves a card one status column to the right, ={= moves it to the left.  Plain string annotations are auto-converted to thread format when changing status.
+- *Card expand/collapse* -- =e= toggles expanded view for the card at point, =E= toggles all cards.  Collapsed cards show priority, summary, location, and author.  Expanded cards additionally show the full annotation text (word-wrapped), tags, and reply count.
+- *Follow mode* -- =F= toggles follow mode: navigating between cards automatically jumps to the annotation source in another window while keeping focus on the kanban board.
+- *Status changes from board* -- =s= sets status via completing-read, =}= moves a card one status column to the right, ={= moves it to the left.  The cursor follows the moved card.  Plain string annotations are auto-converted to thread format when changing status.
 - *Jump to source* -- =RET= on any card jumps to the annotation's source file and position.
 - *Live refresh* -- =g= refreshes the board in place, preserving cursor position.
 

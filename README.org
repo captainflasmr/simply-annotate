@@ -57,7 +57,9 @@ Go to the directory level and now browse the 2 files
 
 Kanban board view.
 
-- *Kanban board* -- =<prefix> K= opens a kanban board of project annotations grouped by status columns (open, in-progress, resolved, closed).  Cards show priority, summary, and file location.  Navigate with =n= / =p= (vertical), =TAB= / =S-TAB= (between columns).  Change status with =s=, =}=, ={=.  =RET= jumps to source.
+- *Kanban board* -- =<prefix> K= opens a kanban board of project annotations grouped by status columns (open, in-progress, resolved, closed).  Cards show priority, summary, location, and author.  Navigate with =n= / =p= (vertical), =f= / =b= or =TAB= / =S-TAB= (between columns, wrapping).  Change status with =s=, =}=, ={=.  =RET= jumps to source.
+- *Expand/collapse* -- =e= expands a single card to show full text, tags, and reply count.  =E= toggles all cards.
+- *Follow mode* -- =F= toggles auto-jumping to the annotation source as you navigate cards.
 
 ** <2026-03-29> *1.0.0*
 
