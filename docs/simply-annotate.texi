@@ -130,7 +130,7 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @node Installation
 @chapter Installation
 
-Requires @strong{Emacs 28.1} or later.  No external dependencies.
+Requires @strong{Emacs 27.2} or later.  No external dependencies.
 
 @section Using MELPA (Recommended)
 
@@ -1245,7 +1245,7 @@ Automatic updates when annotations, threads, or levels change
 
 By default, all annotations are stored in a single global database file.
 Version 1.0.0 adds project-aware storage and project-scoped views, using
-Emacs built-in @code{project.el} (available since Emacs 28.1).
+Emacs built-in @code{project.el}.
 
 @section Database Strategy
 

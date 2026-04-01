@@ -40,6 +40,7 @@ done
 
 ** Run simply-annotate with different Emacs versions
 
+- [ ] emacs-27.2
 - [X] emacs-28.1
 - [X] emacs-29.3
 - [X] emacs-29.4

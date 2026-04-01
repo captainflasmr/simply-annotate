@@ -2,7 +2,7 @@
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
 ;; Version: 1.1.1
-;; Package-Requires: ((emacs "28.1"))
+;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
 ;;
@@ -26,7 +26,7 @@
 ;; A lightweight annotation system for Emacs that allows you to add
 ;; persistent notes to any text file without modifying the original
 ;; content.  Enhanced with threading, collaboration, and org-mode
-;; integration.  Requires Emacs 28.1+, no external dependencies.
+;; integration.  Requires Emacs 27.2+, no external dependencies.
 ;;
 ;; Quick Start (use-package):
 ;;
@@ -185,7 +185,7 @@
 ;; ;; Or merge project and global databases (project wins on conflicts)
 ;; (setq simply-annotate-database-strategy 'both)
 ;;
-;; Project-scoped commands (require project.el, built-in since Emacs 28.1):
+;; Project-scoped commands (require project.el):
 ;; - <prefix> P   show annotations for the current project (org listing)
 ;; - <prefix> C-t show annotations for the current project (sortable table)
 ;; - <prefix> f   jump to annotated file (project-scoped, C-u for all)
@@ -205,6 +205,15 @@
 (declare-function dired-get-filename "dired")
 (declare-function project-current "project")
 (declare-function project-root "project")
+(declare-function project-roots "project")
+
+(defun simply-annotate--project-root (project)
+  "Return the root directory of PROJECT.
+Uses `project-root' when available (Emacs 28+), falls back to
+`project-roots' for Emacs 27."
+  (if (fboundp 'project-root)
+      (project-root project)
+    (car (with-no-warnings (project-roots project)))))
 
 (defgroup simply-annotate nil
   "Simple annotation system with threading support."
@@ -655,7 +664,7 @@ database is portable."
         (if (and (not (eq simply-annotate-database-strategy 'global))
                  (buffer-file-name))
             (if-let* ((proj (project-current nil))
-                      (root (project-root proj)))
+                      (root (simply-annotate--project-root proj)))
                 (file-relative-name raw-key root)
               raw-key)
           raw-key)))))
@@ -701,7 +710,7 @@ Returns KEY unchanged if it is absolute, an Info key, or a buffer name."
           (file-name-absolute-p key))
       key
     (if-let* ((proj (project-current nil))
-              (root (project-root proj)))
+              (root (simply-annotate--project-root proj)))
         (expand-file-name key root)
       key)))
 
@@ -750,7 +759,7 @@ back to `simply-annotate-file'."
   (if (eq simply-annotate-database-strategy 'global)
       simply-annotate-file
     (if-let* ((proj (project-current nil))
-              (root (project-root proj)))
+              (root (simply-annotate--project-root proj)))
         (expand-file-name simply-annotate-project-file root)
       simply-annotate-file)))
 
@@ -3138,7 +3147,7 @@ Like `simply-annotate-list-table' but spanning all project files,
 with an additional File column."
   (interactive)
   (if-let* ((proj (project-current t))
-            (root (project-root proj)))
+            (root (simply-annotate--project-root proj)))
       (simply-annotate--show-project-table root)
     (message "Not in a project")))
 
@@ -3384,7 +3393,7 @@ The card is identified by its source file and position."
   "Show a kanban board of project annotations grouped by status."
   (interactive)
   (if-let* ((proj (project-current t))
-            (root (project-root proj)))
+            (root (simply-annotate--project-root proj)))
       (simply-annotate--show-kanban root)
     (message "Not in a project")))
 
@@ -4031,7 +4040,7 @@ Like `simply-annotate-show-all' but filtered to the current project
 as detected by `project-current'."
   (interactive)
   (if-let* ((proj (project-current t))
-            (root (project-root proj)))
+            (root (simply-annotate--project-root proj)))
       (simply-annotate--show-filtered
        (format "*Annotations: %s*"
                (file-name-nondirectory (directory-file-name root)))
@@ -4051,7 +4060,7 @@ non-nil (prefix argument)."
                       (not (eq simply-annotate-database-strategy 'global))
                       (project-current nil))
                  (simply-annotate--project-annotations
-                  (project-root (project-current)))
+                  (simply-annotate--project-root (project-current)))
                (simply-annotate--load-database))))
     (if (not db)
         (message "No annotations database found")
@@ -4344,7 +4353,7 @@ into a new project-local database with relative keys.  Migrated entries
 are removed from the global database."
   (interactive)
   (let* ((proj (project-current t))
-         (root (project-root proj))
+         (root (simply-annotate--project-root proj))
          (global-db (simply-annotate--read-db simply-annotate-file))
          (project-path (expand-file-name simply-annotate-project-file root))
          (project-db (simply-annotate--read-db project-path))

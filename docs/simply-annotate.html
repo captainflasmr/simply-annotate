@@ -343,7 +343,7 @@ Next: <a href="#Quick-Start" accesskey="n" rel="next">Quick Start</a>, Previous:
 </div>
 <h2 class="chapter" id="Installation-1"><span>2 Installation<a class="copiable-link" href="#Installation-1"> &para;</a></span></h2>
 
-<p>Requires <strong class="strong">Emacs 28.1</strong> or later.  No external dependencies.
+<p>Requires <strong class="strong">Emacs 27.2</strong> or later.  No external dependencies.
 </p>
 <ul class="mini-toc">
 <li><a href="#Using-MELPA-_0028Recommended_0029" accesskey="1">Using MELPA (Recommended)</a></li>
@@ -1063,7 +1063,16 @@ any theme.
 region.  Uses the configured fringe indicator at the top with a continuous
 vertical bar and a horizontal cap at the bottom.  Customisable via
 <code class="code">simply-annotate-fringe-bracket-face</code>.
-</p></dd>
+</p>
+</dd>
+<dt><code class="code">bar</code></dt>
+<dd><p>Draws a solid heavy vertical bar (<code class="code">┃ </code>) in the left margin of every annotated line.
+</p>
+</dd>
+<dt><code class="code">bracket</code></dt>
+<dd><p>Outlines annotated regions with heavy box-drawing corners (<code class="code">┏ </code>, <code class="code">┃ </code>, <code class="code">┗ </code>) for multi-line annotations, or a single <code class="code">┠ </code> indicator for single-line annotations. This is now the default display style.
+</p>
+</dd>
 <dt><code class="code">subtle</code></dt>
 <dd><p>Uses overline and underline to bracket annotated regions (unobtrusive)
 </p></dd>
@@ -1626,7 +1635,7 @@ Next: <a href="#Kanban-Board" accesskey="n" rel="next">Kanban Board</a>, Previou
 
 <p>By default, all annotations are stored in a single global database file.
 Version 1.0.0 adds project-aware storage and project-scoped views, using
-Emacs built-in <code class="code">project.el</code> (available since Emacs 28.1).
+Emacs built-in <code class="code">project.el</code>.
 </p>
 <ul class="mini-toc">
 <li><a href="#Database-Strategy" accesskey="1">Database Strategy</a></li>
@@ -2066,6 +2075,7 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 <tr><td width="15%"><kbd class="kbd">M-s K</kbd></td><td width="35%"><code class="code">simply-annotate-kanban</code></td><td width="50%">Kanban board of project annotations</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s v</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s g</kbd></td><td width="35%"><code class="code">simply-annotate-update-display-style</code></td><td width="50%">Refresh all annotation overlays</td></tr>
 </tbody>
 </table>
 

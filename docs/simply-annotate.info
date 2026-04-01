@@ -115,7 +115,7 @@ File: simply-annotate.info,  Node: Installation,  Next: Quick Start,  Prev: Intr
 2 Installation
 **************
 
-Requires *Emacs 28.1* or later.  No external dependencies.
+Requires *Emacs 27.2* or later.  No external dependencies.
 
 2.1 Using MELPA (Recommended)
 =============================
@@ -1032,7 +1032,7 @@ File: simply-annotate.info,  Node: Project-Aware Annotations,  Next: Kanban Boar
 
 By default, all annotations are stored in a single global database file.
 Version 1.0.0 adds project-aware storage and project-scoped views, using
-Emacs built-in ‘project.el’ (available since Emacs 28.1).
+Emacs built-in ‘project.el’.
 
 11.1 Database Strategy
 ======================
@@ -2154,15 +2154,15 @@ Node: Annotation Levels27103
 Node: Navigation30406
 Node: Advanced Features32048
 Node: Project-Aware Annotations36354
-Node: Kanban Board41818
-Node: Org-mode Integration44512
-Node: Key Bindings46950
-Node: Customization51611
-Node: Data Storage60359
-Node: Troubleshooting64417
-Node: Function Index70840
-Node: Variable Index74096
-Node: Concept Index79977
+Node: Kanban Board41789
+Node: Org-mode Integration44483
+Node: Key Bindings46921
+Node: Customization51582
+Node: Data Storage60330
+Node: Troubleshooting64388
+Node: Function Index70811
+Node: Variable Index74067
+Node: Concept Index79948
 
 End Tag Table
 

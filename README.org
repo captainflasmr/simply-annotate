@@ -132,7 +132,7 @@ See [[file:CHANGELOG.org]] for full version history.
 
 * Installation
 
-Requires *Emacs 28.1* or later.  No external dependencies.
+Requires *Emacs 27.2* or later.  No external dependencies.
 
 ** MELPA
 
@@ -708,7 +708,7 @@ A cross-cutting view of key features across popular Emacs annotation packages.
 | Database switching             | Yes         | No                | No         | No        | No              |
 | No external dependencies       | Yes         | No                | No         | No        | Yes             |
 | MELPA                          | Yes         | Yes               | Yes        | Yes       | No              |
-| Emacs requirement              | 24.4        | N/A               | 27.1       | 24.4      | 28.1            |
+| Emacs requirement              | 24.4        | N/A               | 27.1       | 24.4      | 27.2            |
 
 * Contributing
 

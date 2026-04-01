@@ -258,7 +258,7 @@ Next: [[#Quick-Start][Quick Start]], Previous:
 :CUSTOM_ID: Installation-1
 :CLASS: chapter
 :END:
-Requires *Emacs 28.1* or later. No external dependencies.
+Requires *Emacs 27.2* or later. No external dependencies.
 
 - [[#Using-MELPA-_0028Recommended_0029][Using MELPA (Recommended)]]
 - [[#Keymap-Configuration][Keymap Configuration]]
@@ -965,9 +965,13 @@ independent.
   cap at the bottom. Customisable via
   =simply-annotate-fringe-bracket-face=.
 
-- =bar= :: Draws a solid heavy vertical bar (=┃ =) in the left margin of every annotated line.
+- =bar= :: Draws a solid heavy vertical bar (=┃ =) in the left margin of
+  every annotated line.
 
-- =bracket= :: Outlines annotated regions with heavy box-drawing corners (=┏ =, =┃ =, =┗ =) for multi-line annotations, or a single =┠ = indicator for single-line annotations. This is now the default display style.
+- =bracket= :: Outlines annotated regions with heavy box-drawing corners
+  (=┏ =, =┃ =, =┗ =) for multi-line annotations, or a single =┠ =
+  indicator for single-line annotations. This is now the default display
+  style.
 
 - =subtle= :: Uses overline and underline to bracket annotated regions
   (unobtrusive)
@@ -1523,7 +1527,7 @@ Next: [[#Kanban-Board][Kanban Board]], Previous:
 :END:
 By default, all annotations are stored in a single global database file.
 Version 1.0.0 adds project-aware storage and project-scoped views, using
-Emacs built-in =project.el= (available since Emacs 28.1).
+Emacs built-in =project.el=.
 
 - [[#Database-Strategy][Database Strategy]]
 - [[#Migrating-to-a-Project-Database][Migrating to a Project Database]]
@@ -1964,7 +1968,7 @@ bind the prefix.
 | M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations         |
 | M-s n   | =simply-annotate-next=                     | Jump to next annotation                     |
 | M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                 |
-| M-s g   | =simply-annotate-update-display-style=      | Refresh all annotation overlays             |
+| M-s g   | =simply-annotate-update-display-style=     | Refresh all annotation overlays             |
 
 <<Annotation-Buffer-Bindings>>
 *** 14.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
