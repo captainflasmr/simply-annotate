@@ -1138,7 +1138,7 @@ Uses a vertical bar character on every line of the annotated region."
            (bar-char (propertize "┃ " 'face 'simply-annotate-bar-face)))
       (goto-char start)
       (beginning-of-line)
-      (dotimes (i total-lines)
+      (dotimes (_ total-lines)
         (let ((aux (make-overlay (point) (point))))
           (overlay-put aux 'before-string bar-char)
           (overlay-put aux 'simply-annotate-bar t)
@@ -2306,6 +2306,19 @@ For threads with multiple comments, prompts which comment to edit."
         (simply-annotate--invalidate-listing)
         (message "Annotation removed"))
     (message "No annotation at point")))
+
+;;;###autoload
+(defun simply-annotate-clear-buffer-annotations ()
+  "Remove all annotations from the current buffer."
+  (interactive)
+  (if (not simply-annotate-overlays)
+      (message "No annotations in this buffer to clear")
+    (when (y-or-n-p "Really remove all annotations from this buffer? ")
+      (simply-annotate--clear-all-overlays)
+      (simply-annotate--save-annotations)
+      (simply-annotate--update-header)
+      (simply-annotate--invalidate-listing)
+      (message "All buffer annotations removed"))))
 
 ;;; Threading Commands
 
@@ -4193,6 +4206,7 @@ non-nil (prefix argument)."
     (define-key map (kbd "r") #'simply-annotate-reply-to-annotation)
     (define-key map (kbd "s") #'simply-annotate-set-annotation-status)
     (define-key map (kbd "-") #'simply-annotate-remove)
+    (define-key map (kbd "C") #'simply-annotate-clear-buffer-annotations)
     (define-key map (kbd "a") #'simply-annotate-change-annotation-author)
     (define-key map (kbd "l") #'simply-annotate-list)
     (define-key map (kbd "T") #'simply-annotate-list-table)
@@ -4249,7 +4263,7 @@ directly to the real keymap after the package has loaded.
 Available keys:
 
   j  smart-action      r  reply           s  status
-  -  remove            a  change author   l  list
+  -  remove            C  clear buffer     a  change author   l  list
   T  table             L  show all        P  show project
   C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp

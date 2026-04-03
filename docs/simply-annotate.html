@@ -384,7 +384,7 @@ conflict with other packages.
 </dl>
 
 <p>The recommended prefix is <kbd class="kbd">M-s</kbd>, which gives you <kbd class="kbd">M-s j</kbd> (smart
-action), <kbd class="kbd">M-s r</kbd> (reply), <kbd class="kbd">M-s l</kbd> (list), etc.  All keybindings
+action), <kbd class="kbd">M-s r</kbd> (reply), <kbd class="kbd">M-s l</kbd> (list), <kbd class="kbd">M-s C</kbd> (clear), etc.  All keybindings
 in this manual assume the <kbd class="kbd">M-s</kbd> prefix.
 </p>
 <p><strong class="strong">Important:</strong> Use <code class="code">:demand t</code> with <code class="code">global-set-key</code> in
@@ -589,6 +589,14 @@ and behaves differently depending on the situation:
 <ol class="enumerate">
 <li> Place cursor on annotated text
 </li><li> Press <kbd class="kbd">M-s -</kbd> to remove the annotation
+</li></ol>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dclear_002dbuffer_002dannotations"></a>
+<p>Alternatively, to remove all annotations from the current buffer at once:
+</p>
+<ol class="enumerate">
+<li> Press <kbd class="kbd">M-s C</kbd>
+</li><li> Confirm the deletion at the prompt (<kbd class="kbd">y</kbd> or <kbd class="kbd">n</kbd>)
 </li></ol>
 
 <p>Alternatively, you can edit the annotation and delete all text, then save
@@ -2062,6 +2070,7 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 <tr><td width="15%"><kbd class="kbd">M-s a</kbd></td><td width="35%"><code class="code">simply-annotate-change-annotation-author</code></td><td width="50%">Change author</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="35%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="50%">Export to org-mode</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s -</kbd></td><td width="35%"><code class="code">simply-annotate-remove</code></td><td width="50%">Delete annotation at point</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s C</kbd></td><td width="35%"><code class="code">simply-annotate-clear-buffer-annotations</code></td><td width="50%">Delete all annotations from buffer</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s l</kbd></td><td width="35%"><code class="code">simply-annotate-list</code></td><td width="50%">List all annotations in current file</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s T</kbd></td><td width="35%"><code class="code">simply-annotate-list-table</code></td><td width="50%">Sortable table view of annotations</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s L</kbd></td><td width="35%"><code class="code">simply-annotate-show-all</code></td><td width="50%">Browse annotations across all files</td></tr>
@@ -2862,6 +2871,7 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dadd_002dannotation_002dtag"><code>simply-annotate-add-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcancel_002dedit"><code>simply-annotate-cancel-edit</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dchange_002dannotation_002dauthor"><code>simply-annotate-change-annotation-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dclear_002dbuffer_002dannotations"><code>simply-annotate-clear-buffer-annotations</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"><code>simply-annotate-cycle-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dbackward"><code>simply-annotate-cycle-level-backward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dforward"><code>simply-annotate-cycle-level-forward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>

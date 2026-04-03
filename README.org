@@ -422,6 +422,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> a= | =simply-annotate-change-annotation-author= | Change author                        |
 | =<prefix> o= | =simply-annotate-export-to-org-file=       | Export to org-mode file              |
 | =<prefix> -= | =simply-annotate-remove=                   | Delete annotation at point           |
+| =<prefix> C= | =simply-annotate-clear-buffer-annotations=  | Delete all annotations from buffer   |
 | =<prefix> l= | =simply-annotate-list=                     | List all annotations in current file |
 | =<prefix> T= | =simply-annotate-list-table=               | Sortable table view of annotations   |
 | =<prefix> L= | =simply-annotate-show-all=                 | Browse annotations across all files  |

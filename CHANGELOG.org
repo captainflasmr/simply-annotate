@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-03 Fri> *1.1.2*
+
+New feature to clear all annotations from a buffer.
+
+*** Features
+
+- *Clear buffer annotations* -- New command `simply-annotate-clear-buffer-annotations` (bound to `C` in the command map) allows removing all annotations from the current buffer with a single command. Includes a confirmation prompt for safety.
+
 ** <2026-03-31 Tue> *1.1.1*
 
 New text-based display styles and alignment improvements.

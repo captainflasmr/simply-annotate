@@ -161,7 +161,7 @@ The main command keymap with short single-key bindings (@kbd{j}, @kbd{r},
 @end table
 
 The recommended prefix is @kbd{M-s}, which gives you @kbd{M-s j} (smart
-action), @kbd{M-s r} (reply), @kbd{M-s l} (list), etc.  All keybindings
+action), @kbd{M-s r} (reply), @kbd{M-s l} (list), @kbd{M-s C} (clear), etc.  All keybindings
 in this manual assume the @kbd{M-s} prefix.
 
 @strong{Important:} Use @code{:demand t} with @code{global-set-key} in
@@ -353,6 +353,16 @@ To remove an annotation:
 Place cursor on annotated text
 @item
 Press @kbd{M-s -} to remove the annotation
+@end enumerate
+
+@findex simply-annotate-clear-buffer-annotations
+Alternatively, to remove all annotations from the current buffer at once:
+
+@enumerate
+@item
+Press @kbd{M-s C}
+@item
+Confirm the deletion at the prompt (@kbd{y} or @kbd{n})
 @end enumerate
 
 Alternatively, you can edit the annotation and delete all text, then save
@@ -1599,6 +1609,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab Change author
 @item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point
+@item @kbd{M-s C} @tab @code{simply-annotate-clear-buffer-annotations} @tab Delete all annotations from buffer
 @item @kbd{M-s l} @tab @code{simply-annotate-list} @tab List all annotations in current file
 @item @kbd{M-s T} @tab @code{simply-annotate-list-table} @tab Sortable table view of annotations
 @item @kbd{M-s L} @tab @code{simply-annotate-show-all} @tab Browse annotations across all files

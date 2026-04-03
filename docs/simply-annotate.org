@@ -298,8 +298,8 @@ Simply Annotate provides two keymaps:
   of your choice.
 
 The recommended prefix is M-s, which gives you M-s j (smart action), M-s
-r (reply), M-s l (list), etc. All keybindings in this manual assume the
-M-s prefix.
+r (reply), M-s l (list), M-s C (clear), etc. All keybindings in this
+manual assume the M-s prefix.
 
 *Important:* Use =:demand t= with =global-set-key= in =:config= for the
 M-s prefix. =:demand t= loads the package immediately so the prefix is
@@ -505,6 +505,12 @@ To remove an annotation:
 
 1. Place cursor on annotated text
 2. Press M-s - to remove the annotation
+
+Alternatively, to remove all annotations from the current buffer at
+once:
+
+1. Press M-s C
+2. Confirm the deletion at the prompt (y or n)
 
 Alternatively, you can edit the annotation and delete all text, then
 save with C-c C-c to remove it.
@@ -1955,6 +1961,7 @@ bind the prefix.
 | M-s a   | =simply-annotate-change-annotation-author= | Change author                               |
 | M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                          |
 | M-s -   | =simply-annotate-remove=                   | Delete annotation at point                  |
+| M-s C   | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer          |
 | M-s l   | =simply-annotate-list=                     | List all annotations in current file        |
 | M-s T   | =simply-annotate-list-table=               | Sortable table view of annotations          |
 | M-s L   | =simply-annotate-show-all=                 | Browse annotations across all files         |
@@ -2828,6 +2835,7 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dadd_002dannotation_002dtag][=simply-annotate-add-annotation-tag=]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                               | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dchange_002dannotation_002dauthor][=simply-annotate-change-annotation-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-simply_002dannotate_002dclear_002dbuffer_002dannotations][=simply-annotate-clear-buffer-annotations=]] | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
 |                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dbackward][=simply-annotate-cycle-level-backward=]]         | [[#Annotation-Levels][Annotation Levels]]                     |
 |                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dforward][=simply-annotate-cycle-level-forward=]]           | [[#Annotation-Levels][Annotation Levels]]                     |

@@ -144,8 +144,8 @@ Simply Annotate provides two keymaps:
      ‘n’, ‘e’, etc.).  You bind this to a prefix key of your choice.
 
    The recommended prefix is ‘M-s’, which gives you ‘M-s j’ (smart
-action), ‘M-s r’ (reply), ‘M-s l’ (list), etc.  All keybindings in this
-manual assume the ‘M-s’ prefix.
+action), ‘M-s r’ (reply), ‘M-s l’ (list), ‘M-s C’ (clear), etc.  All
+keybindings in this manual assume the ‘M-s’ prefix.
 
    *Important:* Use ‘:demand t’ with ‘global-set-key’ in ‘:config’ for
 the ‘M-s’ prefix.  ‘:demand t’ loads the package immediately so the
@@ -290,6 +290,12 @@ To remove an annotation:
 
   1. Place cursor on annotated text
   2. Press ‘M-s -’ to remove the annotation
+
+   Alternatively, to remove all annotations from the current buffer at
+once:
+
+  1. Press ‘M-s C’
+  2. Confirm the deletion at the prompt (‘y’ or ‘n’)
 
    Alternatively, you can edit the annotation and delete all text, then
 save with ‘C-c C-c’ to remove it.
@@ -1347,6 +1353,7 @@ Key         Command                   Description
 ‘M-s a’     ‘simply-annotate-change-annotation-author’Change author
 ‘M-s o’     ‘simply-annotate-export-to-org-file’Export to org-mode
 ‘M-s -’     ‘simply-annotate-remove’  Delete annotation at point
+‘M-s C’     ‘simply-annotate-clear-buffer-annotations’Delete all annotations from buffer
 ‘M-s l’     ‘simply-annotate-list’    List all annotations in current
                                       file
 ‘M-s T’     ‘simply-annotate-list-table’Sortable table view of annotations
@@ -1963,6 +1970,7 @@ Function Index
 * simply-annotate-cancel-edit:           Basic Usage.         (line  72)
 * simply-annotate-change-annotation-author: Threading and Collaboration.
                                                               (line 132)
+* simply-annotate-clear-buffer-annotations: Basic Usage.      (line  87)
 * simply-annotate-cycle-display-style:   Display Styles.      (line  57)
 * simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
 * simply-annotate-cycle-level-forward:   Annotation Levels.   (line  45)
@@ -2145,24 +2153,24 @@ Tag Table:
 Node: Top792
 Node: Introduction2933
 Node: Installation5104
-Node: Quick Start7991
-Node: Basic Usage8839
-Node: Advanced Editing11452
-Node: Threading and Collaboration15481
-Node: Display Styles20818
-Node: Annotation Levels27103
-Node: Navigation30406
-Node: Advanced Features32048
-Node: Project-Aware Annotations36354
-Node: Kanban Board41789
-Node: Org-mode Integration44483
-Node: Key Bindings46921
-Node: Customization51582
-Node: Data Storage60330
-Node: Troubleshooting64388
-Node: Function Index70811
-Node: Variable Index74067
-Node: Concept Index79948
+Node: Quick Start8012
+Node: Basic Usage8860
+Node: Advanced Editing11636
+Node: Threading and Collaboration15665
+Node: Display Styles21002
+Node: Annotation Levels27287
+Node: Navigation30590
+Node: Advanced Features32232
+Node: Project-Aware Annotations36538
+Node: Kanban Board41973
+Node: Org-mode Integration44667
+Node: Key Bindings47105
+Node: Customization51863
+Node: Data Storage60611
+Node: Troubleshooting64669
+Node: Function Index71092
+Node: Variable Index74421
+Node: Concept Index80302
 
 End Tag Table
 
