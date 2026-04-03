@@ -53,15 +53,21 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-04-03 Fri> *1.1.2*
+
+New feature to clear all annotations from a buffer.
+
+- *Clear buffer annotations* -- New command `simply-annotate-clear-buffer-annotations` (bound to `C` in the command map) allows removing all annotations from the current buffer with a single command. Includes a confirmation prompt for safety.
+
 ** <2026-03-31> *1.1.1*
-+
-+New text-based display styles and alignment improvements.
-+
-+- *Bar & Bracket styles* -- New =bar= and =bracket= styles provide bold text-based indicators in the left margin.  =bracket= (now the default) outlines regions with corners (=┏ =, =┗ =), while =bar= uses a solid line (=┃ =).
-+- *Perfect alignment* -- Text-based indicators now use auxiliary overlays for pixel-perfect margin alignment, regardless of where annotations start mid-line.
-+- *Refresh command* -- =<prefix> g= refreshes all overlays in the buffer, fixing any misalignments caused by heavy editing.
-+
-+** <2026-03-31> *1.1.0*
+
+New text-based display styles and alignment improvements.
+
+- *Bar & Bracket styles* -- New =bar= and =bracket= styles provide bold text-based indicators in the left margin.  =bracket= (now the default) outlines regions with corners (=┏ =, =┗ =), while =bar= uses a solid line (=┃ =).
+- *Perfect alignment* -- Text-based indicators now use auxiliary overlays for pixel-perfect margin alignment, regardless of where annotations start mid-line.
+- *Refresh command* -- =<prefix> g= refreshes all overlays in the buffer, fixing any misalignments caused by heavy editing.
+
+** <2026-03-31> *1.1.0*
 
 Kanban board view.
 
