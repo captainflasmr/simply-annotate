@@ -11,6 +11,18 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-09 Thu> *1.1.5*
+
+Dired-aware project scoping for the project listing, table, kanban, and jump-to-file commands.
+
+*** Features
+
+- *Dired auto-narrow* -- When ~simply-annotate-show-project~, ~simply-annotate-list-project-table~, ~simply-annotate-kanban~, and ~simply-annotate-jump-to-file~ are invoked from a ~dired~ buffer that lives under a project subdirectory, the view is automatically narrowed to that subdirectory.  Useful for slicing large projects with many annotations without any explicit selection UI.
+- *Graduated prefix arguments* -- The four project commands accept a uniform prefix scheme: no prefix gives the dired-aware project view, ~C-u~ forces the whole project (ignoring any dired auto-narrow), and ~C-u C-u~ shows the global database (~simply-annotate-show-project~ and ~simply-annotate-jump-to-file~ only; the table and kanban treat ~C-u C-u~ the same as ~C-u~).
+- *Kanban directory indicator* -- The kanban header line now leads with the active directory scope (~dir <subdir>~ when narrowed, ~dir [all]~ otherwise) so the current scope is visible at a glance.
+- *Kanban clear-filter key* -- New command ~simply-annotate-kanban-clear-directory-filter~ bound to ~d~ in the kanban buffer widens a narrowed board back to the whole project without leaving the buffer.
+- *Scope-labelled jump prompt* -- ~simply-annotate-jump-to-file~ now shows the active scope in its completing-read prompt: ~Annotated file [<project>/<subdir>/]:~, ~Annotated file [<project>]:~, or ~Annotated file [global]:~.
+
 ** <2026-04-09 Thu> *1.1.4*
 
 Helper for preserving default ~search-map~ bindings when binding the command map to ~M-s~.

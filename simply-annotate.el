@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 1.1.4
+;; Version: 1.1.5
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -193,7 +193,23 @@
 ;; Project-scoped commands (require project.el):
 ;; - <prefix> P   show annotations for the current project (org listing)
 ;; - <prefix> C-t show annotations for the current project (sortable table)
-;; - <prefix> f   jump to annotated file (project-scoped, C-u for all)
+;; - <prefix> f   jump to annotated file
+;;
+;; Dired-aware narrowing: when the four project commands above are
+;; invoked from a `dired' buffer that lives under a project
+;; subdirectory, they automatically narrow to that subdirectory --
+;; useful for slicing large projects without any explicit selection
+;; UI.  Prefix arguments escape this:
+;;
+;;   no prefix  dired-aware project view (auto-narrow if applicable)
+;;   C-u        whole project, ignoring any dired auto-narrow
+;;   C-u C-u    every annotated file in the database (jump-to-file
+;;              and `simply-annotate-show-project'); for the table and
+;;              kanban this behaves the same as C-u
+;;
+;; In the kanban buffer, a narrowed board can be widened with `d'
+;; (clear directory filter) without leaving the buffer.  The currently
+;; active directory is shown at the front of the kanban header line.
 ;;
 ;; To migrate existing global annotations into a project database:
 ;;   M-x simply-annotate-migrate-to-project
@@ -3006,16 +3022,27 @@ Uses `outline-mode' to fold headings cheaply, then activates
   "Project root for project-scoped table buffers.
 Nil for single-buffer tables.")
 
+(defvar-local simply-annotate-table-filter-directory nil
+  "When non-nil, restrict project-table entries to this directory.
+The value is a project-relative or absolute directory string;
+files outside it are filtered out by
+`simply-annotate--filter-db-by-directory'.")
+
 (defun simply-annotate-table-refresh ()
   "Rebuild the annotation table in place, preserving the window."
   (interactive)
   (let ((source simply-annotate-listing-source)
         (project-root-val simply-annotate-table-project-root)
+        (subdir simply-annotate-table-filter-directory)
         (pos (point)))
     (if project-root-val
-        (let ((db (simply-annotate--project-annotations project-root-val)))
+        (let* ((db (simply-annotate--project-annotations project-root-val))
+               (filtered (simply-annotate--filter-db-by-directory
+                          db project-root-val subdir)))
           (setq tabulated-list-entries
-                (if db (simply-annotate--project-tabulated-entries db) nil))
+                (if filtered
+                    (simply-annotate--project-tabulated-entries filtered)
+                  nil))
           (tabulated-list-print)
           (goto-char (min pos (point-max))))
       (when (and source (buffer-live-p source))
@@ -3142,33 +3169,45 @@ Each entry includes a File column."
                   entries)))))
     (nreverse entries)))
 
-(defun simply-annotate--show-project-table (root)
-  "Show a project-wide annotation table for project at ROOT."
+(defun simply-annotate--show-project-table (root &optional subdir)
+  "Show a project-wide annotation table for project at ROOT.
+If SUBDIR is non-nil, restrict the table to files under that
+project-relative directory."
   (let* ((project-name (file-name-nondirectory (directory-file-name root)))
-         (buffer-name (format "*Annotations Table: %s*" project-name))
-         (db (simply-annotate--project-annotations root)))
+         (suffix (if subdir (format " [%s]" subdir) ""))
+         (buffer-name (format "*Annotations Table: %s%s*" project-name suffix))
+         (db (simply-annotate--project-annotations root))
+         (filtered (simply-annotate--filter-db-by-directory db root subdir)))
     (when (get-buffer buffer-name)
       (kill-buffer buffer-name))
-    (if (not db)
-        (message "No annotations found for project %s" project-name)
+    (if (not filtered)
+        (message "No annotations found for project %s%s" project-name suffix)
       (with-current-buffer (get-buffer-create buffer-name)
         (simply-annotate-project-table-mode)
         (setq tabulated-list-entries
-              (simply-annotate--project-tabulated-entries db))
+              (simply-annotate--project-tabulated-entries filtered))
         (tabulated-list-print)
         (setq simply-annotate-listing-source nil)
-        (setq simply-annotate-table-project-root root))
+        (setq simply-annotate-table-project-root root)
+        (setq simply-annotate-table-filter-directory subdir))
       (pop-to-buffer buffer-name))))
 
 ;;;###autoload
-(defun simply-annotate-list-project-table ()
+(defun simply-annotate-list-project-table (&optional arg)
   "Show a sortable table of all annotations in the current project.
 Like `simply-annotate-list-table' but spanning all project files,
-with an additional File column."
-  (interactive)
+with an additional File column.
+
+When called without a prefix argument from a `dired' buffer that
+lives under a project subdirectory, the table is automatically
+narrowed to that subdirectory.  Any prefix argument (ARG)
+disables the dired auto-narrow and shows the whole project."
+  (interactive "P")
   (if-let* ((proj (project-current t))
             (root (simply-annotate--project-root proj)))
-      (simply-annotate--show-project-table root)
+      (let ((subdir (unless arg
+                      (simply-annotate--dired-default-subdir root))))
+        (simply-annotate--show-project-table root subdir))
     (message "Not in a project")))
 
 ;;; Kanban Board View
@@ -3192,6 +3231,7 @@ with an additional File column."
     (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
     (define-key map (kbd "a") #'simply-annotate-kanban-filter-by-author)
     (define-key map (kbd "l") #'simply-annotate-kanban-filter-by-level)
+    (define-key map (kbd "d") #'simply-annotate-kanban-clear-directory-filter)
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
 
@@ -3207,12 +3247,27 @@ with an additional File column."
 (defvar-local simply-annotate-kanban-filter-level nil
   "When non-nil, only show cards at this annotation level (symbol).")
 
+(defvar-local simply-annotate-kanban-filter-directory nil
+  "When non-nil, only show cards from files under this directory.
+The value is a project-relative directory string ending with a
+slash, as produced by `simply-annotate--read-annotated-directory'.")
+
 (define-derived-mode simply-annotate-kanban-mode special-mode "SA-Kanban"
   "Major mode for displaying annotations as a kanban board.
 Annotations are grouped into columns by their status."
   (setq truncate-lines t)
   (setq header-line-format
         '(" Kanban  "
+          "dir "
+          (:eval (if simply-annotate-kanban-filter-directory
+                     (concat
+                      (propertize simply-annotate-kanban-filter-directory
+                                  'face 'success)
+                      "  "
+                      (propertize "d" 'face 'help-key-binding)
+                      " clear")
+                   (propertize "[all]" 'face 'shadow)))
+          "  "
           (:eval (propertize "RET" 'face 'help-key-binding)) " goto  "
           (:eval (propertize "{/}" 'face 'help-key-binding)) " move  "
           (:eval (propertize "s" 'face 'help-key-binding)) " status  "
@@ -3339,11 +3394,13 @@ The card is identified by its source file and position."
                 (alist-get target-cid simply-annotate-kanban-cards)))
          (file-key (when nav (plist-get nav :file)))
          (start-pos (when nav (plist-get nav :start)))
-         (root simply-annotate-kanban-project-root))
+         (root simply-annotate-kanban-project-root)
+         (subdir simply-annotate-kanban-filter-directory))
     (when root
-      (let ((db (simply-annotate--project-annotations root)))
-        (if db
-            (simply-annotate--kanban-render db)
+      (let* ((db (simply-annotate--project-annotations root))
+             (filtered (simply-annotate--filter-db-by-directory db root subdir)))
+        (if filtered
+            (simply-annotate--kanban-render filtered)
           (let ((inhibit-read-only t)) (erase-buffer)
                (insert "No annotations"))))
       ;; Relocate to the same card by source identity
@@ -3408,28 +3465,55 @@ The card is identified by its source file and position."
     (message "Level filter: %s"
              (or simply-annotate-kanban-filter-level "all levels"))))
 
-;;;###autoload
-(defun simply-annotate-kanban ()
-  "Show a kanban board of project annotations grouped by status."
+(defun simply-annotate-kanban-clear-directory-filter ()
+  "Clear the directory filter on the current kanban board and refresh.
+The directory filter is initially set when `simply-annotate-kanban'
+is invoked from a `dired' buffer that lives under a project
+subdirectory.  This command widens such a narrowed board back to
+the whole project without leaving the kanban buffer."
   (interactive)
+  (if (not simply-annotate-kanban-filter-directory)
+      (message "Directory filter already cleared")
+    (setq simply-annotate-kanban-filter-directory nil)
+    (simply-annotate-kanban-refresh)
+    (message "Directory filter cleared")))
+
+;;;###autoload
+(defun simply-annotate-kanban (&optional arg)
+  "Show a kanban board of project annotations grouped by status.
+
+When called without a prefix argument from a `dired' buffer that
+lives under a project subdirectory, the board is automatically
+narrowed to that subdirectory.  Any prefix argument (ARG)
+disables the dired auto-narrow and shows the whole project.  A
+narrowed board can be widened from inside the kanban buffer with
+\\<simply-annotate-kanban-mode-map>\\[simply-annotate-kanban-clear-directory-filter]."
+  (interactive "P")
   (if-let* ((proj (project-current t))
             (root (simply-annotate--project-root proj)))
-      (simply-annotate--show-kanban root)
+      (let ((subdir (unless arg
+                      (simply-annotate--dired-default-subdir root))))
+        (simply-annotate--show-kanban root subdir))
     (message "Not in a project")))
 
-(defun simply-annotate--show-kanban (root)
-  "Display kanban board for project at ROOT."
+(defun simply-annotate--show-kanban (root &optional subdir)
+  "Display kanban board for project at ROOT.
+If SUBDIR is non-nil, restrict the board to files under that
+project-relative directory."
   (let* ((project-name (file-name-nondirectory (directory-file-name root)))
-         (buffer-name (format "*Kanban: %s*" project-name))
-         (db (simply-annotate--project-annotations root)))
-    (if (not db)
-        (message "No annotations found for project %s" project-name)
+         (suffix (if subdir (format " [%s]" subdir) ""))
+         (buffer-name (format "*Kanban: %s%s*" project-name suffix))
+         (db (simply-annotate--project-annotations root))
+         (filtered (simply-annotate--filter-db-by-directory db root subdir)))
+    (if (not filtered)
+        (message "No annotations found for project %s%s" project-name suffix)
       (with-current-buffer (get-buffer-create buffer-name)
         (simply-annotate-kanban-mode)
-        (setq simply-annotate-kanban-project-root root))
+        (setq simply-annotate-kanban-project-root root)
+        (setq simply-annotate-kanban-filter-directory subdir))
       ;; Display first so window-width is correct for the target window
       (pop-to-buffer buffer-name)
-      (simply-annotate--kanban-render db)
+      (simply-annotate--kanban-render filtered)
       (goto-char (point-min))
       (simply-annotate-kanban-next-card))))
 
@@ -3934,12 +4018,14 @@ Plain string annotations are auto-converted to threads."
   "Refresh the kanban board in place."
   (interactive)
   (let ((pos (point))
-        (root simply-annotate-kanban-project-root))
+        (root simply-annotate-kanban-project-root)
+        (subdir simply-annotate-kanban-filter-directory))
     (when root
-      (let ((db (simply-annotate--project-annotations root)))
-        (if db
+      (let* ((db (simply-annotate--project-annotations root))
+             (filtered (simply-annotate--filter-db-by-directory db root subdir)))
+        (if filtered
             (progn
-              (simply-annotate--kanban-render db)
+              (simply-annotate--kanban-render filtered)
               (goto-char (min pos (point-max))))
           (let ((inhibit-read-only t))
             (erase-buffer)
@@ -3984,6 +4070,50 @@ Handles both absolute keys (global strategy) and relative keys
             ;; Absolute key under project root
             (string-prefix-p expanded-root (expand-file-name key)))))
        db))))
+
+(defun simply-annotate--filter-db-by-directory (db root subdir)
+  "Return entries from DB whose file key lives under SUBDIR.
+ROOT is the project root used to resolve relative keys (project
+strategy) into absolute paths.  SUBDIR is an absolute or
+project-relative directory path; nil or empty means no filtering.
+Info-node keys are excluded from filtered views."
+  (if (or (null subdir) (string-empty-p subdir))
+      db
+    (let* ((expanded-root (expand-file-name (file-name-as-directory root)))
+           (expanded-sub
+            (file-name-as-directory
+             (expand-file-name
+              (if (file-name-absolute-p subdir)
+                  subdir
+                (expand-file-name subdir expanded-root))))))
+      (cl-remove-if-not
+       (lambda (entry)
+         (let ((key (car entry)))
+           (and (not (simply-annotate--key-info-p key))
+                (let ((abs (expand-file-name
+                            (if (file-name-absolute-p key)
+                                key
+                              (expand-file-name key expanded-root)))))
+                  (string-prefix-p expanded-sub abs)))))
+       db))))
+
+(defun simply-annotate--dired-default-subdir (root)
+  "Return the project-relative directory of the current dired buffer.
+ROOT is the project root.  Returns a slash-terminated relative
+path when the current buffer is a `dired' (or derived) buffer
+whose `default-directory' lies under ROOT but is not ROOT itself.
+Returns nil otherwise (not in dired, dired root equals project
+root, or dired root is outside the project).  Used to seed the
+directory filter on the four project commands when invoked from
+dired."
+  (when (and (derived-mode-p 'dired-mode)
+             default-directory)
+    (let* ((expanded-root (expand-file-name (file-name-as-directory root)))
+           (dired-dir (expand-file-name
+                       (file-name-as-directory default-directory))))
+      (when (and (string-prefix-p expanded-root dired-dir)
+                 (not (string= expanded-root dired-dir)))
+        (file-relative-name dired-dir expanded-root)))))
 
 (defun simply-annotate--show-filtered (buffer-name title db)
   "Display annotations from DB in a buffer called BUFFER-NAME.
@@ -4054,34 +4184,74 @@ files are second-level, and annotation levels below that."
    (simply-annotate--load-database)))
 
 ;;;###autoload
-(defun simply-annotate-show-project ()
+(defun simply-annotate-show-project (&optional arg)
   "Show annotations for all files in the current project.
 Like `simply-annotate-show-all' but filtered to the current project
-as detected by `project-current'."
-  (interactive)
-  (if-let* ((proj (project-current t))
-            (root (simply-annotate--project-root proj)))
-      (simply-annotate--show-filtered
-       (format "*Annotations: %s*"
-               (file-name-nondirectory (directory-file-name root)))
-       (format "Project Annotations: %s"
-               (file-name-nondirectory (directory-file-name root)))
-       (simply-annotate--project-annotations root))
-    (message "Not in a project")))
+as detected by `project-current'.
+
+ARG is the raw prefix argument and selects scope:
+
+  no prefix    project files; when called from a `dired' buffer that
+               lives under a project subdirectory, the view is
+               automatically narrowed to that subdirectory
+  \\[universal-argument]            whole project, ignoring any dired auto-narrow
+  \\[universal-argument] \\[universal-argument]        every annotated file in the database
+                  (delegates to `simply-annotate-show-all')"
+  (interactive "P")
+  (cond
+   ((equal arg '(16))
+    (simply-annotate-show-all))
+   (t
+    (if-let* ((proj (project-current t))
+              (root (simply-annotate--project-root proj)))
+        (let* ((project-name (file-name-nondirectory (directory-file-name root)))
+               (db (simply-annotate--project-annotations root))
+               (subdir (unless arg
+                         (simply-annotate--dired-default-subdir root)))
+               (filtered (simply-annotate--filter-db-by-directory db root subdir))
+               (suffix (if subdir (format " [%s]" subdir) "")))
+          (simply-annotate--show-filtered
+           (format "*Annotations: %s%s*" project-name suffix)
+           (format "Project Annotations: %s%s" project-name suffix)
+           filtered))
+      (message "Not in a project")))))
 
 ;;;###autoload
-(defun simply-annotate-jump-to-file (&optional all)
+(defun simply-annotate-jump-to-file (&optional arg)
   "Jump to an annotated file via completing-read.
 Opens the selected file and enables `simply-annotate-mode'.
-When inside a project, only shows project files unless ALL is
-non-nil (prefix argument)."
+
+ARG is the raw prefix argument and selects the candidate set:
+
+  no prefix    project files only (or all files if not in a project);
+               when called from a `dired' buffer that lives under a
+               project subdirectory, the candidates are automatically
+               narrowed to that subdirectory
+  \\[universal-argument]            whole project, ignoring any dired auto-narrow
+  \\[universal-argument] \\[universal-argument]        every annotated file in the database"
   (interactive "P")
-  (let* ((db (if (and (not all)
-                      (not (eq simply-annotate-database-strategy 'global))
-                      (project-current nil))
-                 (simply-annotate--project-annotations
-                  (simply-annotate--project-root (project-current)))
-               (simply-annotate--load-database))))
+  (let* ((all (equal arg '(16)))
+         (in-project (and (not all)
+                          (not (eq simply-annotate-database-strategy 'global))
+                          (project-current nil)))
+         (root (when in-project
+                 (simply-annotate--project-root in-project)))
+         (project-name (when root
+                         (file-name-nondirectory (directory-file-name root))))
+         (project-db (when root
+                       (simply-annotate--project-annotations root)))
+         (subdir (when (and root project-db (not arg))
+                   (simply-annotate--dired-default-subdir root)))
+         (db (cond
+              (all (simply-annotate--load-database))
+              (project-db
+               (simply-annotate--filter-db-by-directory project-db root subdir))
+              (t (simply-annotate--load-database))))
+         (scope-label (cond
+                       (all "global")
+                       (subdir (format "%s/%s" project-name subdir))
+                       (project-name project-name)
+                       (t "global"))))
     (if (not db)
         (message "No annotations database found")
       (let* ((files-with-annotations (mapcar #'car db))
@@ -4096,8 +4266,9 @@ non-nil (prefix argument)."
                           (cons display-name file-key)))
                       files-with-annotations)))
         (if (not files-with-annotations)
-            (message "No annotations found in database")
-          (let* ((selected-display (completing-read "Annotated file: "
+            (message "No annotations found in %s" scope-label)
+          (let* ((prompt (format "Annotated file [%s]: " scope-label))
+                 (selected-display (completing-read prompt
                                                     file-display-alist nil t))
                  (selected-key (cdr (assoc selected-display file-display-alist))))
             (when (and selected-key (simply-annotate--get-key-buffer selected-key t))
