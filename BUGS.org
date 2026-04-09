@@ -9,13 +9,11 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO clear all annotations
-
-** DOING Project aware commenting
+** TODO dired marker not shown with project relative paths
 
 ** TODO dired annotations
 
-I have given it a go but could be difficult
+I have given it a go but could be difficult, might just setting on directory companion or file instead
 
 ** TODO Tagging search
 
@@ -24,18 +22,6 @@ I have given it a go but could be difficult
 ** TODO add automated unit tests
 
 Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
-
-** DONE on a file reload a new overlay is added
-
-** DONE Loading Annotations List buffer can take a while and blocks
-
-** DONE allow user-supplied buffer key function
-
-Related to Issue #2. Fixed in 0.9.1. Added =simply-annotate-file-key-functions= (alist mapping major modes to key generators) and =simply-annotate-file-key-function= (buffer-local override). Info-mode is supported out of the box with per-node annotation tracking.
-
-** DONE review keymap activation approach
-
-Related to Issues #4 and #5. Fixed in 0.9.3. Added =simply-annotate-command-map=, a standalone prefix keymap with short single-key bindings (=j=, =r=, =n=, etc.) that users bind to their own prefix key. Separate from =simply-annotate-mode-map= which uses =M-s= prefixed keys.
 
 * Issues
 
