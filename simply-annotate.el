@@ -4613,10 +4613,23 @@ are removed from the global database."
   "List of fringe overlays added by `simply-annotate-dired-mode'.")
 
 (defun simply-annotate--dired-annotated-files ()
-  "Return a set of absolute file paths that have annotations in the database."
+  "Return a set of absolute file paths that have annotations in the database.
+Relative keys (used by the `project' database strategy) are
+resolved against the current project root via
+`simply-annotate--resolve-key-path', so dired matching works for
+both absolute and project-relative entries.  Info-node keys, and
+relative keys that cannot be resolved (no project context),
+are skipped."
   (let ((db (simply-annotate--load-database)))
     (when db
-      (mapcar #'car db))))
+      (delq nil
+            (mapcar (lambda (entry)
+                      (let ((key (car entry)))
+                        (unless (simply-annotate--key-info-p key)
+                          (let ((resolved (simply-annotate--resolve-key-path key)))
+                            (when (file-name-absolute-p resolved)
+                              (expand-file-name resolved))))))
+                    db)))))
 
 (defun simply-annotate--dired-mark-annotated ()
   "Add fringe indicators to dired lines for files with annotations."
