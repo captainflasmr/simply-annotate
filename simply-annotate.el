@@ -758,7 +758,9 @@ project-local path if inside a recognised project, otherwise falls
 back to `simply-annotate-file'."
   (if (eq simply-annotate-database-strategy 'global)
       simply-annotate-file
-    (if-let* ((proj (project-current nil))
+    (if-let* ((proj (condition-case nil
+                        (project-current nil)
+                      (error nil)))
               (root (simply-annotate--project-root proj)))
         (expand-file-name simply-annotate-project-file root)
       simply-annotate-file)))
