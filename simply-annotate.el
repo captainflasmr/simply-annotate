@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 1.1.1
+;; Version: 1.1.4
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -63,8 +63,13 @@
 ;;   ;; Alternative: M-s prefix (replaces Emacs search-map)
 ;;   ;; Requires :demand t with global-set-key in :config
 ;;   ;; Do NOT use :bind-keymap with M-s (see docstring for details)
+;;   ;; Call `simply-annotate-inherit-search-map' to keep the default
+;;   ;; M-s bindings (occur, isearch-forward-symbol-at-point, etc.)
+;;   ;; working via keymap inheritance.
 ;;   :demand t
-;;   :config (global-set-key (kbd "M-s") simply-annotate-command-map)
+;;   :config
+;;   (global-set-key (kbd "M-s") simply-annotate-command-map)
+;;   (simply-annotate-inherit-search-map)
 ;;
 ;; Threading & Collaboration:
 ;;
@@ -4271,7 +4276,32 @@ Available keys:
   t  tag               o  org export      e  edit sexp
   [  level backward    ]  level forward   \\='  cycle style
   /  toggle inline     n  next            v  previous
-  g  refresh")
+  g  refresh
+
+When binding to M-s, you will shadow Emacs's default `search-map'
+prefix, so bindings like M-s o (occur) and M-s . (isearch-forward-
+symbol-at-point) will stop working.  Call
+`simply-annotate-inherit-search-map' after loading the package to
+restore them via keymap inheritance:
+
+  (with-eval-after-load \\='simply-annotate
+    (simply-annotate-inherit-search-map))
+
+Simply-annotate's own bindings still take precedence; anything not
+defined in the command map falls through to the standard search-map.")
+
+(defun simply-annotate-inherit-search-map ()
+  "Make `simply-annotate-command-map' inherit from Emacs's `search-map'.
+Recommended when binding the command map to M-s, which otherwise
+shadows the default search-map prefix and breaks bindings like
+\\[occur-dwim] (occur) and \\[isearch-forward-symbol-at-point]
+\(isearch-forward-symbol-at-point\).
+
+After calling this, keys not defined in `simply-annotate-command-map'
+fall through to `search-map' via Emacs's keymap parent chain.
+Simply-annotate's own bindings take precedence over any matching
+search-map keys, so e.g. M-s n remains `simply-annotate-next'."
+  (set-keymap-parent simply-annotate-command-map search-map))
 
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))

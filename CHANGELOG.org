@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-09 Thu> *1.1.4*
+
+Helper for preserving default ~search-map~ bindings when binding the command map to ~M-s~.
+
+*** Features
+
+- *~simply-annotate-inherit-search-map~* -- New helper function that sets ~search-map~ as the parent of ~simply-annotate-command-map~ via ~set-keymap-parent~. Recommended for users who bind the command map to ~M-s~, where it would otherwise shadow default bindings like ~M-s o~ (occur) and ~M-s .~ (isearch-forward-symbol-at-point). Simply-annotate's own bindings still take precedence; anything not defined in the command map falls through to the standard ~search-map~ via Emacs's keymap parent chain. Documented in both the Commentary and the command map docstring.
+
 ** <2026-04-09 Thu> *1.1.3*
 
 Fix crash when opening dired buffers in directories that trigger
