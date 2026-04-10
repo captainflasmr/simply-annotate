@@ -134,6 +134,8 @@ Free Documentation License&rdquo;.
       <li><a id="toc-Setting-Status" href="#Setting-Status">6.2.1 Setting Status</a></li>
       <li><a id="toc-Setting-Priority" href="#Setting-Priority">6.2.2 Setting Priority</a></li>
       <li><a id="toc-Adding-Tags" href="#Adding-Tags">6.2.3 Adding Tags</a></li>
+      <li><a id="toc-Removing-Tags" href="#Removing-Tags">6.2.4 Removing Tags</a></li>
+      <li><a id="toc-Searching-by-Tag" href="#Searching-by-Tag">6.2.5 Searching by Tag</a></li>
     </ul></li>
     <li><a id="toc-Multi_002dAuthor-Support" href="#Multi_002dAuthor-Support">6.3 Multi-Author Support</a>
     <ul class="toc-numbered-mark">
@@ -212,6 +214,8 @@ Free Documentation License&rdquo;.
     <li><a id="toc-Board-Layout" href="#Board-Layout">12.1 Board Layout</a></li>
     <li><a id="toc-Navigation-1" href="#Navigation-2">12.2 Navigation</a></li>
     <li><a id="toc-Actions" href="#Actions">12.3 Actions</a></li>
+    <li><a id="toc-Filtering" href="#Filtering">12.4 Filtering</a></li>
+    <li><a id="toc-Expand-and-Follow" href="#Expand-and-Follow">12.5 Expand and Follow</a></li>
   </ul></li>
   <li><a id="toc-Org_002dmode-Integration" href="#Org_002dmode-Integration">13 Org-mode Integration</a>
   <ul class="toc-numbered-mark">
@@ -877,6 +881,8 @@ of the root comment.
 <li><a href="#Setting-Status" accesskey="1">Setting Status</a></li>
 <li><a href="#Setting-Priority" accesskey="2">Setting Priority</a></li>
 <li><a href="#Adding-Tags" accesskey="3">Adding Tags</a></li>
+<li><a href="#Removing-Tags" accesskey="4">Removing Tags</a></li>
+<li><a href="#Searching-by-Tag" accesskey="5">Searching by Tag</a></li>
 </ul>
 <div class="subsection-level-extent" id="Setting-Status">
 <h4 class="subsection"><span>6.2.1 Setting Status<a class="copiable-link" href="#Setting-Status"> &para;</a></span></h4>
@@ -922,9 +928,58 @@ of the root comment.
 <ol class="enumerate">
 <li> Place cursor on annotated text
 </li><li> Press <kbd class="kbd">M-s t</kbd> to add a tag
-</li><li> Enter a tag like <code class="code">review</code>, <code class="code">bug</code>, <code class="code">question</code>, etc.
+</li><li> Choose from existing tags or type a new one (e.g. <code class="code">review</code>,
+<code class="code">bug</code>, <code class="code">question</code>).  Existing tags from the database are
+offered as completion candidates, but free-form input is accepted.
 </li><li> Tags appear as <code class="code">#review #bug</code> in the annotation display
 </li></ol>
+
+</div>
+<div class="subsection-level-extent" id="Removing-Tags">
+<h4 class="subsection"><span>6.2.4 Removing Tags<a class="copiable-link" href="#Removing-Tags"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dremove_002dannotation_002dtag"></a>
+
+<p>To remove a tag from an annotation:
+</p>
+<ol class="enumerate">
+<li> Place cursor on annotated text
+</li><li> Press <kbd class="kbd">M-s C-t</kbd> to remove a tag
+</li><li> Select from the annotation&rsquo;s current tags via <code class="code">completing-read</code>
+</li></ol>
+
+</div>
+<div class="subsection-level-extent" id="Searching-by-Tag">
+<h4 class="subsection"><span>6.2.5 Searching by Tag<a class="copiable-link" href="#Searching-by-Tag"> &para;</a></span></h4>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dsearch_002dby_002dtag"></a>
+<a class="index-entry-id" id="index-tag-search"></a>
+<a class="index-entry-id" id="index-filter-by-tag"></a>
+
+<p>Press <kbd class="kbd">M-s F</kbd> (<code class="code">simply-annotate-search-by-tag</code>) to find
+annotations by tag.  The command uses a two-stage workflow:
+</p>
+<ol class="enumerate">
+<li> Select a tag from all tags in the current scope via <code class="code">completing-read</code>
+</li><li> Select a matching annotation from the filtered results
+</li><li> Jump to the annotation&rsquo;s source file and position
+</li></ol>
+
+<p>The scope is controlled by prefix arguments:
+</p>
+<dl class="table">
+<dt><kbd class="kbd">M-s F</kbd></dt>
+<dd><p>Project files only (or all files when not in a project).  When called
+from a <code class="code">dired</code> buffer under a project subdirectory, candidates are
+automatically narrowed to that subdirectory.
+</p></dd>
+<dt><kbd class="kbd">C-u M-s F</kbd></dt>
+<dd><p>Whole project, ignoring any dired auto-narrow.
+</p></dd>
+<dt><kbd class="kbd">C-u C-u M-s F</kbd></dt>
+<dd><p>Every annotated file in the database.
+</p></dd>
+</dl>
 
 </div>
 </div>
@@ -1839,6 +1894,8 @@ a project detectable by <code class="code">project.el</code>.
 <li><a href="#Board-Layout" accesskey="1">Board Layout</a></li>
 <li><a href="#Navigation-2" accesskey="2">Navigation</a></li>
 <li><a href="#Actions" accesskey="3">Actions</a></li>
+<li><a href="#Filtering" accesskey="4">Filtering</a></li>
+<li><a href="#Expand-and-Follow" accesskey="5">Expand and Follow</a></li>
 </ul>
 <div class="section-level-extent" id="Board-Layout">
 <h3 class="section"><span>12.1 Board Layout<a class="copiable-link" href="#Board-Layout"> &para;</a></span></h3>
@@ -1922,6 +1979,59 @@ in-progress).
 <p>Plain string annotations (legacy format) are automatically converted to
 thread format when their status is changed from the board.
 </p>
+</div>
+<div class="section-level-extent" id="Filtering">
+<h3 class="section"><span>12.4 Filtering<a class="copiable-link" href="#Filtering"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-kanban-filter"></a>
+<a class="index-entry-id" id="index-filter-by-author"></a>
+<a class="index-entry-id" id="index-filter-by-level"></a>
+<a class="index-entry-id" id="index-filter-by-tag-1"></a>
+
+<p>The kanban board supports three filters that can be combined (AND logic).
+Active filters are shown in the header line with green highlighting.
+</p>
+<dl class="table">
+<dt><kbd class="kbd">a</kbd></dt>
+<dd><p>Filter by author.  Select from authors present in the current board, or
+choose &lsquo;<samp class="samp">[All]</samp>&rsquo; to clear.
+</p></dd>
+<dt><kbd class="kbd">l</kbd></dt>
+<dd><p>Filter by annotation level (<code class="code">file</code>, <code class="code">defun</code>, <code class="code">line</code>).
+Select a level or &lsquo;<samp class="samp">[All]</samp>&rsquo; to clear.
+</p></dd>
+<dt><kbd class="kbd">t</kbd></dt>
+<dd><p>Filter by tag.  Select from tags present in the current board, or
+choose &lsquo;<samp class="samp">[All]</samp>&rsquo; to clear.
+</p></dd>
+<dt><kbd class="kbd">d</kbd></dt>
+<dd><p>Clear the directory filter (widening a dired-narrowed board back to the
+whole project).
+</p></dd>
+</dl>
+
+<p>Filters stack: for example, pressing <kbd class="kbd">a</kbd> to select an author and
+then <kbd class="kbd">t</kbd> to select a tag shows only cards by that author with that
+tag.
+</p>
+</div>
+<div class="section-level-extent" id="Expand-and-Follow">
+<h3 class="section"><span>12.5 Expand and Follow<a class="copiable-link" href="#Expand-and-Follow"> &para;</a></span></h3>
+
+<dl class="table">
+<dt><kbd class="kbd">e</kbd></dt>
+<dd><p>Toggle expanded view for the card at point.  Expanded cards show full
+annotation text, tags, and reply count.
+</p></dd>
+<dt><kbd class="kbd">E</kbd></dt>
+<dd><p>Toggle expand/collapse for all cards at once.
+</p></dd>
+<dt><kbd class="kbd">F</kbd></dt>
+<dd><p>Toggle follow mode.  When on, navigating between cards automatically
+shows the annotation source in another window.
+</p></dd>
+</dl>
+
 <hr>
 </div>
 </div>
@@ -2067,6 +2177,8 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 <tr><td width="15%"><kbd class="kbd">M-s s</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="50%">Set status (open/resolved)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="50%">Set priority (low/high)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="35%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="50%">Add tag (#review, #bug)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s C-t</kbd></td><td width="35%"><code class="code">simply-annotate-remove-annotation-tag</code></td><td width="50%">Remove tag from annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s F</kbd></td><td width="35%"><code class="code">simply-annotate-search-by-tag</code></td><td width="50%">Search annotations by tag</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s a</kbd></td><td width="35%"><code class="code">simply-annotate-change-annotation-author</code></td><td width="50%">Change author</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="35%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="50%">Export to org-mode</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s -</kbd></td><td width="35%"><code class="code">simply-annotate-remove</code></td><td width="50%">Delete annotation at point</td></tr>
@@ -2889,9 +3001,11 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dnext"><code>simply-annotate-next</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprevious"><code>simply-annotate-previous</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove"><code>simply-annotate-remove</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove_002dannotation_002dtag"><code>simply-annotate-remove-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreply_002dto_002dannotation"><code>simply-annotate-reply-to-annotation</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreset_002dsession_002dauthor"><code>simply-annotate-reset-session-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsave_002dannotation_002dbuffer"><code>simply-annotate-save-annotation-buffer</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsearch_002dby_002dtag"><code>simply-annotate-search-by-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dpriority"><code>simply-annotate-set-annotation-priority</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dstatus"><code>simply-annotate-set-annotation-status</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dlevel"><code>simply-annotate-set-level</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
@@ -3107,6 +3221,10 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-F">F</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-file-level">file level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-author">filter by author</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-level">filter by level</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-tag">filter by tag</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-tag-1">filter by tag</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-H">H</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-header_002dline">header-line</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
@@ -3116,6 +3234,7 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-K">K</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-kanban">kanban</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-kanban-filter">kanban filter</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-L">L</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-line-level">line level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
@@ -3138,6 +3257,7 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <tr><td></td><td class="printindex-index-entry"><a href="#index-status-display">status display</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-T">T</th></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-tag-search">tag search</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-tags">tags</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-team">team</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-threading">threading</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>

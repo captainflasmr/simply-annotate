@@ -517,8 +517,41 @@ Categorize your annotations with tags:
 
   1. Place cursor on annotated text
   2. Press ‘M-s t’ to add a tag
-  3. Enter a tag like ‘review’, ‘bug’, ‘question’, etc.
+  3. Choose from existing tags or type a new one (e.g. ‘review’, ‘bug’,
+     ‘question’).  Existing tags from the database are offered as
+     completion candidates, but free-form input is accepted.
   4. Tags appear as ‘#review #bug’ in the annotation display
+
+6.2.4 Removing Tags
+-------------------
+
+To remove a tag from an annotation:
+
+  1. Place cursor on annotated text
+  2. Press ‘M-s C-t’ to remove a tag
+  3. Select from the annotation's current tags via ‘completing-read’
+
+6.2.5 Searching by Tag
+----------------------
+
+Press ‘M-s F’ (‘simply-annotate-search-by-tag’) to find annotations by
+tag.  The command uses a two-stage workflow:
+
+  1. Select a tag from all tags in the current scope via
+     ‘completing-read’
+  2. Select a matching annotation from the filtered results
+  3. Jump to the annotation's source file and position
+
+   The scope is controlled by prefix arguments:
+
+‘M-s F’
+     Project files only (or all files when not in a project).  When
+     called from a ‘dired’ buffer under a project subdirectory,
+     candidates are automatically narrowed to that subdirectory.
+‘C-u M-s F’
+     Whole project, ignoring any dired auto-narrow.
+‘C-u C-u M-s F’
+     Every annotated file in the database.
 
 6.3 Multi-Author Support
 ========================
@@ -1242,6 +1275,41 @@ feedback for which card is active.
    Plain string annotations (legacy format) are automatically converted
 to thread format when their status is changed from the board.
 
+12.4 Filtering
+==============
+
+The kanban board supports three filters that can be combined (AND
+logic).  Active filters are shown in the header line with green
+highlighting.
+
+‘a’
+     Filter by author.  Select from authors present in the current
+     board, or choose ‘[All]’ to clear.
+‘l’
+     Filter by annotation level (‘file’, ‘defun’, ‘line’).  Select a
+     level or ‘[All]’ to clear.
+‘t’
+     Filter by tag.  Select from tags present in the current board, or
+     choose ‘[All]’ to clear.
+‘d’
+     Clear the directory filter (widening a dired-narrowed board back to
+     the whole project).
+
+   Filters stack: for example, pressing ‘a’ to select an author and then
+‘t’ to select a tag shows only cards by that author with that tag.
+
+12.5 Expand and Follow
+======================
+
+‘e’
+     Toggle expanded view for the card at point.  Expanded cards show
+     full annotation text, tags, and reply count.
+‘E’
+     Toggle expand/collapse for all cards at once.
+‘F’
+     Toggle follow mode.  When on, navigating between cards
+     automatically shows the annotation source in another window.
+
 
 File: simply-annotate.info,  Node: Org-mode Integration,  Next: Key Bindings,  Prev: Kanban Board,  Up: Top
 
@@ -1350,6 +1418,8 @@ Key         Command                   Description
 ‘M-s s’     ‘simply-annotate-set-annotation-status’Set status (open/resolved)
 ‘M-s p’     ‘simply-annotate-set-annotation-priority’Set priority (low/high)
 ‘M-s t’     ‘simply-annotate-add-annotation-tag’Add tag (#review, #bug)
+‘M-s C-t’   ‘simply-annotate-remove-annotation-tag’Remove tag from annotation
+‘M-s F’     ‘simply-annotate-search-by-tag’Search annotations by tag
 ‘M-s a’     ‘simply-annotate-change-annotation-author’Change author
 ‘M-s o’     ‘simply-annotate-export-to-org-file’Export to org-mode
 ‘M-s -’     ‘simply-annotate-remove’  Delete annotation at point
@@ -1969,7 +2039,7 @@ Function Index
                                                               (line  94)
 * simply-annotate-cancel-edit:           Basic Usage.         (line  72)
 * simply-annotate-change-annotation-author: Threading and Collaboration.
-                                                              (line 132)
+                                                              (line 165)
 * simply-annotate-clear-buffer-annotations: Basic Usage.      (line  87)
 * simply-annotate-cycle-display-style:   Display Styles.      (line  57)
 * simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
@@ -1993,11 +2063,15 @@ Function Index
 * simply-annotate-next:                  Navigation.          (line   9)
 * simply-annotate-previous:              Navigation.          (line   9)
 * simply-annotate-remove:                Basic Usage.         (line  82)
+* simply-annotate-remove-annotation-tag: Threading and Collaboration.
+                                                              (line 106)
 * simply-annotate-reply-to-annotation:   Threading and Collaboration.
                                                               (line  18)
 * simply-annotate-reset-session-author:  Threading and Collaboration.
-                                                              (line 132)
+                                                              (line 165)
 * simply-annotate-save-annotation-buffer: Basic Usage.        (line  72)
+* simply-annotate-search-by-tag:         Threading and Collaboration.
+                                                              (line 115)
 * simply-annotate-set-annotation-priority: Threading and Collaboration.
                                                               (line  85)
 * simply-annotate-set-annotation-status: Threading and Collaboration.
@@ -2033,7 +2107,7 @@ Variable Index
 * project:                               Project-Aware Annotations.
                                                               (line  20)
 * simply-annotate-author-list:           Threading and Collaboration.
-                                                              (line 107)
+                                                              (line 140)
 * simply-annotate-author-list <1>:       Customization.       (line 166)
 * simply-annotate-author-list <2>:       Customization.       (line 167)
 * simply-annotate-buffer-height:         Customization.       (line 112)
@@ -2081,7 +2155,7 @@ Variable Index
 * simply-annotate-project-file <1>:      Customization.       (line 101)
 * simply-annotate-project-file <2>:      Customization.       (line 102)
 * simply-annotate-prompt-for-author:     Threading and Collaboration.
-                                                              (line 107)
+                                                              (line 140)
 * simply-annotate-prompt-for-author <1>: Customization.       (line 170)
 * simply-annotate-prompt-for-author <2>: Customization.       (line 171)
 * simply-annotate-remember-author-per-file: Customization.    (line 174)
@@ -2111,20 +2185,26 @@ Concept Index
 * advanced editing:                      Advanced Editing.    (line   9)
 * annotation levels:                     Annotation Levels.   (line   6)
 * authors:                               Threading and Collaboration.
-                                                              (line 104)
+                                                              (line 137)
 * board view:                            Kanban Board.        (line   6)
 * buffer-local variables:                Troubleshooting.     (line 128)
 * collaboration:                         Threading and Collaboration.
-                                                              (line 104)
+                                                              (line 137)
 * conversations:                         Threading and Collaboration.
                                                               (line  11)
 * data structure editing:                Advanced Editing.    (line   9)
 * defun level:                           Annotation Levels.   (line   6)
 * embedded comments:                     Display Styles.      (line  93)
 * file level:                            Annotation Levels.   (line   6)
+* filter by author:                      Kanban Board.        (line  75)
+* filter by level:                       Kanban Board.        (line  75)
+* filter by tag:                         Threading and Collaboration.
+                                                              (line 115)
+* filter by tag <1>:                     Kanban Board.        (line  75)
 * header-line:                           Advanced Features.   (line 116)
 * inline display:                        Display Styles.      (line  93)
 * kanban:                                Kanban Board.        (line   6)
+* kanban filter:                         Kanban Board.        (line  75)
 * line level:                            Annotation Levels.   (line   6)
 * organization:                          Threading and Collaboration.
                                                               (line  94)
@@ -2139,10 +2219,12 @@ Concept Index
                                                               (line  70)
 * status columns:                        Kanban Board.        (line   6)
 * status display:                        Advanced Features.   (line 116)
+* tag search:                            Threading and Collaboration.
+                                                              (line 115)
 * tags:                                  Threading and Collaboration.
                                                               (line  94)
 * team:                                  Threading and Collaboration.
-                                                              (line 103)
+                                                              (line 136)
 * threading:                             Threading and Collaboration.
                                                               (line  11)
 * workflow:                              Threading and Collaboration.
@@ -2157,20 +2239,20 @@ Node: Quick Start8012
 Node: Basic Usage8860
 Node: Advanced Editing11636
 Node: Threading and Collaboration15665
-Node: Display Styles21002
-Node: Annotation Levels27287
-Node: Navigation30590
-Node: Advanced Features32232
-Node: Project-Aware Annotations36538
-Node: Kanban Board41973
-Node: Org-mode Integration44667
-Node: Key Bindings47105
-Node: Customization51863
-Node: Data Storage60611
-Node: Troubleshooting64669
-Node: Function Index71092
-Node: Variable Index74421
-Node: Concept Index80302
+Node: Display Styles22140
+Node: Annotation Levels28425
+Node: Navigation31728
+Node: Advanced Features33370
+Node: Project-Aware Annotations37676
+Node: Kanban Board43111
+Node: Org-mode Integration46963
+Node: Key Bindings49401
+Node: Customization54322
+Node: Data Storage63070
+Node: Troubleshooting67128
+Node: Function Index73551
+Node: Variable Index77166
+Node: Concept Index83047
 
 End Tag Table
 

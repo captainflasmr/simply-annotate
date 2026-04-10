@@ -11,6 +11,17 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-10 Thu> *1.2.0*
+
+Tag filtering, search, and management improvements.
+
+*** Features
+
+- *Search by tag* -- New command ~simply-annotate-search-by-tag~ (bound to ~F~ in the command map) provides a two-stage completing-read workflow: first select a tag, then select from matching annotations, then jump to the source location.  Respects the same graduated prefix argument scheme as other project commands (no prefix for dired-aware project scope, ~C-u~ for whole project, ~C-u C-u~ for global).
+- *Remove annotation tag* -- New command ~simply-annotate-remove-annotation-tag~ (bound to ~C-d~ in the command map, ~M-s C-t~ in the annotation buffer) removes a tag from the annotation at point via ~completing-read~ from existing tags.
+- *Kanban tag filter* -- New ~t~ binding in the kanban board filters cards by tag.  Works as an AND condition with the existing author and level filters.  The active tag filter is shown in the header line alongside the other filter indicators.
+- *Tag completion on add* -- ~simply-annotate-add-annotation-tag~ now uses ~completing-read~ with all existing tags as suggestions while still accepting new free-form input, replacing the previous ~read-string~ prompt.
+
 ** <2026-04-09 Thu> *1.1.5*
 
 Dired-aware project scoping for the project listing, table, kanban, and jump-to-file commands.

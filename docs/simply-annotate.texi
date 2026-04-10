@@ -640,10 +640,58 @@ Place cursor on annotated text
 @item
 Press @kbd{M-s t} to add a tag
 @item
-Enter a tag like @code{review}, @code{bug}, @code{question}, etc.
+Choose from existing tags or type a new one (e.g.@: @code{review},
+@code{bug}, @code{question}).  Existing tags from the database are
+offered as completion candidates, but free-form input is accepted.
 @item
 Tags appear as @code{#review #bug} in the annotation display
 @end enumerate
+
+@subsection Removing Tags
+
+@findex simply-annotate-remove-annotation-tag
+
+To remove a tag from an annotation:
+
+@enumerate
+@item
+Place cursor on annotated text
+@item
+Press @kbd{M-s C-t} to remove a tag
+@item
+Select from the annotation's current tags via @code{completing-read}
+@end enumerate
+
+@subsection Searching by Tag
+
+@findex simply-annotate-search-by-tag
+@cindex tag search
+@cindex filter by tag
+
+Press @kbd{M-s F} (@code{simply-annotate-search-by-tag}) to find
+annotations by tag.  The command uses a two-stage workflow:
+
+@enumerate
+@item
+Select a tag from all tags in the current scope via @code{completing-read}
+@item
+Select a matching annotation from the filtered results
+@item
+Jump to the annotation's source file and position
+@end enumerate
+
+The scope is controlled by prefix arguments:
+
+@table @kbd
+@item M-s F
+Project files only (or all files when not in a project).  When called
+from a @code{dired} buffer under a project subdirectory, candidates are
+automatically narrowed to that subdirectory.
+@item C-u M-s F
+Whole project, ignoring any dired auto-narrow.
+@item C-u C-u M-s F
+Every annotated file in the database.
+@end table
 
 @section Multi-Author Support
 
@@ -1484,6 +1532,48 @@ Quit the kanban buffer.
 Plain string annotations (legacy format) are automatically converted to
 thread format when their status is changed from the board.
 
+@section Filtering
+
+@cindex kanban filter
+@cindex filter by author
+@cindex filter by level
+@cindex filter by tag
+
+The kanban board supports three filters that can be combined (AND logic).
+Active filters are shown in the header line with green highlighting.
+
+@table @kbd
+@item a
+Filter by author.  Select from authors present in the current board, or
+choose @samp{[All]} to clear.
+@item l
+Filter by annotation level (@code{file}, @code{defun}, @code{line}).
+Select a level or @samp{[All]} to clear.
+@item t
+Filter by tag.  Select from tags present in the current board, or
+choose @samp{[All]} to clear.
+@item d
+Clear the directory filter (widening a dired-narrowed board back to the
+whole project).
+@end table
+
+Filters stack: for example, pressing @kbd{a} to select an author and
+then @kbd{t} to select a tag shows only cards by that author with that
+tag.
+
+@section Expand and Follow
+
+@table @kbd
+@item e
+Toggle expanded view for the card at point.  Expanded cards show full
+annotation text, tags, and reply count.
+@item E
+Toggle expand/collapse for all cards at once.
+@item F
+Toggle follow mode.  When on, navigating between cards automatically
+shows the annotation source in another window.
+@end table
+
 @node Org-mode Integration
 @chapter Org-mode Integration
 
@@ -1606,6 +1696,8 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status (open/resolved)
 @item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
 @item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag (#review, #bug)
+@item @kbd{M-s C-t} @tab @code{simply-annotate-remove-annotation-tag} @tab Remove tag from annotation
+@item @kbd{M-s F} @tab @code{simply-annotate-search-by-tag} @tab Search annotations by tag
 @item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab Change author
 @item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
 @item @kbd{M-s -} @tab @code{simply-annotate-remove} @tab Delete annotation at point

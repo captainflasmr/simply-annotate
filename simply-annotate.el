@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 1.1.5
+;; Version: 1.2.0
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -1513,6 +1513,77 @@ and children is a recursive list of nodes."
       (setf (alist-get 'tags thread) (append tags (list tag))))
     thread))
 
+(defun simply-annotate--remove-thread-tag (thread tag)
+  "Remove TAG from THREAD.
+TAG must match a string in the thread's tags list."
+  (let ((tags (alist-get 'tags thread)))
+    (when (member tag tags)
+      (setf (alist-get 'tags thread) (delete tag tags)))
+    thread))
+
+(defun simply-annotate--collect-all-tags (db)
+  "Return a sorted list of unique tag strings from DB."
+  (let ((tags nil))
+    (dolist (db-entry db)
+      (dolist (ann (cdr db-entry))
+        (let ((data (alist-get 'text ann)))
+          (when (simply-annotate--thread-p data)
+            (dolist (tag (alist-get 'tags data))
+              (unless (member tag tags)
+                (push tag tags)))))))
+    (sort tags #'string<)))
+
+(defun simply-annotate--filter-db-by-tag (db tag)
+  "Return a filtered copy of DB containing only entries with annotations matching TAG.
+Each file entry is kept only if it has at least one annotation whose thread
+contains TAG.  Entries without the tag are removed entirely."
+  (let ((result nil))
+    (dolist (entry db)
+      (let* ((file-key (car entry))
+             (annotations (cdr entry))
+             (matching (seq-filter
+                        (lambda (ann)
+                          (let ((data (alist-get 'text ann)))
+                            (and (simply-annotate--thread-p data)
+                                 (member tag (alist-get 'tags data)))))
+                        annotations)))
+        (when matching
+          (push (cons file-key matching) result))))
+    (nreverse result)))
+
+(defun simply-annotate--kanban-collect-tags (db)
+  "Return a sorted list of unique tag strings from DB for kanban filtering."
+  (simply-annotate--collect-all-tags db))
+
+(defun simply-annotate--annotation-tags-at-point ()
+  "Return a list of tags for the annotation at point, or nil if none."
+  (let ((overlay (or (when (string= (buffer-name) simply-annotate-buffer-name)
+                       simply-annotate-current-overlay)
+                     (simply-annotate--overlay-at-point))))
+    (when overlay
+      (let ((data (overlay-get overlay 'simply-annotation)))
+        (when (simply-annotate--thread-p data)
+          (alist-get 'tags data))))))
+
+(defun simply-annotate--format-tag-annotation-entry (file-key ann)
+  "Format a single annotation ANN from FILE-KEY for use in completing-read candidates."
+  (let* ((data (alist-get 'text ann))
+         (level (or (alist-get 'level ann) 'defun))
+         (start (alist-get 'start ann))
+         (comments (alist-get 'comments data))
+         (preview (when comments
+                     (truncate-string-to-width
+                      (alist-get 'text (car comments)) 50 nil nil "...")))
+         (status (alist-get 'status data))
+         (tags (alist-get 'tags data)))
+    (format "%s:%d  [%s/%s] %s  #%s"
+            (simply-annotate--key-name file-key)
+            start
+            (upcase (or status "open"))
+            (upcase (symbol-name level))
+            (or preview "")
+            (string-join tags " #"))))
+
 (defun simply-annotate--format-thread-summary (thread)
   "Format a brief summary of the THREAD for display."
   (let* ((status (alist-get 'status thread))
@@ -2479,7 +2550,9 @@ each thread.  Safe to run multiple times."
                (thread (if (simply-annotate--thread-p current-data)
                            current-data
                          (simply-annotate--create-thread current-data)))
-               (tag (read-string "Tag: ")))
+               (existing-tags (simply-annotate--collect-all-tags
+                               (simply-annotate--load-database)))
+               (tag (completing-read "Tag: " existing-tags nil nil)))
           (when (not (string-empty-p tag))
             (simply-annotate--add-thread-tag thread tag)
             (overlay-put overlay 'simply-annotation thread)
@@ -2494,6 +2567,35 @@ each thread.  Safe to run multiple times."
 
             (simply-annotate--invalidate-listing)
             (message "Tag '%s' added" tag)))
+      (message "No annotation at point"))))
+
+;;;###autoload
+(defun simply-annotate-remove-annotation-tag ()
+  "Remove a tag from the annotation at point.
+Select from the annotation's existing tags via `completing-read'."
+  (interactive)
+  (let ((overlay (if (string= (buffer-name) simply-annotate-buffer-name)
+                     simply-annotate-current-overlay
+                   (simply-annotate--overlay-at-point))))
+    (if overlay
+        (let* ((current-data (overlay-get overlay 'simply-annotation))
+               (thread (when (simply-annotate--thread-p current-data) current-data))
+               (tags (when thread (alist-get 'tags thread))))
+          (if (not tags)
+              (message "No tags on this annotation")
+            (let ((tag (completing-read "Remove tag: " tags nil t)))
+              (when (and tag (not (string-empty-p tag)))
+                (simply-annotate--remove-thread-tag thread tag)
+                (overlay-put overlay 'simply-annotation thread)
+                (overlay-put overlay 'help-echo (simply-annotate--annotation-summary thread))
+                (simply-annotate--refresh-overlay-display overlay)
+                (simply-annotate--save-annotations)
+                (simply-annotate--update-header)
+                (when (get-buffer-window simply-annotate-buffer-name)
+                  (simply-annotate--update-annotation-buffer thread overlay 'view)
+                  (simply-annotate--show-annotation-buffer))
+                (simply-annotate--invalidate-listing)
+                (message "Tag '%s' removed" tag)))))
       (message "No annotation at point"))))
 
 (defun simply-annotate-change-annotation-author ()
@@ -3231,6 +3333,7 @@ disables the dired auto-narrow and shows the whole project."
     (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
     (define-key map (kbd "a") #'simply-annotate-kanban-filter-by-author)
     (define-key map (kbd "l") #'simply-annotate-kanban-filter-by-level)
+    (define-key map (kbd "t") #'simply-annotate-kanban-filter-by-tag)
     (define-key map (kbd "d") #'simply-annotate-kanban-clear-directory-filter)
     map)
   "Keymap for `simply-annotate-kanban-mode'.")
@@ -3251,6 +3354,9 @@ disables the dired auto-narrow and shows the whole project."
   "When non-nil, only show cards from files under this directory.
 The value is a project-relative directory string ending with a
 slash, as produced by `simply-annotate--read-annotated-directory'.")
+
+(defvar-local simply-annotate-kanban-filter-tag nil
+  "When non-nil, only show cards that have this tag string.")
 
 (define-derived-mode simply-annotate-kanban-mode special-mode "SA-Kanban"
   "Major mode for displaying annotations as a kanban board.
@@ -3283,6 +3389,12 @@ Annotations are grouped into columns by their status."
           (:eval (propertize "l" 'face 'help-key-binding)) " level"
           (:eval (if simply-annotate-kanban-filter-level
                      (propertize (concat "[" (symbol-name simply-annotate-kanban-filter-level) "]")
+                                 'face 'success)
+                   ""))
+          "  "
+          (:eval (propertize "t" 'face 'help-key-binding)) " tag"
+          (:eval (if simply-annotate-kanban-filter-tag
+                     (propertize (concat "[" simply-annotate-kanban-filter-tag "]")
                                  'face 'success)
                    ""))
           "  "
@@ -3465,6 +3577,26 @@ The card is identified by its source file and position."
     (message "Level filter: %s"
              (or simply-annotate-kanban-filter-level "all levels"))))
 
+(defun simply-annotate-kanban-filter-by-tag ()
+  "Filter kanban cards by tag.  Select from available tags or clear filter."
+  (interactive)
+  (let* ((root simply-annotate-kanban-project-root)
+         (db (when root (simply-annotate--project-annotations root)))
+         (tags (when db (simply-annotate--kanban-collect-tags db)))
+         (choices (cons "[All]" tags))
+         (selection (completing-read
+                     (format "Filter by tag%s: "
+                             (if simply-annotate-kanban-filter-tag
+                                 (format " [current: %s]"
+                                         simply-annotate-kanban-filter-tag)
+                               ""))
+                     choices nil t)))
+    (setq simply-annotate-kanban-filter-tag
+          (unless (string= selection "[All]") selection))
+    (simply-annotate-kanban-refresh)
+    (message "Tag filter: %s"
+             (or simply-annotate-kanban-filter-tag "all tags"))))
+
 (defun simply-annotate-kanban-clear-directory-filter ()
   "Clear the directory filter on the current kanban board and refresh.
 The directory filter is initially set when `simply-annotate-kanban'
@@ -3561,7 +3693,11 @@ Returns alist of (STATUS . cards) where each card is
                            (string-equal-ignore-case
                             author simply-annotate-kanban-filter-author))
                        (or (null simply-annotate-kanban-filter-level)
-                           (eq level simply-annotate-kanban-filter-level)))
+                           (eq level simply-annotate-kanban-filter-level))
+                       (or (null simply-annotate-kanban-filter-tag)
+                           (and thread-p
+                                (member simply-annotate-kanban-filter-tag
+                                        (alist-get 'tags data)))))
               (let ((group (assoc status groups #'string=)))
                 (when group
                   (setcdr group (append (cdr group) (list card))))))))))
@@ -4275,6 +4411,77 @@ ARG is the raw prefix argument and selects the candidate set:
               (unless simply-annotate-mode
                 (simply-annotate-mode 1)))))))))
 
+;;;###autoload
+(defun simply-annotate-search-by-tag (&optional arg)
+  "Search for annotations by tag and jump to the selected one.
+First selects a tag via `completing-read', then selects from matching
+annotations, then visits the file and navigates to the annotation.
+
+ARG is the raw prefix argument and selects the candidate set:
+
+  no prefix    project files only (or all files if not in a project);
+               when called from a `dired' buffer that lives under a
+               project subdirectory, the candidates are automatically
+               narrowed to that subdirectory
+  \\[universal-argument]            whole project, ignoring any dired auto-narrow
+  \\[universal-argument] \\[universal-argument]        every annotated file in the database"
+  (interactive "P")
+  (let* ((all (equal arg '(16)))
+         (in-project (and (not all)
+                          (not (eq simply-annotate-database-strategy 'global))
+                          (project-current nil)))
+         (root (when in-project
+                 (simply-annotate--project-root in-project)))
+         (project-name (when root
+                         (file-name-nondirectory (directory-file-name root))))
+         (project-db (when root
+                       (simply-annotate--project-annotations root)))
+         (subdir (when (and root project-db (not arg))
+                   (simply-annotate--dired-default-subdir root)))
+         (db (cond
+              (all (simply-annotate--load-database))
+              (project-db
+               (simply-annotate--filter-db-by-directory project-db root subdir))
+              (t (simply-annotate--load-database))))
+         (scope-label (cond
+                       (all "global")
+                       (subdir (format "%s/%s" project-name subdir))
+                       (project-name project-name)
+                       (t "global")))
+         (all-tags (when db (simply-annotate--collect-all-tags db))))
+    (if (not all-tags)
+        (message "No tags found in %s" scope-label)
+      (let* ((tag (completing-read
+                   (format "Tag [%s]: " scope-label)
+                   all-tags nil t))
+             (filtered (simply-annotate--filter-db-by-tag db tag)))
+        (if (not filtered)
+            (message "No annotations with tag '%s'" tag)
+          (let* ((candidates nil))
+            (dolist (entry filtered)
+              (let ((file-key (car entry))
+                    (annotations (cdr entry)))
+                (dolist (ann annotations)
+                  (let ((data (alist-get 'text ann)))
+                    (when (simply-annotate--thread-p data)
+                      (push (cons (simply-annotate--format-tag-annotation-entry file-key ann)
+                                  (cons file-key ann))
+                            candidates)))))
+            (let* ((sorted (nreverse (sort candidates (lambda (a b) (string< (car a) (car b))))))
+                   (selected-display (completing-read
+                                      (format "Annotation with #%s [%s]: " tag scope-label)
+                                      (mapcar #'car sorted) nil t))
+                   (selected (cdr (assoc selected-display sorted))))
+              (when selected
+                (let ((file-key (car selected))
+                      (ann (cdr selected)))
+                  (when (simply-annotate--get-key-buffer file-key t)
+                    (unless simply-annotate-mode
+                      (simply-annotate-mode 1))
+                    (let ((start (alist-get 'start ann)))
+                      (when start
+                        (goto-char start))))))))))))))
+
 ;;; Org Export
 
 (defun simply-annotate--comment-tree-to-org (tree depth)
@@ -4363,6 +4570,7 @@ ARG is the raw prefix argument and selects the candidate set:
     (define-key map (kbd "M-s s") #'simply-annotate-set-annotation-status)
     (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
+    (define-key map (kbd "M-s C-t") #'simply-annotate-remove-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
     (define-key map (kbd "M-s [") #'simply-annotate-cycle-level-backward)
@@ -4395,6 +4603,8 @@ ARG is the raw prefix argument and selects the candidate set:
     (define-key map (kbd "f") #'simply-annotate-jump-to-file)
     (define-key map (kbd "p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "t") #'simply-annotate-add-annotation-tag)
+    (define-key map (kbd "C-d") #'simply-annotate-remove-annotation-tag)
+    (define-key map (kbd "F") #'simply-annotate-search-by-tag)
     (define-key map (kbd "o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "e") #'simply-annotate-edit-sexp)
     (define-key map (kbd "[") #'simply-annotate-cycle-level-backward)

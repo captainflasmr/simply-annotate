@@ -68,6 +68,8 @@ Documentation License”.
     - [[#Setting-Status][6.2.1 Setting Status]]
     - [[#Setting-Priority][6.2.2 Setting Priority]]
     - [[#Adding-Tags][6.2.3 Adding Tags]]
+    - [[#Removing-Tags][6.2.4 Removing Tags]]
+    - [[#Searching-by-Tag][6.2.5 Searching by Tag]]
   - [[#Multi_002dAuthor-Support][6.3 Multi-Author Support]]
     - [[#Author-Configuration][6.3.1 Author Configuration]]
     - [[#Prompting-Modes][6.3.2 Prompting Modes]]
@@ -122,6 +124,8 @@ Documentation License”.
   - [[#Board-Layout][12.1 Board Layout]]
   - [[#Navigation-2][12.2 Navigation]]
   - [[#Actions][12.3 Actions]]
+  - [[#Filtering][12.4 Filtering]]
+  - [[#Expand-and-Follow][12.5 Expand and Follow]]
 - [[#Org_002dmode-Integration][13 Org-mode Integration]]
   - [[#Exporting-Annotations][13.1 Exporting Annotations]]
   - [[#Export-Format][13.2 Export Format]]
@@ -790,6 +794,8 @@ updating.
 - [[#Setting-Status][Setting Status]]
 - [[#Setting-Priority][Setting Priority]]
 - [[#Adding-Tags][Adding Tags]]
+- [[#Removing-Tags][Removing Tags]]
+- [[#Searching-by-Tag][Searching by Tag]]
 
 <<Setting-Status>>
 **** 6.2.1 Setting Status [[#Setting-Status][¶]]
@@ -828,8 +834,45 @@ Categorize your annotations with tags:
 
 1. Place cursor on annotated text
 2. Press M-s t to add a tag
-3. Enter a tag like =review=, =bug=, =question=, etc.
+3. Choose from existing tags or type a new one (e.g. =review=, =bug=,
+   =question=). Existing tags from the database are offered as
+   completion candidates, but free-form input is accepted.
 4. Tags appear as =#review #bug= in the annotation display
+
+<<Removing-Tags>>
+**** 6.2.4 Removing Tags [[#Removing-Tags][¶]]
+:PROPERTIES:
+:CUSTOM_ID: removing-tags
+:CLASS: subsection
+:END:
+To remove a tag from an annotation:
+
+1. Place cursor on annotated text
+2. Press M-s C-t to remove a tag
+3. Select from the annotation's current tags via =completing-read=
+
+<<Searching-by-Tag>>
+**** 6.2.5 Searching by Tag [[#Searching-by-Tag][¶]]
+:PROPERTIES:
+:CUSTOM_ID: searching-by-tag
+:CLASS: subsection
+:END:
+Press M-s F (=simply-annotate-search-by-tag=) to find annotations by
+tag. The command uses a two-stage workflow:
+
+1. Select a tag from all tags in the current scope via =completing-read=
+2. Select a matching annotation from the filtered results
+3. Jump to the annotation's source file and position
+
+The scope is controlled by prefix arguments:
+
+- M-s F :: Project files only (or all files when not in a project). When
+  called from a =dired= buffer under a project subdirectory, candidates
+  are automatically narrowed to that subdirectory.
+
+- C-u M-s F :: Whole project, ignoring any dired auto-narrow.
+
+- C-u C-u M-s F :: Every annotated file in the database.
 
 <<Multi_002dAuthor-Support>>
 *** 6.3 Multi-Author Support [[#Multi_002dAuthor-Support][¶]]
@@ -1729,6 +1772,8 @@ project detectable by =project.el=.
 - [[#Board-Layout][Board Layout]]
 - [[#Navigation-2][Navigation]]
 - [[#Actions][Actions]]
+- [[#Filtering][Filtering]]
+- [[#Expand-and-Follow][Expand and Follow]]
 
 <<Board-Layout>>
 *** 12.1 Board Layout [[#Board-Layout][¶]]
@@ -1800,6 +1845,45 @@ feedback for which card is active.
 
 Plain string annotations (legacy format) are automatically converted to
 thread format when their status is changed from the board.
+
+<<Filtering>>
+*** 12.4 Filtering [[#Filtering][¶]]
+:PROPERTIES:
+:CUSTOM_ID: filtering
+:CLASS: section
+:END:
+The kanban board supports three filters that can be combined (AND
+logic). Active filters are shown in the header line with green
+highlighting.
+
+- a :: Filter by author. Select from authors present in the current
+  board, or choose ‘=[All]=' to clear.
+
+- l :: Filter by annotation level (=file=, =defun=, =line=). Select a
+  level or ‘=[All]=' to clear.
+
+- t :: Filter by tag. Select from tags present in the current board, or
+  choose ‘=[All]=' to clear.
+
+- d :: Clear the directory filter (widening a dired-narrowed board back
+  to the whole project).
+
+Filters stack: for example, pressing a to select an author and then t to
+select a tag shows only cards by that author with that tag.
+
+<<Expand-and-Follow>>
+*** 12.5 Expand and Follow [[#Expand-and-Follow][¶]]
+:PROPERTIES:
+:CUSTOM_ID: expand-and-follow
+:CLASS: section
+:END:
+- e :: Toggle expanded view for the card at point. Expanded cards show
+  full annotation text, tags, and reply count.
+
+- E :: Toggle expand/collapse for all cards at once.
+
+- F :: Toggle follow mode. When on, navigating between cards
+  automatically shows the annotation source in another window.
 
 --------------
 
@@ -1958,6 +2042,8 @@ bind the prefix.
 | M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                  |
 | M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                     |
 | M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)                     |
+| M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                  |
+| M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                   |
 | M-s a   | =simply-annotate-change-annotation-author= | Change author                               |
 | M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                          |
 | M-s -   | =simply-annotate-remove=                   | Delete annotation at point                  |
@@ -2853,9 +2939,11 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                                 | [[#Navigation][Navigation]]                                   |
 |                | [[#index-simply_002dannotate_002dprevious][=simply-annotate-previous=]]                                         | [[#Navigation][Navigation]]                                   |
 |                | [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                             | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dremove_002dannotation_002dtag][=simply-annotate-remove-annotation-tag=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dreply_002dto_002dannotation][=simply-annotate-reply-to-annotation=]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dreset_002dsession_002dauthor][=simply-annotate-reset-session-author=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]]     | [[#Basic-Usage][Basic Usage]]                                 |
+|                | [[#index-simply_002dannotate_002dsearch_002dby_002dtag][=simply-annotate-search-by-tag=]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dset_002dannotation_002dpriority][=simply-annotate-set-annotation-priority=]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dset_002dannotation_002dstatus][=simply-annotate-set-annotation-status=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dset_002dlevel][=simply-annotate-set-level=]]                                   | [[#Annotation-Levels][Annotation Levels]]                     |
@@ -3011,6 +3099,10 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 | -------------- |                                                               |                                                               |
 | F              |                                                               |                                                               |
 |                | [[#index-file-level][file level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-filter-by-author][filter by author]]                 | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-filter-by-level][filter by level]]                   | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-filter-by-tag][filter by tag]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-filter-by-tag-1][filter by tag]]                     | [[#Kanban-Board][Kanban Board]]                               |
 | -------------- |                                                               |                                                               |
 | H              |                                                               |                                                               |
 |                | [[#index-header_002dline][header-line]]                       | [[#Advanced-Features][Advanced Features]]                     |
@@ -3020,6 +3112,7 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 | -------------- |                                                               |                                                               |
 | K              |                                                               |                                                               |
 |                | [[#index-kanban][kanban]]                                     | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-kanban-filter][kanban filter]]                       | [[#Kanban-Board][Kanban Board]]                               |
 | -------------- |                                                               |                                                               |
 | L              |                                                               |                                                               |
 |                | [[#index-line-level][line level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
@@ -3042,6 +3135,7 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 |                | [[#index-status-display][status display]]                     | [[#Advanced-Features][Advanced Features]]                     |
 | -------------- |                                                               |                                                               |
 | T              |                                                               |                                                               |
+|                | [[#index-tag-search][tag search]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-tags][tags]]                                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-team][team]]                                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-threading][threading]]                               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
