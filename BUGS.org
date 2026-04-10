@@ -15,10 +15,6 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 I have given it a go but could be difficult, might just setting on directory companion or file instead
 
-** TODO Tagging search
-
-** TODO tag display in org annotation buffer
-
 ** TODO add automated unit tests
 
 Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
