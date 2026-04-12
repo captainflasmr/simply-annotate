@@ -125,6 +125,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @strong{Dired integration}: Fringe indicators in dired for files with annotations
 @item
 @strong{Kanban board}: Visual board view of project annotations grouped by status columns
+@item
+@strong{Cross-project overview}: Discover all projects with annotations (from both the global database and @code{project.el}'s known projects) in a sortable summary table with per-status counts and one-keystroke drill-down to any project's table, org listing, or kanban board
 @end itemize
 
 @node Installation
@@ -238,6 +240,8 @@ Press @kbd{M-s s} to set status (open, resolved, etc.)
 Press @kbd{M-s e} to edit annotation data structure directly
 @item
 Press @kbd{M-s o} to export annotations to org-mode
+@item
+Press @kbd{M-s A} to see every project that has annotations in a sortable overview
 @end enumerate
 
 @node Basic Usage
@@ -732,13 +736,10 @@ Prompt only when adding replies (great for code reviews)
 @subsection Author Management Commands
 
 @findex simply-annotate-change-annotation-author
-@findex simply-annotate-reset-session-author
 
 @table @kbd
 @item M-s a
 @code{simply-annotate-change-annotation-author} - Change author of existing annotation/comment
-@item M-s A
-@code{simply-annotate-reset-session-author} - Reset session author (forces prompt on next annotation)
 @end table
 
 @section Collaboration Workflows
@@ -1219,6 +1220,99 @@ headings:
 
 The same @kbd{n}/@kbd{p}/@kbd{RET}/@kbd{q} navigation works here.  Jumping to
 an annotation opens the source file in another window.
+
+@section Cross-Project Overview
+
+@findex simply-annotate-list-projects
+@cindex cross-project overview
+@cindex projects with annotations
+When annotations are spread across multiple projects, you can use the
+cross-project overview to discover them all in one place.  Press
+@kbd{M-s A} (@code{simply-annotate-list-projects}) from any buffer, or
+access it through the command map prefix.
+
+This produces a @code{*Annotation Projects*} buffer showing a sortable
+table of every project that has annotations, with per-status counts so
+you can see at a glance where open work is concentrated.
+
+@subsection Columns
+
+The table has the following columns (all sortable by clicking the
+header or pressing @kbd{S} on the column):
+
+@table @code
+@item Project
+Project name (last component of the project root).
+@item Files
+Number of annotated files in the project.
+@item Ann
+Total annotation count across all files in the project.
+@item Status columns
+One numeric column per entry in @code{simply-annotate-thread-statuses},
+showing how many annotations are currently in that state.  Headers are
+abbreviated to the initials of each word in the status name so the
+table stays compact:
+
+@multitable @columnfractions .2 .5
+@headitem Header @tab Status
+@item @code{O}    @tab @code{open}
+@item @code{IP}   @tab @code{in-progress}
+@item @code{R}    @tab @code{resolved}
+@item @code{C}    @tab @code{closed}
+@end multitable
+
+If you customize @code{simply-annotate-thread-statuses} to add a value
+like @code{needs-review}, a new column headed @code{NR} appears
+automatically.  Legacy (pre-thread) string annotations are counted as
+@code{open}.
+@item Path
+Abbreviated absolute path of the project root.
+@end table
+
+@subsection Actions
+
+From this table you can drill down into any project:
+
+@table @kbd
+@item RET
+Open the sortable project table for the project at point
+@item L
+Open the org-mode listing for the project at point
+@item K
+Open the Kanban board for the project at point
+@item g
+Refresh the project list
+@item q
+Quit the overview
+@end table
+
+@subsection Discovery
+
+The projects shown are discovered from two sources, merged by project
+root:
+
+@enumerate
+@item
+The global annotation database (@code{simply-annotate-file}), with
+absolute file keys resolved to project roots via @code{project.el}.
+@item
+Every project root known to @code{project.el}
+(@code{project-known-project-roots}, the same list that backs
+@code{project-switch-project}) that contains a per-project annotation
+file (@code{simply-annotate-project-file}, default
+@code{.simply-annotations.el}) at its root.
+@end enumerate
+
+This means the overview works regardless of whether you use
+@code{simply-annotate-database-strategy} set to @code{global},
+@code{project}, or @code{both}.  If a project uses the per-project
+strategy but is not yet in your @code{project.el} known list, visit any
+file inside it once (or call @code{project-remember-project}) so it
+shows up.
+
+Drill-down actions read the target project's annotations directly from
+its own database file, so you can browse annotations from any project
+without first switching to it.
 
 @section Quick File Jump
 
@@ -1713,6 +1807,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
 @item @kbd{M-s /} @tab @code{simply-annotate-toggle-inline} @tab Toggle inline annotation display
 @item @kbd{M-s K} @tab @code{simply-annotate-kanban} @tab Kanban board of project annotations
+@item @kbd{M-s A} @tab @code{simply-annotate-list-projects} @tab Cross-project overview of every project with annotations
 @item @kbd{M-s n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-s v} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @item @kbd{M-s g} @tab @code{simply-annotate-update-display-style} @tab Refresh all annotation overlays
@@ -2215,8 +2310,6 @@ Verify the annotation buffer is responding to @kbd{C-c C-c} and @kbd{C-c C-k}
 Check @code{simply-annotate-prompt-for-author} setting
 @item
 Verify @code{simply-annotate-author-list} contains valid names
-@item
-Use @kbd{M-s A} to reset session author if stuck
 @item
 Check that prompting mode matches your workflow needs
 @end itemize

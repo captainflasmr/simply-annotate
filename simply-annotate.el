@@ -194,6 +194,11 @@
 ;; - <prefix> P   show annotations for the current project (org listing)
 ;; - <prefix> C-t show annotations for the current project (sortable table)
 ;; - <prefix> f   jump to annotated file
+;; - <prefix> A   cross-project overview of every project with annotations
+;;                (sortable table with per-status counts).  Discovers both
+;;                global-db entries and per-project `.simply-annotations.el'
+;;                files via `project-known-project-roots'.  From the table,
+;;                RET/L/K drill into the project's table/org/kanban view.
 ;;
 ;; Dired-aware narrowing: when the four project commands above are
 ;; invoked from a `dired' buffer that lives under a project
@@ -227,6 +232,7 @@
 (declare-function project-current "project")
 (declare-function project-root "project")
 (declare-function project-roots "project")
+(declare-function project-known-project-roots "project")
 
 (defun simply-annotate--project-root (project)
   "Return the root directory of PROJECT.
@@ -4249,20 +4255,24 @@ Refresh button or \\[simply-annotate-listing-refresh] to rebuild."
 
 (defun simply-annotate--project-annotations (root)
   "Return database entries for files under ROOT.
-Handles both absolute keys (global strategy) and relative keys
-\(project strategy)."
-  (let ((db (simply-annotate--load-database))
-        (expanded-root (expand-file-name root)))
-    (when db
-      (cl-remove-if-not
-       (lambda (entry)
-         (let ((key (car entry)))
-           (or
-            ;; Relative key (project strategy)
-            (not (file-name-absolute-p key))
-            ;; Absolute key under project root
-            (string-prefix-p expanded-root (expand-file-name key)))))
-       db))))
+Reads the per-project annotation file at ROOT (if any) and merges
+it with global-database entries whose absolute keys fall under
+ROOT.  Works regardless of the current buffer's project context,
+so cross-project browsing from the projects overview reads the
+target project's annotations, not the current one's."
+  (let* ((expanded-root (file-name-as-directory (expand-file-name root)))
+         (proj-file (expand-file-name simply-annotate-project-file expanded-root))
+         (proj-db (when (file-exists-p proj-file)
+                    (simply-annotate--read-db proj-file)))
+         (global-db (simply-annotate--read-db simply-annotate-file))
+         (global-under-root
+          (cl-remove-if-not
+           (lambda (entry)
+             (let ((key (car entry)))
+               (and (file-name-absolute-p key)
+                    (string-prefix-p expanded-root (expand-file-name key)))))
+           global-db)))
+    (simply-annotate--merge-databases proj-db global-under-root)))
 
 (defun simply-annotate--filter-db-by-directory (db root subdir)
   "Return entries from DB whose file key lives under SUBDIR.
@@ -4362,6 +4372,248 @@ logic used by `simply-annotate-show-all' and `simply-annotate-show-project'."
               (simply-annotate--finish-annotation-list-mode)
               (goto-char (point-min))))
           (pop-to-buffer buffer-name))))))
+
+;;; Cross-Project Overview
+
+(defun simply-annotate--discover-projects ()
+  "Discover all projects with annotations.
+Scans two sources:
+
+1. The global annotation database (`simply-annotate-file'): entries
+   whose file-keys resolve to a project are grouped by that project.
+
+2. Known project roots from `project.el' (`project-known-project-roots',
+   the same list that backs `project-switch-project'): for each root
+   that contains a per-project annotation file
+   (`simply-annotate-project-file'), its entries are folded in.
+
+Returns an alist of (PROJECT-ROOT . DB-ENTRIES) where each
+DB-ENTRIES is a list of (file-key . annotations).  Global-db
+entries whose keys cannot be resolved to a project are grouped
+under a \"(no project)\" pseudo-root."
+  (let ((result nil)
+        (project-cache (make-hash-table :test #'equal)))
+    ;; 1. Scan the global database.
+    (when-let ((db (simply-annotate--read-db simply-annotate-file)))
+      (dolist (entry db)
+        (let* ((key (car entry))
+               (root
+                (cond
+                 ;; Info-node keys have no project
+                 ((simply-annotate--key-info-p key) nil)
+                 ;; Absolute file paths: find project root
+                 ((file-name-absolute-p key)
+                  (let ((dir (file-name-directory key)))
+                    (or (gethash dir project-cache)
+                        (let ((found (when (and dir (file-directory-p dir))
+                                       (let ((proj (ignore-errors
+                                                     (project-current nil dir))))
+                                         (when proj
+                                           (simply-annotate--project-root proj))))))
+                          (puthash dir (or found :none) project-cache)
+                          (unless (eq found nil) found)))))
+                 ;; Relative keys (project strategy): use current project
+                 (t (when-let* ((proj (project-current nil))
+                                (r (simply-annotate--project-root proj)))
+                      r)))))
+          (when (eq root :none) (setq root nil))
+          (let ((group-key (if root
+                               (file-name-as-directory (expand-file-name root))
+                             "(no project)")))
+            (push entry (alist-get group-key result nil nil #'string=))))))
+    (dolist (group result)
+      (setcdr group (nreverse (cdr group))))
+    ;; 2. Scan known project roots for per-project annotation files.
+    (when (fboundp 'project-known-project-roots)
+      (dolist (raw-root (ignore-errors (project-known-project-roots)))
+        (let* ((root (file-name-as-directory (expand-file-name raw-root)))
+               (ann-file (expand-file-name simply-annotate-project-file root)))
+          (when (and (file-directory-p root)
+                     (file-exists-p ann-file))
+            (when-let ((db (simply-annotate--read-db ann-file)))
+              (let ((existing (alist-get root result nil nil #'string=))
+                    (new-entries nil))
+                (dolist (entry db)
+                  (unless (cl-find (car entry) existing
+                                   :key #'car :test #'equal)
+                    (push entry new-entries)))
+                (when new-entries
+                  (setf (alist-get root result nil nil #'string=)
+                        (append existing (nreverse new-entries))))))))))
+    result))
+
+(defvar simply-annotate-projects-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") #'simply-annotate-projects-goto-table)
+    (define-key map (kbd "L") #'simply-annotate-projects-goto-org)
+    (define-key map (kbd "K") #'simply-annotate-projects-goto-kanban)
+    (define-key map (kbd "g") #'simply-annotate-projects-refresh)
+    (define-key map (kbd "q") #'quit-window)
+    map)
+  "Keymap for `simply-annotate-projects-mode'.")
+
+(defun simply-annotate--projects-numeric-sorter (col)
+  "Return a tabulated-list sort predicate comparing column COL numerically."
+  (lambda (a b)
+    (< (string-to-number (aref (cadr a) col))
+       (string-to-number (aref (cadr b) col)))))
+
+(defun simply-annotate--abbrev-status (status)
+  "Return a short header abbreviation for STATUS.
+Takes the initial of each hyphen- or space-separated word, so
+\"open\" -> \"O\", \"in-progress\" -> \"IP\", \"resolved\" ->
+\"R\", \"closed\" -> \"C\"."
+  (mapconcat (lambda (word) (upcase (substring word 0 1)))
+             (split-string status "[-_ ]+" t)
+             ""))
+
+(define-derived-mode simply-annotate-projects-mode tabulated-list-mode "SA-Projects"
+  "Major mode for listing all projects with annotations.
+
+Status columns use initials: O=open, IP=in-progress, R=resolved,
+C=closed (derived from `simply-annotate-thread-statuses').
+
+Keymap:\n\n  RET  open project annotation table\n  L    open project org listing\n  K    open project kanban\n  g    refresh\n  q    quit"
+  (let* ((statuses simply-annotate-thread-statuses)
+         (status-cols
+          (let ((col 3)
+                (cols nil))
+            (dolist (st statuses)
+              (let ((header (simply-annotate--abbrev-status st)))
+                (push (list header
+                            (max 4 (+ 2 (length header)))
+                            (simply-annotate--projects-numeric-sorter col))
+                      cols))
+              (setq col (1+ col)))
+            (nreverse cols)))
+         (format-list
+          (append
+           (list '("Project" 25 t)
+                 (list "Files" 6 (simply-annotate--projects-numeric-sorter 1))
+                 (list "Ann" 5 (simply-annotate--projects-numeric-sorter 2)))
+           status-cols
+           (list '("Path" 0 t)))))
+    (setq tabulated-list-format (vconcat format-list)))
+  (setq tabulated-list-sort-key '("Project" . nil))
+  (tabulated-list-init-header))
+
+(defun simply-annotate--count-statuses (db-entries statuses)
+  "Return a hash table mapping each status in STATUSES to its count.
+DB-ENTRIES is a list of (file-key . annotations) pairs.  Each
+annotation's status defaults to \"open\"; legacy string
+annotations (no thread) are also counted as \"open\".  Statuses
+not in STATUSES are ignored."
+  (let ((table (make-hash-table :test #'equal)))
+    (dolist (st statuses) (puthash st 0 table))
+    (dolist (entry db-entries)
+      (dolist (ann (cdr entry))
+        (let* ((data (alist-get 'text ann))
+               (thread-p (simply-annotate--thread-p data))
+               (status (if thread-p
+                           (or (alist-get 'status data) "open")
+                         "open")))
+          (when (gethash status table)
+            (puthash status (1+ (gethash status table)) table)))))
+    table))
+
+(defun simply-annotate--projects-tabulated-entries (projects)
+  "Build `tabulated-list-entries' from PROJECTS alist.
+PROJECTS is an alist of (ROOT . DB-ENTRIES) as returned by
+`simply-annotate--discover-projects'."
+  (let ((entries nil)
+        (statuses simply-annotate-thread-statuses))
+    (dolist (group projects)
+      (let* ((root (car group))
+             (db-entries (cdr group))
+             (project-name (if (string= root "(no project)")
+                               root
+                             (file-name-nondirectory
+                              (directory-file-name root))))
+             (file-count (length db-entries))
+             (ann-count (cl-reduce #'+ db-entries
+                                   :key (lambda (e) (length (cdr e)))))
+             (status-counts (simply-annotate--count-statuses db-entries statuses))
+             (status-cells (mapcar (lambda (st)
+                                     (number-to-string (gethash st status-counts 0)))
+                                   statuses))
+             (display-path (if (string= root "(no project)")
+                               ""
+                             (abbreviate-file-name root))))
+        (push (list root
+                    (vconcat
+                     (vector project-name
+                             (number-to-string file-count)
+                             (number-to-string ann-count))
+                     (apply #'vector status-cells)
+                     (vector display-path)))
+              entries)))
+    (nreverse entries)))
+
+(defun simply-annotate--projects-root-at-point ()
+  "Return the project root for the entry at point, or nil."
+  (let ((id (tabulated-list-get-id)))
+    (when (and id (not (string= id "(no project)")))
+      id)))
+
+(defun simply-annotate-projects-goto-table ()
+  "Open the project annotation table for the project at point."
+  (interactive)
+  (if-let ((root (simply-annotate--projects-root-at-point)))
+      (let ((default-directory root))
+        (simply-annotate--show-project-table root nil nil))
+    (message "No project at point")))
+
+(defun simply-annotate-projects-goto-org ()
+  "Open the project org listing for the project at point."
+  (interactive)
+  (if-let ((root (simply-annotate--projects-root-at-point)))
+      (let* ((project-name (file-name-nondirectory
+                            (directory-file-name root)))
+             (db (simply-annotate--project-annotations root)))
+        (simply-annotate--show-filtered
+         (format "*Annotations: %s*" project-name)
+         (format "Project Annotations: %s" project-name)
+         db))
+    (message "No project at point")))
+
+(defun simply-annotate-projects-goto-kanban ()
+  "Open the kanban board for the project at point."
+  (interactive)
+  (if-let ((root (simply-annotate--projects-root-at-point)))
+      (let ((default-directory root))
+        (simply-annotate-kanban 'project))
+    (message "No project at point")))
+
+(defun simply-annotate-projects-refresh ()
+  "Refresh the projects overview buffer."
+  (interactive)
+  (let ((projects (simply-annotate--discover-projects)))
+    (setq tabulated-list-entries
+          (simply-annotate--projects-tabulated-entries projects))
+    (tabulated-list-print t)))
+
+;;;###autoload
+(defun simply-annotate-list-projects ()
+  "Show all projects that have annotations in a sortable table.
+Scans the global annotation database and all project.el-known
+project roots (`project-known-project-roots') for per-project
+annotation files, displaying each project with file and
+annotation counts.  From the table you can drill down into any
+project's annotations via RET (table), L (org listing), or
+K (kanban)."
+  (interactive)
+  (let* ((buffer-name "*Annotation Projects*")
+         (existing (get-buffer buffer-name)))
+    (when existing (kill-buffer existing))
+    (let ((projects (simply-annotate--discover-projects)))
+      (if (not projects)
+          (message "No annotations found in global or known-project databases")
+        (with-current-buffer (get-buffer-create buffer-name)
+          (simply-annotate-projects-mode)
+          (setq tabulated-list-entries
+                (simply-annotate--projects-tabulated-entries projects))
+          (tabulated-list-print))
+        (pop-to-buffer buffer-name)))))
 
 ;;;###autoload
 (defun simply-annotate-show-all ()
@@ -4658,6 +4910,7 @@ ARG is the raw prefix argument and selects the candidate set:
     (define-key map (kbd "P") #'simply-annotate-show-project)
     (define-key map (kbd "C-t") #'simply-annotate-list-project-table)
     (define-key map (kbd "K") #'simply-annotate-kanban)
+    (define-key map (kbd "A") #'simply-annotate-list-projects)
     (define-key map (kbd "f") #'simply-annotate-jump-to-file)
     (define-key map (kbd "p") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "t") #'simply-annotate-add-annotation-tag)
@@ -4711,7 +4964,7 @@ Available keys:
   j  smart-action      r  reply           s  status
   -  remove            C  clear buffer     a  change author   l  list
   T  table             L  show all        P  show project
-  C-t  project table   f  jump to file    p  priority
+  A  all projects      C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp
   [  level backward    ]  level forward   \\='  cycle style
   /  toggle inline     n  next            v  previous

@@ -186,10 +186,16 @@ Free Documentation License&rdquo;.
   <ul class="toc-numbered-mark">
     <li><a id="toc-Listing-All-Annotations" href="#Listing-All-Annotations">10.1 Listing All Annotations</a></li>
     <li><a id="toc-Global-Annotation-Overview" href="#Global-Annotation-Overview">10.2 Global Annotation Overview</a></li>
-    <li><a id="toc-Quick-File-Jump" href="#Quick-File-Jump">10.3 Quick File Jump</a></li>
-    <li><a id="toc-Dired-Integration" href="#Dired-Integration">10.4 Dired Integration</a></li>
-    <li><a id="toc-Annotation-Buffer-Features" href="#Annotation-Buffer-Features">10.5 Annotation Buffer Features</a></li>
-    <li><a id="toc-Header_002dline-Integration" href="#Header_002dline-Integration">10.6 Header-line Integration</a></li>
+    <li><a id="toc-Cross_002dProject-Overview" href="#Cross_002dProject-Overview">10.3 Cross-Project Overview</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Columns" href="#Columns">10.3.1 Columns</a></li>
+      <li><a id="toc-Actions" href="#Actions">10.3.2 Actions</a></li>
+      <li><a id="toc-Discovery" href="#Discovery">10.3.3 Discovery</a></li>
+    </ul></li>
+    <li><a id="toc-Quick-File-Jump" href="#Quick-File-Jump">10.4 Quick File Jump</a></li>
+    <li><a id="toc-Dired-Integration" href="#Dired-Integration">10.5 Dired Integration</a></li>
+    <li><a id="toc-Annotation-Buffer-Features" href="#Annotation-Buffer-Features">10.6 Annotation Buffer Features</a></li>
+    <li><a id="toc-Header_002dline-Integration" href="#Header_002dline-Integration">10.7 Header-line Integration</a></li>
   </ul></li>
   <li><a id="toc-Project_002dAware-Annotations" href="#Project_002dAware-Annotations">11 Project-Aware Annotations</a>
   <ul class="toc-numbered-mark">
@@ -213,7 +219,7 @@ Free Documentation License&rdquo;.
   <ul class="toc-numbered-mark">
     <li><a id="toc-Board-Layout" href="#Board-Layout">12.1 Board Layout</a></li>
     <li><a id="toc-Navigation-1" href="#Navigation-2">12.2 Navigation</a></li>
-    <li><a id="toc-Actions" href="#Actions">12.3 Actions</a></li>
+    <li><a id="toc-Actions-1" href="#Actions-1">12.3 Actions</a></li>
     <li><a id="toc-Filtering" href="#Filtering">12.4 Filtering</a></li>
     <li><a id="toc-Expand-and-Follow" href="#Expand-and-Follow">12.5 Expand and Follow</a></li>
   </ul></li>
@@ -335,6 +341,7 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </li><li><strong class="strong">Header-line integration</strong>: Shows annotation count and available commands
 </li><li><strong class="strong">Dired integration</strong>: Fringe indicators in dired for files with annotations
 </li><li><strong class="strong">Kanban board</strong>: Visual board view of project annotations grouped by status columns
+</li><li><strong class="strong">Cross-project overview</strong>: Discover all projects with annotations (from both the global database and <code class="code">project.el</code>&rsquo;s known projects) in a sortable summary table with per-status counts and one-keystroke drill-down to any project&rsquo;s table, org listing, or kanban board
 </li></ul>
 
 <hr>
@@ -461,6 +468,7 @@ Next: <a href="#Basic-Usage" accesskey="n" rel="next">Basic Usage</a>, Previous:
 </li><li> Press <kbd class="kbd">M-s s</kbd> to set status (open, resolved, etc.)
 </li><li> Press <kbd class="kbd">M-s e</kbd> to edit annotation data structure directly
 </li><li> Press <kbd class="kbd">M-s o</kbd> to export annotations to org-mode
+</li><li> Press <kbd class="kbd">M-s A</kbd> to see every project that has annotations in a sortable overview
 </li></ol>
 
 <hr>
@@ -1037,14 +1045,10 @@ automatically narrowed to that subdirectory.
 <h4 class="subsection"><span>6.3.3 Author Management Commands<a class="copiable-link" href="#Author-Management-Commands"> &para;</a></span></h4>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dchange_002dannotation_002dauthor"></a>
-<a class="index-entry-id" id="index-simply_002dannotate_002dreset_002dsession_002dauthor"></a>
 
 <dl class="table">
 <dt><kbd class="kbd">M-s a</kbd></dt>
 <dd><p><code class="code">simply-annotate-change-annotation-author</code> - Change author of existing annotation/comment
-</p></dd>
-<dt><kbd class="kbd">M-s A</kbd></dt>
-<dd><p><code class="code">simply-annotate-reset-session-author</code> - Reset session author (forces prompt on next annotation)
 </p></dd>
 </dl>
 
@@ -1533,10 +1537,11 @@ Next: <a href="#Project_002dAware-Annotations" accesskey="n" rel="next">Project-
 <ul class="mini-toc">
 <li><a href="#Listing-All-Annotations" accesskey="1">Listing All Annotations</a></li>
 <li><a href="#Global-Annotation-Overview" accesskey="2">Global Annotation Overview</a></li>
-<li><a href="#Quick-File-Jump" accesskey="3">Quick File Jump</a></li>
-<li><a href="#Dired-Integration" accesskey="4">Dired Integration</a></li>
-<li><a href="#Annotation-Buffer-Features" accesskey="5">Annotation Buffer Features</a></li>
-<li><a href="#Header_002dline-Integration" accesskey="6">Header-line Integration</a></li>
+<li><a href="#Cross_002dProject-Overview" accesskey="3">Cross-Project Overview</a></li>
+<li><a href="#Quick-File-Jump" accesskey="4">Quick File Jump</a></li>
+<li><a href="#Dired-Integration" accesskey="5">Dired Integration</a></li>
+<li><a href="#Annotation-Buffer-Features" accesskey="6">Annotation Buffer Features</a></li>
+<li><a href="#Header_002dline-Integration" accesskey="7">Header-line Integration</a></li>
 </ul>
 <div class="section-level-extent" id="Listing-All-Annotations">
 <h3 class="section"><span>10.1 Listing All Annotations<a class="copiable-link" href="#Listing-All-Annotations"> &para;</a></span></h3>
@@ -1617,8 +1622,123 @@ headings:
 an annotation opens the source file in another window.
 </p>
 </div>
+<div class="section-level-extent" id="Cross_002dProject-Overview">
+<h3 class="section"><span>10.3 Cross-Project Overview<a class="copiable-link" href="#Cross_002dProject-Overview"> &para;</a></span></h3>
+
+<a class="index-entry-id" id="index-simply_002dannotate_002dlist_002dprojects"></a>
+<a class="index-entry-id" id="index-cross_002dproject-overview"></a>
+<a class="index-entry-id" id="index-projects-with-annotations"></a>
+<p>When annotations are spread across multiple projects, you can use the
+cross-project overview to discover them all in one place.  Press
+<kbd class="kbd">M-s A</kbd> (<code class="code">simply-annotate-list-projects</code>) from any buffer, or
+access it through the command map prefix.
+</p>
+<p>This produces a <code class="code">*Annotation Projects*</code> buffer showing a sortable
+table of every project that has annotations, with per-status counts so
+you can see at a glance where open work is concentrated.
+</p>
+<ul class="mini-toc">
+<li><a href="#Columns" accesskey="1">Columns</a></li>
+<li><a href="#Actions" accesskey="2">Actions</a></li>
+<li><a href="#Discovery" accesskey="3">Discovery</a></li>
+</ul>
+<div class="subsection-level-extent" id="Columns">
+<h4 class="subsection"><span>10.3.1 Columns<a class="copiable-link" href="#Columns"> &para;</a></span></h4>
+
+<p>The table has the following columns (all sortable by clicking the
+header or pressing <kbd class="kbd">S</kbd> on the column):
+</p>
+<dl class="table">
+<dt><code class="code">Project</code></dt>
+<dd><p>Project name (last component of the project root).
+</p></dd>
+<dt><code class="code">Files</code></dt>
+<dd><p>Number of annotated files in the project.
+</p></dd>
+<dt><code class="code">Ann</code></dt>
+<dd><p>Total annotation count across all files in the project.
+</p></dd>
+<dt><code class="code">Status columns</code></dt>
+<dd><p>One numeric column per entry in <code class="code">simply-annotate-thread-statuses</code>,
+showing how many annotations are currently in that state.  Headers are
+abbreviated to the initials of each word in the status name so the
+table stays compact:
+</p>
+<table class="multitable">
+<thead><tr><th width="20%">Header</th><th width="50%">Status</th></tr></thead>
+<tbody><tr><td width="20%"><code class="code">O</code></td><td width="50%"><code class="code">open</code></td></tr>
+<tr><td width="20%"><code class="code">IP</code></td><td width="50%"><code class="code">in-progress</code></td></tr>
+<tr><td width="20%"><code class="code">R</code></td><td width="50%"><code class="code">resolved</code></td></tr>
+<tr><td width="20%"><code class="code">C</code></td><td width="50%"><code class="code">closed</code></td></tr>
+</tbody>
+</table>
+
+<p>If you customize <code class="code">simply-annotate-thread-statuses</code> to add a value
+like <code class="code">needs-review</code>, a new column headed <code class="code">NR</code> appears
+automatically.  Legacy (pre-thread) string annotations are counted as
+<code class="code">open</code>.
+</p></dd>
+<dt><code class="code">Path</code></dt>
+<dd><p>Abbreviated absolute path of the project root.
+</p></dd>
+</dl>
+
+</div>
+<div class="subsection-level-extent" id="Actions">
+<h4 class="subsection"><span>10.3.2 Actions<a class="copiable-link" href="#Actions"> &para;</a></span></h4>
+
+<p>From this table you can drill down into any project:
+</p>
+<dl class="table">
+<dt><kbd class="kbd">RET</kbd></dt>
+<dd><p>Open the sortable project table for the project at point
+</p></dd>
+<dt><kbd class="kbd">L</kbd></dt>
+<dd><p>Open the org-mode listing for the project at point
+</p></dd>
+<dt><kbd class="kbd">K</kbd></dt>
+<dd><p>Open the Kanban board for the project at point
+</p></dd>
+<dt><kbd class="kbd">g</kbd></dt>
+<dd><p>Refresh the project list
+</p></dd>
+<dt><kbd class="kbd">q</kbd></dt>
+<dd><p>Quit the overview
+</p></dd>
+</dl>
+
+</div>
+<div class="subsection-level-extent" id="Discovery">
+<h4 class="subsection"><span>10.3.3 Discovery<a class="copiable-link" href="#Discovery"> &para;</a></span></h4>
+
+<p>The projects shown are discovered from two sources, merged by project
+root:
+</p>
+<ol class="enumerate">
+<li> The global annotation database (<code class="code">simply-annotate-file</code>), with
+absolute file keys resolved to project roots via <code class="code">project.el</code>.
+</li><li> Every project root known to <code class="code">project.el</code>
+(<code class="code">project-known-project-roots</code>, the same list that backs
+<code class="code">project-switch-project</code>) that contains a per-project annotation
+file (<code class="code">simply-annotate-project-file</code>, default
+<code class="code">.simply-annotations.el</code>) at its root.
+</li></ol>
+
+<p>This means the overview works regardless of whether you use
+<code class="code">simply-annotate-database-strategy</code> set to <code class="code">global</code>,
+<code class="code">project</code>, or <code class="code">both</code>.  If a project uses the per-project
+strategy but is not yet in your <code class="code">project.el</code> known list, visit any
+file inside it once (or call <code class="code">project-remember-project</code>) so it
+shows up.
+</p>
+<p>Drill-down actions read the target project&rsquo;s annotations directly from
+its own database file, so you can browse annotations from any project
+without first switching to it.
+</p>
+</div>
+</div>
 <div class="section-level-extent" id="Quick-File-Jump">
-<h3 class="section"><span>10.3 Quick File Jump<a class="copiable-link" href="#Quick-File-Jump"> &para;</a></span></h3>
+<h3 class="section"><span>10.4 Quick File Jump<a class="copiable-link" href="#Quick-File-Jump"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002djump_002dto_002dfile"></a>
 <p>For quick navigation without the full overview, bind
@@ -1633,7 +1753,7 @@ the selected file, and enables <code class="code">simply-annotate-mode</code>.
 </p>
 </div>
 <div class="section-level-extent" id="Dired-Integration">
-<h3 class="section"><span>10.4 Dired Integration<a class="copiable-link" href="#Dired-Integration"> &para;</a></span></h3>
+<h3 class="section"><span>10.5 Dired Integration<a class="copiable-link" href="#Dired-Integration"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-simply_002dannotate_002ddired_002dmode"></a>
 <p>Enable <code class="code">simply-annotate-dired-mode</code> in dired buffers to show fringe
@@ -1651,7 +1771,7 @@ dired buffer is re-read (e.g. after pressing <kbd class="kbd">g</kbd>).
 </p>
 </div>
 <div class="section-level-extent" id="Annotation-Buffer-Features">
-<h3 class="section"><span>10.5 Annotation Buffer Features<a class="copiable-link" href="#Annotation-Buffer-Features"> &para;</a></span></h3>
+<h3 class="section"><span>10.6 Annotation Buffer Features<a class="copiable-link" href="#Annotation-Buffer-Features"> &para;</a></span></h3>
 
 <p>The annotation buffer provides a rich editing environment with threading support:
 </p>
@@ -1669,7 +1789,7 @@ dired buffer is re-read (e.g. after pressing <kbd class="kbd">g</kbd>).
 
 </div>
 <div class="section-level-extent" id="Header_002dline-Integration">
-<h3 class="section"><span>10.6 Header-line Integration<a class="copiable-link" href="#Header_002dline-Integration"> &para;</a></span></h3>
+<h3 class="section"><span>10.7 Header-line Integration<a class="copiable-link" href="#Header_002dline-Integration"> &para;</a></span></h3>
 
 <a class="index-entry-id" id="index-header_002dline"></a>
 <a class="index-entry-id" id="index-status-display"></a>
@@ -1893,7 +2013,7 @@ a project detectable by <code class="code">project.el</code>.
 <ul class="mini-toc">
 <li><a href="#Board-Layout" accesskey="1">Board Layout</a></li>
 <li><a href="#Navigation-2" accesskey="2">Navigation</a></li>
-<li><a href="#Actions" accesskey="3">Actions</a></li>
+<li><a href="#Actions-1" accesskey="3">Actions</a></li>
 <li><a href="#Filtering" accesskey="4">Filtering</a></li>
 <li><a href="#Expand-and-Follow" accesskey="5">Expand and Follow</a></li>
 </ul>
@@ -1948,8 +2068,8 @@ card) and <kbd class="kbd">f</kbd>/<kbd class="kbd">b</kbd> (next/prev column) a
 feedback for which card is active.
 </p>
 </div>
-<div class="section-level-extent" id="Actions">
-<h3 class="section"><span>12.3 Actions<a class="copiable-link" href="#Actions"> &para;</a></span></h3>
+<div class="section-level-extent" id="Actions-1">
+<h3 class="section"><span>12.3 Actions<a class="copiable-link" href="#Actions-1"> &para;</a></span></h3>
 
 <dl class="table">
 <dt><kbd class="kbd">RET</kbd></dt>
@@ -2192,6 +2312,7 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 <tr><td width="15%"><kbd class="kbd">M-s '</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-display-style</code></td><td width="50%">Cycle through display styles</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s /</kbd></td><td width="35%"><code class="code">simply-annotate-toggle-inline</code></td><td width="50%">Toggle inline annotation display</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s K</kbd></td><td width="35%"><code class="code">simply-annotate-kanban</code></td><td width="50%">Kanban board of project annotations</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s A</kbd></td><td width="35%"><code class="code">simply-annotate-list-projects</code></td><td width="50%">Cross-project overview of every project with annotations</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s v</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s g</kbd></td><td width="35%"><code class="code">simply-annotate-update-display-style</code></td><td width="50%">Refresh all annotation overlays</td></tr>
@@ -2803,7 +2924,6 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <ul class="itemize mark-bullet">
 <li>Check <code class="code">simply-annotate-prompt-for-author</code> setting
 </li><li>Verify <code class="code">simply-annotate-author-list</code> contains valid names
-</li><li>Use <kbd class="kbd">M-s A</kbd> to reset session author if stuck
 </li><li>Check that prompting mode matches your workflow needs
 </li></ul>
 
@@ -2993,6 +3113,7 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dkanban"><code>simply-annotate-kanban</code></a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist"><code>simply-annotate-list</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist_002dproject_002dtable"><code>simply-annotate-list-project-table</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist_002dprojects"><code>simply-annotate-list-projects</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmigrate_002dthreading"><code>simply-annotate-migrate-threading</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmigrate_002dto_002dproject"><code>simply-annotate-migrate-to-project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmode"><code>simply-annotate-mode</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
@@ -3001,7 +3122,6 @@ Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Pre
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove"><code>simply-annotate-remove</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove_002dannotation_002dtag"><code>simply-annotate-remove-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreply_002dto_002dannotation"><code>simply-annotate-reply-to-annotation</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreset_002dsession_002dauthor"><code>simply-annotate-reset-session-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsave_002dannotation_002dbuffer"><code>simply-annotate-save-annotation-buffer</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsearch_002dby_002dtag"><code>simply-annotate-search-by-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dpriority"><code>simply-annotate-set-annotation-priority</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
@@ -3209,6 +3329,7 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <tr><th id="Concept-Index_cp_letter-C">C</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-collaboration">collaboration</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-conversations">conversations</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-cross_002dproject-overview">cross-project overview</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-D">D</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-data-structure-editing">data structure editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
@@ -3244,6 +3365,7 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <tr><th id="Concept-Index_cp_letter-P">P</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-priority">priority</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-progressive-exploration">progressive exploration</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td></td><td class="printindex-index-entry"><a href="#index-projects-with-annotations">projects with annotations</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
 <tr><td colspan="3"><hr></td></tr>
 <tr><th id="Concept-Index_cp_letter-R">R</th></tr>
 <tr><td></td><td class="printindex-index-entry"><a href="#index-replies">replies</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>

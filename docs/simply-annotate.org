@@ -105,10 +105,14 @@ Documentation License”.
 - [[#Advanced-Features][10 Advanced Features]]
   - [[#Listing-All-Annotations][10.1 Listing All Annotations]]
   - [[#Global-Annotation-Overview][10.2 Global Annotation Overview]]
-  - [[#Quick-File-Jump][10.3 Quick File Jump]]
-  - [[#Dired-Integration][10.4 Dired Integration]]
-  - [[#Annotation-Buffer-Features][10.5 Annotation Buffer Features]]
-  - [[#Header_002dline-Integration][10.6 Header-line Integration]]
+  - [[#Cross_002dProject-Overview][10.3 Cross-Project Overview]]
+    - [[#Columns][10.3.1 Columns]]
+    - [[#Actions][10.3.2 Actions]]
+    - [[#Discovery][10.3.3 Discovery]]
+  - [[#Quick-File-Jump][10.4 Quick File Jump]]
+  - [[#Dired-Integration][10.5 Dired Integration]]
+  - [[#Annotation-Buffer-Features][10.6 Annotation Buffer Features]]
+  - [[#Header_002dline-Integration][10.7 Header-line Integration]]
 - [[#Project_002dAware-Annotations][11 Project-Aware Annotations]]
   - [[#Database-Strategy][11.1 Database Strategy]]
     - [[#Setup][11.1.1 Setup]]
@@ -123,7 +127,7 @@ Documentation License”.
 - [[#Kanban-Board][12 Kanban Board]]
   - [[#Board-Layout][12.1 Board Layout]]
   - [[#Navigation-2][12.2 Navigation]]
-  - [[#Actions][12.3 Actions]]
+  - [[#Actions-1][12.3 Actions]]
   - [[#Filtering][12.4 Filtering]]
   - [[#Expand-and-Follow][12.5 Expand and Follow]]
 - [[#Org_002dmode-Integration][13 Org-mode Integration]]
@@ -248,6 +252,10 @@ documentation and includes threading and collaboration features.
   annotations
 - *Kanban board*: Visual board view of project annotations grouped by
   status columns
+- *Cross-project overview*: Discover all projects with annotations (from
+  both the global database and =project.el='s known projects) in a
+  sortable summary table with per-status counts and one-keystroke
+  drill-down to any project's table, org listing, or kanban board
 
 --------------
 
@@ -375,6 +383,8 @@ Here's how to get started with Simply Annotate:
 9. Press M-s s to set status (open, resolved, etc.)
 10. Press M-s e to edit annotation data structure directly
 11. Press M-s o to export annotations to org-mode
+12. Press M-s A to see every project that has annotations in a sortable
+    overview
 
 --------------
 
@@ -926,9 +936,6 @@ Configure team members and prompting behavior:
 - M-s a :: =simply-annotate-change-annotation-author= - Change author of
   existing annotation/comment
 
-- M-s A :: =simply-annotate-reset-session-author= - Reset session author
-  (forces prompt on next annotation)
-
 <<Collaboration-Workflows>>
 *** 6.4 Collaboration Workflows [[#Collaboration-Workflows][¶]]
 :PROPERTIES:
@@ -1407,6 +1414,7 @@ Previous: [[#Navigation][Navigation]], Up: [[#Top][Simply Annotate]]  
 :END:
 - [[#Listing-All-Annotations][Listing All Annotations]]
 - [[#Global-Annotation-Overview][Global Annotation Overview]]
+- [[#Cross_002dProject-Overview][Cross-Project Overview]]
 - [[#Quick-File-Jump][Quick File Jump]]
 - [[#Dired-Integration][Dired Integration]]
 - [[#Annotation-Buffer-Features][Annotation Buffer Features]]
@@ -1491,8 +1499,105 @@ headings:
 The same n/p/RET/q navigation works here. Jumping to an annotation opens
 the source file in another window.
 
+<<Cross_002dProject-Overview>>
+*** 10.3 Cross-Project Overview [[#Cross_002dProject-Overview][¶]]
+:PROPERTIES:
+:CUSTOM_ID: cross-project-overview
+:CLASS: section
+:END:
+When annotations are spread across multiple projects, you can use the
+cross-project overview to discover them all in one place. Press M-s A
+(=simply-annotate-list-projects=) from any buffer, or access it through
+the command map prefix.
+
+This produces a =*Annotation Projects*= buffer showing a sortable table
+of every project that has annotations, with per-status counts so you can
+see at a glance where open work is concentrated.
+
+- [[#Columns][Columns]]
+- [[#Actions][Actions]]
+- [[#Discovery][Discovery]]
+
+<<Columns>>
+**** 10.3.1 Columns [[#Columns][¶]]
+:PROPERTIES:
+:CUSTOM_ID: columns
+:CLASS: subsection
+:END:
+The table has the following columns (all sortable by clicking the header
+or pressing S on the column):
+
+- =Project= :: Project name (last component of the project root).
+
+- =Files= :: Number of annotated files in the project.
+
+- =Ann= :: Total annotation count across all files in the project.
+
+- =Status columns= :: One numeric column per entry in
+  =simply-annotate-thread-statuses=, showing how many annotations are
+  currently in that state. Headers are abbreviated to the initials of
+  each word in the status name so the table stays compact:
+
+  | Header | Status        |
+  |--------+---------------|
+  | =O=    | =open=        |
+  | =IP=   | =in-progress= |
+  | =R=    | =resolved=    |
+  | =C=    | =closed=      |
+
+  If you customize =simply-annotate-thread-statuses= to add a value like
+  =needs-review=, a new column headed =NR= appears automatically. Legacy
+  (pre-thread) string annotations are counted as =open=.
+
+- =Path= :: Abbreviated absolute path of the project root.
+
+<<Actions>>
+**** 10.3.2 Actions [[#Actions][¶]]
+:PROPERTIES:
+:CUSTOM_ID: actions
+:CLASS: subsection
+:END:
+From this table you can drill down into any project:
+
+- RET :: Open the sortable project table for the project at point
+
+- L :: Open the org-mode listing for the project at point
+
+- K :: Open the Kanban board for the project at point
+
+- g :: Refresh the project list
+
+- q :: Quit the overview
+
+<<Discovery>>
+**** 10.3.3 Discovery [[#Discovery][¶]]
+:PROPERTIES:
+:CUSTOM_ID: discovery
+:CLASS: subsection
+:END:
+The projects shown are discovered from two sources, merged by project
+root:
+
+1. The global annotation database (=simply-annotate-file=), with
+   absolute file keys resolved to project roots via =project.el=.
+2. Every project root known to =project.el=
+   (=project-known-project-roots=, the same list that backs
+   =project-switch-project=) that contains a per-project annotation file
+   (=simply-annotate-project-file=, default =.simply-annotations.el=) at
+   its root.
+
+This means the overview works regardless of whether you use
+=simply-annotate-database-strategy= set to =global=, =project=, or
+=both=. If a project uses the per-project strategy but is not yet in
+your =project.el= known list, visit any file inside it once (or call
+=project-remember-project=) so it shows up.
+
+Drill-down actions read the target project's annotations directly from
+its own database file, so you can browse annotations from any project
+without first switching to it.
+
 <<Quick-File-Jump>>
-*** 10.3 Quick File Jump [[#Quick-File-Jump][¶]]
+*** 10.4 Quick File Jump [[#Quick-File-Jump][¶]]
 :PROPERTIES:
 :CUSTOM_ID: quick-file-jump
 :CLASS: section
@@ -1508,7 +1613,7 @@ This uses =completing-read= to show all annotated files with counts,
 opens the selected file, and enables =simply-annotate-mode=.
 
 <<Dired-Integration>>
-*** 10.4 Dired Integration [[#Dired-Integration][¶]]
+*** 10.5 Dired Integration [[#Dired-Integration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: dired-integration
 :CLASS: section
@@ -1527,7 +1632,7 @@ in source buffers (=simply-annotate-fringe-indicator= and
 the dired buffer is re-read (e.g. after pressing g).
 
 <<Annotation-Buffer-Features>>
-*** 10.5 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
+*** 10.6 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-features
 :CLASS: section
@@ -1546,7 +1651,7 @@ support:
 - Automatically handles empty annotations (removes them)
 
 <<Header_002dline-Integration>>
-*** 10.6 Header-line Integration [[#Header_002dline-Integration][¶]]
+*** 10.7 Header-line Integration [[#Header_002dline-Integration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: header-line-integration
 :CLASS: section
@@ -1771,7 +1876,7 @@ project detectable by =project.el=.
 
 - [[#Board-Layout][Board Layout]]
 - [[#Navigation-2][Navigation]]
-- [[#Actions][Actions]]
+- [[#Actions-1][Actions]]
 - [[#Filtering][Filtering]]
 - [[#Expand-and-Follow][Expand and Follow]]
 
@@ -1823,10 +1928,10 @@ column) are also available.
 The card under point is highlighted with bold face, providing visual
 feedback for which card is active.
 
-<<Actions>>
-*** 12.3 Actions [[#Actions][¶]]
+<<Actions-1>>
+*** 12.3 Actions [[#Actions-1][¶]]
 :PROPERTIES:
-:CUSTOM_ID: actions
+:CUSTOM_ID: actions-1
 :CLASS: section
 :END:
 - RET :: Jump to the annotation's source file and position.
@@ -2034,34 +2139,35 @@ Accessed via your chosen prefix key. Examples below use M-s (the
 recommended prefix). See [[#Installation][Installation]], for how to
 bind the prefix.
 
-| Key     | Command                                    | Description                                 |
-|---------+--------------------------------------------+---------------------------------------------|
-| M-s j   | =simply-annotate-smart-action=             | Smart create/view/edit annotation           |
-| M-s e   | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp           |
-| M-s r   | =simply-annotate-reply-to-annotation=      | Add reply to annotation                     |
-| M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                  |
-| M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                     |
-| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                       |
-| M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                  |
-| M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                   |
-| M-s a   | =simply-annotate-change-annotation-author= | Change author                               |
-| M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                          |
-| M-s -   | =simply-annotate-remove=                   | Delete annotation at point                  |
-| M-s C   | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer          |
-| M-s l   | =simply-annotate-list=                     | List all annotations in current file        |
-| M-s T   | =simply-annotate-list-table=               | Sortable table view of annotations          |
-| M-s L   | =simply-annotate-show-all=                 | Browse annotations across all files         |
-| M-s P   | =simply-annotate-show-project=             | Browse annotations in current project       |
-| M-s C-t | =simply-annotate-list-project-table=       | Sortable project-wide table                 |
-| M-s f   | =simply-annotate-jump-to-file=             | Jump to annotated file (project-scoped)     |
-| M-s [   | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file) |
-| M-s ]   | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)  |
-| M-s '   | =simply-annotate-cycle-display-style=      | Cycle through display styles                |
-| M-s /   | =simply-annotate-toggle-inline=            | Toggle inline annotation display            |
-| M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations         |
-| M-s n   | =simply-annotate-next=                     | Jump to next annotation                     |
-| M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                 |
-| M-s g   | =simply-annotate-update-display-style=     | Refresh all annotation overlays             |
+| Key     | Command                                    | Description                                              |
+|---------+--------------------------------------------+----------------------------------------------------------|
+| M-s j   | =simply-annotate-smart-action=             | Smart create/view/edit annotation                        |
+| M-s e   | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp                        |
+| M-s r   | =simply-annotate-reply-to-annotation=      | Add reply to annotation                                  |
+| M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                               |
+| M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                                  |
+| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                                    |
+| M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                               |
+| M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                                |
+| M-s a   | =simply-annotate-change-annotation-author= | Change author                                            |
+| M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                                       |
+| M-s -   | =simply-annotate-remove=                   | Delete annotation at point                               |
+| M-s C   | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer                       |
+| M-s l   | =simply-annotate-list=                     | List all annotations in current file                     |
+| M-s T   | =simply-annotate-list-table=               | Sortable table view of annotations                       |
+| M-s L   | =simply-annotate-show-all=                 | Browse annotations across all files                      |
+| M-s P   | =simply-annotate-show-project=             | Browse annotations in current project                    |
+| M-s C-t | =simply-annotate-list-project-table=       | Sortable project-wide table                              |
+| M-s f   | =simply-annotate-jump-to-file=             | Jump to annotated file (project-scoped)                  |
+| M-s [   | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file)              |
+| M-s ]   | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)               |
+| M-s '   | =simply-annotate-cycle-display-style=      | Cycle through display styles                             |
+| M-s /   | =simply-annotate-toggle-inline=            | Toggle inline annotation display                         |
+| M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations                      |
+| M-s A   | =simply-annotate-list-projects=            | Cross-project overview of every project with annotations |
+| M-s n   | =simply-annotate-next=                     | Jump to next annotation                                  |
+| M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                              |
+| M-s g   | =simply-annotate-update-display-style=     | Refresh all annotation overlays                          |
 
 <<Annotation-Buffer-Bindings>>
 *** 14.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
@@ -2750,7 +2856,6 @@ If your annotations aren't being saved between sessions:
 :END:
 - Check =simply-annotate-prompt-for-author= setting
 - Verify =simply-annotate-author-list= contains valid names
-- Use M-s A to reset session author if stuck
 - Check that prompting mode matches your workflow needs
 
 <<Thread-Display-Corruption>>
@@ -2933,6 +3038,7 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dkanban][=simply-annotate-kanban=]]                                             | [[#Kanban-Board][Kanban Board]]                               |
 |                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dlist_002dproject_002dtable][=simply-annotate-list-project-table=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+|                | [[#index-simply_002dannotate_002dlist_002dprojects][=simply-annotate-list-projects=]]                           | [[#Advanced-Features][Advanced Features]]                     |
 |                | [[#index-simply_002dannotate_002dmigrate_002dthreading][=simply-annotate-migrate-threading=]]                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dmigrate_002dto_002dproject][=simply-annotate-migrate-to-project=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
 |                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
@@ -2941,7 +3047,6 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 |                | [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                             | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dremove_002dannotation_002dtag][=simply-annotate-remove-annotation-tag=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dreply_002dto_002dannotation][=simply-annotate-reply-to-annotation=]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dreset_002dsession_002dauthor][=simply-annotate-reset-session-author=]]         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]]     | [[#Basic-Usage][Basic Usage]]                                 |
 |                | [[#index-simply_002dannotate_002dsearch_002dby_002dtag][=simply-annotate-search-by-tag=]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 |                | [[#index-simply_002dannotate_002dset_002dannotation_002dpriority][=simply-annotate-set-annotation-priority=]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
@@ -3075,73 +3180,75 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 | Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-E][*E*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-I][*I*]]   [[#Concept-Index_cp_letter-K][*K*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
 
-|                | Index Entry                                                   | Section                                                       |
-| -------------- |                                                               |                                                               |
-| A              |                                                               |                                                               |
-|                | [[#index-advanced-editing][advanced editing]]                 | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-annotation-levels][annotation levels]]               | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-authors][authors]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                               |                                                               |
-| B              |                                                               |                                                               |
-|                | [[#index-board-view][board view]]                             | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-buffer_002dlocal-variables][buffer-local variables]] | [[#Troubleshooting][Troubleshooting]]                         |
-| -------------- |                                                               |                                                               |
-| C              |                                                               |                                                               |
-|                | [[#index-collaboration][collaboration]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-conversations][conversations]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                               |                                                               |
-| D              |                                                               |                                                               |
-|                | [[#index-data-structure-editing][data structure editing]]     | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-defun-level][defun level]]                           | [[#Annotation-Levels][Annotation Levels]]                     |
-| -------------- |                                                               |                                                               |
-| E              |                                                               |                                                               |
-|                | [[#index-embedded-comments][embedded comments]]               | [[#Display-Styles][Display Styles]]                           |
-| -------------- |                                                               |                                                               |
-| F              |                                                               |                                                               |
-|                | [[#index-file-level][file level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-filter-by-author][filter by author]]                 | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-filter-by-level][filter by level]]                   | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-filter-by-tag][filter by tag]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-filter-by-tag-1][filter by tag]]                     | [[#Kanban-Board][Kanban Board]]                               |
-| -------------- |                                                               |                                                               |
-| H              |                                                               |                                                               |
-|                | [[#index-header_002dline][header-line]]                       | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                                               |                                                               |
-| I              |                                                               |                                                               |
-|                | [[#index-inline-display][inline display]]                     | [[#Display-Styles][Display Styles]]                           |
-| -------------- |                                                               |                                                               |
-| K              |                                                               |                                                               |
-|                | [[#index-kanban][kanban]]                                     | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-kanban-filter][kanban filter]]                       | [[#Kanban-Board][Kanban Board]]                               |
-| -------------- |                                                               |                                                               |
-| L              |                                                               |                                                               |
-|                | [[#index-line-level][line level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
-| -------------- |                                                               |                                                               |
-| O              |                                                               |                                                               |
-|                | [[#index-organization][organization]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-overlay-persistence][overlay persistence]]           | [[#Troubleshooting][Troubleshooting]]                         |
-| -------------- |                                                               |                                                               |
-| P              |                                                               |                                                               |
-|                | [[#index-priority][priority]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-progressive-exploration][progressive exploration]]   | [[#Annotation-Levels][Annotation Levels]]                     |
-| -------------- |                                                               |                                                               |
-| R              |                                                               |                                                               |
-|                | [[#index-replies][replies]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                               |                                                               |
-| S              |                                                               |                                                               |
-|                | [[#index-sexp-editing][sexp editing]]                         | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-status][status]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-status-columns][status columns]]                     | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-status-display][status display]]                     | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                                               |                                                               |
-| T              |                                                               |                                                               |
-|                | [[#index-tag-search][tag search]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-tags][tags]]                                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-team][team]]                                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-threading][threading]]                               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                               |                                                               |
-| W              |                                                               |                                                               |
-|                | [[#index-workflow][workflow]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                               |                                                               |
+|                | Index Entry                                                     | Section                                                       |
+| -------------- |                                                                 |                                                               |
+| A              |                                                                 |                                                               |
+|                | [[#index-advanced-editing][advanced editing]]                   | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-annotation-levels][annotation levels]]                 | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-authors][authors]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                                 |                                                               |
+| B              |                                                                 |                                                               |
+|                | [[#index-board-view][board view]]                               | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-buffer_002dlocal-variables][buffer-local variables]]   | [[#Troubleshooting][Troubleshooting]]                         |
+| -------------- |                                                                 |                                                               |
+| C              |                                                                 |                                                               |
+|                | [[#index-collaboration][collaboration]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-conversations][conversations]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-cross_002dproject-overview][cross-project overview]]   | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                                 |                                                               |
+| D              |                                                                 |                                                               |
+|                | [[#index-data-structure-editing][data structure editing]]       | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-defun-level][defun level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
+| -------------- |                                                                 |                                                               |
+| E              |                                                                 |                                                               |
+|                | [[#index-embedded-comments][embedded comments]]                 | [[#Display-Styles][Display Styles]]                           |
+| -------------- |                                                                 |                                                               |
+| F              |                                                                 |                                                               |
+|                | [[#index-file-level][file level]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-filter-by-author][filter by author]]                   | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-filter-by-level][filter by level]]                     | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-filter-by-tag][filter by tag]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-filter-by-tag-1][filter by tag]]                       | [[#Kanban-Board][Kanban Board]]                               |
+| -------------- |                                                                 |                                                               |
+| H              |                                                                 |                                                               |
+|                | [[#index-header_002dline][header-line]]                         | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                                 |                                                               |
+| I              |                                                                 |                                                               |
+|                | [[#index-inline-display][inline display]]                       | [[#Display-Styles][Display Styles]]                           |
+| -------------- |                                                                 |                                                               |
+| K              |                                                                 |                                                               |
+|                | [[#index-kanban][kanban]]                                       | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-kanban-filter][kanban filter]]                         | [[#Kanban-Board][Kanban Board]]                               |
+| -------------- |                                                                 |                                                               |
+| L              |                                                                 |                                                               |
+|                | [[#index-line-level][line level]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
+| -------------- |                                                                 |                                                               |
+| O              |                                                                 |                                                               |
+|                | [[#index-organization][organization]]                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-overlay-persistence][overlay persistence]]             | [[#Troubleshooting][Troubleshooting]]                         |
+| -------------- |                                                                 |                                                               |
+| P              |                                                                 |                                                               |
+|                | [[#index-priority][priority]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-progressive-exploration][progressive exploration]]     | [[#Annotation-Levels][Annotation Levels]]                     |
+|                | [[#index-projects-with-annotations][projects with annotations]] | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                                 |                                                               |
+| R              |                                                                 |                                                               |
+|                | [[#index-replies][replies]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                                 |                                                               |
+| S              |                                                                 |                                                               |
+|                | [[#index-sexp-editing][sexp editing]]                           | [[#Advanced-Editing][Advanced Editing]]                       |
+|                | [[#index-status][status]]                                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-status-columns][status columns]]                       | [[#Kanban-Board][Kanban Board]]                               |
+|                | [[#index-status-display][status display]]                       | [[#Advanced-Features][Advanced Features]]                     |
+| -------------- |                                                                 |                                                               |
+| T              |                                                                 |                                                               |
+|                | [[#index-tag-search][tag search]]                               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-tags][tags]]                                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-team][team]]                                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+|                | [[#index-threading][threading]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                                 |                                                               |
+| W              |                                                                 |                                                               |
+|                | [[#index-workflow][workflow]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| -------------- |                                                                 |                                                               |
 
 | Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-E][*E*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-I][*I*]]   [[#Concept-Index_cp_letter-K][*K*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |

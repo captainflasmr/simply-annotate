@@ -11,6 +11,16 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-12 Sun> *2.1.0*
+
+Cross-project annotations discovery and navigation.
+
+*** Features
+
+- *Cross-project overview* -- New command ~simply-annotate-list-projects~ (bound to ~A~ in the command map) allows discovering all projects with annotations across the filesystem.  Scans two sources: the global database (grouped by project root via ~project.el~) and every project known to ~project.el~ (~project-known-project-roots~, the same list that backs ~project-switch-project~) that contains a per-project annotation file (~.simply-annotations.el~) at its root.  This means the overview works whether ~simply-annotate-database-strategy~ is ~global~, ~project~, or ~both~.
+- *Per-status columns* -- The ~*Annotation Projects*~ table includes one sortable column per value in ~simply-annotate-thread-statuses~, so you can see open / in-progress / resolved / closed counts at a glance.  Column headers are abbreviated to word-initials (e.g. ~O~, ~IP~, ~R~, ~C~) to keep the table compact, and new custom statuses get new columns automatically.
+- *Drill-down navigation* -- From the projects table, press ~RET~ to see a project's annotation table, ~L~ for an org listing, or ~K~ for a Kanban board.  Drill-down reads the target project's per-project annotation file directly, so you can browse any project without first switching to it.
+
 ** <2026-04-12 Sat> *2.0.0*
 
 Tag-centric UI overhaul and Kanban header-line cleanup.
