@@ -9,8 +9,6 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO high level annotation project selector
-
 ** TODO look at indented brackets
 
 ** TODO dired annotations
