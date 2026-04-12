@@ -322,7 +322,7 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </li><li><strong class="strong">Status tracking</strong>: Manage annotation lifecycle (open → resolved)
 </li><li><strong class="strong">Multi-author support</strong>: Collaborate with team members
 </li><li><strong class="strong">Priority levels</strong>: Organize by importance (low, normal, high, critical)
-</li><li><strong class="strong">Tag system</strong>: Categorize with hashtags (<code class="code">#review</code>, <code class="code">#bug</code>, <code class="code">#question</code>)
+</li><li><strong class="strong">Tag system</strong>: Categorize with common keywords (<code class="code">review</code>, <code class="code">bug</code>, <code class="code">question</code>)
 </li><li><strong class="strong">Raw sexp editing</strong>: Direct access to annotation data structures for power users
 </li><li><strong class="strong">Annotation levels</strong>: Three-tier annotation system (file, defun, line) for progressive code exploration
 </li><li><strong class="strong">Multiple display styles</strong>: Choose between highlighting, tint, fringe, fringe bracket, both, or subtle
@@ -931,7 +931,7 @@ of the root comment.
 </li><li> Choose from existing tags or type a new one (e.g. <code class="code">review</code>,
 <code class="code">bug</code>, <code class="code">question</code>).  Existing tags from the database are
 offered as completion candidates, but free-form input is accepted.
-</li><li> Tags appear as <code class="code">#review #bug</code> in the annotation display
+</li><li> Tags appear as <code class="code">review bug</code> in the annotation display
 </li></ol>
 
 </div>
@@ -1562,7 +1562,7 @@ Next: <a href="#Project_002dAware-Annotations" accesskey="n" rel="next">Project-
 Overall file description
 
 * DEFUN (2)
-** [OPEN/HIGH] Line 15 #review (2 comments)
+** [OPEN/HIGH] Line 15 review (2 comments)
 *** Region
 ~(defun calculate-total ()~
 *** Comment - james dyer (06/19 09:49)
@@ -1606,7 +1606,7 @@ headings:
 ** FILE (1)
 *** [OPEN/NORMAL] Line 1 (1 comment)
 ** DEFUN (2)
-*** [OPEN/HIGH] Line 15 #review (2 comments)
+*** [OPEN/HIGH] Line 15 review (2 comments)
 
 * ~/project/other.el (5)
 ** DEFUN (3)
@@ -1930,12 +1930,6 @@ Each card shows:
 <p>Navigation follows an org-table-style grid:
 </p>
 <dl class="table">
-<dt><kbd class="kbd">n</kbd></dt>
-<dd><p>Move to the next card in the same column (down)
-</p></dd>
-<dt><kbd class="kbd">p</kbd></dt>
-<dd><p>Move to the previous card in the same column (up)
-</p></dd>
 <dt><kbd class="kbd">TAB</kbd></dt>
 <dd><p>Move to the same row in the next column (right).  If the target column
 is shorter, clamps to its last card.
@@ -1946,6 +1940,10 @@ clamping behaviour.
 </p></dd>
 </dl>
 
+<p>Standard Emacs keys (<kbd class="kbd">C-n</kbd>/<kbd class="kbd">C-p</kbd> or arrow keys) work for
+vertical navigation.  The convenience keys <kbd class="kbd">n</kbd>/<kbd class="kbd">p</kbd> (next/prev
+card) and <kbd class="kbd">f</kbd>/<kbd class="kbd">b</kbd> (next/prev column) are also available.
+</p>
 <p>The card under point is highlighted with bold face, providing visual
 feedback for which card is active.
 </p>
@@ -2176,7 +2174,7 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 <tr><td width="15%"><kbd class="kbd">M-s r</kbd></td><td width="35%"><code class="code">simply-annotate-reply-to-annotation</code></td><td width="50%">Add reply to annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s s</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="50%">Set status (open/resolved)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="50%">Set priority (low/high)</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="35%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="50%">Add tag (#review, #bug)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="35%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="50%">Add tag (review, bug)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s C-t</kbd></td><td width="35%"><code class="code">simply-annotate-remove-annotation-tag</code></td><td width="50%">Remove tag from annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s F</kbd></td><td width="35%"><code class="code">simply-annotate-search-by-tag</code></td><td width="50%">Search annotations by tag</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s a</kbd></td><td width="35%"><code class="code">simply-annotate-change-annotation-author</code></td><td width="50%">Change author</td></tr>

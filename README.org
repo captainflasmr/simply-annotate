@@ -53,6 +53,16 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-04-12 Sat> *2.0.0*
+
+Tag-centric UI overhaul and Kanban header-line cleanup.
+
+- *Tag hash removed* -- Tags no longer display with a leading =#= prefix anywhere in the UI (header-line, annotation buffer, search prompts).
+- *Cleaner Kanban header-line* -- Removed =n/p=, =f/b=, and =g= reminders from the header-line.  These keys still work; only the visual clutter is removed.
+- *Cross-view tag filter linkage* -- Tag filters synchronise between Kanban, Tabular, and source buffer views.
+- *Tabular tag filter* -- Press =t= in table views to filter by tag.
+- *Header-line status fallback* -- Status and priority now default to =OPEN= / =NORMAL= on legacy data.
+
 ** <2026-04-10 Thu> *1.2.0*
 
 Tag filtering, search, and management improvements.
@@ -80,7 +90,7 @@ New text-based display styles and alignment improvements.
 
 Kanban board view.
 
-- *Kanban board* -- =<prefix> K= opens a kanban board of project annotations grouped by status columns (open, in-progress, resolved, closed).  Cards show priority, summary, location, and author.  Navigate with =n= / =p= (vertical), =f= / =b= or =TAB= / =S-TAB= (between columns, wrapping).  Change status with =s=, =}=, ={=.  =RET= jumps to source.
+- *Kanban board* -- =<prefix> K= opens a kanban board of project annotations grouped by status columns (open, in-progress, resolved, closed).  Cards show priority, summary, location, and author.  Navigate with =TAB= / =S-TAB= (between columns) and standard Emacs navigation keys.  Change status with =s=, =}=, ={=.  =RET= jumps to source.
 - *Expand/collapse* -- =e= expands a single card to show full text, tags, and reply count.  =E= toggles all cards.
 - *Follow mode* -- =F= toggles auto-jumping to the annotation source as you navigate cards.
 
@@ -299,7 +309,7 @@ listing, and org export all display the hierarchy with indentation.
 
 - Press =<prefix> s= to set status: open, in-progress, resolved, closed
 - Press =<prefix> p= to set priority: low, normal, high, critical
-- Press =<prefix> t= to add tags like #review, #bug, #question
+- Press =<prefix> t= to add tags like review, bug, question
 
 *** Author Management
 
@@ -433,7 +443,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> r= | =simply-annotate-reply-to-annotation=      | Add reply to annotation              |
 | =<prefix> s= | =simply-annotate-set-annotation-status=    | Set status (open/resolved)           |
 | =<prefix> p= | =simply-annotate-set-annotation-priority=  | Set priority (low/high)              |
-| =<prefix> t= | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)              |
+| =<prefix> t= | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                |
 | =<prefix> C-d= | =simply-annotate-remove-annotation-tag=  | Remove tag from annotation           |
 | =<prefix> F= | =simply-annotate-search-by-tag=            | Search annotations by tag            |
 | =<prefix> a= | =simply-annotate-change-annotation-author= | Change author                        |

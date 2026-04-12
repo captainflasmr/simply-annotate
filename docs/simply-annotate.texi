@@ -100,7 +100,7 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @item
 @strong{Priority levels}: Organize by importance (low, normal, high, critical)
 @item
-@strong{Tag system}: Categorize with hashtags (@code{#review}, @code{#bug}, @code{#question})
+@strong{Tag system}: Categorize with common keywords (@code{review}, @code{bug}, @code{question})
 @item
 @strong{Raw sexp editing}: Direct access to annotation data structures for power users
 @item
@@ -644,7 +644,7 @@ Choose from existing tags or type a new one (e.g.@: @code{review},
 @code{bug}, @code{question}).  Existing tags from the database are
 offered as completion candidates, but free-form input is accepted.
 @item
-Tags appear as @code{#review #bug} in the annotation display
+Tags appear as @code{review bug} in the annotation display
 @end enumerate
 
 @subsection Removing Tags
@@ -1164,7 +1164,7 @@ The listing uses org-mode for full folding support.  The structure is:
 Overall file description
 
 * DEFUN (2)
-** [OPEN/HIGH] Line 15 #review (2 comments)
+** [OPEN/HIGH] Line 15 review (2 comments)
 *** Region
 ~(defun calculate-total ()~
 *** Comment - james dyer (06/19 09:49)
@@ -1210,7 +1210,7 @@ headings:
 ** FILE (1)
 *** [OPEN/NORMAL] Line 1 (1 comment)
 ** DEFUN (2)
-*** [OPEN/HIGH] Line 15 #review (2 comments)
+*** [OPEN/HIGH] Line 15 review (2 comments)
 
 * ~/project/other.el (5)
 ** DEFUN (3)
@@ -1495,10 +1495,6 @@ Source file and line number
 Navigation follows an org-table-style grid:
 
 @table @kbd
-@item n
-Move to the next card in the same column (down)
-@item p
-Move to the previous card in the same column (up)
 @item TAB
 Move to the same row in the next column (right).  If the target column
 is shorter, clamps to its last card.
@@ -1506,6 +1502,10 @@ is shorter, clamps to its last card.
 Move to the same row in the previous column (left), with the same
 clamping behaviour.
 @end table
+
+Standard Emacs keys (@kbd{C-n}/@kbd{C-p} or arrow keys) work for
+vertical navigation.  The convenience keys @kbd{n}/@kbd{p} (next/prev
+card) and @kbd{f}/@kbd{b} (next/prev column) are also available.
 
 The card under point is highlighted with bold face, providing visual
 feedback for which card is active.
@@ -1695,7 +1695,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply to annotation
 @item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status (open/resolved)
 @item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
-@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag (#review, #bug)
+@item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag (review, bug)
 @item @kbd{M-s C-t} @tab @code{simply-annotate-remove-annotation-tag} @tab Remove tag from annotation
 @item @kbd{M-s F} @tab @code{simply-annotate-search-by-tag} @tab Search annotations by tag
 @item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab Change author

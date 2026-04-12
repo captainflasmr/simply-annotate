@@ -227,8 +227,8 @@ documentation and includes threading and collaboration features.
 - *Multi-author support*: Collaborate with team members
 - *Priority levels*: Organize by importance (low, normal, high,
   critical)
-- *Tag system*: Categorize with hashtags (=#review=, =#bug=,
-  =#question=)
+- *Tag system*: Categorize with common keywords (=review=, =bug=,
+  =question=)
 - *Raw sexp editing*: Direct access to annotation data structures for
   power users
 - *Annotation levels*: Three-tier annotation system (file, defun, line)
@@ -837,7 +837,7 @@ Categorize your annotations with tags:
 3. Choose from existing tags or type a new one (e.g. =review=, =bug=,
    =question=). Existing tags from the database are offered as
    completion candidates, but free-form input is accepted.
-4. Tags appear as =#review #bug= in the annotation display
+4. Tags appear as =review bug= in the annotation display
 
 <<Removing-Tags>>
 **** 6.2.4 Removing Tags [[#Removing-Tags][¶]]
@@ -1438,7 +1438,7 @@ The listing uses org-mode for full folding support. The structure is:
 Overall file description
 
 ,* DEFUN (2)
-,** [OPEN/HIGH] Line 15 #review (2 comments)
+,** [OPEN/HIGH] Line 15 review (2 comments)
 ,*** Region
 ~(defun calculate-total ()~
 ,*** Comment - james dyer (06/19 09:49)
@@ -1481,7 +1481,7 @@ headings:
 ,** FILE (1)
 ,*** [OPEN/NORMAL] Line 1 (1 comment)
 ,** DEFUN (2)
-,*** [OPEN/HIGH] Line 15 #review (2 comments)
+,*** [OPEN/HIGH] Line 15 review (2 comments)
 
 ,* ~/project/other.el (5)
 ,** DEFUN (3)
@@ -1810,15 +1810,15 @@ The board renders four columns corresponding to the thread statuses
 :END:
 Navigation follows an org-table-style grid:
 
-- n :: Move to the next card in the same column (down)
-
-- p :: Move to the previous card in the same column (up)
-
 - TAB :: Move to the same row in the next column (right). If the target
   column is shorter, clamps to its last card.
 
 - S-TAB :: Move to the same row in the previous column (left), with the
   same clamping behaviour.
+
+Standard Emacs keys (C-n/C-p or arrow keys) work for vertical
+navigation. The convenience keys n/p (next/prev card) and f/b (next/prev
+column) are also available.
 
 The card under point is highlighted with bold face, providing visual
 feedback for which card is active.
@@ -2041,7 +2041,7 @@ bind the prefix.
 | M-s r   | =simply-annotate-reply-to-annotation=      | Add reply to annotation                     |
 | M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                  |
 | M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                     |
-| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (#review, #bug)                     |
+| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                       |
 | M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                  |
 | M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                   |
 | M-s a   | =simply-annotate-change-annotation-author= | Change author                               |

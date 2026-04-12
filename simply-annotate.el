@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 1.2.0
+;; Version: 2.0.0
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -472,19 +472,23 @@ This allows node-specific annotations in modes like Info or nov.el."
   :type '(repeat string)
   :group 'simply-annotate)
 
-;; Annotation Levels
+;; Tag Filtering
 
-(defcustom simply-annotate-levels '(file defun line)
-  "Available annotation levels, ordered from broadest to narrowest."
-  :type '(repeat symbol)
+(defcustom simply-annotate-default-tag-filter nil
+  "Default active tag filter when the mode starts.
+Nil means show annotations regardless of tag.  Any non-nil value is the
+name of a single tag; only annotations carrying that tag will be shown."
+  :type '(choice (const :tag "All tags" nil) string)
   :group 'simply-annotate)
 
-(defcustom simply-annotate-default-level 'all
-  "Default annotation level for display when the mode starts."
-  :type '(choice (const :tag "File-level" file)
-                 (const :tag "Defun-level" defun)
-                 (const :tag "Line-level" line)
-                 (const :tag "All levels" all))
+(defcustom simply-annotate-background-threshold 20
+  "Minimum line span for an annotation to be treated as a background overlay.
+Background overlays skip per-line visual styles (highlight, fringe,
+etc.) and lose hit-test ties to smaller overlays so that large
+overview-style annotations do not drown out finer-grained ones.  Inline
+text display is unaffected.  Set to nil to disable background
+detection entirely."
+  :type '(choice (const :tag "Disabled" nil) integer)
   :group 'simply-annotate)
 
 ;; Separators and Regexps
@@ -580,8 +584,10 @@ mode changes that would kill buffer-local values.")
 (defvar simply-annotate-editing-annotation-sexp nil
   "Non-nil if the *Annotation* buffer is currently displaying the raw sexp.")
 
-(defvar-local simply-annotate-current-level 'defun
-  "Currently displayed annotation level in this buffer.")
+(defvar-local simply-annotate-current-tag-filter nil
+  "Currently active tag filter in this buffer.
+Nil means show every annotation; a string restricts display to
+annotations whose thread `tags' list contains that string.")
 
 (defvar-local simply-annotate-inline nil
   "Non-nil when inline annotation display is active in this buffer.")
@@ -1040,14 +1046,16 @@ Normalises a single symbol to a one-element list."
 
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
-Overlays not matching the active level are hidden.
-File-level annotations at the `all' pseudo-level skip visual styles
-but still show inline text when enabled."
-  (let ((file-at-all (and (eq simply-annotate-current-level 'all)
-                          (eq (overlay-get overlay 'simply-annotation-level) 'file))))
-    (if (simply-annotate--level-match-p overlay)
+Overlays not matching the active tag filter are hidden.
+When no tag filter is active, background overlays (see
+`simply-annotate-background-threshold') skip per-line visual styles
+but still show inline text when enabled, so they do not drown out
+finer-grained annotations."
+  (let ((subdue-background (and (null simply-annotate-current-tag-filter)
+                                (simply-annotate--background-overlay-p overlay))))
+    (if (simply-annotate--tag-match-p overlay)
         (progn
-          (unless file-at-all
+          (unless subdue-background
             (dolist (style (simply-annotate--display-styles))
               (pcase style
                 ('highlight
@@ -1253,24 +1261,52 @@ annotation level.  This layers on top of the current display style."
   (simply-annotate-update-display-style)
   (message "Inline annotations %s" (if simply-annotate-inline "enabled" "disabled")))
 
-;;; Level Management
+;;; Overlay Classification
 
-(defun simply-annotate--level-match-p (overlay)
-  "Return non-nil if OVERLAY matches the current annotation level.
-When the current level is `all', every overlay matches."
-  (or (eq simply-annotate-current-level 'all)
-      (eq (or (overlay-get overlay 'simply-annotation-level) 'defun)
-          simply-annotate-current-level)))
+(defun simply-annotate--background-overlay-p (overlay)
+  "Return non-nil if OVERLAY should be treated as a background overlay.
+See `simply-annotate-background-threshold' for the heuristic."
+  (and simply-annotate-background-threshold
+       (let ((buf (overlay-buffer overlay)))
+         (and buf (buffer-live-p buf)
+              (with-current-buffer buf
+                (>= (count-lines (overlay-start overlay)
+                                 (overlay-end overlay))
+                    simply-annotate-background-threshold))))))
+
+;;; Tag Filtering
+
+(defun simply-annotate--overlay-tags (overlay)
+  "Return the tag list stored on OVERLAY's annotation thread, or nil."
+  (let ((data (overlay-get overlay 'simply-annotation)))
+    (and (listp data) (alist-get 'tags data))))
+
+(defun simply-annotate--tag-match-p (overlay)
+  "Return non-nil if OVERLAY matches `simply-annotate-current-tag-filter'.
+A nil filter matches every overlay."
+  (or (null simply-annotate-current-tag-filter)
+      (member simply-annotate-current-tag-filter
+              (simply-annotate--overlay-tags overlay))))
 
 (defun simply-annotate--active-overlays ()
-  "Return list of overlays matching the current annotation level."
-  (cl-remove-if-not #'simply-annotate--level-match-p simply-annotate-overlays))
+  "Return overlays matching the current tag filter."
+  (cl-remove-if-not #'simply-annotate--tag-match-p simply-annotate-overlays))
 
-(defun simply-annotate--apply-level-filter ()
-  "Update display after a level change.
-Only overlays matching the active level are shown."
+(defun simply-annotate--buffer-tags ()
+  "Return a sorted list of unique tag strings across buffer overlays."
+  (let ((tags nil))
+    (dolist (ov simply-annotate-overlays)
+      (dolist (tag (simply-annotate--overlay-tags ov))
+        (unless (member tag tags)
+          (push tag tags))))
+    (sort tags #'string<)))
+
+(defun simply-annotate--apply-tag-filter ()
+  "Update display after a tag-filter change.
+Hides the *Annotation* buffer if its current overlay no longer matches,
+then re-applies display styles so filtered overlays hide/show."
   (when (and simply-annotate-current-overlay
-             (not (simply-annotate--level-match-p simply-annotate-current-overlay))
+             (not (simply-annotate--tag-match-p simply-annotate-current-overlay))
              (get-buffer-window simply-annotate-buffer-name))
     (simply-annotate-hide-annotation-buffer))
   (dolist (ov simply-annotate-overlays)
@@ -1283,45 +1319,51 @@ Only overlays matching the active level are shown."
     (simply-annotate--apply-display-style ov))
   (simply-annotate--update-header))
 
-;;;###autoload
-(defun simply-annotate-cycle-level-forward ()
-  "Cycle forward through annotation levels.
-The cycle includes `all' after the last defined level."
-  (interactive)
-  (let* ((levels (append simply-annotate-levels '(all)))
-         (current-pos (cl-position simply-annotate-current-level levels))
-         (next-pos (if current-pos
-                       (mod (1+ current-pos) (length levels))
-                     0)))
-    (setq simply-annotate-current-level (nth next-pos levels))
-    (simply-annotate--apply-level-filter)
-    (message "Annotation level: %s" simply-annotate-current-level)))
+(defun simply-annotate--tag-cycle-choices ()
+  "Return the cycle ring: nil (all) followed by buffer tags."
+  (cons nil (simply-annotate--buffer-tags)))
+
+(defun simply-annotate--cycle-tag (direction)
+  "Cycle `simply-annotate-current-tag-filter' by DIRECTION (+1 or -1)."
+  (let* ((choices (simply-annotate--tag-cycle-choices))
+         (len (length choices)))
+    (if (<= len 1)
+        (message "No tags in this buffer")
+      (let* ((pos (or (cl-position simply-annotate-current-tag-filter choices
+                                   :test #'equal)
+                      0))
+             (next (mod (+ pos direction) len)))
+        (setq simply-annotate-current-tag-filter (nth next choices))
+        (simply-annotate--apply-tag-filter)
+        (message "Tag filter: %s"
+                 (or simply-annotate-current-tag-filter "[all]"))))))
 
 ;;;###autoload
-(defun simply-annotate-cycle-level-backward ()
-  "Cycle backward through annotation levels.
-The cycle includes `all' after the last defined level."
+(defun simply-annotate-cycle-tag-forward ()
+  "Cycle forward through tag filters present in this buffer."
   (interactive)
-  (let* ((levels (append simply-annotate-levels '(all)))
-         (current-pos (cl-position simply-annotate-current-level levels))
-         (next-pos (if current-pos
-                       (mod (1- current-pos) (length levels))
-                     0)))
-    (setq simply-annotate-current-level (nth next-pos levels))
-    (simply-annotate--apply-level-filter)
-    (message "Annotation level: %s" simply-annotate-current-level)))
+  (simply-annotate--cycle-tag 1))
 
 ;;;###autoload
-(defun simply-annotate-set-level (level)
-  "Set annotation view to LEVEL."
+(defun simply-annotate-cycle-tag-backward ()
+  "Cycle backward through tag filters present in this buffer."
+  (interactive)
+  (simply-annotate--cycle-tag -1))
+
+;;;###autoload
+(defun simply-annotate-set-tag-filter (tag)
+  "Set the active tag filter to TAG.
+Interactively, choose from tags present in the current buffer.
+A blank selection clears the filter."
   (interactive
-   (list (intern (completing-read "Level: "
-                                  (mapcar #'symbol-name
-                                          (append simply-annotate-levels '(all)))
-                                  nil t))))
-  (setq simply-annotate-current-level level)
-  (simply-annotate--apply-level-filter)
-  (message "Annotation level: %s" level))
+   (list (let* ((choices (cons "[all]" (simply-annotate--buffer-tags)))
+                (choice (completing-read "Tag filter: " choices nil t)))
+           (if (or (string-empty-p choice) (string= choice "[all]"))
+               nil
+             choice))))
+  (setq simply-annotate-current-tag-filter tag)
+  (simply-annotate--apply-tag-filter)
+  (message "Tag filter: %s" (or tag "[all]")))
 
 ;;; Overlay Management
 
@@ -1353,57 +1395,56 @@ START and END define the region, TEXT is the annotation content."
 
 (defun simply-annotate--most-specific-overlay (candidates)
   "Return the most specific overlay from CANDIDATES.
-Prefers the smallest region; when at the `all' level, deprioritises
-file-level overlays so more granular annotations take precedence."
+Prefers the smallest region; when viewing everything, deprioritises
+background overlays so finer-grained annotations take precedence."
   (when candidates
-    (car (sort candidates
-                (lambda (a b)
-                  (let ((a-file (eq (overlay-get a 'simply-annotation-level) 'file))
-                        (b-file (eq (overlay-get b 'simply-annotation-level) 'file)))
-                    (cond
-                     ;; At 'all level, push file-level to the back
-                     ((and (eq simply-annotate-current-level 'all)
-                           a-file (not b-file))
-                      nil)
-                     ((and (eq simply-annotate-current-level 'all)
-                           b-file (not a-file))
-                      t)
-                     ;; Otherwise prefer smallest region
-                     (t (< (- (overlay-end a) (overlay-start a))
-                            (- (overlay-end b) (overlay-start b)))))))))))
+    (let ((unfiltered (null simply-annotate-current-tag-filter)))
+      (car (sort candidates
+                 (lambda (a b)
+                   (let ((a-bg (and unfiltered
+                                    (simply-annotate--background-overlay-p a)))
+                         (b-bg (and unfiltered
+                                    (simply-annotate--background-overlay-p b))))
+                     (cond
+                      ((and a-bg (not b-bg)) nil)
+                      ((and b-bg (not a-bg)) t)
+                      (t (< (- (overlay-end a) (overlay-start a))
+                            (- (overlay-end b) (overlay-start b))))))))))))
 
 (defun simply-annotate--overlay-at-point (&optional pos)
   "Get annotation overlay at POS (defaults to point) matching current level.
 In fringe mode, searches the entire current line for overlays.
 When multiple overlays match, returns the most specific one.
-File-level overlays are excluded at the `all' pseudo-level so that
+Background overlays are excluded when viewing everything, so that
 `smart-action' can create granular annotations anywhere in the buffer."
-  (let ((check-pos (or pos (point))))
+  (let ((check-pos (or pos (point)))
+        (unfiltered (null simply-annotate-current-tag-filter)))
     (if (cl-intersection (simply-annotate--display-styles) '(fringe fringe-bracket))
         (simply-annotate--overlay-on-line check-pos)
       (simply-annotate--most-specific-overlay
        (cl-remove-if-not (lambda (ov)
                            (and (overlay-get ov 'simply-annotation)
-                                (simply-annotate--level-match-p ov)
-                                (not (and (eq simply-annotate-current-level 'all)
-                                          (eq (overlay-get ov 'simply-annotation-level) 'file)))))
+                                (simply-annotate--tag-match-p ov)
+                                (not (and unfiltered
+                                          (simply-annotate--background-overlay-p ov)))))
                          (overlays-at check-pos))))))
 
 (defun simply-annotate--overlay-on-line (&optional pos)
   "Find annotation overlay matching current level on the line containing POS.
 Matches any overlay whose region intersects the current line.
 When multiple overlays match, returns the most specific one.
-File-level overlays are excluded at the `all' pseudo-level."
+Background overlays are excluded when viewing everything."
   (save-excursion
     (when pos (goto-char pos))
     (let ((line-start (line-beginning-position))
-          (line-end (line-end-position)))
+          (line-end (line-end-position))
+          (unfiltered (null simply-annotate-current-tag-filter)))
       (simply-annotate--most-specific-overlay
        (cl-remove-if-not (lambda (overlay)
                            (and (overlay-get overlay 'simply-annotation)
-                                (simply-annotate--level-match-p overlay)
-                                (not (and (eq simply-annotate-current-level 'all)
-                                          (eq (overlay-get overlay 'simply-annotation-level) 'file)))
+                                (simply-annotate--tag-match-p overlay)
+                                (not (and unfiltered
+                                          (simply-annotate--background-overlay-p overlay)))
                                 (<= (overlay-start overlay) line-end)
                                 (>= (overlay-end overlay) line-start)))
                          simply-annotate-overlays)))))
@@ -1534,9 +1575,9 @@ TAG must match a string in the thread's tags list."
     (sort tags #'string<)))
 
 (defun simply-annotate--filter-db-by-tag (db tag)
-  "Return a filtered copy of DB containing only entries with annotations matching TAG.
-Each file entry is kept only if it has at least one annotation whose thread
-contains TAG.  Entries without the tag are removed entirely."
+  "Return a filtered copy of DB keeping only annotations matching TAG.
+Each file entry is kept only if it has at least one annotation whose
+thread contains TAG.  Entries without the tag are removed entirely."
   (let ((result nil))
     (dolist (entry db)
       (let* ((file-key (car entry))
@@ -1566,9 +1607,8 @@ contains TAG.  Entries without the tag are removed entirely."
           (alist-get 'tags data))))))
 
 (defun simply-annotate--format-tag-annotation-entry (file-key ann)
-  "Format a single annotation ANN from FILE-KEY for use in completing-read candidates."
+  "Format a single annotation ANN from FILE-KEY for completing-read."
   (let* ((data (alist-get 'text ann))
-         (level (or (alist-get 'level ann) 'defun))
          (start (alist-get 'start ann))
          (comments (alist-get 'comments data))
          (preview (when comments
@@ -1576,13 +1616,12 @@ contains TAG.  Entries without the tag are removed entirely."
                       (alist-get 'text (car comments)) 50 nil nil "...")))
          (status (alist-get 'status data))
          (tags (alist-get 'tags data)))
-    (format "%s:%d  [%s/%s] %s  #%s"
+    (format "%s:%d  [%s] %s  %s"
             (simply-annotate--key-name file-key)
             start
             (upcase (or status "open"))
-            (upcase (symbol-name level))
             (or preview "")
-            (string-join tags " #"))))
+            (string-join tags " "))))
 
 (defun simply-annotate--format-thread-summary (thread)
   "Format a brief summary of the THREAD for display."
@@ -1702,6 +1741,24 @@ DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
 
 ;;; Serialization
 
+(defun simply-annotate--migrate-legacy-level (text level)
+  "Fold a legacy LEVEL field into TEXT as a tag.
+TEXT is the stored annotation payload (string or thread alist).  If
+LEVEL is nil or the `all' pseudo-level, TEXT is returned unchanged.
+Otherwise TEXT is promoted to a thread if it is still a bare string,
+and the level symbol's name is appended to the thread's tags if not
+already present.  The returned value is always suitable as the overlay
+`simply-annotation' property."
+  (if (or (null level) (eq level 'all))
+      text
+    (let* ((tag (symbol-name level))
+           (thread (if (simply-annotate--thread-p text)
+                       text
+                     (simply-annotate--create-thread
+                      (or (and (stringp text) text) "")))))
+      (simply-annotate--add-thread-tag thread tag)
+      thread)))
+
 (defun simply-annotate--annotation-stale-p (ann source-buffer)
   "Return stale status for annotation ANN given SOURCE-BUFFER.
 Returns t if stale, nil if fresh, or `unknown' if no hash stored."
@@ -1738,8 +1795,6 @@ and context are preserved so the stale state persists across saves."
               `((start . ,s)
                 (end . ,e)
                 (text . ,(overlay-get overlay 'simply-annotation))
-                (level . ,(or (overlay-get overlay 'simply-annotation-level)
-                              simply-annotate-default-level))
                 (text-hash . ,hash)
                 ,@(when context `((text-context . ,context))))))
           simply-annotate-overlays))
@@ -1778,10 +1833,11 @@ relocate the annotation by searching for the stored text-context.
 If relocation succeeds, the overlay is placed at the new position.
 If relocation fails, the annotation is marked stale."
   (dolist (ann annotations)
-    (let ((start (alist-get 'start ann))
-          (end (alist-get 'end ann))
-          (text (alist-get 'text ann))
-          (level (or (alist-get 'level ann) 'defun)))
+    (let* ((start (alist-get 'start ann))
+           (end (alist-get 'end ann))
+           (raw-text (alist-get 'text ann))
+           (legacy-level (alist-get 'level ann))
+           (text (simply-annotate--migrate-legacy-level raw-text legacy-level)))
       (when (and start end text
                  (<= start (point-max))
                  (<= end (point-max))
@@ -1815,7 +1871,6 @@ If relocation fails, the annotation is marked stale."
           (when (null stored-hash)
             (setq stale 'unknown))
           (let ((ov (simply-annotate--create-overlay actual-start actual-end text)))
-            (overlay-put ov 'simply-annotation-level level)
             (overlay-put ov 'simply-annotate-stale stale)
             (when stored-hash
               (overlay-put ov 'simply-annotate-stored-hash stored-hash))
@@ -2053,16 +2108,25 @@ Otherwise update the first comment."
   (simply-annotate--update-thread-comment thread content nil))
 
 (defun simply-annotate--finalize-annotation (overlay final-data is-draft)
-  "Finalize annotation for OVERLAY with FINAL-DATA, handling IS-DRAFT state."
-  (overlay-put overlay 'simply-annotation final-data)
-  (overlay-put overlay 'help-echo (simply-annotate--annotation-summary final-data))
-  (simply-annotate--refresh-overlay-display overlay)
-
+  "Finalize annotation for OVERLAY with FINAL-DATA, handling IS-DRAFT state.
+When IS-DRAFT is non-nil and a tag filter is active, the active tag
+is auto-applied to the new annotation so it remains visible under
+the current filter."
   (with-current-buffer simply-annotate-source-buffer
+    (when (and is-draft
+               simply-annotate-current-tag-filter
+               (simply-annotate--thread-p final-data))
+      (simply-annotate--add-thread-tag final-data
+                                       simply-annotate-current-tag-filter))
+    (overlay-put overlay 'simply-annotation final-data)
+    (overlay-put overlay 'help-echo (simply-annotate--annotation-summary final-data))
+    
     (when is-draft
       (overlay-put overlay 'simply-annotation-draft nil)
       (push overlay simply-annotate-overlays)
       (setq simply-annotate-draft-overlay nil))
+      
+    (simply-annotate--refresh-overlay-display overlay)
     (simply-annotate--save-annotations)
     (simply-annotate--update-header "SAVED")
     (simply-annotate-hide-annotation-buffer)
@@ -2105,37 +2169,47 @@ Otherwise update the first comment."
 ;;; Header Management
 
 (defun simply-annotate--annotation-number (target-overlay)
-  "Get the position number of TARGET-OVERLAY among active-level annotations."
+  "Get the position number of TARGET-OVERLAY among tag-filtered annotations."
   (when target-overlay
     (with-current-buffer (overlay-buffer target-overlay)
       (let ((sorted-active (seq-sort-by #'overlay-start #'<
                                         (simply-annotate--active-overlays))))
         (1+ (or (cl-position target-overlay sorted-active) 0))))))
 
-(defun simply-annotate--level-counts ()
-  "Return a formatted string showing annotation counts per level.
-The active level is shown in bold."
-  (let* ((levels (append simply-annotate-levels '(all)))
-         (current-overlay (simply-annotate--overlay-at-point))
-         (current-num (when current-overlay
-                        (simply-annotate--annotation-number current-overlay))))
-    (mapconcat
-     (lambda (level)
-       (let* ((name (upcase (symbol-name level)))
-              (n (if (eq level 'all)
-                     (length simply-annotate-overlays)
-                   (cl-count-if
-                    (lambda (ov)
-                      (eq (or (overlay-get ov 'simply-annotation-level) 'defun) level))
-                    simply-annotate-overlays)))
-              (label (if (and (eq level simply-annotate-current-level) current-num)
-                         (format "%s: %d/%d" name current-num n)
-                       (format "%s:%d" name n))))
-         (if (eq level simply-annotate-current-level)
-             (propertize label 'face '(bold :height 0.9))
-           (propertize label 'face '(:height 0.9)))))
-     levels
-     (propertize " | " 'face '(:height 0.9)))))
+(defun simply-annotate--tag-counts ()
+  "Return a formatted string showing annotation counts by tag.
+The active tag filter is shown in bold; an [ALL] segment shows the
+total count when no filter is active."
+  (let* ((all-count (length simply-annotate-overlays))
+         (buffer-tags (simply-annotate--buffer-tags))
+         (current (simply-annotate--overlay-at-point))
+         (current-num (when current
+                        (simply-annotate--annotation-number current)))
+         (active-filter simply-annotate-current-tag-filter)
+         (all-label (if (and (null active-filter) current-num)
+                        (format "ALL: %d/%d" current-num all-count)
+                      (format "ALL:%d" all-count)))
+         (all-segment (if (null active-filter)
+                          (propertize all-label 'face '(bold :height 0.9))
+                        (propertize all-label 'face '(:height 0.9))))
+         (tag-segments
+          (mapcar
+           (lambda (tag)
+             (let* ((n (cl-count-if
+                        (lambda (ov)
+                          (member tag (simply-annotate--overlay-tags ov)))
+                        simply-annotate-overlays))
+                    (active (equal tag active-filter))
+                    (label (if (and active current-num)
+                               (format "%s: %d/%d" tag current-num n)
+                             (format "%s:%d" tag n))))
+               (if active
+                   (propertize label 'face '(bold :height 0.9))
+                 (propertize label 'face '(:height 0.9)))))
+           buffer-tags)))
+    (mapconcat #'identity
+               (cons all-segment tag-segments)
+               (propertize " | " 'face '(:height 0.9)))))
 
 (defun simply-annotate--format-header (&optional text)
   "Header format showing level counts with embedded position.
@@ -2144,13 +2218,13 @@ Optional TEXT is appended (e.g. status messages)."
     (when (> total 0)
       (concat
        " "
-       (simply-annotate--level-counts)
+       (simply-annotate--tag-counts)
        " "
        (if-let* ((overlay (simply-annotate--overlay-at-point))
                  (annotation-data (overlay-get overlay 'simply-annotation))
                  (thread (and (simply-annotate--thread-p annotation-data) annotation-data)))
-           (let ((status (alist-get 'status thread))
-                 (priority (alist-get 'priority thread))
+           (let ((status (or (alist-get 'status thread) "OPEN"))
+                 (priority (or (alist-get 'priority thread) "NORMAL"))
                  (comment-count (length (alist-get 'comments thread))))
              (propertize
               (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
@@ -2198,7 +2272,7 @@ FORWARD t for next, nil for previous.
 If WRAP is non-nil, wrap around to the beginning/end."
   (let* ((pos (point))
          (active (cl-remove-if-not
-                  #'simply-annotate--level-match-p
+                  #'simply-annotate--tag-match-p
                   (if forward
                       (simply-annotate--sorted-overlays)
                     (reverse (simply-annotate--sorted-overlays)))))
@@ -2362,8 +2436,6 @@ For threads with multiple comments, prompts which comment to edit."
   (let ((draft-overlay (simply-annotate--create-overlay start end "")))
     (simply-annotate--update-header "EDITING")
     (overlay-put draft-overlay 'simply-annotation-draft t)
-    (overlay-put draft-overlay 'simply-annotation-level
-                 (if (eq simply-annotate-current-level 'all) 'defun simply-annotate-current-level))
     (setq simply-annotate-draft-overlay draft-overlay)
 
     (simply-annotate--update-annotation-buffer "" draft-overlay 'edit)
@@ -2702,40 +2774,23 @@ Uses org-mode for folding with a custom minor mode for navigation."
       (insert (format "#+TITLE: Annotations for %s\n" (simply-annotate--key-name file-key)))
       (put-text-property start (point) 'simply-annotate-nav (list :file file-key)))
     (insert (format "#+STARTUP: show2levels\n"))
-    (insert (format "Total: %d" total))
-    (dolist (level simply-annotate-levels)
-      (let ((n (cl-count-if
-                (lambda (ann) (eq (or (alist-get 'level ann) 'defun) level))
-                annotations)))
-        (insert (format " | %s: %d" (upcase (symbol-name level)) n))))
-    (insert (format " | Open: %d | Resolved: %d\n\n"
-                    open-count resolved-count))))
+    (insert (format "Total: %d | Open: %d | Resolved: %d\n\n"
+                    total open-count resolved-count))))
 
 (defun simply-annotate--insert-formatted-annotations (file-key annotations source-buffer &optional depth)
-  "Insert formatted ANNOTATIONS for FILE-KEY from SOURCE-BUFFER grouped by level.
+  "Insert formatted ANNOTATIONS for FILE-KEY from SOURCE-BUFFER.
 DEPTH controls heading level offset (default 0)."
-  (let ((d (or depth 0))
-        (line-table (simply-annotate--batch-line-info annotations source-buffer)))
-    (dolist (level simply-annotate-levels)
-      (let ((level-annotations (cl-remove-if-not
-                                (lambda (ann) (eq (or (alist-get 'level ann) 'defun) level))
-                                annotations)))
-        (when level-annotations
-          (let* ((name (upcase (symbol-name level)))
-                 (count (length level-annotations))
-                 (stars (make-string (+ 1 d) ?*)))
-            (insert (format "%s %s (%d)\n" stars name count)))
-
-          (let ((sorted-annotations (simply-annotate--sort-annotations level-annotations)))
-            (dolist (ann sorted-annotations)
-              (let* ((start-pos (alist-get 'start ann))
-                     (annotation-data (alist-get 'text ann))
-                     (line-info (gethash start-pos line-table
-                                         (list 1 0 "Content not available"))))
-
-                (if (simply-annotate--thread-p annotation-data)
-                    (simply-annotate--insert-thread-annotation annotation-data line-info file-key level d)
-                  (simply-annotate--insert-simple-annotation annotation-data line-info file-key level d))))))))))
+  (let* ((d (or depth 0))
+         (line-table (simply-annotate--batch-line-info annotations source-buffer))
+         (sorted-annotations (simply-annotate--sort-annotations annotations)))
+    (dolist (ann sorted-annotations)
+      (let* ((start-pos (alist-get 'start ann))
+             (annotation-data (alist-get 'text ann))
+             (line-info (gethash start-pos line-table
+                                 (list 1 0 "Content not available"))))
+        (if (simply-annotate--thread-p annotation-data)
+            (simply-annotate--insert-thread-annotation annotation-data line-info file-key d)
+          (simply-annotate--insert-simple-annotation annotation-data line-info file-key d))))))
 
 (defun simply-annotate--sort-annotations (annotations)
   "Sort ANNOTATIONS by line position, then by status (open items first).
@@ -2792,8 +2847,8 @@ Returns a hash table mapping start positions to (line-number column content)."
                          table)))))))
     table))
 
-(defun simply-annotate--insert-thread-annotation (thread line-info file-key level &optional depth)
-  "Insert formatted THREAD annotation with LINE-INFO for FILE-KEY at LEVEL.
+(defun simply-annotate--insert-thread-annotation (thread line-info file-key &optional depth)
+  "Insert formatted THREAD annotation with LINE-INFO for FILE-KEY.
 DEPTH controls heading level offset (default 0)."
   (let* ((d (or depth 0))
          (h2 (make-string (+ 2 d) ?*))
@@ -2811,7 +2866,7 @@ DEPTH controls heading level offset (default 0)."
     ;; Annotation heading
     (insert (format "%s [%s/%s] Line %d" h2 (upcase status) (upcase priority) line-num))
     (when tags
-      (insert (format " #%s" (string-join tags " #"))))
+      (insert (format " %s" (string-join tags " "))))
     (insert (format " (%d comment%s)\n"
                     comment-count
                     (if (= comment-count 1) "" "s")))
@@ -2819,7 +2874,7 @@ DEPTH controls heading level offset (default 0)."
     (put-text-property heading-start (point)
                        'simply-annotate-nav
                        (list :file file-key :line line-num
-                             :col (1+ col-num) :level level))
+                             :col (1+ col-num)))
 
     ;; Annotated region under its own heading
     (insert (format "%s Region\n" h3))
@@ -2862,8 +2917,8 @@ Recursively inserts children at deeper heading levels."
       (when children
         (simply-annotate--insert-comment-tree children (1+ heading-level))))))
 
-(defun simply-annotate--insert-simple-annotation (annotation-data line-info file-key level &optional depth)
-  "Insert formatted simple ANNOTATION-DATA with LINE-INFO for FILE-KEY at LEVEL.
+(defun simply-annotate--insert-simple-annotation (annotation-data line-info file-key &optional depth)
+  "Insert formatted simple ANNOTATION-DATA with LINE-INFO for FILE-KEY.
 DEPTH controls heading level offset (default 0)."
   (let* ((d (or depth 0))
          (h2 (make-string (+ 2 d) ?*))
@@ -2878,7 +2933,7 @@ DEPTH controls heading level offset (default 0)."
     (put-text-property heading-start (point)
                        'simply-annotate-nav
                        (list :file file-key :line line-num
-                             :col (1+ col-num) :level level))
+                             :col (1+ col-num)))
     ;; Annotated region under its own heading
     (insert (format "%s Region\n" h3))
     (dolist (line (split-string (string-trim line-content) "\n"))
@@ -2899,12 +2954,18 @@ DEPTH controls heading level offset (default 0)."
 (defun simply-annotate--listing-goto-source (&optional nav)
   "Jump to the source location described by NAV plist.
 If NAV is nil, derive it from point."
-  (let ((props (or nav (simply-annotate--listing-nav-props))))
+  (let ((props (or nav (simply-annotate--listing-nav-props)))
+        (view-tag-filter (cond ((derived-mode-p 'simply-annotate-kanban-mode)
+                                (bound-and-true-p simply-annotate-kanban-filter-tag))
+                               ((derived-mode-p 'simply-annotate-table-mode)
+                                (bound-and-true-p simply-annotate-table-filter-tag))
+                               ((derived-mode-p 'simply-annotate-project-table-mode)
+                                (bound-and-true-p simply-annotate-table-filter-tag))
+                               (t nil))))
     (when props
       (let ((file (plist-get props :file))
             (line (plist-get props :line))
-            (col  (plist-get props :col))
-            (level (plist-get props :level)))
+            (col  (plist-get props :col)))
         (if-let ((source-buf (simply-annotate--get-key-buffer file)))
             (let ((win (display-buffer source-buf
                                        '(display-buffer-use-some-window
@@ -2912,14 +2973,12 @@ If NAV is nil, derive it from point."
               (with-selected-window win
                 (unless simply-annotate-mode
                   (simply-annotate-mode 1))
+                (when view-tag-filter
+                  (setq simply-annotate-current-tag-filter view-tag-filter)
+                  (simply-annotate--apply-tag-filter))
                 (goto-char (point-min))
                 (forward-line (1- line))
                 (forward-char (max 0 (1- col)))
-                (when (and (boundp 'simply-annotate-current-level)
-                           level
-                           (not (eq simply-annotate-current-level level)))
-                  (setq simply-annotate-current-level level)
-                  (simply-annotate--apply-level-filter))
                 ;; Pulse the annotation overlay at this position
                 (when-let ((ov (simply-annotate--overlay-at-point)))
                   (pulse-momentary-highlight-region
@@ -3034,6 +3093,7 @@ Uses `outline-mode' to fold headings cheaply, then activates
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "RET") #'simply-annotate-table-goto-source)
     (define-key map (kbd "g") #'simply-annotate-table-refresh)
+    (define-key map (kbd "t") #'simply-annotate-table-filter-by-tag)
     (define-key map (kbd "q") #'quit-window)
     map)
   "Keymap for `simply-annotate-table-mode'.")
@@ -3041,16 +3101,15 @@ Uses `outline-mode' to fold headings cheaply, then activates
 (define-derived-mode simply-annotate-table-mode tabulated-list-mode "SA-Table"
   "Major mode for displaying annotations in a sortable table."
   (setq tabulated-list-format
-        [("Level" 6 t)
-         ("Stale" 5 t)
+        [("Stale" 5 t)
          ("Line" 6 (lambda (a b)
-                     (< (string-to-number (aref (cadr a) 2))
-                        (string-to-number (aref (cadr b) 2)))))
+                     (< (string-to-number (aref (cadr a) 1))
+                        (string-to-number (aref (cadr b) 1)))))
          ("Status" 12 t)
          ("Priority" 9 t)
          ("Cmt" 4 (lambda (a b)
-                    (< (string-to-number (let ((s (aref (cadr a) 5))) (if (string= s "") "0" s)))
-                       (string-to-number (let ((s (aref (cadr b) 5))) (if (string= s "") "0" s))))))
+                    (< (string-to-number (let ((s (aref (cadr a) 4))) (if (string= s "") "0" s)))
+                       (string-to-number (let ((s (aref (cadr b) 4))) (if (string= s "") "0" s))))))
          ("Tags" 12 t)
          ("Author" 10 t)
          ("Comment" 0 t)])
@@ -3064,8 +3123,6 @@ Uses `outline-mode' to fold headings cheaply, then activates
     (dolist (ann (simply-annotate--sort-annotations annotations))
       (let* ((start-pos (alist-get 'start ann))
              (data (alist-get 'text ann))
-             (raw-level (or (alist-get 'level ann) 'defun))
-             (level (if (eq raw-level 'all) 'defun raw-level))
              (line-info (gethash start-pos line-table '(1 0 "")))
              (line-num (car line-info))
              (col-num (cadr line-info))
@@ -3093,11 +3150,13 @@ Uses `outline-mode' to fold headings cheaply, then activates
                           (t "")))
              (summary (string-trim (car (split-string first-text "\n"))))
              (nav (list :file file-key :line line-num
-                        :col (1+ col-num) :level level)))
-        (push (list nav
-                    (vector
-                     (upcase (symbol-name level))
-                     stale-str
+                        :col (1+ col-num))))
+        (let ((current-tag-filter (bound-and-true-p simply-annotate-table-filter-tag)))
+          (when (or (null current-tag-filter)
+                    (and thread-p (member current-tag-filter (alist-get 'tags data))))
+            (push (list nav
+                      (vector
+                       stale-str
                      (number-to-string line-num)
                      (propertize status 'face
                                  (pcase status
@@ -3111,7 +3170,7 @@ Uses `outline-mode' to fold headings cheaply, then activates
                      tags
                      author
                      summary))
-              entries)))
+              entries)))))
     (nreverse entries)))
 
 (defun simply-annotate-table-goto-source ()
@@ -3129,6 +3188,32 @@ Nil for single-buffer tables.")
 The value is a project-relative or absolute directory string;
 files outside it are filtered out by
 `simply-annotate--filter-db-by-directory'.")
+
+(defvar-local simply-annotate-table-filter-tag nil
+  "When non-nil, restrict table entries to this tag.")
+
+(defun simply-annotate-table-filter-by-tag ()
+  "Filter table entries by tag."
+  (interactive)
+  (let* ((root simply-annotate-table-project-root)
+         (db (when root (simply-annotate--project-annotations root)))
+         (tags (if root
+                   (simply-annotate--kanban-collect-tags db)
+                 (when (and simply-annotate-listing-source (buffer-live-p simply-annotate-listing-source))
+                   (with-current-buffer simply-annotate-listing-source
+                     (simply-annotate--buffer-tags)))))
+         (choices (cons "[All]" tags))
+         (selection (completing-read
+                     (format "Filter by tag%s: "
+                             (if simply-annotate-table-filter-tag
+                                 (format " [current: %s]" simply-annotate-table-filter-tag)
+                               ""))
+                     choices nil t)))
+    (setq simply-annotate-table-filter-tag
+          (unless (string= selection "[All]") selection))
+    (simply-annotate-table-refresh)
+    (message "Tag filter: %s"
+             (or simply-annotate-table-filter-tag "all tags"))))
 
 (defun simply-annotate-table-refresh ()
   "Rebuild the annotation table in place, preserving the window."
@@ -3172,9 +3257,11 @@ Reuses an existing table buffer if one exists; press g to rebuild."
       (when existing (kill-buffer existing))
       (if simply-annotate-overlays
           (let* ((file-key (or (buffer-file-name) (buffer-name)))
-                 (annotations (simply-annotate--serialize-annotations)))
+                 (annotations (simply-annotate--serialize-annotations))
+                 (tag-filter simply-annotate-current-tag-filter))
             (with-current-buffer (get-buffer-create buffer-name)
               (simply-annotate-table-mode)
+              (setq simply-annotate-table-filter-tag tag-filter)
               (setq tabulated-list-entries
                     (simply-annotate--tabulated-entries annotations source-buffer file-key))
               (tabulated-list-print)
@@ -3187,16 +3274,15 @@ Reuses an existing table buffer if one exists; press g to rebuild."
   "Major mode for displaying project-wide annotations in a sortable table."
   (setq tabulated-list-format
         [("File" 25 t)
-         ("Level" 6 t)
          ("Stale" 5 t)
          ("Line" 6 (lambda (a b)
-                     (< (string-to-number (aref (cadr a) 3))
-                        (string-to-number (aref (cadr b) 3)))))
+                     (< (string-to-number (aref (cadr a) 2))
+                        (string-to-number (aref (cadr b) 2)))))
          ("Status" 12 t)
          ("Priority" 9 t)
          ("Cmt" 4 (lambda (a b)
-                    (< (string-to-number (let ((s (aref (cadr a) 6))) (if (string= s "") "0" s)))
-                       (string-to-number (let ((s (aref (cadr b) 6))) (if (string= s "") "0" s))))))
+                    (< (string-to-number (let ((s (aref (cadr a) 5))) (if (string= s "") "0" s)))
+                       (string-to-number (let ((s (aref (cadr b) 5))) (if (string= s "") "0" s))))))
          ("Tags" 12 t)
          ("Author" 10 t)
          ("Comment" 0 t)])
@@ -3204,6 +3290,7 @@ Reuses an existing table buffer if one exists; press g to rebuild."
   (let ((map simply-annotate-project-table-mode-map))
     (define-key map (kbd "RET") #'simply-annotate-table-goto-source)
     (define-key map (kbd "g") #'simply-annotate-table-refresh)
+    (define-key map (kbd "t") #'simply-annotate-table-filter-by-tag)
     (define-key map (kbd "q") #'quit-window))
   (tabulated-list-init-header))
 
@@ -3220,8 +3307,6 @@ Each entry includes a File column."
         (dolist (ann (simply-annotate--sort-annotations annotations))
           (let* ((start-pos (alist-get 'start ann))
                  (data (alist-get 'text ann))
-                 (raw-level (or (alist-get 'level ann) 'defun))
-                 (level (if (eq raw-level 'all) 'defun raw-level))
                  (line-info (gethash start-pos line-table '(1 0 "")))
                  (line-num (car line-info))
                  (col-num (cadr line-info))
@@ -3249,11 +3334,13 @@ Each entry includes a File column."
                               ('unknown "?")
                               (_ "")))
                  (nav (list :file file-key :line line-num
-                            :col (1+ col-num) :level level)))
-            (push (list nav
-                        (vector
-                         short-name
-                         (upcase (symbol-name level))
+                            :col (1+ col-num))))
+            (let ((current-tag-filter (bound-and-true-p simply-annotate-table-filter-tag)))
+              (when (or (null current-tag-filter)
+                        (and thread-p (member current-tag-filter (alist-get 'tags data))))
+                (push (list nav
+                          (vector
+                           short-name
                          stale-str
                          (number-to-string line-num)
                          (propertize status 'face
@@ -3268,10 +3355,10 @@ Each entry includes a File column."
                          tags
                          author
                          summary))
-                  entries)))))
+                  entries)))))))
     (nreverse entries)))
 
-(defun simply-annotate--show-project-table (root &optional subdir)
+(defun simply-annotate--show-project-table (root &optional subdir tag-filter)
   "Show a project-wide annotation table for project at ROOT.
 If SUBDIR is non-nil, restrict the table to files under that
 project-relative directory."
@@ -3286,6 +3373,7 @@ project-relative directory."
         (message "No annotations found for project %s%s" project-name suffix)
       (with-current-buffer (get-buffer-create buffer-name)
         (simply-annotate-project-table-mode)
+        (setq simply-annotate-table-filter-tag tag-filter)
         (setq tabulated-list-entries
               (simply-annotate--project-tabulated-entries filtered))
         (tabulated-list-print)
@@ -3307,9 +3395,10 @@ disables the dired auto-narrow and shows the whole project."
   (interactive "P")
   (if-let* ((proj (project-current t))
             (root (simply-annotate--project-root proj)))
-      (let ((subdir (unless arg
-                      (simply-annotate--dired-default-subdir root))))
-        (simply-annotate--show-project-table root subdir))
+      (let* ((subdir (unless arg
+                       (simply-annotate--dired-default-subdir root)))
+             (tag-filter simply-annotate-current-tag-filter))
+        (simply-annotate--show-project-table root subdir tag-filter))
     (message "Not in a project")))
 
 ;;; Kanban Board View
@@ -3332,7 +3421,6 @@ disables the dired auto-narrow and shows the whole project."
     (define-key map (kbd "e") #'simply-annotate-kanban-toggle-expand)
     (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
     (define-key map (kbd "a") #'simply-annotate-kanban-filter-by-author)
-    (define-key map (kbd "l") #'simply-annotate-kanban-filter-by-level)
     (define-key map (kbd "t") #'simply-annotate-kanban-filter-by-tag)
     (define-key map (kbd "d") #'simply-annotate-kanban-clear-directory-filter)
     map)
@@ -3346,9 +3434,6 @@ disables the dired auto-narrow and shows the whole project."
 
 (defvar-local simply-annotate-kanban-filter-author nil
   "When non-nil, only show cards by this author.")
-
-(defvar-local simply-annotate-kanban-filter-level nil
-  "When non-nil, only show cards at this annotation level (symbol).")
 
 (defvar-local simply-annotate-kanban-filter-directory nil
   "When non-nil, only show cards from files under this directory.
@@ -3377,18 +3462,10 @@ Annotations are grouped into columns by their status."
           (:eval (propertize "RET" 'face 'help-key-binding)) " goto  "
           (:eval (propertize "{/}" 'face 'help-key-binding)) " move  "
           (:eval (propertize "s" 'face 'help-key-binding)) " status  "
-          (:eval (propertize "n/p" 'face 'help-key-binding)) " row  "
-          (:eval (propertize "f/b" 'face 'help-key-binding)) " col  "
           (:eval (propertize "e/E" 'face 'help-key-binding)) " expand  "
           (:eval (propertize "a" 'face 'help-key-binding)) " author"
           (:eval (if simply-annotate-kanban-filter-author
                      (propertize (concat "[" simply-annotate-kanban-filter-author "]")
-                                 'face 'success)
-                   ""))
-          "  "
-          (:eval (propertize "l" 'face 'help-key-binding)) " level"
-          (:eval (if simply-annotate-kanban-filter-level
-                     (propertize (concat "[" (symbol-name simply-annotate-kanban-filter-level) "]")
                                  'face 'success)
                    ""))
           "  "
@@ -3403,7 +3480,6 @@ Annotations are grouped into columns by their status."
                      (propertize "[ON]" 'face 'success)
                    ""))
           "  "
-          (:eval (propertize "g" 'face 'help-key-binding)) " refresh  "
           (:eval (propertize "q" 'face 'help-key-binding)) " quit"))
   (setq simply-annotate-kanban-expanded-cards (make-hash-table))
   (add-hook 'post-command-hook #'simply-annotate-kanban--highlight-card nil t))
@@ -3559,24 +3635,6 @@ The card is identified by its source file and position."
     (message "Filter: %s"
              (or simply-annotate-kanban-filter-author "all authors"))))
 
-(defun simply-annotate-kanban-filter-by-level ()
-  "Filter kanban cards by annotation level.  Select from available levels or clear."
-  (interactive)
-  (let* ((levels (mapcar #'symbol-name simply-annotate-levels))
-         (choices (cons "[All]" levels))
-         (selection (completing-read
-                     (format "Filter by level%s: "
-                             (if simply-annotate-kanban-filter-level
-                                 (format " [current: %s]"
-                                         simply-annotate-kanban-filter-level)
-                               ""))
-                     choices nil t)))
-    (setq simply-annotate-kanban-filter-level
-          (unless (string= selection "[All]") (intern selection)))
-    (simply-annotate-kanban-refresh)
-    (message "Level filter: %s"
-             (or simply-annotate-kanban-filter-level "all levels"))))
-
 (defun simply-annotate-kanban-filter-by-tag ()
   "Filter kanban cards by tag.  Select from available tags or clear filter."
   (interactive)
@@ -3623,12 +3681,13 @@ narrowed board can be widened from inside the kanban buffer with
   (interactive "P")
   (if-let* ((proj (project-current t))
             (root (simply-annotate--project-root proj)))
-      (let ((subdir (unless arg
-                      (simply-annotate--dired-default-subdir root))))
-        (simply-annotate--show-kanban root subdir))
+      (let* ((subdir (unless arg
+                       (simply-annotate--dired-default-subdir root)))
+             (tag-filter simply-annotate-current-tag-filter))
+        (simply-annotate--show-kanban root subdir tag-filter))
     (message "Not in a project")))
 
-(defun simply-annotate--show-kanban (root &optional subdir)
+(defun simply-annotate--show-kanban (root &optional subdir tag-filter)
   "Display kanban board for project at ROOT.
 If SUBDIR is non-nil, restrict the board to files under that
 project-relative directory."
@@ -3642,7 +3701,8 @@ project-relative directory."
       (with-current-buffer (get-buffer-create buffer-name)
         (simply-annotate-kanban-mode)
         (setq simply-annotate-kanban-project-root root)
-        (setq simply-annotate-kanban-filter-directory subdir))
+        (setq simply-annotate-kanban-filter-directory subdir)
+        (setq simply-annotate-kanban-filter-tag tag-filter))
       ;; Display first so window-width is correct for the target window
       (pop-to-buffer buffer-name)
       (simply-annotate--kanban-render filtered)
@@ -3679,10 +3739,9 @@ Returns alist of (STATUS . cards) where each card is
                  (line-info (gethash start-pos line-table '(1 0 "")))
                  (line-num (car line-info))
                  (col-num (cadr line-info))
-                 (level (or (alist-get 'level ann) 'defun))
                  (location (format "%s:%d" short-name line-num))
                  (nav (list :file file-key :line line-num
-                            :col (1+ col-num) :level level
+                            :col (1+ col-num)
                             :start start-pos))
                  (author (if thread-p
                              (or (alist-get 'author (car comments)) "")
@@ -3692,8 +3751,6 @@ Returns alist of (STATUS . cards) where each card is
             (when (and (or (null simply-annotate-kanban-filter-author)
                            (string-equal-ignore-case
                             author simply-annotate-kanban-filter-author))
-                       (or (null simply-annotate-kanban-filter-level)
-                           (eq level simply-annotate-kanban-filter-level))
                        (or (null simply-annotate-kanban-filter-tag)
                            (and thread-p
                                 (member simply-annotate-kanban-filter-tag
@@ -4466,10 +4523,10 @@ ARG is the raw prefix argument and selects the candidate set:
                     (when (simply-annotate--thread-p data)
                       (push (cons (simply-annotate--format-tag-annotation-entry file-key ann)
                                   (cons file-key ann))
-                            candidates)))))
+                            candidates))))))
             (let* ((sorted (nreverse (sort candidates (lambda (a b) (string< (car a) (car b))))))
                    (selected-display (completing-read
-                                      (format "Annotation with #%s [%s]: " tag scope-label)
+                                      (format "Annotation with %s [%s]: " tag scope-label)
                                       (mapcar #'car sorted) nil t))
                    (selected (cdr (assoc selected-display sorted))))
               (when selected
@@ -4480,7 +4537,7 @@ ARG is the raw prefix argument and selects the candidate set:
                       (simply-annotate-mode 1))
                     (let ((start (alist-get 'start ann)))
                       (when start
-                        (goto-char start))))))))))))))
+                        (goto-char start)))))))))))))
 
 ;;; Org Export
 
@@ -4573,8 +4630,9 @@ ARG is the raw prefix argument and selects the candidate set:
     (define-key map (kbd "M-s C-t") #'simply-annotate-remove-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "M-s e") #'simply-annotate-edit-sexp)
-    (define-key map (kbd "M-s [") #'simply-annotate-cycle-level-backward)
-    (define-key map (kbd "M-s ]") #'simply-annotate-cycle-level-forward)
+    (define-key map (kbd "M-s [") #'simply-annotate-cycle-tag-backward)
+    (define-key map (kbd "M-s ]") #'simply-annotate-cycle-tag-forward)
+    (define-key map (kbd "M-s T") #'simply-annotate-set-tag-filter)
     (define-key map (kbd "M-s '") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "M-p") #'simply-annotate-previous)
     (define-key map (kbd "M-n") #'simply-annotate-next)
@@ -4607,8 +4665,8 @@ ARG is the raw prefix argument and selects the candidate set:
     (define-key map (kbd "F") #'simply-annotate-search-by-tag)
     (define-key map (kbd "o") #'simply-annotate-export-to-org-file)
     (define-key map (kbd "e") #'simply-annotate-edit-sexp)
-    (define-key map (kbd "[") #'simply-annotate-cycle-level-backward)
-    (define-key map (kbd "]") #'simply-annotate-cycle-level-forward)
+    (define-key map (kbd "[") #'simply-annotate-cycle-tag-backward)
+    (define-key map (kbd "]") #'simply-annotate-cycle-tag-forward)
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "n") #'simply-annotate-next)
@@ -4716,9 +4774,9 @@ should bind to a prefix key of your choice (M-s is recommended).")
         (simply-annotate--clear-all-overlays)
         (simply-annotate--cleanup-draft)
         (simply-annotate--load-annotations)
-        (setq simply-annotate-current-level simply-annotate-default-level)
+        (setq simply-annotate-current-tag-filter simply-annotate-default-tag-filter)
         (setq simply-annotate-inline simply-annotate-inline-default)
-        (simply-annotate--apply-level-filter)
+        (simply-annotate--apply-tag-filter)
         (simply-annotate--setup-header)
         (simply-annotate--update-header)
         (add-hook 'before-save-hook #'simply-annotate--save-annotations nil t)
@@ -4755,7 +4813,7 @@ Clears any surviving overlays and reloads from the database."
   (simply-annotate--clear-all-overlays)
   (simply-annotate--cleanup-draft)
   (simply-annotate--load-annotations)
-  (simply-annotate--apply-level-filter)
+  (simply-annotate--apply-tag-filter)
   (simply-annotate--update-header))
 
 ;;; Info-mode Integration
@@ -4766,7 +4824,7 @@ Clears any surviving overlays and reloads from the database."
     (simply-annotate--clear-all-overlays)
     (simply-annotate--cleanup-draft)
     (simply-annotate--load-annotations)
-    (simply-annotate--apply-level-filter)
+    (simply-annotate--apply-tag-filter)
     (simply-annotate--update-header)))
 
 
