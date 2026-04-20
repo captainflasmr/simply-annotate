@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.0.0
+;; Version: 2.1.1
 ;; Package-Requires: ((emacs "27.2"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -3394,15 +3394,16 @@ project-relative directory."
 Like `simply-annotate-list-table' but spanning all project files,
 with an additional File column.
 
-When called without a prefix argument from a `dired' buffer that
-lives under a project subdirectory, the table is automatically
-narrowed to that subdirectory.  Any prefix argument (ARG)
-disables the dired auto-narrow and shows the whole project."
+When called without a prefix argument from a `dired' buffer or
+a file buffer that lives under a project subdirectory, the table
+is automatically narrowed to that subdirectory.  Any prefix
+argument (ARG) disables the auto-narrow and shows the whole
+project."
   (interactive "P")
   (if-let* ((proj (project-current t))
             (root (simply-annotate--project-root proj)))
       (let* ((subdir (unless arg
-                       (simply-annotate--dired-default-subdir root)))
+                       (simply-annotate--buffer-default-subdir root)))
              (tag-filter simply-annotate-current-tag-filter))
         (simply-annotate--show-project-table root subdir tag-filter))
     (message "Not in a project")))
@@ -3678,17 +3679,17 @@ the whole project without leaving the kanban buffer."
 (defun simply-annotate-kanban (&optional arg)
   "Show a kanban board of project annotations grouped by status.
 
-When called without a prefix argument from a `dired' buffer that
-lives under a project subdirectory, the board is automatically
-narrowed to that subdirectory.  Any prefix argument (ARG)
-disables the dired auto-narrow and shows the whole project.  A
-narrowed board can be widened from inside the kanban buffer with
-\\<simply-annotate-kanban-mode-map>\\[simply-annotate-kanban-clear-directory-filter]."
+When called without a prefix argument from a `dired' buffer or
+a file buffer that lives under a project subdirectory, the board
+is automatically narrowed to that subdirectory.  Any prefix
+argument (ARG) disables the auto-narrow and shows the whole
+project.  A narrowed board can be widened from inside the kanban
+buffer with \\<simply-annotate-kanban-mode-map>\\[simply-annotate-kanban-clear-directory-filter]."
   (interactive "P")
   (if-let* ((proj (project-current t))
             (root (simply-annotate--project-root proj)))
       (let* ((subdir (unless arg
-                       (simply-annotate--dired-default-subdir root)))
+                       (simply-annotate--buffer-default-subdir root)))
              (tag-filter simply-annotate-current-tag-filter))
         (simply-annotate--show-kanban root subdir tag-filter))
     (message "Not in a project")))
@@ -4300,23 +4301,20 @@ Info-node keys are excluded from filtered views."
                   (string-prefix-p expanded-sub abs)))))
        db))))
 
-(defun simply-annotate--dired-default-subdir (root)
-  "Return the project-relative directory of the current dired buffer.
+(defun simply-annotate--buffer-default-subdir (root)
+  "Return the project-relative directory of the current buffer.
 ROOT is the project root.  Returns a slash-terminated relative
-path when the current buffer is a `dired' (or derived) buffer
-whose `default-directory' lies under ROOT but is not ROOT itself.
-Returns nil otherwise (not in dired, dired root equals project
-root, or dired root is outside the project).  Used to seed the
-directory filter on the four project commands when invoked from
-dired."
-  (when (and (derived-mode-p 'dired-mode)
-             default-directory)
+path when the current buffer's `default-directory' lies under
+ROOT but is not ROOT itself.  Returns nil otherwise (root equals
+project root, or outside the project).  Used to seed the
+directory filter on project commands."
+  (when default-directory
     (let* ((expanded-root (expand-file-name (file-name-as-directory root)))
-           (dired-dir (expand-file-name
-                       (file-name-as-directory default-directory))))
-      (when (and (string-prefix-p expanded-root dired-dir)
-                 (not (string= expanded-root dired-dir)))
-        (file-relative-name dired-dir expanded-root)))))
+           (current-dir (expand-file-name
+                         (file-name-as-directory default-directory))))
+      (when (and (string-prefix-p expanded-root current-dir)
+                 (not (string= expanded-root current-dir)))
+        (file-relative-name current-dir expanded-root)))))
 
 (defun simply-annotate--show-filtered (buffer-name title db)
   "Display annotations from DB in a buffer called BUFFER-NAME.
@@ -4636,10 +4634,10 @@ as detected by `project-current'.
 
 ARG is the raw prefix argument and selects scope:
 
-  no prefix    project files; when called from a `dired' buffer that
-               lives under a project subdirectory, the view is
-               automatically narrowed to that subdirectory
-  \\[universal-argument]            whole project, ignoring any dired auto-narrow
+  no prefix    project files; when called from a `dired' buffer or
+               a file buffer that lives under a project subdirectory,
+               the view is automatically narrowed to that subdirectory
+  \\[universal-argument]            whole project, ignoring any auto-narrow
   \\[universal-argument] \\[universal-argument]        every annotated file in the database
                   (delegates to `simply-annotate-show-all')"
   (interactive "P")
@@ -4652,7 +4650,7 @@ ARG is the raw prefix argument and selects scope:
         (let* ((project-name (file-name-nondirectory (directory-file-name root)))
                (db (simply-annotate--project-annotations root))
                (subdir (unless arg
-                         (simply-annotate--dired-default-subdir root)))
+                         (simply-annotate--buffer-default-subdir root)))
                (filtered (simply-annotate--filter-db-by-directory db root subdir))
                (suffix (if subdir (format " [%s]" subdir) "")))
           (simply-annotate--show-filtered
@@ -4669,10 +4667,10 @@ Opens the selected file and enables `simply-annotate-mode'.
 ARG is the raw prefix argument and selects the candidate set:
 
   no prefix    project files only (or all files if not in a project);
-               when called from a `dired' buffer that lives under a
-               project subdirectory, the candidates are automatically
-               narrowed to that subdirectory
-  \\[universal-argument]            whole project, ignoring any dired auto-narrow
+               when called from a `dired' buffer or a file buffer
+               that lives under a project subdirectory, the candidates
+               are automatically narrowed to that subdirectory
+  \\[universal-argument]            whole project, ignoring any auto-narrow
   \\[universal-argument] \\[universal-argument]        every annotated file in the database"
   (interactive "P")
   (let* ((all (equal arg '(16)))
@@ -4686,7 +4684,7 @@ ARG is the raw prefix argument and selects the candidate set:
          (project-db (when root
                        (simply-annotate--project-annotations root)))
          (subdir (when (and root project-db (not arg))
-                   (simply-annotate--dired-default-subdir root)))
+                   (simply-annotate--buffer-default-subdir root)))
          (db (cond
               (all (simply-annotate--load-database))
               (project-db
@@ -4729,10 +4727,10 @@ annotations, then visits the file and navigates to the annotation.
 ARG is the raw prefix argument and selects the candidate set:
 
   no prefix    project files only (or all files if not in a project);
-               when called from a `dired' buffer that lives under a
-               project subdirectory, the candidates are automatically
-               narrowed to that subdirectory
-  \\[universal-argument]            whole project, ignoring any dired auto-narrow
+               when called from a `dired' buffer or a file buffer
+               that lives under a project subdirectory, the candidates
+               are automatically narrowed to that subdirectory
+  \\[universal-argument]            whole project, ignoring any auto-narrow
   \\[universal-argument] \\[universal-argument]        every annotated file in the database"
   (interactive "P")
   (let* ((all (equal arg '(16)))
@@ -4746,7 +4744,7 @@ ARG is the raw prefix argument and selects the candidate set:
          (project-db (when root
                        (simply-annotate--project-annotations root)))
          (subdir (when (and root project-db (not arg))
-                   (simply-annotate--dired-default-subdir root)))
+                   (simply-annotate--buffer-default-subdir root)))
          (db (cond
               (all (simply-annotate--load-database))
               (project-db

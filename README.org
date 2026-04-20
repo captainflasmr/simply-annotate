@@ -53,6 +53,21 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-04-20 Mon> *2.1.1*
+
+Generalized directory-aware project views.
+
+- *Local directory-aware project views* -- Major project commands (~simply-annotate-kanban~, ~simply-annotate-list-project-table~, etc.) now automatically narrow to the current directory when called from any file buffer within a project.
+- *Docstring improvements* -- Correctly documented auto-narrowing from both dired and regular file buffers.
+
+** <2026-04-12 Sat> *2.1.0*
+
+Cross-project annotations discovery and navigation.
+
+- *Cross-project overview* -- New command ~simply-annotate-list-projects~ for discovering all projects with annotations.
+- *Per-status columns* -- Project table includes sortable columns per status.
+- *Drill-down* -- Jump to project-specific views directly from the overview.
+
 ** <2026-04-12 Sat> *2.0.0*
 
 Tag-centric UI overhaul and Kanban header-line cleanup.

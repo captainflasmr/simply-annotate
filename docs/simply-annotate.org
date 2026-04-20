@@ -1,7 +1,6 @@
 <<Top>>
-
 Next: [[#Introduction][Introduction]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 * Simply Annotate [[#Simply-Annotate][¶]]
 :PROPERTIES:
@@ -119,6 +118,8 @@ Documentation License”.
   - [[#Migrating-to-a-Project-Database][11.2 Migrating to a Project
     Database]]
   - [[#Project_002dScoped-Views][11.3 Project-Scoped Views]]
+    - [[#Automatic-Directory-Narrowing][11.3.1 Automatic Directory
+      Narrowing]]
   - [[#Stale-Annotation-Detection][11.4 Stale Annotation Detection]]
     - [[#How-It-Works][11.4.1 How It Works]]
     - [[#Visual-Indicators][11.4.2 Visual Indicators]]
@@ -198,10 +199,9 @@ Documentation License”.
 --------------
 
 <<Introduction>>
-
 Next: [[#Installation][Installation]], Previous: [[#Top][Simply
 Annotate]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 1 Introduction [[#Introduction-1][¶]]
 :PROPERTIES:
@@ -260,10 +260,9 @@ documentation and includes threading and collaboration features.
 --------------
 
 <<Installation>>
-
 Next: [[#Quick-Start][Quick Start]], Previous:
 [[#Introduction][Introduction]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 2 Installation [[#Installation-1][¶]]
 :PROPERTIES:
@@ -360,10 +359,9 @@ If you prefer to install manually:
 --------------
 
 <<Quick-Start>>
-
 Next: [[#Basic-Usage][Basic Usage]], Previous:
 [[#Installation][Installation]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 3 Quick Start [[#Quick-Start-1][¶]]
 :PROPERTIES:
@@ -389,10 +387,9 @@ Here's how to get started with Simply Annotate:
 --------------
 
 <<Basic-Usage>>
-
 Next: [[#Advanced-Editing][Advanced Editing]], Previous:
 [[#Quick-Start][Quick Start]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 4 Basic Usage [[#Basic-Usage-1][¶]]
 :PROPERTIES:
@@ -532,10 +529,9 @@ save with C-c C-c to remove it.
 --------------
 
 <<Advanced-Editing>>
-
 Next: [[#Threading-and-Collaboration][Threading and Collaboration]],
 Previous: [[#Basic-Usage][Basic Usage]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 5 Advanced Editing [[#Advanced-Editing-1][¶]]
 :PROPERTIES:
@@ -699,10 +695,9 @@ The sexp editor provides:
 --------------
 
 <<Threading-and-Collaboration>>
-
 Next: [[#Display-Styles][Display Styles]], Previous:
 [[#Advanced-Editing][Advanced Editing]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 6 Threading and Collaboration [[#Threading-and-Collaboration-1][¶]]
 :PROPERTIES:
@@ -976,11 +971,10 @@ Configure team members and prompting behavior:
 --------------
 
 <<Display-Styles>>
-
 Next: [[#Annotation-Levels][Annotation Levels]], Previous:
 [[#Threading-and-Collaboration][Threading and Collaboration]], Up:
 [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 7 Display Styles [[#Display-Styles-1][¶]]
 :PROPERTIES:
@@ -1195,10 +1189,9 @@ Customise the appearance with:
 --------------
 
 <<Annotation-Levels>>
-
 Next: [[#Navigation][Navigation]], Previous: [[#Display-Styles][Display
 Styles]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 8 Annotation Levels [[#Annotation-Levels-1][¶]]
 :PROPERTIES:
@@ -1338,10 +1331,9 @@ depth.
 --------------
 
 <<Navigation>>
-
 Next: [[#Advanced-Features][Advanced Features]], Previous:
 [[#Annotation-Levels][Annotation Levels]], Up: [[#Top][Simply Annotate]]
-  [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+  [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 9 Navigation [[#Navigation-1][¶]]
 :PROPERTIES:
@@ -1402,10 +1394,9 @@ and threading:
 --------------
 
 <<Advanced-Features>>
-
 Next: [[#Project_002dAware-Annotations][Project-Aware Annotations]],
 Previous: [[#Navigation][Navigation]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 10 Advanced Features [[#Advanced-Features-1][¶]]
 :PROPERTIES:
@@ -1669,10 +1660,9 @@ The header-line provides real-time information with threading support:
 --------------
 
 <<Project_002dAware-Annotations>>
-
 Next: [[#Kanban-Board][Kanban Board]], Previous:
 [[#Advanced-Features][Advanced Features]], Up: [[#Top][Simply Annotate]]
-  [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+  [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 11 Project-Aware Annotations [[#Project_002dAware-Annotations-1][¶]]
 :PROPERTIES:
@@ -1779,6 +1769,27 @@ Stale, Line, Status, Priority, Comments, Tags, Author, and Comment.
 project files when using =project= or =both= strategy. Use a prefix
 argument (C-u f) to show all files across all databases.
 
+- [[#Automatic-Directory-Narrowing][Automatic Directory Narrowing]]
+
+<<Automatic-Directory-Narrowing>>
+**** 11.3.1 Automatic Directory Narrowing [[#Automatic-Directory-Narrowing][¶]]
+:PROPERTIES:
+:CUSTOM_ID: automatic-directory-narrowing
+:CLASS: subsection
+:END:
+When any project-level command (Kanban, Table, Org listing, File jump,
+Search by tag) is invoked from a buffer that belongs to a project
+subdirectory, the view is automatically narrowed to that subdirectory.
+This allows for a “local peek” of relevant annotations without needing
+to manually filter.
+
+This auto-narrowing behavior works from both *Dired* buffers and
+*regular file* buffers.
+
+Use a single prefix argument (C-u) when invoking any of these commands
+to force the whole project view, bypassing the automatic directory
+filter.
+
 <<Stale-Annotation-Detection>>
 *** 11.4 Stale Annotation Detection [[#Stale-Annotation-Detection][¶]]
 :PROPERTIES:
@@ -1859,11 +1870,10 @@ hash is verified at the new location.
 --------------
 
 <<Kanban-Board>>
-
 Next: [[#Org_002dmode-Integration][Org-mode Integration]], Previous:
 [[#Project_002dAware-Annotations][Project-Aware Annotations]], Up:
 [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 12 Kanban Board [[#Kanban-Board-1][¶]]
 :PROPERTIES:
@@ -1970,8 +1980,9 @@ highlighting.
 - t :: Filter by tag. Select from tags present in the current board, or
   choose ‘=[All]=' to clear.
 
-- d :: Clear the directory filter (widening a dired-narrowed board back
-  to the whole project).
+- d :: Clear the directory filter (widening a narrowed board back to the
+  whole project). This clears any automatic filter seeded from the
+  starting buffer.
 
 Filters stack: for example, pressing a to select an author and then t to
 select a tag shows only cards by that author with that tag.
@@ -1993,10 +2004,9 @@ select a tag shows only cards by that author with that tag.
 --------------
 
 <<Org_002dmode-Integration>>
-
 Next: [[#Key-Bindings][Key Bindings]], Previous: [[#Kanban-Board][Kanban
 Board]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 13 Org-mode Integration [[#Org_002dmode-Integration-1][¶]]
 :PROPERTIES:
@@ -2098,10 +2108,9 @@ The exported files work seamlessly with:
 --------------
 
 <<Key-Bindings>>
-
 Next: [[#Customization][Customization]], Previous:
 [[#Org_002dmode-Integration][Org-mode Integration]], Up: [[#Top][Simply
-Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+Annotate]]   [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 14 Key Bindings [[#Key-Bindings-1][¶]]
 :PROPERTIES:
@@ -2221,10 +2230,9 @@ The sexp editing buffer provides:
 --------------
 
 <<Customization>>
-
 Next: [[#Data-Storage][Data Storage]], Previous: [[#Key-Bindings][Key
 Bindings]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 15 Customization [[#Customization-1][¶]]
 :PROPERTIES:
@@ -2619,10 +2627,9 @@ To enable annotation mode automatically:
 --------------
 
 <<Data-Storage>>
-
 Next: [[#Troubleshooting][Troubleshooting]], Previous:
 [[#Customization][Customization]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 16 Data Storage [[#Data-Storage-1][¶]]
 :PROPERTIES:
@@ -2756,10 +2763,9 @@ When using sexp editing mode:
 --------------
 
 <<Troubleshooting>>
-
 Next: [[#Function-Index][Function Index]], Previous:
 [[#Data-Storage][Data Storage]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 17 Troubleshooting [[#Troubleshooting-1][¶]]
 :PROPERTIES:
@@ -3009,10 +3015,9 @@ If annotations disappear when opening new files:
 --------------
 
 <<Function-Index>>
-
 Next: [[#Variable-Index][Variable Index]], Previous:
 [[#Troubleshooting][Troubleshooting]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** Function Index [[#Function-Index-1][¶]]
 :PROPERTIES:
@@ -3020,52 +3025,50 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 :CLASS: unnumbered
 :END:
 
-|                | Index Entry                                                                                                     | Section                                                       |
-| -------------- |                                                                                                                 |                                                               |
-| S              |                                                                                                                 |                                                               |
-|                | [[#index-simply_002dannotate_002dadd_002dannotation_002dtag][=simply-annotate-add-annotation-tag=]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                               | [[#Basic-Usage][Basic Usage]]                                 |
-|                | [[#index-simply_002dannotate_002dchange_002dannotation_002dauthor][=simply-annotate-change-annotation-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dclear_002dbuffer_002dannotations][=simply-annotate-clear-buffer-annotations=]] | [[#Basic-Usage][Basic Usage]]                                 |
-|                | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dbackward][=simply-annotate-cycle-level-backward=]]         | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-simply_002dannotate_002dcycle_002dlevel_002dforward][=simply-annotate-cycle-level-forward=]]           | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-simply_002dannotate_002ddired_002dmode][=simply-annotate-dired-mode=]]                                 | [[#Advanced-Features][Advanced Features]]                     |
-|                | [[#index-simply_002dannotate_002dedit_002dsexp][=simply-annotate-edit-sexp=]]                                   | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
-|                | [[#index-simply_002dannotate_002djump_002dto_002dfile][=simply-annotate-jump-to-file=]]                         | [[#Advanced-Features][Advanced Features]]                     |
-|                | [[#index-simply_002dannotate_002djump_002dto_002dfile-1][=simply-annotate-jump-to-file=]]                       | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-|                | [[#index-simply_002dannotate_002dkanban][=simply-annotate-kanban=]]                                             | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
-|                | [[#index-simply_002dannotate_002dlist_002dproject_002dtable][=simply-annotate-list-project-table=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-|                | [[#index-simply_002dannotate_002dlist_002dprojects][=simply-annotate-list-projects=]]                           | [[#Advanced-Features][Advanced Features]]                     |
-|                | [[#index-simply_002dannotate_002dmigrate_002dthreading][=simply-annotate-migrate-threading=]]                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dmigrate_002dto_002dproject][=simply-annotate-migrate-to-project=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-|                | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
-|                | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                                 | [[#Navigation][Navigation]]                                   |
-|                | [[#index-simply_002dannotate_002dprevious][=simply-annotate-previous=]]                                         | [[#Navigation][Navigation]]                                   |
-|                | [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                             | [[#Basic-Usage][Basic Usage]]                                 |
-|                | [[#index-simply_002dannotate_002dremove_002dannotation_002dtag][=simply-annotate-remove-annotation-tag=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dreply_002dto_002dannotation][=simply-annotate-reply-to-annotation=]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]]     | [[#Basic-Usage][Basic Usage]]                                 |
-|                | [[#index-simply_002dannotate_002dsearch_002dby_002dtag][=simply-annotate-search-by-tag=]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dset_002dannotation_002dpriority][=simply-annotate-set-annotation-priority=]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dset_002dannotation_002dstatus][=simply-annotate-set-annotation-status=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dset_002dlevel][=simply-annotate-set-level=]]                                   | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                                 | [[#Navigation][Navigation]]                                   |
-|                | [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                     | [[#Advanced-Features][Advanced Features]]                     |
-|                | [[#index-simply_002dannotate_002dshow_002dproject][=simply-annotate-show-project=]]                             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-|                | [[#index-simply_002dannotate_002dsmart_002daction][=simply-annotate-smart-action=]]                             | [[#Basic-Usage][Basic Usage]]                                 |
-|                | [[#index-simply_002dannotate_002dtoggle_002dinline][=simply-annotate-toggle-inline=]]                           | [[#Display-Styles][Display Styles]]                           |
-| -------------- |                                                                                                                 |                                                               |
+| --------------                                                                                                  |                                                               |
+| S                                                                                                               |                                                               |
+| [[#index-simply_002dannotate_002dadd_002dannotation_002dtag][=simply-annotate-add-annotation-tag=]]             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dcancel_002dedit][=simply-annotate-cancel-edit=]]                               | [[#Basic-Usage][Basic Usage]]                                 |
+| [[#index-simply_002dannotate_002dchange_002dannotation_002dauthor][=simply-annotate-change-annotation-author=]] | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dclear_002dbuffer_002dannotations][=simply-annotate-clear-buffer-annotations=]] | [[#Basic-Usage][Basic Usage]]                                 |
+| [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dcycle_002dlevel_002dbackward][=simply-annotate-cycle-level-backward=]]         | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-simply_002dannotate_002dcycle_002dlevel_002dforward][=simply-annotate-cycle-level-forward=]]           | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-simply_002dannotate_002ddired_002dmode][=simply-annotate-dired-mode=]]                                 | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002dedit_002dsexp][=simply-annotate-edit-sexp=]]                                   | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
+| [[#index-simply_002dannotate_002djump_002dto_002dfile][=simply-annotate-jump-to-file=]]                         | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002djump_002dto_002dfile-1][=simply-annotate-jump-to-file=]]                       | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| [[#index-simply_002dannotate_002dkanban][=simply-annotate-kanban=]]                                             | [[#Kanban-Board][Kanban Board]]                               |
+| [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002dlist_002dproject_002dtable][=simply-annotate-list-project-table=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| [[#index-simply_002dannotate_002dlist_002dprojects][=simply-annotate-list-projects=]]                           | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002dmigrate_002dthreading][=simply-annotate-migrate-threading=]]                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dmigrate_002dto_002dproject][=simply-annotate-migrate-to-project=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
+| [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                                 | [[#Navigation][Navigation]]                                   |
+| [[#index-simply_002dannotate_002dprevious][=simply-annotate-previous=]]                                         | [[#Navigation][Navigation]]                                   |
+| [[#index-simply_002dannotate_002dremove][=simply-annotate-remove=]]                                             | [[#Basic-Usage][Basic Usage]]                                 |
+| [[#index-simply_002dannotate_002dremove_002dannotation_002dtag][=simply-annotate-remove-annotation-tag=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dreply_002dto_002dannotation][=simply-annotate-reply-to-annotation=]]           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dsave_002dannotation_002dbuffer][=simply-annotate-save-annotation-buffer=]]     | [[#Basic-Usage][Basic Usage]]                                 |
+| [[#index-simply_002dannotate_002dsearch_002dby_002dtag][=simply-annotate-search-by-tag=]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dset_002dannotation_002dpriority][=simply-annotate-set-annotation-priority=]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dset_002dannotation_002dstatus][=simply-annotate-set-annotation-status=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dset_002dlevel][=simply-annotate-set-level=]]                                   | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                                 | [[#Navigation][Navigation]]                                   |
+| [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                     | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002dshow_002dproject][=simply-annotate-show-project=]]                             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| [[#index-simply_002dannotate_002dsmart_002daction][=simply-annotate-smart-action=]]                             | [[#Basic-Usage][Basic Usage]]                                 |
+| [[#index-simply_002dannotate_002dtoggle_002dinline][=simply-annotate-toggle-inline=]]                           | [[#Display-Styles][Display Styles]]                           |
+| --------------                                                                                                  |                                                               |
 
 --------------
 
 <<Variable-Index>>
-
 Next: [[#Concept-Index][Concept Index]], Previous:
 [[#Function-Index][Function Index]], Up: [[#Top][Simply Annotate]]  
-[[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** Variable Index [[#Variable-Index-1][¶]]
 :PROPERTIES:
@@ -3075,102 +3078,100 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 
 | Jump to:   | [[#Variable-Index_vr_letter-A][*A*]]   [[#Variable-Index_vr_letter-B][*B*]]   [[#Variable-Index_vr_letter-C][*C*]]   [[#Variable-Index_vr_letter-G][*G*]]   [[#Variable-Index_vr_letter-I][*I*]]   [[#Variable-Index_vr_letter-P][*P*]]   [[#Variable-Index_vr_letter-S][*S*]]   [[#Variable-Index_vr_letter-T][*T*]]   |
 
-|                | Index Entry                                                                                                           | Section                                                       |
-| -------------- |                                                                                                                       |                                                               |
-| A              |                                                                                                                       |                                                               |
-|                | [[#index-author][=author=]]                                                                                           | [[#Advanced-Editing][Advanced Editing]]                       |
-| -------------- |                                                                                                                       |                                                               |
-| B              |                                                                                                                       |                                                               |
-|                | [[#index-both][=both=]]                                                                                               | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-| -------------- |                                                                                                                       |                                                               |
-| C              |                                                                                                                       |                                                               |
-|                | [[#index-comments][=comments=]]                                                                                       | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-created][=created=]]                                                                                         | [[#Advanced-Editing][Advanced Editing]]                       |
-| -------------- |                                                                                                                       |                                                               |
-| G              |                                                                                                                       |                                                               |
-|                | [[#index-global][=global=]]                                                                                           | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-| -------------- |                                                                                                                       |                                                               |
-| I              |                                                                                                                       |                                                               |
-|                | [[#index-id][=id=]]                                                                                                   | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-id-1][=id=]]                                                                                                 | [[#Advanced-Editing][Advanced Editing]]                       |
-| -------------- |                                                                                                                       |                                                               |
-| P              |                                                                                                                       |                                                               |
-|                | [[#index-parent_002did][=parent-id=]]                                                                                 | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-priority-1][=priority=]]                                                                                     | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-project][=project=]]                                                                                         | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-| -------------- |                                                                                                                       |                                                               |
-| S              |                                                                                                                       |                                                               |
-|                | [[#index-simply_002dannotate_002dauthor_002dlist][=simply-annotate-author-list=]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dauthor_002dlist-1][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dauthor_002dlist-2][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]                                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]                               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]                                     | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddatabase_002dstrategy][=simply-annotate-database-strategy=]]                         | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-|                | [[#index-simply_002dannotate_002ddatabase_002dstrategy-1][=simply-annotate-database-strategy=]]                       | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddatabase_002dstrategy-2][=simply-annotate-database-strategy=]]                       | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddefault_002dlevel][=simply-annotate-default-level=]]                                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddefault_002dlevel-1][=simply-annotate-default-level=]]                               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddisplay_002dstyle][=simply-annotate-display-style=]]                                 | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-1][=simply-annotate-display-style=]]                               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002ddisplay_002dstyle-2][=simply-annotate-display-style=]]                               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                                                       | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                                                     | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dface][=simply-annotate-fringe-face=]]                                     | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dfringe_002dface-1][=simply-annotate-fringe-face=]]                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dface-2][=simply-annotate-fringe-face=]]                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dindicator][=simply-annotate-fringe-indicator=]]                           | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dfringe_002dindicator-1][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]                               | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]                             | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dmax_002dlines][=simply-annotate-inline-max-lines=]]                       | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dmax_002dlines-1][=simply-annotate-inline-max-lines=]]                     | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dabove][=simply-annotate-inline-pointer-above=]]               | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-1][=simply-annotate-inline-pointer-above=]]             | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-2][=simply-annotate-inline-pointer-above=]]             | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dafter][=simply-annotate-inline-pointer-after=]]               | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-1][=simply-annotate-inline-pointer-after=]]             | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-2][=simply-annotate-inline-pointer-after=]]             | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dposition][=simply-annotate-inline-position=]]                             | [[#Display-Styles][Display Styles]]                           |
-|                | [[#index-simply_002dannotate_002dinline_002dposition-1][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dinline_002dposition-2][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dlevels][=simply-annotate-levels=]]                                                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dlevels-1][=simply-annotate-levels=]]                                                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dpriority_002dlevels][=simply-annotate-priority-levels=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dpriority_002dlevels-1][=simply-annotate-priority-levels=]]                           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dpriority_002dlevels-2][=simply-annotate-priority-levels=]]                           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dproject_002dfile][=simply-annotate-project-file=]]                                   | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
-|                | [[#index-simply_002dannotate_002dproject_002dfile-1][=simply-annotate-project-file=]]                                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dproject_002dfile-2][=simply-annotate-project-file=]]                                 | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor][=simply-annotate-prompt-for-author=]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-1][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile][=simply-annotate-remember-author-per-file=]]   | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1][=simply-annotate-remember-author-per-file=]] | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dstale_002dface][=simply-annotate-stale-face=]]                                       | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dstale_002dface-1][=simply-annotate-stale-face=]]                                     | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dthread_002dstatuses][=simply-annotate-thread-statuses=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-simply_002dannotate_002dthread_002dstatuses-1][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
-|                | [[#index-simply_002dannotate_002dthread_002dstatuses-2][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
-|                | [[#index-status-1][=status=]]                                                                                         | [[#Advanced-Editing][Advanced Editing]]                       |
-| -------------- |                                                                                                                       |                                                               |
-| T              |                                                                                                                       |                                                               |
-|                | [[#index-tags-1][=tags=]]                                                                                             | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-text][=text=]]                                                                                               | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-timestamp][=timestamp=]]                                                                                     | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-type][=type=]]                                                                                               | [[#Advanced-Editing][Advanced Editing]]                       |
-| -------------- |                                                                                                                       |                                                               |
+| --------------                                                                                                        |                                                               |
+| A                                                                                                                     |                                                               |
+| [[#index-author][=author=]]                                                                                           | [[#Advanced-Editing][Advanced Editing]]                       |
+| --------------                                                                                                        |                                                               |
+| B                                                                                                                     |                                                               |
+| [[#index-both][=both=]]                                                                                               | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| --------------                                                                                                        |                                                               |
+| C                                                                                                                     |                                                               |
+| [[#index-comments][=comments=]]                                                                                       | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-created][=created=]]                                                                                         | [[#Advanced-Editing][Advanced Editing]]                       |
+| --------------                                                                                                        |                                                               |
+| G                                                                                                                     |                                                               |
+| [[#index-global][=global=]]                                                                                           | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| --------------                                                                                                        |                                                               |
+| I                                                                                                                     |                                                               |
+| [[#index-id][=id=]]                                                                                                   | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-id-1][=id=]]                                                                                                 | [[#Advanced-Editing][Advanced Editing]]                       |
+| --------------                                                                                                        |                                                               |
+| P                                                                                                                     |                                                               |
+| [[#index-parent_002did][=parent-id=]]                                                                                 | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-priority-1][=priority=]]                                                                                     | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-project][=project=]]                                                                                         | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| --------------                                                                                                        |                                                               |
+| S                                                                                                                     |                                                               |
+| [[#index-simply_002dannotate_002dauthor_002dlist][=simply-annotate-author-list=]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dauthor_002dlist-1][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dauthor_002dlist-2][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]                                 | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]                               | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]                                     | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dbuffer_002dname-1][=simply-annotate-buffer-name=]]                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002ddatabase_002dstrategy][=simply-annotate-database-strategy=]]                         | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| [[#index-simply_002dannotate_002ddatabase_002dstrategy-1][=simply-annotate-database-strategy=]]                       | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002ddatabase_002dstrategy-2][=simply-annotate-database-strategy=]]                       | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002ddefault_002dlevel][=simply-annotate-default-level=]]                                 | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002ddefault_002dlevel-1][=simply-annotate-default-level=]]                               | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002ddisplay_002dstyle][=simply-annotate-display-style=]]                                 | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002ddisplay_002dstyle-1][=simply-annotate-display-style=]]                               | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002ddisplay_002dstyle-2][=simply-annotate-display-style=]]                               | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dfile][=simply-annotate-file=]]                                                       | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dfile-1][=simply-annotate-file=]]                                                     | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dfringe_002dface][=simply-annotate-fringe-face=]]                                     | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dfringe_002dface-1][=simply-annotate-fringe-face=]]                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dfringe_002dface-2][=simply-annotate-fringe-face=]]                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dfringe_002dindicator][=simply-annotate-fringe-indicator=]]                           | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dfringe_002dindicator-1][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]                               | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]                             | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dmax_002dlines][=simply-annotate-inline-max-lines=]]                       | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dmax_002dlines-1][=simply-annotate-inline-max-lines=]]                     | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dpointer_002dabove][=simply-annotate-inline-pointer-above=]]               | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-1][=simply-annotate-inline-pointer-above=]]             | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dpointer_002dabove-2][=simply-annotate-inline-pointer-above=]]             | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dpointer_002dafter][=simply-annotate-inline-pointer-after=]]               | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-1][=simply-annotate-inline-pointer-after=]]             | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dpointer_002dafter-2][=simply-annotate-inline-pointer-after=]]             | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dposition][=simply-annotate-inline-position=]]                             | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dinline_002dposition-1][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dinline_002dposition-2][=simply-annotate-inline-position=]]                           | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dlevels][=simply-annotate-levels=]]                                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dlevels-1][=simply-annotate-levels=]]                                                 | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dpriority_002dlevels][=simply-annotate-priority-levels=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dpriority_002dlevels-1][=simply-annotate-priority-levels=]]                           | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dpriority_002dlevels-2][=simply-annotate-priority-levels=]]                           | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dproject_002dfile][=simply-annotate-project-file=]]                                   | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
+| [[#index-simply_002dannotate_002dproject_002dfile-1][=simply-annotate-project-file=]]                                 | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dproject_002dfile-2][=simply-annotate-project-file=]]                                 | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor][=simply-annotate-prompt-for-author=]]                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-1][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2][=simply-annotate-prompt-for-author=]]                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile][=simply-annotate-remember-author-per-file=]]   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1][=simply-annotate-remember-author-per-file=]] | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dstale_002dface][=simply-annotate-stale-face=]]                                       | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dstale_002dface-1][=simply-annotate-stale-face=]]                                     | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dthread_002dstatuses][=simply-annotate-thread-statuses=]]                             | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dthread_002dstatuses-1][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dthread_002dstatuses-2][=simply-annotate-thread-statuses=]]                           | [[#Customization][Customization]]                             |
+| [[#index-status-1][=status=]]                                                                                         | [[#Advanced-Editing][Advanced Editing]]                       |
+| --------------                                                                                                        |                                                               |
+| T                                                                                                                     |                                                               |
+| [[#index-tags-1][=tags=]]                                                                                             | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-text][=text=]]                                                                                               | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-timestamp][=timestamp=]]                                                                                     | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-type][=type=]]                                                                                               | [[#Advanced-Editing][Advanced Editing]]                       |
+| --------------                                                                                                        |                                                               |
 
 | Jump to:   | [[#Variable-Index_vr_letter-A][*A*]]   [[#Variable-Index_vr_letter-B][*B*]]   [[#Variable-Index_vr_letter-C][*C*]]   [[#Variable-Index_vr_letter-G][*G*]]   [[#Variable-Index_vr_letter-I][*I*]]   [[#Variable-Index_vr_letter-P][*P*]]   [[#Variable-Index_vr_letter-S][*S*]]   [[#Variable-Index_vr_letter-T][*T*]]   |
 
 --------------
 
 <<Concept-Index>>
-
 Previous: [[#Variable-Index][Variable Index]], Up: [[#Top][Simply
-Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
+Annotate]]   [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** Concept Index [[#Concept-Index-1][¶]]
 :PROPERTIES:
@@ -3180,75 +3181,74 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Function-Index][Index]]]
 
 | Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-E][*E*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-I][*I*]]   [[#Concept-Index_cp_letter-K][*K*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |
 
-|                | Index Entry                                                     | Section                                                       |
-| -------------- |                                                                 |                                                               |
-| A              |                                                                 |                                                               |
-|                | [[#index-advanced-editing][advanced editing]]                   | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-annotation-levels][annotation levels]]                 | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-authors][authors]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                                 |                                                               |
-| B              |                                                                 |                                                               |
-|                | [[#index-board-view][board view]]                               | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-buffer_002dlocal-variables][buffer-local variables]]   | [[#Troubleshooting][Troubleshooting]]                         |
-| -------------- |                                                                 |                                                               |
-| C              |                                                                 |                                                               |
-|                | [[#index-collaboration][collaboration]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-conversations][conversations]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-cross_002dproject-overview][cross-project overview]]   | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                                                 |                                                               |
-| D              |                                                                 |                                                               |
-|                | [[#index-data-structure-editing][data structure editing]]       | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-defun-level][defun level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
-| -------------- |                                                                 |                                                               |
-| E              |                                                                 |                                                               |
-|                | [[#index-embedded-comments][embedded comments]]                 | [[#Display-Styles][Display Styles]]                           |
-| -------------- |                                                                 |                                                               |
-| F              |                                                                 |                                                               |
-|                | [[#index-file-level][file level]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-filter-by-author][filter by author]]                   | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-filter-by-level][filter by level]]                     | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-filter-by-tag][filter by tag]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-filter-by-tag-1][filter by tag]]                       | [[#Kanban-Board][Kanban Board]]                               |
-| -------------- |                                                                 |                                                               |
-| H              |                                                                 |                                                               |
-|                | [[#index-header_002dline][header-line]]                         | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                                                 |                                                               |
-| I              |                                                                 |                                                               |
-|                | [[#index-inline-display][inline display]]                       | [[#Display-Styles][Display Styles]]                           |
-| -------------- |                                                                 |                                                               |
-| K              |                                                                 |                                                               |
-|                | [[#index-kanban][kanban]]                                       | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-kanban-filter][kanban filter]]                         | [[#Kanban-Board][Kanban Board]]                               |
-| -------------- |                                                                 |                                                               |
-| L              |                                                                 |                                                               |
-|                | [[#index-line-level][line level]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
-| -------------- |                                                                 |                                                               |
-| O              |                                                                 |                                                               |
-|                | [[#index-organization][organization]]                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-overlay-persistence][overlay persistence]]             | [[#Troubleshooting][Troubleshooting]]                         |
-| -------------- |                                                                 |                                                               |
-| P              |                                                                 |                                                               |
-|                | [[#index-priority][priority]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-progressive-exploration][progressive exploration]]     | [[#Annotation-Levels][Annotation Levels]]                     |
-|                | [[#index-projects-with-annotations][projects with annotations]] | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                                                 |                                                               |
-| R              |                                                                 |                                                               |
-|                | [[#index-replies][replies]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                                 |                                                               |
-| S              |                                                                 |                                                               |
-|                | [[#index-sexp-editing][sexp editing]]                           | [[#Advanced-Editing][Advanced Editing]]                       |
-|                | [[#index-status][status]]                                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-status-columns][status columns]]                       | [[#Kanban-Board][Kanban Board]]                               |
-|                | [[#index-status-display][status display]]                       | [[#Advanced-Features][Advanced Features]]                     |
-| -------------- |                                                                 |                                                               |
-| T              |                                                                 |                                                               |
-|                | [[#index-tag-search][tag search]]                               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-tags][tags]]                                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-team][team]]                                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-|                | [[#index-threading][threading]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                                 |                                                               |
-| W              |                                                                 |                                                               |
-|                | [[#index-workflow][workflow]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
-| -------------- |                                                                 |                                                               |
+| --------------                                                  |                                                               |
+| A                                                               |                                                               |
+| [[#index-advanced-editing][advanced editing]]                   | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-annotation-levels][annotation levels]]                 | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-authors][authors]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| --------------                                                  |                                                               |
+| B                                                               |                                                               |
+| [[#index-board-view][board view]]                               | [[#Kanban-Board][Kanban Board]]                               |
+| [[#index-buffer_002dlocal-variables][buffer-local variables]]   | [[#Troubleshooting][Troubleshooting]]                         |
+| --------------                                                  |                                                               |
+| C                                                               |                                                               |
+| [[#index-collaboration][collaboration]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-conversations][conversations]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-cross_002dproject-overview][cross-project overview]]   | [[#Advanced-Features][Advanced Features]]                     |
+| --------------                                                  |                                                               |
+| D                                                               |                                                               |
+| [[#index-data-structure-editing][data structure editing]]       | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-defun-level][defun level]]                             | [[#Annotation-Levels][Annotation Levels]]                     |
+| --------------                                                  |                                                               |
+| E                                                               |                                                               |
+| [[#index-embedded-comments][embedded comments]]                 | [[#Display-Styles][Display Styles]]                           |
+| --------------                                                  |                                                               |
+| F                                                               |                                                               |
+| [[#index-file-level][file level]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-filter-by-author][filter by author]]                   | [[#Kanban-Board][Kanban Board]]                               |
+| [[#index-filter-by-level][filter by level]]                     | [[#Kanban-Board][Kanban Board]]                               |
+| [[#index-filter-by-tag][filter by tag]]                         | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-filter-by-tag-1][filter by tag]]                       | [[#Kanban-Board][Kanban Board]]                               |
+| --------------                                                  |                                                               |
+| H                                                               |                                                               |
+| [[#index-header_002dline][header-line]]                         | [[#Advanced-Features][Advanced Features]]                     |
+| --------------                                                  |                                                               |
+| I                                                               |                                                               |
+| [[#index-inline-display][inline display]]                       | [[#Display-Styles][Display Styles]]                           |
+| --------------                                                  |                                                               |
+| K                                                               |                                                               |
+| [[#index-kanban][kanban]]                                       | [[#Kanban-Board][Kanban Board]]                               |
+| [[#index-kanban-filter][kanban filter]]                         | [[#Kanban-Board][Kanban Board]]                               |
+| --------------                                                  |                                                               |
+| L                                                               |                                                               |
+| [[#index-line-level][line level]]                               | [[#Annotation-Levels][Annotation Levels]]                     |
+| --------------                                                  |                                                               |
+| O                                                               |                                                               |
+| [[#index-organization][organization]]                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-overlay-persistence][overlay persistence]]             | [[#Troubleshooting][Troubleshooting]]                         |
+| --------------                                                  |                                                               |
+| P                                                               |                                                               |
+| [[#index-priority][priority]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-progressive-exploration][progressive exploration]]     | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-projects-with-annotations][projects with annotations]] | [[#Advanced-Features][Advanced Features]]                     |
+| --------------                                                  |                                                               |
+| R                                                               |                                                               |
+| [[#index-replies][replies]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| --------------                                                  |                                                               |
+| S                                                               |                                                               |
+| [[#index-sexp-editing][sexp editing]]                           | [[#Advanced-Editing][Advanced Editing]]                       |
+| [[#index-status][status]]                                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-status-columns][status columns]]                       | [[#Kanban-Board][Kanban Board]]                               |
+| [[#index-status-display][status display]]                       | [[#Advanced-Features][Advanced Features]]                     |
+| --------------                                                  |                                                               |
+| T                                                               |                                                               |
+| [[#index-tag-search][tag search]]                               | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-tags][tags]]                                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-team][team]]                                           | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-threading][threading]]                                 | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| --------------                                                  |                                                               |
+| W                                                               |                                                               |
+| [[#index-workflow][workflow]]                                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| --------------                                                  |                                                               |
 
 | Jump to:   | [[#Concept-Index_cp_letter-A][*A*]]   [[#Concept-Index_cp_letter-B][*B*]]   [[#Concept-Index_cp_letter-C][*C*]]   [[#Concept-Index_cp_letter-D][*D*]]   [[#Concept-Index_cp_letter-E][*E*]]   [[#Concept-Index_cp_letter-F][*F*]]   [[#Concept-Index_cp_letter-H][*H*]]   [[#Concept-Index_cp_letter-I][*I*]]   [[#Concept-Index_cp_letter-K][*K*]]   [[#Concept-Index_cp_letter-L][*L*]]   [[#Concept-Index_cp_letter-O][*O*]]   [[#Concept-Index_cp_letter-P][*P*]]   [[#Concept-Index_cp_letter-R][*R*]]   [[#Concept-Index_cp_letter-S][*S*]]   [[#Concept-Index_cp_letter-T][*T*]]   [[#Concept-Index_cp_letter-W][*W*]]   |

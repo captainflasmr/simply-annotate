@@ -1,4 +1,4 @@
-This is simply-annotate.info, produced by makeinfo version 7.2 from
+This is simply-annotate.info, produced by makeinfo version 7.3 from
 simply-annotate.texi.
 
 This manual is for Simply Annotate, a lightweight annotation system for
@@ -1234,6 +1234,22 @@ Comment.
 project files when using ‘project’ or ‘both’ strategy.  Use a prefix
 argument (‘C-u f’) to show all files across all databases.
 
+11.3.1 Automatic Directory Narrowing
+------------------------------------
+
+When any project-level command (Kanban, Table, Org listing, File jump,
+Search by tag) is invoked from a buffer that belongs to a project
+subdirectory, the view is automatically narrowed to that subdirectory.
+This allows for a "local peek" of relevant annotations without needing
+to manually filter.
+
+   This auto-narrowing behavior works from both *Dired* buffers and
+*regular file* buffers.
+
+   Use a single prefix argument (‘C-u’) when invoking any of these
+commands to force the whole project view, bypassing the automatic
+directory filter.
+
 11.4 Stale Annotation Detection
 ===============================
 
@@ -1380,8 +1396,9 @@ highlighting.
      Filter by tag.  Select from tags present in the current board, or
      choose ‘[All]’ to clear.
 ‘d’
-     Clear the directory filter (widening a dired-narrowed board back to
-     the whole project).
+     Clear the directory filter (widening a narrowed board back to the
+     whole project).  This clears any automatic filter seeded from the
+     starting buffer.
 
    Filters stack: for example, pressing ‘a’ to select an author and then
 ‘t’ to select a tag shows only cards by that author with that tag.
@@ -2134,7 +2151,7 @@ Function Index
 * simply-annotate-cycle-level-backward:  Annotation Levels.   (line  45)
 * simply-annotate-cycle-level-forward:   Annotation Levels.   (line  45)
 * simply-annotate-dired-mode:            Advanced Features.   (line 170)
-* simply-annotate-edit-sexp:             Advanced Editing.    (line  13)
+* simply-annotate-edit-sexp:             Advanced Editing.    (line  14)
 * simply-annotate-export-to-org-file:    Org-mode Integration.
                                                               (line  12)
 * simply-annotate-jump-to-file:          Advanced Features.   (line 159)
@@ -2314,11 +2331,11 @@ Concept Index
 * tags:                                  Threading and Collaboration.
                                                               (line  94)
 * team:                                  Threading and Collaboration.
-                                                              (line 136)
+                                                              (line 137)
 * threading:                             Threading and Collaboration.
                                                               (line  11)
 * workflow:                              Threading and Collaboration.
-                                                              (line  69)
+                                                              (line  70)
 
 
 Tag Table:
@@ -2334,15 +2351,15 @@ Node: Annotation Levels28693
 Node: Navigation31996
 Node: Advanced Features33638
 Node: Project-Aware Annotations41013
-Node: Kanban Board46448
-Node: Org-mode Integration50380
-Node: Key Bindings52818
-Node: Customization57883
-Node: Data Storage66631
-Node: Troubleshooting70689
-Node: Function Index77056
-Node: Variable Index80601
-Node: Concept Index86482
+Node: Kanban Board47072
+Node: Org-mode Integration51070
+Node: Key Bindings53508
+Node: Customization58573
+Node: Data Storage67321
+Node: Troubleshooting71379
+Node: Function Index77746
+Node: Variable Index81291
+Node: Concept Index87172
 
 End Tag Table
 

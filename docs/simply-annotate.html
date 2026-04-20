@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<!-- Created by GNU Texinfo 7.2, https://www.gnu.org/software/texinfo/ -->
+<!-- Created by GNU Texinfo 7.3, https://www.gnu.org/software/texinfo/ -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!-- This manual is for Simply Annotate, a lightweight annotation
@@ -24,23 +24,20 @@ Free Documentation License". -->
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <link href="#Top" rel="start" title="Top">
-<link href="#Function-Index" rel="index" title="Function Index">
+<link href="#Concept-Index" rel="index" title="Concept Index">
 <link href="#SEC_Contents" rel="contents" title="Table of Contents">
 <link href="#Introduction" rel="next" title="Introduction">
 <style type="text/css">
-<!--
 a.copiable-link {visibility: hidden; text-decoration: none; line-height: 0em}
 a.summary-letter-printindex {text-decoration: none}
 div.example {margin-left: 3.2em}
 kbd.kbd {font-style: oblique}
 span:hover a.copiable-link {visibility: visible}
-td.printindex-index-entry {vertical-align: top}
+td.printindex-index-entry {vertical-align: top; padding-left: 1.5em}
 td.printindex-index-section {vertical-align: top; padding-left: 1em}
-th.entries-header-printindex {text-align:left}
-th.sections-header-printindex {text-align:left; padding-left: 1em}
+th.index-letter-header-printindex {text-align: left}
 ul.mark-bullet {list-style-type: disc}
 ul.toc-numbered-mark {list-style: none}
--->
 </style>
 
 
@@ -53,10 +50,8 @@ ul.toc-numbered-mark {list-style: none}
 
 
 <div class="top-level-extent" id="Top">
-<div class="nav-panel">
-<p>
-Next: <a href="#Introduction" accesskey="n" rel="next">Introduction</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Introduction" rel="next">Introduction</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h1 class="top" id="Simply-Annotate"><span>Simply Annotate<a class="copiable-link" href="#Simply-Annotate"> &para;</a></span></h1>
 
 <p>This manual describes Simply Annotate, a lightweight annotation system for
@@ -204,7 +199,10 @@ Free Documentation License&rdquo;.
       <li><a id="toc-Setup" href="#Setup">11.1.1 Setup</a></li>
     </ul></li>
     <li><a id="toc-Migrating-to-a-Project-Database" href="#Migrating-to-a-Project-Database">11.2 Migrating to a Project Database</a></li>
-    <li><a id="toc-Project_002dScoped-Views" href="#Project_002dScoped-Views">11.3 Project-Scoped Views</a></li>
+    <li><a id="toc-Project_002dScoped-Views" href="#Project_002dScoped-Views">11.3 Project-Scoped Views</a>
+    <ul class="toc-numbered-mark">
+      <li><a id="toc-Automatic-Directory-Narrowing" href="#Automatic-Directory-Narrowing">11.3.1 Automatic Directory Narrowing</a></li>
+    </ul></li>
     <li><a id="toc-Stale-Annotation-Detection" href="#Stale-Annotation-Detection">11.4 Stale Annotation Detection</a>
     <ul class="toc-numbered-mark">
       <li><a id="toc-How-It-Works" href="#How-It-Works">11.4.1 How It Works</a></li>
@@ -304,10 +302,8 @@ Free Documentation License&rdquo;.
 </div>
 <hr>
 <div class="chapter-level-extent" id="Introduction">
-<div class="nav-panel">
-<p>
-Next: <a href="#Installation" accesskey="n" rel="next">Installation</a>, Previous: <a href="#Top" accesskey="p" rel="prev">Simply Annotate</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Installation" rel="next">Installation</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Top" rel="prev">Simply Annotate</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Introduction-1"><span>1 Introduction<a class="copiable-link" href="#Introduction-1"> &para;</a></span></h2>
 
 <p>Simply Annotate is a lightweight annotation system for Emacs that allows
@@ -315,7 +311,7 @@ you to add persistent notes to any text file, or specialized non-file buffers li
 content. It&rsquo;s perfect for code review, research, note-taking, and documentation and includes threading and collaboration features.
 </p>
 <ul class="mini-toc">
-<li><a href="#Key-Features" accesskey="1">Key Features</a></li>
+<li><a href="#Key-Features">Key Features</a></li>
 </ul>
 <div class="section-level-extent" id="Key-Features">
 <h3 class="section"><span>1.1 Key Features<a class="copiable-link" href="#Key-Features"> &para;</a></span></h3>
@@ -348,18 +344,16 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </div>
 </div>
 <div class="chapter-level-extent" id="Installation">
-<div class="nav-panel">
-<p>
-Next: <a href="#Quick-Start" accesskey="n" rel="next">Quick Start</a>, Previous: <a href="#Introduction" accesskey="p" rel="prev">Introduction</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Quick-Start" rel="next">Quick Start</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Introduction" rel="prev">Introduction</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Installation-1"><span>2 Installation<a class="copiable-link" href="#Installation-1"> &para;</a></span></h2>
 
 <p>Requires <strong class="strong">Emacs 27.2</strong> or later.  No external dependencies.
 </p>
 <ul class="mini-toc">
-<li><a href="#Using-MELPA-_0028Recommended_0029" accesskey="1">Using MELPA (Recommended)</a></li>
-<li><a href="#Keymap-Configuration" accesskey="2">Keymap Configuration</a></li>
-<li><a href="#Manual-Installation" accesskey="3">Manual Installation</a></li>
+<li><a href="#Using-MELPA-_0028Recommended_0029">Using MELPA (Recommended)</a></li>
+<li><a href="#Keymap-Configuration">Keymap Configuration</a></li>
+<li><a href="#Manual-Installation">Manual Installation</a></li>
 </ul>
 <div class="section-level-extent" id="Using-MELPA-_0028Recommended_0029">
 <h3 class="section"><span>2.1 Using MELPA (Recommended)<a class="copiable-link" href="#Using-MELPA-_0028Recommended_0029"> &para;</a></span></h3>
@@ -448,10 +442,8 @@ loaded.
 </div>
 </div>
 <div class="chapter-level-extent" id="Quick-Start">
-<div class="nav-panel">
-<p>
-Next: <a href="#Basic-Usage" accesskey="n" rel="next">Basic Usage</a>, Previous: <a href="#Installation" accesskey="p" rel="prev">Installation</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Basic-Usage" rel="next">Basic Usage</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Installation" rel="prev">Installation</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Quick-Start-1"><span>3 Quick Start<a class="copiable-link" href="#Quick-Start-1"> &para;</a></span></h2>
 
 <p>Here&rsquo;s how to get started with Simply Annotate:
@@ -474,18 +466,16 @@ Next: <a href="#Basic-Usage" accesskey="n" rel="next">Basic Usage</a>, Previous:
 <hr>
 </div>
 <div class="chapter-level-extent" id="Basic-Usage">
-<div class="nav-panel">
-<p>
-Next: <a href="#Advanced-Editing" accesskey="n" rel="next">Advanced Editing</a>, Previous: <a href="#Quick-Start" accesskey="p" rel="prev">Quick Start</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Advanced-Editing" rel="next">Advanced Editing</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Quick-Start" rel="prev">Quick Start</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Basic-Usage-1"><span>4 Basic Usage<a class="copiable-link" href="#Basic-Usage-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Enabling-Annotation-Mode" accesskey="1">Enabling Annotation Mode</a></li>
-<li><a href="#Creating-Annotations" accesskey="2">Creating Annotations</a></li>
-<li><a href="#Viewing-Annotations" accesskey="3">Viewing Annotations</a></li>
-<li><a href="#Editing-Annotations" accesskey="4">Editing Annotations</a></li>
-<li><a href="#Deleting-Annotations" accesskey="5">Deleting Annotations</a></li>
+<li><a href="#Enabling-Annotation-Mode">Enabling Annotation Mode</a></li>
+<li><a href="#Creating-Annotations">Creating Annotations</a></li>
+<li><a href="#Viewing-Annotations">Viewing Annotations</a></li>
+<li><a href="#Editing-Annotations">Editing Annotations</a></li>
+<li><a href="#Deleting-Annotations">Deleting Annotations</a></li>
 </ul>
 <div class="section-level-extent" id="Enabling-Annotation-Mode">
 <h3 class="section"><span>4.1 Enabling Annotation Mode<a class="copiable-link" href="#Enabling-Annotation-Mode"> &para;</a></span></h3>
@@ -508,9 +498,9 @@ Next: <a href="#Advanced-Editing" accesskey="n" rel="next">Advanced Editing</a>,
 <h3 class="section"><span>4.2 Creating Annotations<a class="copiable-link" href="#Creating-Annotations"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Smart-Action-Command" accesskey="1">Smart Action Command</a></li>
-<li><a href="#Traditional-Method" accesskey="2">Traditional Method</a></li>
-<li><a href="#Multi_002dline-Annotations" accesskey="3">Multi-line Annotations</a></li>
+<li><a href="#Smart-Action-Command">Smart Action Command</a></li>
+<li><a href="#Traditional-Method">Traditional Method</a></li>
+<li><a href="#Multi_002dline-Annotations">Multi-line Annotations</a></li>
 </ul>
 <div class="subsection-level-extent" id="Smart-Action-Command">
 <h4 class="subsection"><span>4.2.1 Smart Action Command<a class="copiable-link" href="#Smart-Action-Command"> &para;</a></span></h4>
@@ -618,14 +608,12 @@ with <kbd class="kbd">C-c C-c</kbd> to remove it.
 </div>
 </div>
 <div class="chapter-level-extent" id="Advanced-Editing">
-<div class="nav-panel">
-<p>
-Next: <a href="#Threading-and-Collaboration" accesskey="n" rel="next">Threading and Collaboration</a>, Previous: <a href="#Basic-Usage" accesskey="p" rel="prev">Basic Usage</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Threading-and-Collaboration" rel="next">Threading and Collaboration</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Basic-Usage" rel="prev">Basic Usage</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Advanced-Editing-1"><span>5 Advanced Editing<a class="copiable-link" href="#Advanced-Editing-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Raw-Sexp-Editing" accesskey="1">Raw Sexp Editing</a></li>
+<li><a href="#Raw-Sexp-Editing">Raw Sexp Editing</a></li>
 </ul>
 <div class="section-level-extent" id="Raw-Sexp-Editing">
 <h3 class="section"><span>5.1 Raw Sexp Editing<a class="copiable-link" href="#Raw-Sexp-Editing"> &para;</a></span></h3>
@@ -640,13 +628,13 @@ the underlying Elisp data structure that stores annotation information.
 </p>
 <a class="index-entry-id" id="index-simply_002dannotate_002dedit_002dsexp"></a>
 <ul class="mini-toc">
-<li><a href="#Entering-Sexp-Edit-Mode" accesskey="1">Entering Sexp Edit Mode</a></li>
-<li><a href="#Sexp-Structure" accesskey="2">Sexp Structure</a></li>
-<li><a href="#Required-Fields" accesskey="3">Required Fields</a></li>
-<li><a href="#Comment-Structure" accesskey="4">Comment Structure</a></li>
-<li><a href="#Sexp-Editing-Features" accesskey="5">Sexp Editing Features</a></li>
-<li><a href="#Use-Cases-for-Sexp-Editing" accesskey="6">Use Cases for Sexp Editing</a></li>
-<li><a href="#Safety-and-Best-Practices" accesskey="7">Safety and Best Practices</a></li>
+<li><a href="#Entering-Sexp-Edit-Mode">Entering Sexp Edit Mode</a></li>
+<li><a href="#Sexp-Structure">Sexp Structure</a></li>
+<li><a href="#Required-Fields">Required Fields</a></li>
+<li><a href="#Comment-Structure">Comment Structure</a></li>
+<li><a href="#Sexp-Editing-Features">Sexp Editing Features</a></li>
+<li><a href="#Use-Cases-for-Sexp-Editing">Use Cases for Sexp Editing</a></li>
+<li><a href="#Safety-and-Best-Practices">Safety and Best Practices</a></li>
 </ul>
 <div class="subsection-level-extent" id="Entering-Sexp-Edit-Mode">
 <h4 class="subsection"><span>5.1.1 Entering Sexp Edit Mode<a class="copiable-link" href="#Entering-Sexp-Edit-Mode"> &para;</a></span></h4>
@@ -785,19 +773,17 @@ comments.  This field encodes the nested reply hierarchy.
 </div>
 </div>
 <div class="chapter-level-extent" id="Threading-and-Collaboration">
-<div class="nav-panel">
-<p>
-Next: <a href="#Display-Styles" accesskey="n" rel="next">Display Styles</a>, Previous: <a href="#Advanced-Editing" accesskey="p" rel="prev">Advanced Editing</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Display-Styles" rel="next">Display Styles</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Advanced-Editing" rel="prev">Advanced Editing</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Threading-and-Collaboration-1"><span>6 Threading and Collaboration<a class="copiable-link" href="#Threading-and-Collaboration-1"> &para;</a></span></h2>
 
 <p>Lets create a thread!, reply and add in authors
 </p>
 <ul class="mini-toc">
-<li><a href="#Threading-System" accesskey="1">Threading System</a></li>
-<li><a href="#Status-Management" accesskey="2">Status Management</a></li>
-<li><a href="#Multi_002dAuthor-Support" accesskey="3">Multi-Author Support</a></li>
-<li><a href="#Collaboration-Workflows" accesskey="4">Collaboration Workflows</a></li>
+<li><a href="#Threading-System">Threading System</a></li>
+<li><a href="#Status-Management">Status Management</a></li>
+<li><a href="#Multi_002dAuthor-Support">Multi-Author Support</a></li>
+<li><a href="#Collaboration-Workflows">Collaboration Workflows</a></li>
 </ul>
 <div class="section-level-extent" id="Threading-System">
 <h3 class="section"><span>6.1 Threading System<a class="copiable-link" href="#Threading-System"> &para;</a></span></h3>
@@ -811,9 +797,9 @@ This is perfect for code reviews, collaborative editing, and ongoing discussions
 about specific parts of your code or documents.
 </p>
 <ul class="mini-toc">
-<li><a href="#Adding-Replies" accesskey="1">Adding Replies</a></li>
-<li><a href="#Thread-Display" accesskey="2">Thread Display</a></li>
-<li><a href="#Database-Migration" accesskey="3">Database Migration</a></li>
+<li><a href="#Adding-Replies">Adding Replies</a></li>
+<li><a href="#Thread-Display">Thread Display</a></li>
+<li><a href="#Database-Migration">Database Migration</a></li>
 </ul>
 <div class="subsection-level-extent" id="Adding-Replies">
 <h4 class="subsection"><span>6.1.1 Adding Replies<a class="copiable-link" href="#Adding-Replies"> &para;</a></span></h4>
@@ -886,11 +872,11 @@ of the root comment.
 <a class="index-entry-id" id="index-workflow"></a>
 
 <ul class="mini-toc">
-<li><a href="#Setting-Status" accesskey="1">Setting Status</a></li>
-<li><a href="#Setting-Priority" accesskey="2">Setting Priority</a></li>
-<li><a href="#Adding-Tags" accesskey="3">Adding Tags</a></li>
-<li><a href="#Removing-Tags" accesskey="4">Removing Tags</a></li>
-<li><a href="#Searching-by-Tag" accesskey="5">Searching by Tag</a></li>
+<li><a href="#Setting-Status">Setting Status</a></li>
+<li><a href="#Setting-Priority">Setting Priority</a></li>
+<li><a href="#Adding-Tags">Adding Tags</a></li>
+<li><a href="#Removing-Tags">Removing Tags</a></li>
+<li><a href="#Searching-by-Tag">Searching by Tag</a></li>
 </ul>
 <div class="subsection-level-extent" id="Setting-Status">
 <h4 class="subsection"><span>6.2.1 Setting Status<a class="copiable-link" href="#Setting-Status"> &para;</a></span></h4>
@@ -999,9 +985,9 @@ automatically narrowed to that subdirectory.
 <a class="index-entry-id" id="index-team"></a>
 
 <ul class="mini-toc">
-<li><a href="#Author-Configuration" accesskey="1">Author Configuration</a></li>
-<li><a href="#Prompting-Modes" accesskey="2">Prompting Modes</a></li>
-<li><a href="#Author-Management-Commands" accesskey="3">Author Management Commands</a></li>
+<li><a href="#Author-Configuration">Author Configuration</a></li>
+<li><a href="#Prompting-Modes">Prompting Modes</a></li>
+<li><a href="#Author-Management-Commands">Author Management Commands</a></li>
 </ul>
 <div class="subsection-level-extent" id="Author-Configuration">
 <h4 class="subsection"><span>6.3.1 Author Configuration<a class="copiable-link" href="#Author-Configuration"> &para;</a></span></h4>
@@ -1058,8 +1044,8 @@ automatically narrowed to that subdirectory.
 <h3 class="section"><span>6.4 Collaboration Workflows<a class="copiable-link" href="#Collaboration-Workflows"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Code-Review-Workflow" accesskey="1">Code Review Workflow</a></li>
-<li><a href="#Document-Collaboration" accesskey="2">Document Collaboration</a></li>
+<li><a href="#Code-Review-Workflow">Code Review Workflow</a></li>
+<li><a href="#Document-Collaboration">Document Collaboration</a></li>
 </ul>
 <div class="subsection-level-extent" id="Code-Review-Workflow">
 <h4 class="subsection"><span>6.4.1 Code Review Workflow<a class="copiable-link" href="#Code-Review-Workflow"> &para;</a></span></h4>
@@ -1092,10 +1078,8 @@ automatically narrowed to that subdirectory.
 </div>
 </div>
 <div class="chapter-level-extent" id="Display-Styles">
-<div class="nav-panel">
-<p>
-Next: <a href="#Annotation-Levels" accesskey="n" rel="next">Annotation Levels</a>, Previous: <a href="#Threading-and-Collaboration" accesskey="p" rel="prev">Threading and Collaboration</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Annotation-Levels" rel="next">Annotation Levels</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Threading-and-Collaboration" rel="prev">Threading and Collaboration</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Display-Styles-1"><span>7 Display Styles<a class="copiable-link" href="#Display-Styles-1"> &para;</a></span></h2>
 
 <p>Simply Annotate supports five display styles that can be used individually
@@ -1103,12 +1087,12 @@ or combined as a list.  Styles are processed in order, so later face-based
 styles override earlier ones while fringe styles are independent.
 </p>
 <ul class="mini-toc">
-<li><a href="#Available-Styles" accesskey="1">Available Styles</a></li>
-<li><a href="#Combining-Styles" accesskey="2">Combining Styles</a></li>
-<li><a href="#Changing-Display-Styles" accesskey="3">Changing Display Styles</a></li>
-<li><a href="#Style-Recommendations" accesskey="4">Style Recommendations</a></li>
-<li><a href="#Fringe-Customization" accesskey="5">Fringe Customization</a></li>
-<li><a href="#Inline-Display" accesskey="6">Inline Display</a></li>
+<li><a href="#Available-Styles">Available Styles</a></li>
+<li><a href="#Combining-Styles">Combining Styles</a></li>
+<li><a href="#Changing-Display-Styles">Changing Display Styles</a></li>
+<li><a href="#Style-Recommendations">Style Recommendations</a></li>
+<li><a href="#Fringe-Customization">Fringe Customization</a></li>
+<li><a href="#Inline-Display">Inline Display</a></li>
 </ul>
 <div class="section-level-extent" id="Available-Styles">
 <h3 class="section"><span>7.1 Available Styles<a class="copiable-link" href="#Available-Styles"> &para;</a></span></h3>
@@ -1264,8 +1248,8 @@ lines (default 20).  Thread metadata (status, priority, comment count) appears
 in the header.
 </p>
 <ul class="mini-toc">
-<li><a href="#Inline-Pointer" accesskey="1">Inline Pointer</a></li>
-<li><a href="#Inline-Customisation" accesskey="2">Inline Customisation</a></li>
+<li><a href="#Inline-Pointer">Inline Pointer</a></li>
+<li><a href="#Inline-Customisation">Inline Customisation</a></li>
 </ul>
 <div class="subsection-level-extent" id="Inline-Pointer">
 <h4 class="subsection"><span>7.6.1 Inline Pointer<a class="copiable-link" href="#Inline-Pointer"> &para;</a></span></h4>
@@ -1322,10 +1306,8 @@ Set to <code class="code">nil</code> or an empty string to disable.
 </div>
 </div>
 <div class="chapter-level-extent" id="Annotation-Levels">
-<div class="nav-panel">
-<p>
-Next: <a href="#Navigation" accesskey="n" rel="next">Navigation</a>, Previous: <a href="#Display-Styles" accesskey="p" rel="prev">Display Styles</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Navigation" rel="next">Navigation</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Display-Styles" rel="prev">Display Styles</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Annotation-Levels-1"><span>8 Annotation Levels<a class="copiable-link" href="#Annotation-Levels-1"> &para;</a></span></h2>
 
 <a class="index-entry-id" id="index-annotation-levels"></a>
@@ -1339,13 +1321,13 @@ code exploration.  Each annotation is tagged with a level when created, and you
 can cycle through levels to focus on annotations at a particular granularity.
 </p>
 <ul class="mini-toc">
-<li><a href="#Level-Overview" accesskey="1">Level Overview</a></li>
-<li><a href="#How-Levels-Work" accesskey="2">How Levels Work</a></li>
-<li><a href="#Cycling-Levels" accesskey="3">Cycling Levels</a></li>
-<li><a href="#Direct-Level-Selection" accesskey="4">Direct Level Selection</a></li>
-<li><a href="#Creating-Annotations-at-a-Level" accesskey="5">Creating Annotations at a Level</a></li>
-<li><a href="#Backward-Compatibility" accesskey="6">Backward Compatibility</a></li>
-<li><a href="#Use-Cases" accesskey="7">Use Cases</a></li>
+<li><a href="#Level-Overview">Level Overview</a></li>
+<li><a href="#How-Levels-Work">How Levels Work</a></li>
+<li><a href="#Cycling-Levels">Cycling Levels</a></li>
+<li><a href="#Direct-Level-Selection">Direct Level Selection</a></li>
+<li><a href="#Creating-Annotations-at-a-Level">Creating Annotations at a Level</a></li>
+<li><a href="#Backward-Compatibility">Backward Compatibility</a></li>
+<li><a href="#Use-Cases">Use Cases</a></li>
 </ul>
 <div class="section-level-extent" id="Level-Overview">
 <h3 class="section"><span>8.1 Level Overview<a class="copiable-link" href="#Level-Overview"> &para;</a></span></h3>
@@ -1430,8 +1412,8 @@ required.
 <h3 class="section"><span>8.7 Use Cases<a class="copiable-link" href="#Use-Cases"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Code-Exploration" accesskey="1">Code Exploration</a></li>
-<li><a href="#LLM_002dGenerated-Documentation" accesskey="2">LLM-Generated Documentation</a></li>
+<li><a href="#Code-Exploration">Code Exploration</a></li>
+<li><a href="#LLM_002dGenerated-Documentation">LLM-Generated Documentation</a></li>
 </ul>
 <div class="subsection-level-extent" id="Code-Exploration">
 <h4 class="subsection"><span>8.7.1 Code Exploration<a class="copiable-link" href="#Code-Exploration"> &para;</a></span></h4>
@@ -1461,16 +1443,14 @@ required.
 </div>
 </div>
 <div class="chapter-level-extent" id="Navigation">
-<div class="nav-panel">
-<p>
-Next: <a href="#Advanced-Features" accesskey="n" rel="next">Advanced Features</a>, Previous: <a href="#Annotation-Levels" accesskey="p" rel="prev">Annotation Levels</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Advanced-Features" rel="next">Advanced Features</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Annotation-Levels" rel="prev">Annotation Levels</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Navigation-1"><span>9 Navigation<a class="copiable-link" href="#Navigation-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Moving-Between-Annotations" accesskey="1">Moving Between Annotations</a></li>
-<li><a href="#Viewing-Current-Annotation" accesskey="2">Viewing Current Annotation</a></li>
-<li><a href="#Smart-Navigation" accesskey="3">Smart Navigation</a></li>
+<li><a href="#Moving-Between-Annotations">Moving Between Annotations</a></li>
+<li><a href="#Viewing-Current-Annotation">Viewing Current Annotation</a></li>
+<li><a href="#Smart-Navigation">Smart Navigation</a></li>
 </ul>
 <div class="section-level-extent" id="Moving-Between-Annotations">
 <h3 class="section"><span>9.1 Moving Between Annotations<a class="copiable-link" href="#Moving-Between-Annotations"> &para;</a></span></h3>
@@ -1528,20 +1508,18 @@ threading:
 </div>
 </div>
 <div class="chapter-level-extent" id="Advanced-Features">
-<div class="nav-panel">
-<p>
-Next: <a href="#Project_002dAware-Annotations" accesskey="n" rel="next">Project-Aware Annotations</a>, Previous: <a href="#Navigation" accesskey="p" rel="prev">Navigation</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Project_002dAware-Annotations" rel="next">Project-Aware Annotations</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Navigation" rel="prev">Navigation</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Advanced-Features-1"><span>10 Advanced Features<a class="copiable-link" href="#Advanced-Features-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Listing-All-Annotations" accesskey="1">Listing All Annotations</a></li>
-<li><a href="#Global-Annotation-Overview" accesskey="2">Global Annotation Overview</a></li>
-<li><a href="#Cross_002dProject-Overview" accesskey="3">Cross-Project Overview</a></li>
-<li><a href="#Quick-File-Jump" accesskey="4">Quick File Jump</a></li>
-<li><a href="#Dired-Integration" accesskey="5">Dired Integration</a></li>
-<li><a href="#Annotation-Buffer-Features" accesskey="6">Annotation Buffer Features</a></li>
-<li><a href="#Header_002dline-Integration" accesskey="7">Header-line Integration</a></li>
+<li><a href="#Listing-All-Annotations">Listing All Annotations</a></li>
+<li><a href="#Global-Annotation-Overview">Global Annotation Overview</a></li>
+<li><a href="#Cross_002dProject-Overview">Cross-Project Overview</a></li>
+<li><a href="#Quick-File-Jump">Quick File Jump</a></li>
+<li><a href="#Dired-Integration">Dired Integration</a></li>
+<li><a href="#Annotation-Buffer-Features">Annotation Buffer Features</a></li>
+<li><a href="#Header_002dline-Integration">Header-line Integration</a></li>
 </ul>
 <div class="section-level-extent" id="Listing-All-Annotations">
 <h3 class="section"><span>10.1 Listing All Annotations<a class="copiable-link" href="#Listing-All-Annotations"> &para;</a></span></h3>
@@ -1638,9 +1616,9 @@ table of every project that has annotations, with per-status counts so
 you can see at a glance where open work is concentrated.
 </p>
 <ul class="mini-toc">
-<li><a href="#Columns" accesskey="1">Columns</a></li>
-<li><a href="#Actions" accesskey="2">Actions</a></li>
-<li><a href="#Discovery" accesskey="3">Discovery</a></li>
+<li><a href="#Columns">Columns</a></li>
+<li><a href="#Actions">Actions</a></li>
+<li><a href="#Discovery">Discovery</a></li>
 </ul>
 <div class="subsection-level-extent" id="Columns">
 <h4 class="subsection"><span>10.3.1 Columns<a class="copiable-link" href="#Columns"> &para;</a></span></h4>
@@ -1810,10 +1788,8 @@ dired buffer is re-read (e.g. after pressing <kbd class="kbd">g</kbd>).
 </div>
 </div>
 <div class="chapter-level-extent" id="Project_002dAware-Annotations">
-<div class="nav-panel">
-<p>
-Next: <a href="#Kanban-Board" accesskey="n" rel="next">Kanban Board</a>, Previous: <a href="#Advanced-Features" accesskey="p" rel="prev">Advanced Features</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Kanban-Board" rel="next">Kanban Board</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Advanced-Features" rel="prev">Advanced Features</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Project_002dAware-Annotations-1"><span>11 Project-Aware Annotations<a class="copiable-link" href="#Project_002dAware-Annotations-1"> &para;</a></span></h2>
 
 <p>By default, all annotations are stored in a single global database file.
@@ -1821,11 +1797,11 @@ Version 1.0.0 adds project-aware storage and project-scoped views, using
 Emacs built-in <code class="code">project.el</code>.
 </p>
 <ul class="mini-toc">
-<li><a href="#Database-Strategy" accesskey="1">Database Strategy</a></li>
-<li><a href="#Migrating-to-a-Project-Database" accesskey="2">Migrating to a Project Database</a></li>
-<li><a href="#Project_002dScoped-Views" accesskey="3">Project-Scoped Views</a></li>
-<li><a href="#Stale-Annotation-Detection" accesskey="4">Stale Annotation Detection</a></li>
-<li><a href="#Position-Tracking" accesskey="5">Position Tracking</a></li>
+<li><a href="#Database-Strategy">Database Strategy</a></li>
+<li><a href="#Migrating-to-a-Project-Database">Migrating to a Project Database</a></li>
+<li><a href="#Project_002dScoped-Views">Project-Scoped Views</a></li>
+<li><a href="#Stale-Annotation-Detection">Stale Annotation Detection</a></li>
+<li><a href="#Position-Tracking">Position Tracking</a></li>
 </ul>
 <div class="section-level-extent" id="Database-Strategy">
 <h3 class="section"><span>11.1 Database Strategy<a class="copiable-link" href="#Database-Strategy"> &para;</a></span></h3>
@@ -1858,7 +1834,7 @@ database when their files are next saved.
 <code class="code">.simply-annotations.el</code>) sets the filename placed at the project root.
 </p>
 <ul class="mini-toc">
-<li><a href="#Setup" accesskey="1">Setup</a></li>
+<li><a href="#Setup">Setup</a></li>
 </ul>
 <div class="subsection-level-extent" id="Setup">
 <h4 class="subsection"><span>11.1.1 Setup<a class="copiable-link" href="#Setup"> &para;</a></span></h4>
@@ -1920,6 +1896,26 @@ Level, Stale, Line, Status, Priority, Comments, Tags, Author, and Comment.
 to project files when using <code class="code">project</code> or <code class="code">both</code> strategy.  Use
 a prefix argument (<kbd class="kbd">C-u f</kbd>) to show all files across all databases.
 </p>
+<ul class="mini-toc">
+<li><a href="#Automatic-Directory-Narrowing">Automatic Directory Narrowing</a></li>
+</ul>
+<div class="subsection-level-extent" id="Automatic-Directory-Narrowing">
+<h4 class="subsection"><span>11.3.1 Automatic Directory Narrowing<a class="copiable-link" href="#Automatic-Directory-Narrowing"> &para;</a></span></h4>
+
+<p>When any project-level command (Kanban, Table, Org listing, File jump,
+Search by tag) is invoked from a buffer that belongs to a project
+subdirectory, the view is automatically narrowed to that subdirectory.
+This allows for a &ldquo;local peek&rdquo; of relevant annotations without needing
+to manually filter.
+</p>
+<p>This auto-narrowing behavior works from both <strong class="strong">Dired</strong> buffers and
+<strong class="strong">regular file</strong> buffers.
+</p>
+<p>Use a single prefix argument (<kbd class="kbd">C-u</kbd>) when invoking any of these commands
+to force the whole project view, bypassing the automatic directory
+filter.
+</p>
+</div>
 </div>
 <div class="section-level-extent" id="Stale-Annotation-Detection">
 <h3 class="section"><span>11.4 Stale Annotation Detection<a class="copiable-link" href="#Stale-Annotation-Detection"> &para;</a></span></h3>
@@ -1929,8 +1925,8 @@ the annotation may no longer apply to the correct content.  Simply Annotate
 detects this by storing a content hash of the annotated text region.
 </p>
 <ul class="mini-toc">
-<li><a href="#How-It-Works" accesskey="1">How It Works</a></li>
-<li><a href="#Visual-Indicators" accesskey="2">Visual Indicators</a></li>
+<li><a href="#How-It-Works">How It Works</a></li>
+<li><a href="#Visual-Indicators">Visual Indicators</a></li>
 </ul>
 <div class="subsection-level-extent" id="How-It-Works">
 <h4 class="subsection"><span>11.4.1 How It Works<a class="copiable-link" href="#How-It-Works"> &para;</a></span></h4>
@@ -1970,7 +1966,7 @@ lines added or removed above an annotation cause the stored positions to
 drift.  Simply Annotate handles this automatically.
 </p>
 <ul class="mini-toc">
-<li><a href="#How-It-Works-1" accesskey="1">How It Works</a></li>
+<li><a href="#How-It-Works-1">How It Works</a></li>
 </ul>
 <div class="subsection-level-extent" id="How-It-Works-1">
 <h4 class="subsection"><span>11.5.1 How It Works<a class="copiable-link" href="#How-It-Works-1"> &para;</a></span></h4>
@@ -1995,10 +1991,8 @@ the &lsquo;<samp class="samp">[MOVED]</samp>&rsquo; indicator clears.
 </div>
 </div>
 <div class="chapter-level-extent" id="Kanban-Board">
-<div class="nav-panel">
-<p>
-Next: <a href="#Org_002dmode-Integration" accesskey="n" rel="next">Org-mode Integration</a>, Previous: <a href="#Project_002dAware-Annotations" accesskey="p" rel="prev">Project-Aware Annotations</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Org_002dmode-Integration" rel="next">Org-mode Integration</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Project_002dAware-Annotations" rel="prev">Project-Aware Annotations</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Kanban-Board-1"><span>12 Kanban Board<a class="copiable-link" href="#Kanban-Board-1"> &para;</a></span></h2>
 
 <a class="index-entry-id" id="index-kanban"></a>
@@ -2011,11 +2005,11 @@ project annotations as cards arranged in columns by status.  It requires
 a project detectable by <code class="code">project.el</code>.
 </p>
 <ul class="mini-toc">
-<li><a href="#Board-Layout" accesskey="1">Board Layout</a></li>
-<li><a href="#Navigation-2" accesskey="2">Navigation</a></li>
-<li><a href="#Actions-1" accesskey="3">Actions</a></li>
-<li><a href="#Filtering" accesskey="4">Filtering</a></li>
-<li><a href="#Expand-and-Follow" accesskey="5">Expand and Follow</a></li>
+<li><a href="#Board-Layout">Board Layout</a></li>
+<li><a href="#Navigation-2">Navigation</a></li>
+<li><a href="#Actions-1">Actions</a></li>
+<li><a href="#Filtering">Filtering</a></li>
+<li><a href="#Expand-and-Follow">Expand and Follow</a></li>
 </ul>
 <div class="section-level-extent" id="Board-Layout">
 <h3 class="section"><span>12.1 Board Layout<a class="copiable-link" href="#Board-Layout"> &para;</a></span></h3>
@@ -2123,8 +2117,9 @@ Select a level or &lsquo;<samp class="samp">[All]</samp>&rsquo; to clear.
 choose &lsquo;<samp class="samp">[All]</samp>&rsquo; to clear.
 </p></dd>
 <dt><kbd class="kbd">d</kbd></dt>
-<dd><p>Clear the directory filter (widening a dired-narrowed board back to the
-whole project).
+<dd><p>Clear the directory filter (widening a narrowed board back to the
+whole project).  This clears any automatic filter seeded from the
+starting buffer.
 </p></dd>
 </dl>
 
@@ -2154,20 +2149,18 @@ shows the annotation source in another window.
 </div>
 </div>
 <div class="chapter-level-extent" id="Org_002dmode-Integration">
-<div class="nav-panel">
-<p>
-Next: <a href="#Key-Bindings" accesskey="n" rel="next">Key Bindings</a>, Previous: <a href="#Kanban-Board" accesskey="p" rel="prev">Kanban Board</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Key-Bindings" rel="next">Key Bindings</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Kanban-Board" rel="prev">Kanban Board</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Org_002dmode-Integration-1"><span>13 Org-mode Integration<a class="copiable-link" href="#Org_002dmode-Integration-1"> &para;</a></span></h2>
 
 <p>Simply Annotate can export annotation threads to
 org-mode files for further processing, documentation, or meeting preparation.
 </p>
 <ul class="mini-toc">
-<li><a href="#Exporting-Annotations" accesskey="1">Exporting Annotations</a></li>
-<li><a href="#Export-Format" accesskey="2">Export Format</a></li>
-<li><a href="#Use-Cases-for-Export" accesskey="3">Use Cases for Export</a></li>
-<li><a href="#Integration-with-Org-Workflows" accesskey="4">Integration with Org Workflows</a></li>
+<li><a href="#Exporting-Annotations">Exporting Annotations</a></li>
+<li><a href="#Export-Format">Export Format</a></li>
+<li><a href="#Use-Cases-for-Export">Use Cases for Export</a></li>
+<li><a href="#Integration-with-Org-Workflows">Integration with Org Workflows</a></li>
 </ul>
 <div class="section-level-extent" id="Exporting-Annotations">
 <h3 class="section"><span>13.1 Exporting Annotations<a class="copiable-link" href="#Exporting-Annotations"> &para;</a></span></h3>
@@ -2255,18 +2248,16 @@ making the conversation structure visible and foldable in org-mode.
 </div>
 </div>
 <div class="chapter-level-extent" id="Key-Bindings">
-<div class="nav-panel">
-<p>
-Next: <a href="#Customization" accesskey="n" rel="next">Customization</a>, Previous: <a href="#Org_002dmode-Integration" accesskey="p" rel="prev">Org-mode Integration</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Customization" rel="next">Customization</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Org_002dmode-Integration" rel="prev">Org-mode Integration</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Key-Bindings-1"><span>14 Key Bindings<a class="copiable-link" href="#Key-Bindings-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029" accesskey="1">Mode Map (<code class="code">simply-annotate-mode-map</code>)</a></li>
-<li><a href="#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029" accesskey="2">Command Map (<code class="code">simply-annotate-command-map</code>)</a></li>
-<li><a href="#Annotation-Buffer-Bindings" accesskey="3">Annotation Buffer Bindings</a></li>
-<li><a href="#Smart-Action-Behavior" accesskey="4">Smart Action Behavior</a></li>
-<li><a href="#Sexp-Editing-Mode" accesskey="5">Sexp Editing Mode</a></li>
+<li><a href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029">Mode Map (<code class="code">simply-annotate-mode-map</code>)</a></li>
+<li><a href="#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029">Command Map (<code class="code">simply-annotate-command-map</code>)</a></li>
+<li><a href="#Annotation-Buffer-Bindings">Annotation Buffer Bindings</a></li>
+<li><a href="#Smart-Action-Behavior">Smart Action Behavior</a></li>
+<li><a href="#Sexp-Editing-Mode">Sexp Editing Mode</a></li>
 </ul>
 <div class="section-level-extent" id="Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029">
 <h3 class="section"><span>14.1 Mode Map (<code class="code">simply-annotate-mode-map</code>)<a class="copiable-link" href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029"> &para;</a></span></h3>
@@ -2373,22 +2364,20 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 </div>
 </div>
 <div class="chapter-level-extent" id="Customization">
-<div class="nav-panel">
-<p>
-Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previous: <a href="#Key-Bindings" accesskey="p" rel="prev">Key Bindings</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Data-Storage" rel="next">Data Storage</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Key-Bindings" rel="prev">Key Bindings</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Customization-1"><span>15 Customization<a class="copiable-link" href="#Customization-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Basic-Configuration" accesskey="1">Basic Configuration</a></li>
-<li><a href="#Threading-and-Collaboration-Configuration" accesskey="2">Threading and Collaboration Configuration</a></li>
-<li><a href="#Configuration-Examples" accesskey="3">Configuration Examples</a></li>
-<li><a href="#Core-Customization-Variables" accesskey="4">Core Customization Variables</a></li>
-<li><a href="#Annotation-Level-Variables" accesskey="5">Annotation Level Variables</a></li>
-<li><a href="#Threading-and-Collaboration-Variables" accesskey="6">Threading and Collaboration Variables</a></li>
-<li><a href="#Custom-Faces" accesskey="7">Custom Faces</a></li>
-<li><a href="#Display-Style-Configuration" accesskey="8">Display Style Configuration</a></li>
-<li><a href="#Advanced-Customization" accesskey="9">Advanced Customization</a></li>
+<li><a href="#Basic-Configuration">Basic Configuration</a></li>
+<li><a href="#Threading-and-Collaboration-Configuration">Threading and Collaboration Configuration</a></li>
+<li><a href="#Configuration-Examples">Configuration Examples</a></li>
+<li><a href="#Core-Customization-Variables">Core Customization Variables</a></li>
+<li><a href="#Annotation-Level-Variables">Annotation Level Variables</a></li>
+<li><a href="#Threading-and-Collaboration-Variables">Threading and Collaboration Variables</a></li>
+<li><a href="#Custom-Faces">Custom Faces</a></li>
+<li><a href="#Display-Style-Configuration">Display Style Configuration</a></li>
+<li><a href="#Advanced-Customization">Advanced Customization</a></li>
 </ul>
 <div class="section-level-extent" id="Basic-Configuration">
 <h3 class="section"><span>15.1 Basic Configuration<a class="copiable-link" href="#Basic-Configuration"> &para;</a></span></h3>
@@ -2449,10 +2438,10 @@ Next: <a href="#Data-Storage" accesskey="n" rel="next">Data Storage</a>, Previou
 <h3 class="section"><span>15.3 Configuration Examples<a class="copiable-link" href="#Configuration-Examples"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Single-User-_0028Default_0029" accesskey="1">Single User (Default)</a></li>
-<li><a href="#Code-Review-Team" accesskey="2">Code Review Team</a></li>
-<li><a href="#Multi_002dProject-Consultant" accesskey="3">Multi-Project Consultant</a></li>
-<li><a href="#Project_002dAware-Setup" accesskey="4">Project-Aware Setup</a></li>
+<li><a href="#Single-User-_0028Default_0029">Single User (Default)</a></li>
+<li><a href="#Code-Review-Team">Code Review Team</a></li>
+<li><a href="#Multi_002dProject-Consultant">Multi-Project Consultant</a></li>
+<li><a href="#Project_002dAware-Setup">Project-Aware Setup</a></li>
 </ul>
 <div class="subsection-level-extent" id="Single-User-_0028Default_0029">
 <h4 class="subsection"><span>15.3.1 Single User (Default)<a class="copiable-link" href="#Single-User-_0028Default_0029"> &para;</a></span></h4>
@@ -2673,8 +2662,8 @@ Supports multiline strings (use <code class="code">\n</code>).  Set to <code cla
 <h3 class="section"><span>15.9 Advanced Customization<a class="copiable-link" href="#Advanced-Customization"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Custom-Fringe-Bitmaps" accesskey="1">Custom Fringe Bitmaps</a></li>
-<li><a href="#Global-Mode-Setup" accesskey="2">Global Mode Setup</a></li>
+<li><a href="#Custom-Fringe-Bitmaps">Custom Fringe Bitmaps</a></li>
+<li><a href="#Global-Mode-Setup">Global Mode Setup</a></li>
 </ul>
 <div class="subsection-level-extent" id="Custom-Fringe-Bitmaps">
 <h4 class="subsection"><span>15.9.1 Custom Fringe Bitmaps<a class="copiable-link" href="#Custom-Fringe-Bitmaps"> &para;</a></span></h4>
@@ -2718,19 +2707,17 @@ Supports multiline strings (use <code class="code">\n</code>).  Set to <code cla
 </div>
 </div>
 <div class="chapter-level-extent" id="Data-Storage">
-<div class="nav-panel">
-<p>
-Next: <a href="#Troubleshooting" accesskey="n" rel="next">Troubleshooting</a>, Previous: <a href="#Customization" accesskey="p" rel="prev">Customization</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Troubleshooting" rel="next">Troubleshooting</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Customization" rel="prev">Customization</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Data-Storage-1"><span>16 Data Storage<a class="copiable-link" href="#Data-Storage-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Storage-Format" accesskey="1">Storage Format</a></li>
-<li><a href="#Sample-Storage-Format" accesskey="2">Sample Storage Format</a></li>
-<li><a href="#Data-Structure-Evolution" accesskey="3">Data Structure Evolution</a></li>
-<li><a href="#Data-Management" accesskey="4">Data Management</a></li>
-<li><a href="#File-Key-System" accesskey="5">File Key System</a></li>
-<li><a href="#Sexp-Editing-and-Data-Integrity" accesskey="6">Sexp Editing and Data Integrity</a></li>
+<li><a href="#Storage-Format">Storage Format</a></li>
+<li><a href="#Sample-Storage-Format">Sample Storage Format</a></li>
+<li><a href="#Data-Structure-Evolution">Data Structure Evolution</a></li>
+<li><a href="#Data-Management">Data Management</a></li>
+<li><a href="#File-Key-System">File Key System</a></li>
+<li><a href="#Sexp-Editing-and-Data-Integrity">Sexp Editing and Data Integrity</a></li>
 </ul>
 <div class="section-level-extent" id="Storage-Format">
 <h3 class="section"><span>16.1 Storage Format<a class="copiable-link" href="#Storage-Format"> &para;</a></span></h3>
@@ -2836,22 +2823,20 @@ and can be version controlled if desired.
 </div>
 </div>
 <div class="chapter-level-extent" id="Troubleshooting">
-<div class="nav-panel">
-<p>
-Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Previous: <a href="#Data-Storage" accesskey="p" rel="prev">Data Storage</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Function-Index" rel="next">Function Index</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Data-Storage" rel="prev">Data Storage</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="chapter" id="Troubleshooting-1"><span>17 Troubleshooting<a class="copiable-link" href="#Troubleshooting-1"> &para;</a></span></h2>
 
 <ul class="mini-toc">
-<li><a href="#Annotations-Not-Persisting" accesskey="1">Annotations Not Persisting</a></li>
-<li><a href="#Display-Issues" accesskey="2">Display Issues</a></li>
-<li><a href="#Smart-Action-Issues" accesskey="3">Smart Action Issues</a></li>
-<li><a href="#Threading-Issues" accesskey="4">Threading Issues</a></li>
-<li><a href="#Sexp-Editing-Issues" accesskey="5">Sexp Editing Issues</a></li>
-<li><a href="#Performance-with-Large-Files" accesskey="6">Performance with Large Files</a></li>
-<li><a href="#Integration-Issues" accesskey="7">Integration Issues</a></li>
-<li><a href="#Buffer_002dLocal-Variable-Issues" accesskey="8">Buffer-Local Variable Issues</a></li>
-<li><a href="#Common-Error-Messages" accesskey="9">Common Error Messages</a></li>
+<li><a href="#Annotations-Not-Persisting">Annotations Not Persisting</a></li>
+<li><a href="#Display-Issues">Display Issues</a></li>
+<li><a href="#Smart-Action-Issues">Smart Action Issues</a></li>
+<li><a href="#Threading-Issues">Threading Issues</a></li>
+<li><a href="#Sexp-Editing-Issues">Sexp Editing Issues</a></li>
+<li><a href="#Performance-with-Large-Files">Performance with Large Files</a></li>
+<li><a href="#Integration-Issues">Integration Issues</a></li>
+<li><a href="#Buffer_002dLocal-Variable-Issues">Buffer-Local Variable Issues</a></li>
+<li><a href="#Common-Error-Messages">Common Error Messages</a></li>
 <li><a href="#Getting-Help">Getting Help</a></li>
 </ul>
 <div class="section-level-extent" id="Annotations-Not-Persisting">
@@ -2873,8 +2858,8 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <h3 class="section"><span>17.2 Display Issues<a class="copiable-link" href="#Display-Issues"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Highlighting-Not-Visible" accesskey="1">Highlighting Not Visible</a></li>
-<li><a href="#Fringe-Indicators-Not-Showing" accesskey="2">Fringe Indicators Not Showing</a></li>
+<li><a href="#Highlighting-Not-Visible">Highlighting Not Visible</a></li>
+<li><a href="#Fringe-Indicators-Not-Showing">Fringe Indicators Not Showing</a></li>
 </ul>
 <div class="subsection-level-extent" id="Highlighting-Not-Visible">
 <h4 class="subsection"><span>17.2.1 Highlighting Not Visible<a class="copiable-link" href="#Highlighting-Not-Visible"> &para;</a></span></h4>
@@ -2914,9 +2899,9 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <h3 class="section"><span>17.4 Threading Issues<a class="copiable-link" href="#Threading-Issues"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Author-Prompting-Problems" accesskey="1">Author Prompting Problems</a></li>
-<li><a href="#Thread-Display-Corruption" accesskey="2">Thread Display Corruption</a></li>
-<li><a href="#Reply-Issues" accesskey="3">Reply Issues</a></li>
+<li><a href="#Author-Prompting-Problems">Author Prompting Problems</a></li>
+<li><a href="#Thread-Display-Corruption">Thread Display Corruption</a></li>
+<li><a href="#Reply-Issues">Reply Issues</a></li>
 </ul>
 <div class="subsection-level-extent" id="Author-Prompting-Problems">
 <h4 class="subsection"><span>17.4.1 Author Prompting Problems<a class="copiable-link" href="#Author-Prompting-Problems"> &para;</a></span></h4>
@@ -2955,9 +2940,9 @@ Next: <a href="#Function-Index" accesskey="n" rel="next">Function Index</a>, Pre
 <h3 class="section"><span>17.5 Sexp Editing Issues<a class="copiable-link" href="#Sexp-Editing-Issues"> &para;</a></span></h3>
 
 <ul class="mini-toc">
-<li><a href="#Parsing-Errors" accesskey="1">Parsing Errors</a></li>
-<li><a href="#Data-Structure-Problems" accesskey="2">Data Structure Problems</a></li>
-<li><a href="#Validation-Failures" accesskey="3">Validation Failures</a></li>
+<li><a href="#Parsing-Errors">Parsing Errors</a></li>
+<li><a href="#Data-Structure-Problems">Data Structure Problems</a></li>
+<li><a href="#Validation-Failures">Validation Failures</a></li>
 </ul>
 <div class="subsection-level-extent" id="Parsing-Errors">
 <h4 class="subsection"><span>17.5.1 Parsing Errors<a class="copiable-link" href="#Parsing-Errors"> &para;</a></span></h4>
@@ -3087,66 +3072,61 @@ positioned on annotated text. In fringe mode, make sure you&rsquo;re on the corr
 </div>
 </div>
 <div class="unnumbered-level-extent" id="Function-Index">
-<div class="nav-panel">
-<p>
-Next: <a href="#Variable-Index" accesskey="n" rel="next">Variable Index</a>, Previous: <a href="#Troubleshooting" accesskey="p" rel="prev">Troubleshooting</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Variable-Index" rel="next">Variable Index</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Troubleshooting" rel="prev">Troubleshooting</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="unnumbered" id="Function-Index-1"><span>Function Index<a class="copiable-link" href="#Function-Index-1"> &para;</a></span></h2>
 
 <div class="printindex fn-printindex">
-<table class="fn-entries-printindex">
-<tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Function-Index_fn_letter-S">S</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dadd_002dannotation_002dtag"><code>simply-annotate-add-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcancel_002dedit"><code>simply-annotate-cancel-edit</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dchange_002dannotation_002dauthor"><code>simply-annotate-change-annotation-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dclear_002dbuffer_002dannotations"><code>simply-annotate-clear-buffer-annotations</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"><code>simply-annotate-cycle-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dbackward"><code>simply-annotate-cycle-level-backward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dforward"><code>simply-annotate-cycle-level-forward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddired_002dmode"><code>simply-annotate-dired-mode</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dedit_002dsexp"><code>simply-annotate-edit-sexp</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"><code>simply-annotate-export-to-org-file</code></a></td><td class="printindex-index-section"><a href="#Org_002dmode-Integration">Org-mode Integration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002djump_002dto_002dfile"><code>simply-annotate-jump-to-file</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002djump_002dto_002dfile-1"><code>simply-annotate-jump-to-file</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dkanban"><code>simply-annotate-kanban</code></a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist"><code>simply-annotate-list</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist_002dproject_002dtable"><code>simply-annotate-list-project-table</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist_002dprojects"><code>simply-annotate-list-projects</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmigrate_002dthreading"><code>simply-annotate-migrate-threading</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmigrate_002dto_002dproject"><code>simply-annotate-migrate-to-project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmode"><code>simply-annotate-mode</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dnext"><code>simply-annotate-next</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprevious"><code>simply-annotate-previous</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove"><code>simply-annotate-remove</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove_002dannotation_002dtag"><code>simply-annotate-remove-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreply_002dto_002dannotation"><code>simply-annotate-reply-to-annotation</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsave_002dannotation_002dbuffer"><code>simply-annotate-save-annotation-buffer</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsearch_002dby_002dtag"><code>simply-annotate-search-by-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dpriority"><code>simply-annotate-set-annotation-priority</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dstatus"><code>simply-annotate-set-annotation-status</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dlevel"><code>simply-annotate-set-level</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow"><code>simply-annotate-show</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow_002dall"><code>simply-annotate-show-all</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow_002dproject"><code>simply-annotate-show-project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsmart_002daction"><code>simply-annotate-smart-action</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dtoggle_002dinline"><code>simply-annotate-toggle-inline</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
+<table class="index-entries-printindex fn-entries-printindex">
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex fn-letter-header-printindex" colspan="2" id="Function-Index_fn_letter-S">S</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dadd_002dannotation_002dtag"><code>simply-annotate-add-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcancel_002dedit"><code>simply-annotate-cancel-edit</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dchange_002dannotation_002dauthor"><code>simply-annotate-change-annotation-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dclear_002dbuffer_002dannotations"><code>simply-annotate-clear-buffer-annotations</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle"><code>simply-annotate-cycle-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dbackward"><code>simply-annotate-cycle-level-backward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dcycle_002dlevel_002dforward"><code>simply-annotate-cycle-level-forward</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddired_002dmode"><code>simply-annotate-dired-mode</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dedit_002dsexp"><code>simply-annotate-edit-sexp</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"><code>simply-annotate-export-to-org-file</code></a></td><td class="printindex-index-section"><a href="#Org_002dmode-Integration">Org-mode Integration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002djump_002dto_002dfile"><code>simply-annotate-jump-to-file</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002djump_002dto_002dfile-1"><code>simply-annotate-jump-to-file</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dkanban"><code>simply-annotate-kanban</code></a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist"><code>simply-annotate-list</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist_002dproject_002dtable"><code>simply-annotate-list-project-table</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlist_002dprojects"><code>simply-annotate-list-projects</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmigrate_002dthreading"><code>simply-annotate-migrate-threading</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmigrate_002dto_002dproject"><code>simply-annotate-migrate-to-project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dmode"><code>simply-annotate-mode</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dnext"><code>simply-annotate-next</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprevious"><code>simply-annotate-previous</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove"><code>simply-annotate-remove</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremove_002dannotation_002dtag"><code>simply-annotate-remove-annotation-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dreply_002dto_002dannotation"><code>simply-annotate-reply-to-annotation</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsave_002dannotation_002dbuffer"><code>simply-annotate-save-annotation-buffer</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsearch_002dby_002dtag"><code>simply-annotate-search-by-tag</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dpriority"><code>simply-annotate-set-annotation-priority</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dannotation_002dstatus"><code>simply-annotate-set-annotation-status</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dset_002dlevel"><code>simply-annotate-set-level</code></a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow"><code>simply-annotate-show</code></a></td><td class="printindex-index-section"><a href="#Navigation">Navigation</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow_002dall"><code>simply-annotate-show-all</code></a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dshow_002dproject"><code>simply-annotate-show-project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dsmart_002daction"><code>simply-annotate-smart-action</code></a></td><td class="printindex-index-section"><a href="#Basic-Usage">Basic Usage</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dtoggle_002dinline"><code>simply-annotate-toggle-inline</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
 </table>
 </div>
 
 <hr>
 </div>
 <div class="unnumbered-level-extent" id="Variable-Index">
-<div class="nav-panel">
-<p>
-Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previous: <a href="#Function-Index" accesskey="p" rel="prev">Function Index</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Next: </span><span class="nav-link"><a href="#Concept-Index" rel="next">Concept Index</a></span></span>, <span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Function-Index" rel="prev">Function Index</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="unnumbered" id="Variable-Index-1"><span>Variable Index<a class="copiable-link" href="#Variable-Index-1"> &para;</a></span></h2>
 
 <div class="printindex vr-printindex">
-<table class="vr-letters-header-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Variable-Index_vr_letter-A"><b>A</b></a>
+<table class="index-letters-header-printindex vr-letters-header-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Variable-Index_vr_letter-A"><b>A</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Variable-Index_vr_letter-B"><b>B</b></a>
  &nbsp; 
@@ -3163,96 +3143,95 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <a class="summary-letter-printindex" href="#Variable-Index_vr_letter-T"><b>T</b></a>
  &nbsp; 
 </td></tr></table>
-<table class="vr-entries-printindex">
-<tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-A">A</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-author"><code>author</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-B">B</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-both"><code>both</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-C">C</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-comments"><code>comments</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-created"><code>created</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-G">G</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-global"><code>global</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-I">I</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-id"><code>id</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-id-1"><code>id</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-P">P</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-parent_002did"><code>parent-id</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-priority-1"><code>priority</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-project"><code>project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-S">S</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist-1"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist-2"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight-1"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname-1"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddatabase_002dstrategy"><code>simply-annotate-database-strategy</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddatabase_002dstrategy-1"><code>simply-annotate-database-strategy</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddatabase_002dstrategy-2"><code>simply-annotate-database-strategy</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddefault_002dlevel"><code>simply-annotate-default-level</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddefault_002dlevel-1"><code>simply-annotate-default-level</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle-1"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle-2"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfile"><code>simply-annotate-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfile-1"><code>simply-annotate-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface-1"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface-2"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-1"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-2"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface-1"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines-1"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-1"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-2"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-1"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-2"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-1"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-2"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlevels"><code>simply-annotate-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlevels-1"><code>simply-annotate-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels-1"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels-2"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dproject_002dfile"><code>simply-annotate-project-file</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dproject_002dfile-1"><code>simply-annotate-project-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dproject_002dfile-2"><code>simply-annotate-project-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor-1"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile"><code>simply-annotate-remember-author-per-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1"><code>simply-annotate-remember-author-per-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dstale_002dface"><code>simply-annotate-stale-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dstale_002dface-1"><code>simply-annotate-stale-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses-1"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses-2"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-status-1"><code>status</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Variable-Index_vr_letter-T">T</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-tags-1"><code>tags</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-text"><code>text</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-timestamp"><code>timestamp</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-type"><code>type</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
+<table class="index-entries-printindex vr-entries-printindex">
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-A">A</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-author"><code>author</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-B">B</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-both"><code>both</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-C">C</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-comments"><code>comments</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-created"><code>created</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-G">G</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-global"><code>global</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-I">I</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-id"><code>id</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-id-1"><code>id</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-P">P</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-parent_002did"><code>parent-id</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-priority-1"><code>priority</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-project"><code>project</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-S">S</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist-1"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist-2"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight-1"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname-1"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddatabase_002dstrategy"><code>simply-annotate-database-strategy</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddatabase_002dstrategy-1"><code>simply-annotate-database-strategy</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddatabase_002dstrategy-2"><code>simply-annotate-database-strategy</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddefault_002dlevel"><code>simply-annotate-default-level</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddefault_002dlevel-1"><code>simply-annotate-default-level</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle-1"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002ddisplay_002dstyle-2"><code>simply-annotate-display-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfile"><code>simply-annotate-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfile-1"><code>simply-annotate-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface-1"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dface-2"><code>simply-annotate-fringe-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-1"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-2"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface-1"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines-1"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-1"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dabove-2"><code>simply-annotate-inline-pointer-above</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-1"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dpointer_002dafter-2"><code>simply-annotate-inline-pointer-after</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-1"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dposition-2"><code>simply-annotate-inline-position</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlevels"><code>simply-annotate-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dlevels-1"><code>simply-annotate-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels-1"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dpriority_002dlevels-2"><code>simply-annotate-priority-levels</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dproject_002dfile"><code>simply-annotate-project-file</code></a></td><td class="printindex-index-section"><a href="#Project_002dAware-Annotations">Project-Aware Annotations</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dproject_002dfile-1"><code>simply-annotate-project-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dproject_002dfile-2"><code>simply-annotate-project-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor-1"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dprompt_002dfor_002dauthor-2"><code>simply-annotate-prompt-for-author</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile"><code>simply-annotate-remember-author-per-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dremember_002dauthor_002dper_002dfile-1"><code>simply-annotate-remember-author-per-file</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dstale_002dface"><code>simply-annotate-stale-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dstale_002dface-1"><code>simply-annotate-stale-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses-1"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dthread_002dstatuses-2"><code>simply-annotate-thread-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-status-1"><code>status</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex vr-letter-header-printindex" colspan="2" id="Variable-Index_vr_letter-T">T</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-tags-1"><code>tags</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-text"><code>text</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-timestamp"><code>timestamp</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-type"><code>type</code></a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
 </table>
-<table class="vr-letters-footer-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Variable-Index_vr_letter-A"><b>A</b></a>
+<table class="index-letters-footer-printindex vr-letters-footer-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Variable-Index_vr_letter-A"><b>A</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Variable-Index_vr_letter-B"><b>B</b></a>
  &nbsp; 
@@ -3274,14 +3253,12 @@ Next: <a href="#Concept-Index" accesskey="n" rel="next">Concept Index</a>, Previ
 <hr>
 </div>
 <div class="unnumbered-level-extent" id="Concept-Index">
-<div class="nav-panel">
-<p>
-Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>, Up: <a href="#Top" accesskey="u" rel="up">Simply Annotate</a> &nbsp; [<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>][<a href="#Function-Index" title="Index" rel="index">Index</a>]</p>
-</div>
+<p class="nav-panel">
+<span class="nav-button"><span class="nav-label">Previous: </span><span class="nav-link"><a href="#Variable-Index" rel="prev">Variable Index</a></span></span>, <span class="nav-button"><span class="nav-label">Up: </span><span class="nav-link"><a href="#Top" rel="up">Simply Annotate</a></span></span><span class="nav-button"> &nbsp; </span><span class="nav-button">[<a href="#SEC_Contents" title="Table of contents" rel="contents">Contents</a>]</span><span class="nav-button">[<a href="#Concept-Index" title="Index" rel="index">Index</a>]</span></p>
 <h2 class="unnumbered" id="Concept-Index-1"><span>Concept Index<a class="copiable-link" href="#Concept-Index-1"> &para;</a></span></h2>
 
 <div class="printindex cp-printindex">
-<table class="cp-letters-header-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Concept-Index_cp_letter-A"><b>A</b></a>
+<table class="index-letters-header-printindex cp-letters-header-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Concept-Index_cp_letter-A"><b>A</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-B"><b>B</b></a>
  &nbsp; 
@@ -3314,79 +3291,78 @@ Previous: <a href="#Variable-Index" accesskey="p" rel="prev">Variable Index</a>,
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-W"><b>W</b></a>
  &nbsp; 
 </td></tr></table>
-<table class="cp-entries-printindex">
-<tr><td></td><th class="entries-header-printindex">Index Entry</th><th class="sections-header-printindex">Section</th></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-A">A</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-advanced-editing">advanced editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-annotation-levels">annotation levels</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-authors">authors</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-B">B</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-board-view">board view</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-buffer_002dlocal-variables">buffer-local variables</a></td><td class="printindex-index-section"><a href="#Troubleshooting">Troubleshooting</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-C">C</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-collaboration">collaboration</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-conversations">conversations</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-cross_002dproject-overview">cross-project overview</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-D">D</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-data-structure-editing">data structure editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-defun-level">defun level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-E">E</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-embedded-comments">embedded comments</a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-F">F</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-file-level">file level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-author">filter by author</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-level">filter by level</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-tag">filter by tag</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-filter-by-tag-1">filter by tag</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-H">H</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-header_002dline">header-line</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-I">I</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-inline-display">inline display</a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-K">K</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-kanban">kanban</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-kanban-filter">kanban filter</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-L">L</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-line-level">line level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-O">O</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-organization">organization</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-overlay-persistence">overlay persistence</a></td><td class="printindex-index-section"><a href="#Troubleshooting">Troubleshooting</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-P">P</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-priority">priority</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-progressive-exploration">progressive exploration</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-projects-with-annotations">projects with annotations</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-R">R</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-replies">replies</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-S">S</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-sexp-editing">sexp editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-status">status</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-status-columns">status columns</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-status-display">status display</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-T">T</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-tag-search">tag search</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-tags">tags</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-team">team</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-threading">threading</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
-<tr><th id="Concept-Index_cp_letter-W">W</th></tr>
-<tr><td></td><td class="printindex-index-entry"><a href="#index-workflow">workflow</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
-<tr><td colspan="3"><hr></td></tr>
+<table class="index-entries-printindex cp-entries-printindex">
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-A">A</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-advanced-editing">advanced editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-annotation-levels">annotation levels</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-authors">authors</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-B">B</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-board-view">board view</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-buffer_002dlocal-variables">buffer-local variables</a></td><td class="printindex-index-section"><a href="#Troubleshooting">Troubleshooting</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-C">C</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-collaboration">collaboration</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-conversations">conversations</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-cross_002dproject-overview">cross-project overview</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-D">D</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-data-structure-editing">data structure editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-defun-level">defun level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-E">E</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-embedded-comments">embedded comments</a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-F">F</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-file-level">file level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-filter-by-author">filter by author</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-filter-by-level">filter by level</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-filter-by-tag">filter by tag</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-filter-by-tag-1">filter by tag</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-H">H</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-header_002dline">header-line</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-I">I</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-inline-display">inline display</a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-K">K</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-kanban">kanban</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-kanban-filter">kanban filter</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-L">L</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-line-level">line level</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-O">O</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-organization">organization</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-overlay-persistence">overlay persistence</a></td><td class="printindex-index-section"><a href="#Troubleshooting">Troubleshooting</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-P">P</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-priority">priority</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-progressive-exploration">progressive exploration</a></td><td class="printindex-index-section"><a href="#Annotation-Levels">Annotation Levels</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-projects-with-annotations">projects with annotations</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-R">R</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-replies">replies</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-S">S</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-sexp-editing">sexp editing</a></td><td class="printindex-index-section"><a href="#Advanced-Editing">Advanced Editing</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-status">status</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-status-columns">status columns</a></td><td class="printindex-index-section"><a href="#Kanban-Board">Kanban Board</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-status-display">status display</a></td><td class="printindex-index-section"><a href="#Advanced-Features">Advanced Features</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-T">T</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-tag-search">tag search</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-tags">tags</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-team">team</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-threading">threading</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
+<tr><th class="index-letter-header-printindex cp-letter-header-printindex" colspan="2" id="Concept-Index_cp_letter-W">W</th></tr>
+<tr><td class="printindex-index-entry"><a href="#index-workflow">workflow</a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
+<tr><td colspan="2"><hr></td></tr>
 </table>
-<table class="cp-letters-footer-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Concept-Index_cp_letter-A"><b>A</b></a>
+<table class="index-letters-footer-printindex cp-letters-footer-printindex"><tr><th>Jump to: &nbsp; </th><td><a class="summary-letter-printindex" href="#Concept-Index_cp_letter-A"><b>A</b></a>
  &nbsp; 
 <a class="summary-letter-printindex" href="#Concept-Index_cp_letter-B"><b>B</b></a>
  &nbsp; 

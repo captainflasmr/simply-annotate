@@ -1483,6 +1483,21 @@ Level, Stale, Line, Status, Priority, Comments, Tags, Author, and Comment.
 to project files when using @code{project} or @code{both} strategy.  Use
 a prefix argument (@kbd{C-u f}) to show all files across all databases.
 
+@subsection Automatic Directory Narrowing
+
+When any project-level command (Kanban, Table, Org listing, File jump,
+Search by tag) is invoked from a buffer that belongs to a project
+subdirectory, the view is automatically narrowed to that subdirectory.
+This allows for a ``local peek'' of relevant annotations without needing
+to manually filter.
+
+This auto-narrowing behavior works from both @strong{Dired} buffers and
+@strong{regular file} buffers.
+
+Use a single prefix argument (@kbd{C-u}) when invoking any of these commands
+to force the whole project view, bypassing the automatic directory
+filter.
+
 @section Stale Annotation Detection
 
 When the text under an annotation changes (refactoring, edits, or merges),
@@ -1647,8 +1662,9 @@ Select a level or @samp{[All]} to clear.
 Filter by tag.  Select from tags present in the current board, or
 choose @samp{[All]} to clear.
 @item d
-Clear the directory filter (widening a dired-narrowed board back to the
-whole project).
+Clear the directory filter (widening a narrowed board back to the
+whole project).  This clears any automatic filter seeded from the
+starting buffer.
 @end table
 
 Filters stack: for example, pressing @kbd{a} to select an author and

@@ -11,6 +11,15 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-20 Mon> *2.1.1*
+
+Generalized directory-aware project views.
+
+*** Features
+
+- *Local directory-aware project views* -- Commands that support project-wide views (~simply-annotate-kanban~, ~simply-annotate-list-project-table~, ~simply-annotate-show-project~, ~simply-annotate-jump-to-file~, and ~simply-annotate-search-by-tag~) now automatically narrow their scope to the current directory when invoked from any file buffer within a project, not just from ~dired~.  This allows a "local peek" of annotations relevant to the current file's context without needing to switch to dired or manually filter.
+- *Updated docstrings* -- Documentation for project commands now correctly reflects that auto-narrowing works from both dired and regular file buffers.
+
 ** <2026-04-12 Sun> *2.1.0*
 
 Cross-project annotations discovery and navigation.
