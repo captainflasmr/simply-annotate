@@ -2510,6 +2510,29 @@ For threads with multiple comments, prompts which comment to edit."
         (message "Annotation removed"))
     (message "No annotation at point")))
 
+(defun simply-annotate--delete-at-key-pos (file-key start-pos)
+  "Generic deletion for an annotation by FILE-KEY and START-POS.
+Updates the database and removes the overlay if the source buffer is open."
+  (let* ((db (simply-annotate--load-database))
+         (file-anns (alist-get file-key db nil nil #'string=)))
+    (if (not (cl-find-if (lambda (a) (= (alist-get 'start a) start-pos))
+                         file-anns))
+        (message "Annotation no longer exists")
+      (let ((remaining (cl-remove-if
+                        (lambda (a) (= (alist-get 'start a) start-pos))
+                        file-anns)))
+        (simply-annotate--update-database file-key remaining))
+      ;; Clean up live buffer if it exists
+      (when-let* ((source (simply-annotate--get-key-buffer file-key)))
+        (when (buffer-live-p source)
+          (with-current-buffer source
+            (dolist (ov (copy-sequence simply-annotate-overlays))
+              (when (= (overlay-start ov) start-pos)
+                (simply-annotate--remove-overlay ov)))
+            (simply-annotate--update-header))))
+      (simply-annotate--invalidate-listing)
+      t)))
+
 ;;;###autoload
 (defun simply-annotate-clear-buffer-annotations ()
   "Remove all annotations from the current buffer."
@@ -3131,6 +3154,7 @@ Uses `outline-mode' to fold headings cheaply, then activates
     (define-key map (kbd "RET") #'simply-annotate-table-goto-source)
     (define-key map (kbd "g") #'simply-annotate-table-refresh)
     (define-key map (kbd "t") #'simply-annotate-table-filter-by-tag)
+    (define-key map (kbd "D") #'simply-annotate-table-delete)
     (define-key map (kbd "q") #'quit-window)
     map)
   "Keymap for `simply-annotate-table-mode'.")
@@ -3187,7 +3211,8 @@ Uses `outline-mode' to fold headings cheaply, then activates
                           (t "")))
              (summary (string-trim (car (split-string first-text "\n"))))
              (nav (list :file file-key :line line-num
-                        :col (1+ col-num))))
+                        :col (1+ col-num)
+                        :start start-pos)))
         (let ((current-tag-filter (bound-and-true-p simply-annotate-table-filter-tag)))
           (when (or (null current-tag-filter)
                     (and thread-p (member current-tag-filter (alist-get 'tags data))))
@@ -3215,6 +3240,18 @@ Uses `outline-mode' to fold headings cheaply, then activates
   (interactive)
   (when-let ((entry (tabulated-list-get-id)))
     (simply-annotate--listing-goto-source entry)))
+
+(defun simply-annotate-table-delete ()
+  "Delete the annotation at point."
+  (interactive)
+  (when-let ((nav (tabulated-list-get-id)))
+    (let ((file-key (plist-get nav :file))
+          (start-pos (plist-get nav :start)))
+      (when (and file-key start-pos
+                 (y-or-n-p "Really delete this annotation? "))
+        (simply-annotate--delete-at-key-pos file-key start-pos)
+        (simply-annotate-table-refresh)
+        (message "Annotation deleted")))))
 
 (defvar-local simply-annotate-table-project-root nil
   "Project root for project-scoped table buffers.
@@ -3328,6 +3365,7 @@ Reuses an existing table buffer if one exists; press g to rebuild."
     (define-key map (kbd "RET") #'simply-annotate-table-goto-source)
     (define-key map (kbd "g") #'simply-annotate-table-refresh)
     (define-key map (kbd "t") #'simply-annotate-table-filter-by-tag)
+    (define-key map (kbd "D") #'simply-annotate-table-delete)
     (define-key map (kbd "q") #'quit-window))
   (tabulated-list-init-header))
 
@@ -3371,7 +3409,8 @@ Each entry includes a File column."
                               ('unknown "?")
                               (_ "")))
                  (nav (list :file file-key :line line-num
-                            :col (1+ col-num))))
+                            :col (1+ col-num)
+                            :start start-pos)))
             (let ((current-tag-filter (bound-and-true-p simply-annotate-table-filter-tag)))
               (when (or (null current-tag-filter)
                         (and thread-p (member current-tag-filter (alist-get 'tags data))))
@@ -4252,37 +4291,23 @@ Plain string annotations are auto-converted to threads."
   (let ((card-id (get-text-property (point) 'simply-annotate-kanban-card)))
     (if (not card-id)
         (message "No card at point")
-      (let* ((nav (alist-get card-id simply-annotate-kanban-cards))
-             (file-key (plist-get nav :file))
-             (start-pos (plist-get nav :start))
-             (default-directory (or simply-annotate-kanban-project-root
-                                    default-directory))
-             (db (simply-annotate--load-database))
-             (file-anns (alist-get file-key db nil nil #'string=)))
-        (if (not (cl-find-if (lambda (a) (= (alist-get 'start a) start-pos))
-                             file-anns))
-            (message "Annotation no longer exists")
-          (when (y-or-n-p "Really delete this annotation? ")
-            (let ((remaining (cl-remove-if
-                              (lambda (a) (= (alist-get 'start a) start-pos))
-                              file-anns)))
-              (simply-annotate--update-database file-key remaining))
-            (when-let* ((source (simply-annotate--get-key-buffer file-key)))
-              (when (buffer-live-p source)
-                (with-current-buffer source
-                  (dolist (ov (copy-sequence simply-annotate-overlays))
-                    (when (= (overlay-start ov) start-pos)
-                      (simply-annotate--remove-overlay ov)))
-                  (simply-annotate--update-header))))
-            (simply-annotate--invalidate-listing)
-            (simply-annotate-kanban-refresh)
+      (when-let* ((nav (alist-get card-id simply-annotate-kanban-cards))
+                  (file-key (plist-get nav :file))
+                  (start-pos (plist-get nav :start)))
+        (when (y-or-n-p "Really delete this annotation? ")
+          (let* ((coords (gethash card-id simply-annotate-kanban-card-coords))
+                 (col (car coords))
+                 (row (cdr coords)))
+            (simply-annotate--delete-at-key-pos file-key start-pos)
+            (simply-annotate-kanban-refresh col row)
             (message "Annotation deleted")))))))
 
-(defun simply-annotate-kanban-refresh ()
-  "Refresh the kanban board in place."
+(defun simply-annotate-kanban-refresh (&optional col row)
+  "Refresh the kanban board in place.
+If COL and ROW are provided, attempt to move point to the cell at those
+coordinates, or the nearest available cell if the exact one is gone."
   (interactive)
-  (let ((pos (point))
-        (root simply-annotate-kanban-project-root)
+  (let ((root simply-annotate-kanban-project-root)
         (subdir simply-annotate-kanban-filter-directory))
     (when root
       (let* ((db (simply-annotate--project-annotations root))
@@ -4290,7 +4315,19 @@ Plain string annotations are auto-converted to threads."
         (if filtered
             (progn
               (simply-annotate--kanban-render filtered)
-              (goto-char (min pos (point-max))))
+              (if col
+                  (let* ((grid simply-annotate-kanban-card-grid)
+                         (col-cards (aref grid col))
+                         (target-row (if (>= row (length col-cards))
+                                         (max 0 (1- (length col-cards)))
+                                       row))
+                         (target-id (when (< target-row (length col-cards))
+                                      (nth target-row col-cards))))
+                    (if target-id
+                        (goto-char (simply-annotate-kanban--card-position target-id))
+                      ;; Fallback to first card if column is empty
+                      (simply-annotate-kanban-next-card)))
+                (simply-annotate-kanban-next-card)))
           (let ((inhibit-read-only t))
             (erase-buffer)
             (insert "No annotations found.")))))))
