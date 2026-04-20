@@ -9,15 +9,9 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** TODO indication of annotation scope
-
-** TODO add delete annotation to kanban
+** DOING add delete annotation to kanban
 
 ** TODO look at indented brackets
-
-** TODO dired annotations
-
-I have given it a go but could be difficult, might just setting on directory companion or file instead
 
 ** TODO add automated unit tests
 
