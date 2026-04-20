@@ -1427,9 +1427,16 @@ further processing, documentation, or meeting preparation.
 13.1 Exporting Annotations
 ==========================
 
-To export current buffer annotations to org-mode:
+To export annotations to org-mode, use the
+‘simply-annotate-export-to-org-file’ command:
 
      M-s o
+
+   By default, this exports the annotations for the current file.  You
+can use prefix arguments to expand the scope:
+
+   • ‘C-u M-s o’ exports all annotations in the current project.
+   • ‘C-u C-u M-s o’ exports the entire global annotation database.
 
    This prompts for a filename and creates a structured org-mode file
 with:
@@ -1439,6 +1446,12 @@ with:
    • Replies as nested sub-entries reflecting the comment hierarchy
    • Status, priority, tags, and timestamps included
    • Author information for each comment and reply
+
+   To avoid truncating long annotations when folding org-mode headings,
+the heading text is formed by replacing newlines with spaces.  This
+allows for convenient copying using ‘org-copy-visible’.  You can disable
+this behavior by setting ‘simply-annotate-export-full-headings’ to
+‘nil’.
 
 13.2 Export Format
 ==================
@@ -2353,13 +2366,13 @@ Node: Advanced Features33638
 Node: Project-Aware Annotations41013
 Node: Kanban Board47072
 Node: Org-mode Integration51070
-Node: Key Bindings53508
-Node: Customization58573
-Node: Data Storage67321
-Node: Troubleshooting71379
-Node: Function Index77746
-Node: Variable Index81291
-Node: Concept Index87172
+Node: Key Bindings54115
+Node: Customization59180
+Node: Data Storage67928
+Node: Troubleshooting71986
+Node: Function Index78353
+Node: Variable Index81898
+Node: Concept Index87779
 
 End Tag Table
 

@@ -1694,11 +1694,20 @@ org-mode files for further processing, documentation, or meeting preparation.
 
 @findex simply-annotate-export-to-org-file
 
-To export current buffer annotations to org-mode:
+To export annotations to org-mode, use the @code{simply-annotate-export-to-org-file} command:
 
 @example
 M-s o
 @end example
+
+By default, this exports the annotations for the current file. You can use prefix arguments to expand the scope:
+
+@itemize @bullet
+@item
+@kbd{C-u M-s o} exports all annotations in the current project.
+@item
+@kbd{C-u C-u M-s o} exports the entire global annotation database.
+@end itemize
 
 This prompts for a filename and creates a structured org-mode file with:
 
@@ -1714,6 +1723,8 @@ Status, priority, tags, and timestamps included
 @item
 Author information for each comment and reply
 @end itemize
+
+To avoid truncating long annotations when folding org-mode headings, the heading text is formed by replacing newlines with spaces. This allows for convenient copying using @code{org-copy-visible}. You can disable this behavior by setting @code{simply-annotate-export-full-headings} to @code{nil}.
 
 @section Export Format
 

@@ -387,6 +387,13 @@ annotation instead.  Set to nil to use `fundamental-mode'."
   :type 'boolean
   :group 'simply-annotate)
 
+(defcustom simply-annotate-export-full-headings t
+  "If non-nil, org exports use the full annotation text in headings.
+When enabled, newlines in the first comment are replaced with spaces
+in the org heading, preventing truncation when copying with `org-copy-visible'."
+  :type 'boolean
+  :group 'simply-annotate)
+
 (defcustom simply-annotate-inline-max-lines 20
   "Maximum number of lines shown for inline annotations.
 Lines beyond this limit are truncated with a count.
@@ -4807,10 +4814,13 @@ ARG is the raw prefix argument and selects the candidate set:
           (simply-annotate--comment-tree-to-org children (1+ depth))))))
    tree ""))
 
-(defun simply-annotate--thread-to-org (thread)
-  "Convert a THREAD to org-mode format."
+(defun simply-annotate--thread-to-org (thread &optional level file-key)
+  "Convert a THREAD to org-mode format.
+LEVEL specifies the base org heading level (default 1).
+FILE-KEY is optionally included in the properties block."
   (simply-annotate--ensure-comment-ids thread)
-  (let* ((id (alist-get 'id thread))
+  (let* ((level (or level 1))
+         (id (alist-get 'id thread))
          (status (alist-get 'status thread))
          (priority (alist-get 'priority thread))
          (tags (alist-get 'tags thread))
@@ -4820,12 +4830,17 @@ ARG is the raw prefix argument and selects the candidate set:
          (first-comment (car first-node))
          (first-children (cdr first-node))
          (first-text (alist-get 'text first-comment))
-         (remaining-roots (cdr tree)))
+         (heading-text (if simply-annotate-export-full-headings
+                           (replace-regexp-in-string "\n+" " " first-text)
+                         (car (split-string first-text "\n"))))
+         (remaining-roots (cdr tree))
+         (stars (make-string level ?*)))
 
     (concat
-     (format "* TODO %s\n" (car (split-string first-text "\n")))
+     (format "%s TODO %s\n" stars heading-text)
      (format ":PROPERTIES:\n")
      (format ":ID: %s\n" id)
+     (when file-key (format ":FILE: %s\n" file-key))
      (format ":STATUS: %s\n" status)
      (format ":PRIORITY: %s\n" priority)
      (when tags (format ":TAGS: %s\n" (string-join tags " ")))
@@ -4834,34 +4849,76 @@ ARG is the raw prefix argument and selects the candidate set:
      (format ":END:\n\n")
      (when (> (length first-text) (length (car (split-string first-text "\n"))))
        (concat (string-join (cdr (split-string first-text "\n")) "\n") "\n\n"))
-     ;; Children of the first comment at ** level
+     ;; Children of the first comment at next level
      (when first-children
-       (simply-annotate--comment-tree-to-org first-children 2))
+       (simply-annotate--comment-tree-to-org first-children (1+ level)))
      ;; Any additional root-level comments (shouldn't normally happen)
      (when remaining-roots
-       (simply-annotate--comment-tree-to-org remaining-roots 2)))))
+       (simply-annotate--comment-tree-to-org remaining-roots (1+ level))))))
 
-(defun simply-annotate-export-to-org-file (filename)
-  "Export all annotations in current buffer to an org file FILENAME."
-  (interactive "FExport annotations to org file: ")
+(defun simply-annotate-export-to-org-file (filename &optional scope)
+  "Export annotations to an org file FILENAME.
+When called interactively:
+- Default: Export current buffer annotations.
+- Prefix arg \\[universal-argument]: Export all annotations for the current project.
+- Prefix arg \\[universal-argument] \\[universal-argument]: Export the global database."
+  (interactive
+   (let* ((scope (cond
+                  ((equal current-prefix-arg '(16)) 'all)
+                  ((equal current-prefix-arg '(4)) 'project)
+                  (t nil)))
+          (default-name
+            (pcase scope
+              ('all (format "global-annotations-%s.org" (format-time-string "%Y-%m-%d")))
+              ('project (let* ((proj (project-current))
+                               (root (and proj (if (fboundp 'project-root)
+                                                   (project-root proj)
+                                                 (cdr proj))))
+                               (name (if root (file-name-nondirectory (directory-file-name root)) "project")))
+                          (format "%s-annotations.org" name)))
+              (_ (let* ((file-key (simply-annotate--file-key))
+                        (name (simply-annotate--key-name file-key)))
+                   (format "%s-annotations.org" (file-name-base name))))))
+          (prompt (format "Export to (default %s): " default-name)))
+     (list (read-file-name prompt nil default-name nil default-name)
+           scope)))
   (let* ((file-key (simply-annotate--file-key))
          (db (simply-annotate--load-database))
-         (annotations (when db (alist-get file-key db nil nil #'string=))))
+         (annotations-alist
+          (pcase scope
+            ('all db)
+            ('project
+             (if-let* ((proj (project-current))
+                       (root (simply-annotate--project-root proj)))
+                 (simply-annotate--project-annotations root)
+               (user-error "Not in a project")))
+            (_
+             (if db
+                 (let ((anns (alist-get file-key db nil nil #'string=)))
+                   (when anns (list (cons file-key anns))))
+               nil)))))
     
-    (if (not annotations)
+    (if (not annotations-alist)
         (message "No annotations to export")
       (with-temp-buffer
         (org-mode)
-        (insert (format "#+TITLE: Annotations for %s\n" (simply-annotate--key-name file-key)))
+        (insert (format "#+TITLE: Annotations Export (%s)\n"
+                        (if scope (capitalize (symbol-name scope)) "Buffer")))
         (insert (format "#+DATE: %s\n\n" (format-time-string "%Y-%m-%d")))
         
-        (dolist (ann annotations)
-          (let* ((text (alist-get 'text ann))
-                 (thread (if (simply-annotate--thread-p text)
-                             text
-                           (simply-annotate--create-thread (simply-annotate--annotation-text text)))))
-            (insert (simply-annotate--thread-to-org thread))
-            (insert "\n")))
+        (dolist (entry annotations-alist)
+          (let ((key (car entry))
+                (anns (cdr entry)))
+            (when anns
+              (when scope
+                (insert (format "* File: %s\n\n" (simply-annotate--key-name key))))
+              (dolist (ann anns)
+                (let* ((text (alist-get 'text ann))
+                       (thread (if (simply-annotate--thread-p text)
+                                   text
+                                 (simply-annotate--create-thread (simply-annotate--annotation-text text)))))
+                  (insert (simply-annotate--thread-to-org thread (if scope 2 1) key))
+                  (insert "\n"))))))
         
         (write-file filename)
         (message "Annotations exported to %s" filename)))))

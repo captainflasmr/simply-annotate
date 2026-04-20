@@ -2027,11 +2027,18 @@ further processing, documentation, or meeting preparation.
 :CUSTOM_ID: exporting-annotations
 :CLASS: section
 :END:
-To export current buffer annotations to org-mode:
+To export annotations to org-mode, use the
+=simply-annotate-export-to-org-file= command:
 
 #+begin_src example-preformatted
 M-s o
 #+end_src
+
+By default, this exports the annotations for the current file. You can
+use prefix arguments to expand the scope:
+
+- C-u M-s o exports all annotations in the current project.
+- C-u C-u M-s o exports the entire global annotation database.
 
 This prompts for a filename and creates a structured org-mode file with:
 
@@ -2040,6 +2047,11 @@ This prompts for a filename and creates a structured org-mode file with:
 - Replies as nested sub-entries reflecting the comment hierarchy
 - Status, priority, tags, and timestamps included
 - Author information for each comment and reply
+
+To avoid truncating long annotations when folding org-mode headings, the
+heading text is formed by replacing newlines with spaces. This allows
+for convenient copying using =org-copy-visible=. You can disable this
+behavior by setting =simply-annotate-export-full-headings= to =nil=.
 
 <<Export-Format>>
 *** 13.2 Export Format [[#Export-Format][¶]]

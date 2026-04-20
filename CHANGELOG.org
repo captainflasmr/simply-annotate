@@ -19,6 +19,8 @@ Generalized directory-aware project views.
 
 - *Local directory-aware project views* -- Commands that support project-wide views (~simply-annotate-kanban~, ~simply-annotate-list-project-table~, ~simply-annotate-show-project~, ~simply-annotate-jump-to-file~, and ~simply-annotate-search-by-tag~) now automatically narrow their scope to the current directory when invoked from any file buffer within a project, not just from ~dired~.  This allows a "local peek" of annotations relevant to the current file's context without needing to switch to dired or manually filter.
 - *Updated docstrings* -- Documentation for project commands now correctly reflects that auto-narrowing works from both dired and regular file buffers.
+- *Flexible Org Export* -- The ~simply-annotate-export-to-org-file~ command (~M-s o~) now accepts prefix arguments to export project-wide (~C-u~) or global database (~C-u C-u~) annotations.
+- *Full Org Headings* -- Exported org headings are no longer truncated at the first newline. This is controlled by the new ~simply-annotate-export-full-headings~ variable (default ~t~), enabling easier copy-pasting of full annotation text using ~org-copy-visible~.
 
 ** <2026-04-12 Sun> *2.1.0*
 

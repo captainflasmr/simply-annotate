@@ -2167,11 +2167,18 @@ org-mode files for further processing, documentation, or meeting preparation.
 
 <a class="index-entry-id" id="index-simply_002dannotate_002dexport_002dto_002dorg_002dfile"></a>
 
-<p>To export current buffer annotations to org-mode:
+<p>To export annotations to org-mode, use the <code class="code">simply-annotate-export-to-org-file</code> command:
 </p>
 <div class="example">
 <pre class="example-preformatted">M-s o
 </pre></div>
+
+<p>By default, this exports the annotations for the current file. You can use prefix arguments to expand the scope:
+</p>
+<ul class="itemize mark-bullet">
+<li><kbd class="kbd">C-u M-s o</kbd> exports all annotations in the current project.
+</li><li><kbd class="kbd">C-u C-u M-s o</kbd> exports the entire global annotation database.
+</li></ul>
 
 <p>This prompts for a filename and creates a structured org-mode file with:
 </p>
@@ -2183,6 +2190,8 @@ org-mode files for further processing, documentation, or meeting preparation.
 </li><li>Author information for each comment and reply
 </li></ul>
 
+<p>To avoid truncating long annotations when folding org-mode headings, the heading text is formed by replacing newlines with spaces. This allows for convenient copying using <code class="code">org-copy-visible</code>. You can disable this behavior by setting <code class="code">simply-annotate-export-full-headings</code> to <code class="code">nil</code>.
+</p>
 </div>
 <div class="section-level-extent" id="Export-Format">
 <h3 class="section"><span>13.2 Export Format<a class="copiable-link" href="#Export-Format"> &para;</a></span></h3>

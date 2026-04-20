@@ -59,6 +59,8 @@ Generalized directory-aware project views.
 
 - *Local directory-aware project views* -- Major project commands (~simply-annotate-kanban~, ~simply-annotate-list-project-table~, etc.) now automatically narrow to the current directory when called from any file buffer within a project.
 - *Docstring improvements* -- Correctly documented auto-narrowing from both dired and regular file buffers.
+- *Flexible Org Export* -- Org Export is now scope-aware (~M-s o~ for current file, ~C-u M-s o~ for project, ~C-u C-u M-s o~ for global).
+- *Full Org Headings* -- Org headings in exports are no longer truncated at newlines by default, enabling easy copy-pasting of full notes into ticketing systems via ~org-copy-visible~.
 
 ** <2026-04-12 Sat> *2.1.0*
 
