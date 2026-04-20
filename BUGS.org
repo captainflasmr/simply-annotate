@@ -9,6 +9,10 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** TODO indication of annotation scope
+
+** TODO add delete annotation to kanban
+
 ** TODO look at indented brackets
 
 ** TODO dired annotations
