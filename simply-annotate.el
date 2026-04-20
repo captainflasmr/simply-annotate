@@ -1087,6 +1087,7 @@ finer-grained annotations."
                  (simply-annotate--add-bracket-indicator overlay))
                 ('subtle
                  (overlay-put overlay 'face 'simply-annotate-subtle-face)))))
+          (simply-annotate--ensure-point-marker overlay)
           (when simply-annotate-inline
             (simply-annotate--add-inline-text overlay)))
       (simply-annotate--cleanup-bracket-overlays overlay)
@@ -1113,6 +1114,22 @@ finer-grained annotations."
          (fringe-spec `(left-fringe ,bitmap simply-annotate-fringe-face)))
     (overlay-put overlay 'before-string
                  (propertize " " 'display fringe-spec))))
+
+(defun simply-annotate--point-annotation-p (overlay)
+  "Return non-nil when OVERLAY is a zero-width point annotation."
+  (= (overlay-start overlay) (overlay-end overlay)))
+
+(defun simply-annotate--ensure-point-marker (overlay)
+  "Make a zero-width OVERLAY visible when the active style leaves no marker.
+Face-only styles (highlight, tint, subtle) paint nothing on an empty
+range, so fall back to a fringe indicator so the user can see and
+navigate to the point annotation."
+  (when (and (simply-annotate--point-annotation-p overlay)
+             (null (overlay-get overlay 'before-string))
+             (null (overlay-get overlay 'simply-annotate-bar-overlays))
+             (null (overlay-get overlay 'simply-annotate-bracket-overlays))
+             (null (overlay-get overlay 'simply-annotate-bracket-text-overlays)))
+    (simply-annotate--add-fringe-indicator overlay)))
 
 (defun simply-annotate--cleanup-bracket-overlays (overlay)
   "Remove auxiliary bracket fringe overlays associated with OVERLAY."
@@ -1429,7 +1446,9 @@ background overlays so finer-grained annotations take precedence."
 In fringe mode, searches the entire current line for overlays.
 When multiple overlays match, returns the most specific one.
 Background overlays are excluded when viewing everything, so that
-`smart-action' can create granular annotations anywhere in the buffer."
+`smart-action' can create granular annotations anywhere in the buffer.
+Zero-width point annotations located exactly at POS are also returned,
+since `overlays-at' does not include empty overlays."
   (let ((check-pos (or pos (point)))
         (unfiltered (null simply-annotate-current-tag-filter)))
     (if (cl-intersection (simply-annotate--display-styles) '(fringe fringe-bracket))
@@ -1440,7 +1459,12 @@ Background overlays are excluded when viewing everything, so that
                                 (simply-annotate--tag-match-p ov)
                                 (not (and unfiltered
                                           (simply-annotate--background-overlay-p ov)))))
-                         (overlays-at check-pos))))))
+                         (append (overlays-at check-pos)
+                                 (cl-remove-if-not
+                                  (lambda (ov)
+                                    (and (= (overlay-start ov) check-pos)
+                                         (simply-annotate--point-annotation-p ov)))
+                                  simply-annotate-overlays)))))))
 
 (defun simply-annotate--overlay-on-line (&optional pos)
   "Find annotation overlay matching current level on the line containing POS.
@@ -1854,7 +1878,7 @@ If relocation fails, the annotation is marked stale."
       (when (and start end text
                  (<= start (point-max))
                  (<= end (point-max))
-                 (> end start))
+                 (>= end start))
         (let* ((stored-hash (alist-get 'text-hash ann))
                (context (alist-get 'text-context ann))
                (current-hash (sxhash-equal
@@ -3431,6 +3455,7 @@ project."
     (define-key map (kbd "<backtab>") #'simply-annotate-kanban-prev-column)
     (define-key map (kbd "}") #'simply-annotate-kanban-move-right)
     (define-key map (kbd "{") #'simply-annotate-kanban-move-left)
+    (define-key map (kbd "D") #'simply-annotate-kanban-delete-card)
     (define-key map (kbd "F") #'simply-annotate-kanban-toggle-follow)
     (define-key map (kbd "e") #'simply-annotate-kanban-toggle-expand)
     (define-key map (kbd "E") #'simply-annotate-kanban-toggle-expand-all)
@@ -4220,6 +4245,38 @@ Plain string annotations are auto-converted to threads."
      ((not idx) (message "Unknown status"))
      ((<= idx 0) (message "Already in first column"))
      (t (simply-annotate--kanban-update-status (nth (1- idx) statuses))))))
+
+(defun simply-annotate-kanban-delete-card ()
+  "Delete the annotation represented by the card at point."
+  (interactive)
+  (let ((card-id (get-text-property (point) 'simply-annotate-kanban-card)))
+    (if (not card-id)
+        (message "No card at point")
+      (let* ((nav (alist-get card-id simply-annotate-kanban-cards))
+             (file-key (plist-get nav :file))
+             (start-pos (plist-get nav :start))
+             (default-directory (or simply-annotate-kanban-project-root
+                                    default-directory))
+             (db (simply-annotate--load-database))
+             (file-anns (alist-get file-key db nil nil #'string=)))
+        (if (not (cl-find-if (lambda (a) (= (alist-get 'start a) start-pos))
+                             file-anns))
+            (message "Annotation no longer exists")
+          (when (y-or-n-p "Really delete this annotation? ")
+            (let ((remaining (cl-remove-if
+                              (lambda (a) (= (alist-get 'start a) start-pos))
+                              file-anns)))
+              (simply-annotate--update-database file-key remaining))
+            (when-let* ((source (simply-annotate--get-key-buffer file-key)))
+              (when (buffer-live-p source)
+                (with-current-buffer source
+                  (dolist (ov (copy-sequence simply-annotate-overlays))
+                    (when (= (overlay-start ov) start-pos)
+                      (simply-annotate--remove-overlay ov)))
+                  (simply-annotate--update-header))))
+            (simply-annotate--invalidate-listing)
+            (simply-annotate-kanban-refresh)
+            (message "Annotation deleted")))))))
 
 (defun simply-annotate-kanban-refresh ()
   "Refresh the kanban board in place."
