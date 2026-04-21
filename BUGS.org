@@ -9,7 +9,7 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** DOING add delete annotation to kanban
+** TODO quickly switching between global and local annotations
 
 ** TODO look at indented brackets
 
