@@ -3249,9 +3249,9 @@ Uses `outline-mode' to fold headings cheaply, then activates
           (start-pos (plist-get nav :start)))
       (when (and file-key start-pos
                  (y-or-n-p "Really delete this annotation? "))
-        (simply-annotate--delete-at-key-pos file-key start-pos)
-        (simply-annotate-table-refresh)
-        (message "Annotation deleted")))))
+        (when (simply-annotate--delete-at-key-pos file-key start-pos)
+          (simply-annotate-table-refresh)
+          (message "Annotation deleted"))))))
 
 (defvar-local simply-annotate-table-project-root nil
   "Project root for project-scoped table buffers.
@@ -4298,16 +4298,18 @@ Plain string annotations are auto-converted to threads."
           (let* ((coords (gethash card-id simply-annotate-kanban-card-coords))
                  (col (car coords))
                  (row (cdr coords)))
-            (simply-annotate--delete-at-key-pos file-key start-pos)
-            (simply-annotate-kanban-refresh col row)
-            (message "Annotation deleted")))))))
+            (when (simply-annotate--delete-at-key-pos file-key start-pos)
+              (simply-annotate-kanban-refresh col row)
+              (message "Annotation deleted"))))))))
 
 (defun simply-annotate-kanban-refresh (&optional col row)
   "Refresh the kanban board in place.
 If COL and ROW are provided, attempt to move point to the cell at those
-coordinates, or the nearest available cell if the exact one is gone."
+coordinates, or the nearest available cell if the exact one is gone.
+Otherwise point is left where it was (clamped to `point-max')."
   (interactive)
-  (let ((root simply-annotate-kanban-project-root)
+  (let ((pos (point))
+        (root simply-annotate-kanban-project-root)
         (subdir simply-annotate-kanban-filter-directory))
     (when root
       (let* ((db (simply-annotate--project-annotations root))
@@ -4327,7 +4329,7 @@ coordinates, or the nearest available cell if the exact one is gone."
                         (goto-char (simply-annotate-kanban--card-position target-id))
                       ;; Fallback to first card if column is empty
                       (simply-annotate-kanban-next-card)))
-                (simply-annotate-kanban-next-card)))
+                (goto-char (min pos (point-max)))))
           (let ((inhibit-read-only t))
             (erase-buffer)
             (insert "No annotations found.")))))))
