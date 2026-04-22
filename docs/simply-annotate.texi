@@ -66,6 +66,7 @@ modifying the original content.
 * Project-Aware Annotations::   Per-project databases and project-scoped views
 * Kanban Board::                Visual board view grouped by status
 * Org-mode Integration::        Export annotations to org-mode
+* Transient Menu::              Discoverable menu grouping every command
 * Key Bindings::                Complete key binding reference
 * Customization::               Configuring Simply Annotate
 * Data Storage::                How annotations are stored
@@ -127,6 +128,8 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @strong{Kanban board}: Visual board view of project annotations grouped by status columns
 @item
 @strong{Cross-project overview}: Discover all projects with annotations (from both the global database and @code{project.el}'s known projects) in a sortable summary table with per-status counts and one-keystroke drill-down to any project's table, org listing, or kanban board
+@item
+@strong{Transient menu}: Discoverable menu (@kbd{M-s SPC}) grouping every command into labelled panels; swaps to a Dired-specific layout in Dired buffers
 @end itemize
 
 @node Installation
@@ -1343,6 +1346,24 @@ source buffers (@code{simply-annotate-fringe-indicator} and
 @code{simply-annotate-fringe-face}).  Indicators refresh automatically when the
 dired buffer is re-read (e.g.@: after pressing @kbd{g}).
 
+@findex simply-annotate-dired-list-file
+From a Dired buffer, @code{simply-annotate-dired-list-file} opens the
+annotation listing for the file under point.  It visits the file (without
+selecting it) and, if that file has annotations, shows them in the standard
+listing buffer.
+
+@findex simply-annotate-dired-refresh-marks
+@code{simply-annotate-dired-refresh-marks} re-computes the fringe
+indicators for the current Dired buffer.  This is most useful after
+migrating annotations between the project and global databases, when the
+set of annotated files may have changed without Dired being re-read.
+
+@findex simply-annotate-dired-transient
+When the transient menu (@kbd{M-s SPC}, @pxref{Transient Menu}) is invoked
+from a Dired buffer, it switches to @code{simply-annotate-dired-transient},
+a Dired-focused layout exposing the fringe-mode toggle, per-file listing,
+refresh, project views, and database commands.
+
 @section Annotation Buffer Features
 
 The annotation buffer provides a rich editing environment with threading support:
@@ -1438,7 +1459,30 @@ The @code{simply-annotate-project-file} variable (default
 To share annotations with your team, commit @file{.simply-annotations.el}.
 To keep annotations private, add it to @file{.gitignore}.
 
-@section Migrating to a Project Database
+@subsection Switching Strategy Interactively
+
+@findex simply-annotate-set-database-strategy
+@code{simply-annotate-set-database-strategy} (transient key @kbd{S},
+@pxref{Transient Menu}) prompts for @code{global}, @code{project}, or
+@code{both} and updates @code{simply-annotate-database-strategy} in the
+current session.  When @code{simply-annotate-mode} is active in the current
+buffer, overlays are cleared and annotations are reloaded from the newly
+selected database so the change takes effect immediately without
+@kbd{M-x customize} or a buffer restart.
+
+Changing the strategy at runtime does not move annotations between
+databases -- it only selects which database future reads and writes use.
+Use the migration commands below to move the data itself.
+
+@section Migrating Between Databases
+
+The two migration commands move annotations for the current project
+between the global and project-local databases.  Both require a file open
+inside the target project so @code{project-current} can detect the project
+root, and both are exposed on the transient menu under @kbd{>} and
+@kbd{<}.
+
+@subsection Global to Project
 
 @findex simply-annotate-migrate-to-project
 When switching from @code{global} to @code{project} strategy, existing
@@ -1462,8 +1506,32 @@ Writes them to the project database with relative keys
 Removes migrated entries from the global database
 @end enumerate
 
-You must have a file open inside the target project before running this
-command, so that @code{project-current} can detect the project root.
+@subsection Project to Global
+
+@findex simply-annotate-migrate-to-global
+The reverse command moves annotations from the project-local database back
+into the global database:
+
+@example
+M-x simply-annotate-migrate-to-global
+@end example
+
+This command:
+@enumerate
+@item
+Reads @file{.simply-annotations.el} at the current project root
+@item
+Re-keys each entry as an absolute path under the project root (entries
+that are already absolute, or Info-node keys, pass through unchanged)
+@item
+Merges the result into the global database
+@item
+Deletes the project-local database file
+@end enumerate
+
+Use this when abandoning the @code{project} strategy for a repository, or
+when annotations originally committed alongside a project should become
+private per-user notes again.
 
 @section Project-Scoped Views
 
@@ -1791,6 +1859,101 @@ The exported files work seamlessly with:
 Version control for tracking annotation history
 @end itemize
 
+@node Transient Menu
+@chapter Transient Menu
+
+@findex simply-annotate-menu
+@findex simply-annotate-transient
+@findex simply-annotate-dired-transient
+@kbd{M-s SPC} (with the recommended prefix) opens
+@code{simply-annotate-menu}, a discoverable dispatcher that shows every
+command grouped into labelled panels.  The dispatcher selects between two
+layouts based on context:
+
+@itemize @bullet
+@item
+@code{simply-annotate-transient} in ordinary buffers
+@item
+@code{simply-annotate-dired-transient} in Dired buffers
+@end itemize
+
+The menu header shows the active @code{simply-annotate-database-strategy}
+and, when applicable, the current project root, so the storage context
+is always visible.
+
+The menu requires the @code{transient} package.  It is bundled with
+Emacs 28.1 and later; on earlier Emacs versions install it from GNU
+ELPA.
+
+@section Standard Layout
+
+@multitable @columnfractions .12 .3 .58
+@headitem Panel @tab Key @tab Command
+@item Navigate   @tab @kbd{n} @tab @code{simply-annotate-next}
+@item            @tab @kbd{v} @tab @code{simply-annotate-previous}
+@item            @tab @kbd{f} @tab @code{simply-annotate-jump-to-file}
+@item Create / Edit @tab @kbd{j} @tab @code{simply-annotate-smart-action}
+@item            @tab @kbd{-} @tab @code{simply-annotate-remove}
+@item            @tab @kbd{C} @tab @code{simply-annotate-clear-buffer-annotations}
+@item            @tab @kbd{e} @tab @code{simply-annotate-edit-sexp}
+@item            @tab @kbd{o} @tab @code{simply-annotate-export-to-org-file}
+@item Thread     @tab @kbd{r} @tab @code{simply-annotate-reply-to-annotation}
+@item            @tab @kbd{s} @tab @code{simply-annotate-set-annotation-status}
+@item            @tab @kbd{p} @tab @code{simply-annotate-set-annotation-priority}
+@item            @tab @kbd{t} @tab @code{simply-annotate-add-annotation-tag}
+@item            @tab @kbd{x} @tab @code{simply-annotate-remove-annotation-tag}
+@item            @tab @kbd{a} @tab @code{simply-annotate-change-annotation-author}
+@item Lists      @tab @kbd{l} @tab @code{simply-annotate-list}
+@item            @tab @kbd{b} @tab @code{simply-annotate-list-table}
+@item            @tab @kbd{P} @tab @code{simply-annotate-show-project}
+@item            @tab @kbd{B} @tab @code{simply-annotate-list-project-table}
+@item            @tab @kbd{K} @tab @code{simply-annotate-kanban}
+@item            @tab @kbd{L} @tab @code{simply-annotate-show-all}
+@item            @tab @kbd{A} @tab @code{simply-annotate-list-projects}
+@item            @tab @kbd{F} @tab @code{simply-annotate-search-by-tag}
+@item Display    @tab @kbd{'} @tab @code{simply-annotate-cycle-display-style}
+@item            @tab @kbd{/} @tab @code{simply-annotate-toggle-inline}
+@item            @tab @kbd{[} @tab @code{simply-annotate-cycle-tag-backward}
+@item            @tab @kbd{]} @tab @code{simply-annotate-cycle-tag-forward}
+@item            @tab @kbd{G} @tab @code{simply-annotate-set-tag-filter}
+@item            @tab @kbd{g} @tab @code{simply-annotate-update-display-style}
+@item Database   @tab @kbd{S} @tab @code{simply-annotate-set-database-strategy}
+@item            @tab @kbd{>} @tab @code{simply-annotate-migrate-to-project}
+@item            @tab @kbd{<} @tab @code{simply-annotate-migrate-to-global}
+@item            @tab @kbd{D} @tab @code{simply-annotate-dired-mode}
+@end multitable
+
+Navigation and display-only commands (@kbd{n}, @kbd{v}, @kbd{'}, @kbd{/},
+@kbd{[}, @kbd{]}, @kbd{g}) keep the transient open so you can chain
+operations; other commands close it.
+
+@section Dired Layout
+
+When invoked from a Dired buffer, the menu switches to a Dired-focused
+layout:
+
+@multitable @columnfractions .12 .3 .58
+@headitem Panel @tab Key @tab Command
+@item Dired      @tab @kbd{D} @tab @code{simply-annotate-dired-mode}
+@item            @tab @kbd{j} @tab @code{simply-annotate-dired-list-file}
+@item            @tab @kbd{g} @tab @code{simply-annotate-dired-refresh-marks}
+@item            @tab @kbd{f} @tab @code{simply-annotate-jump-to-file}
+@item Views      @tab @kbd{l} @tab @code{simply-annotate-list}
+@item            @tab @kbd{P} @tab @code{simply-annotate-show-project}
+@item            @tab @kbd{B} @tab @code{simply-annotate-list-project-table}
+@item            @tab @kbd{K} @tab @code{simply-annotate-kanban}
+@item            @tab @kbd{L} @tab @code{simply-annotate-show-all}
+@item            @tab @kbd{A} @tab @code{simply-annotate-list-projects}
+@item            @tab @kbd{F} @tab @code{simply-annotate-search-by-tag}
+@item Database   @tab @kbd{S} @tab @code{simply-annotate-set-database-strategy}
+@item            @tab @kbd{>} @tab @code{simply-annotate-migrate-to-project}
+@item            @tab @kbd{<} @tab @code{simply-annotate-migrate-to-global}
+@end multitable
+
+The project and database commands in this layout operate on the project
+that owns the Dired buffer's directory, so migrations and project views
+work directly from a file manager without first visiting a source file.
+
 @node Key Bindings
 @chapter Key Bindings
 
@@ -1838,6 +2001,7 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s n} @tab @code{simply-annotate-next} @tab Jump to next annotation
 @item @kbd{M-s v} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @item @kbd{M-s g} @tab @code{simply-annotate-update-display-style} @tab Refresh all annotation overlays
+@item @kbd{M-s SPC} @tab @code{simply-annotate-menu} @tab Open the transient menu (@pxref{Transient Menu})
 @end multitable
 
 @section Annotation Buffer Bindings

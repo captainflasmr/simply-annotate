@@ -115,8 +115,11 @@ Documentation License”.
 - [[#Project_002dAware-Annotations][11 Project-Aware Annotations]]
   - [[#Database-Strategy][11.1 Database Strategy]]
     - [[#Setup][11.1.1 Setup]]
-  - [[#Migrating-to-a-Project-Database][11.2 Migrating to a Project
-    Database]]
+    - [[#Switching-Strategy-Interactively][11.1.2 Switching Strategy
+      Interactively]]
+  - [[#Migrating-Between-Databases][11.2 Migrating Between Databases]]
+    - [[#Global-to-Project][11.2.1 Global to Project]]
+    - [[#Project-to-Global][11.2.2 Project to Global]]
   - [[#Project_002dScoped-Views][11.3 Project-Scoped Views]]
     - [[#Automatic-Directory-Narrowing][11.3.1 Automatic Directory
       Narrowing]]
@@ -137,61 +140,64 @@ Documentation License”.
   - [[#Use-Cases-for-Export][13.3 Use Cases for Export]]
   - [[#Integration-with-Org-Workflows][13.4 Integration with Org
     Workflows]]
-- [[#Key-Bindings][14 Key Bindings]]
-  - [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][14.1
+- [[#Transient-Menu][14 Transient Menu]]
+  - [[#Standard-Layout][14.1 Standard Layout]]
+  - [[#Dired-Layout][14.2 Dired Layout]]
+- [[#Key-Bindings][15 Key Bindings]]
+  - [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][15.1
     Mode Map (=simply-annotate-mode-map=)]]
-  - [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][14.2
+  - [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][15.2
     Command Map (=simply-annotate-command-map=)]]
-  - [[#Annotation-Buffer-Bindings][14.3 Annotation Buffer Bindings]]
-  - [[#Smart-Action-Behavior][14.4 Smart Action Behavior]]
-  - [[#Sexp-Editing-Mode][14.5 Sexp Editing Mode]]
-- [[#Customization][15 Customization]]
-  - [[#Basic-Configuration][15.1 Basic Configuration]]
-  - [[#Threading-and-Collaboration-Configuration][15.2 Threading and
+  - [[#Annotation-Buffer-Bindings][15.3 Annotation Buffer Bindings]]
+  - [[#Smart-Action-Behavior][15.4 Smart Action Behavior]]
+  - [[#Sexp-Editing-Mode][15.5 Sexp Editing Mode]]
+- [[#Customization][16 Customization]]
+  - [[#Basic-Configuration][16.1 Basic Configuration]]
+  - [[#Threading-and-Collaboration-Configuration][16.2 Threading and
     Collaboration Configuration]]
-  - [[#Configuration-Examples][15.3 Configuration Examples]]
-    - [[#Single-User-_0028Default_0029][15.3.1 Single User (Default)]]
-    - [[#Code-Review-Team][15.3.2 Code Review Team]]
-    - [[#Multi_002dProject-Consultant][15.3.3 Multi-Project Consultant]]
-    - [[#Project_002dAware-Setup][15.3.4 Project-Aware Setup]]
-  - [[#Core-Customization-Variables][15.4 Core Customization Variables]]
-  - [[#Annotation-Level-Variables][15.5 Annotation Level Variables]]
-  - [[#Threading-and-Collaboration-Variables][15.6 Threading and
+  - [[#Configuration-Examples][16.3 Configuration Examples]]
+    - [[#Single-User-_0028Default_0029][16.3.1 Single User (Default)]]
+    - [[#Code-Review-Team][16.3.2 Code Review Team]]
+    - [[#Multi_002dProject-Consultant][16.3.3 Multi-Project Consultant]]
+    - [[#Project_002dAware-Setup][16.3.4 Project-Aware Setup]]
+  - [[#Core-Customization-Variables][16.4 Core Customization Variables]]
+  - [[#Annotation-Level-Variables][16.5 Annotation Level Variables]]
+  - [[#Threading-and-Collaboration-Variables][16.6 Threading and
     Collaboration Variables]]
-  - [[#Custom-Faces][15.7 Custom Faces]]
-  - [[#Display-Style-Configuration][15.8 Display Style Configuration]]
-  - [[#Advanced-Customization][15.9 Advanced Customization]]
-    - [[#Custom-Fringe-Bitmaps][15.9.1 Custom Fringe Bitmaps]]
-    - [[#Global-Mode-Setup][15.9.2 Global Mode Setup]]
-- [[#Data-Storage][16 Data Storage]]
-  - [[#Storage-Format][16.1 Storage Format]]
-  - [[#Sample-Storage-Format][16.2 Sample Storage Format]]
-  - [[#Data-Structure-Evolution][16.3 Data Structure Evolution]]
-  - [[#Data-Management][16.4 Data Management]]
-  - [[#File-Key-System][16.5 File Key System]]
-  - [[#Sexp-Editing-and-Data-Integrity][16.6 Sexp Editing and Data
+  - [[#Custom-Faces][16.7 Custom Faces]]
+  - [[#Display-Style-Configuration][16.8 Display Style Configuration]]
+  - [[#Advanced-Customization][16.9 Advanced Customization]]
+    - [[#Custom-Fringe-Bitmaps][16.9.1 Custom Fringe Bitmaps]]
+    - [[#Global-Mode-Setup][16.9.2 Global Mode Setup]]
+- [[#Data-Storage][17 Data Storage]]
+  - [[#Storage-Format][17.1 Storage Format]]
+  - [[#Sample-Storage-Format][17.2 Sample Storage Format]]
+  - [[#Data-Structure-Evolution][17.3 Data Structure Evolution]]
+  - [[#Data-Management][17.4 Data Management]]
+  - [[#File-Key-System][17.5 File Key System]]
+  - [[#Sexp-Editing-and-Data-Integrity][17.6 Sexp Editing and Data
     Integrity]]
-- [[#Troubleshooting][17 Troubleshooting]]
-  - [[#Annotations-Not-Persisting][17.1 Annotations Not Persisting]]
-  - [[#Display-Issues][17.2 Display Issues]]
-    - [[#Highlighting-Not-Visible][17.2.1 Highlighting Not Visible]]
-    - [[#Fringe-Indicators-Not-Showing][17.2.2 Fringe Indicators Not
+- [[#Troubleshooting][18 Troubleshooting]]
+  - [[#Annotations-Not-Persisting][18.1 Annotations Not Persisting]]
+  - [[#Display-Issues][18.2 Display Issues]]
+    - [[#Highlighting-Not-Visible][18.2.1 Highlighting Not Visible]]
+    - [[#Fringe-Indicators-Not-Showing][18.2.2 Fringe Indicators Not
       Showing]]
-  - [[#Smart-Action-Issues][17.3 Smart Action Issues]]
-  - [[#Threading-Issues][17.4 Threading Issues]]
-    - [[#Author-Prompting-Problems][17.4.1 Author Prompting Problems]]
-    - [[#Thread-Display-Corruption][17.4.2 Thread Display Corruption]]
-    - [[#Reply-Issues][17.4.3 Reply Issues]]
-  - [[#Sexp-Editing-Issues][17.5 Sexp Editing Issues]]
-    - [[#Parsing-Errors][17.5.1 Parsing Errors]]
-    - [[#Data-Structure-Problems][17.5.2 Data Structure Problems]]
-    - [[#Validation-Failures][17.5.3 Validation Failures]]
-  - [[#Performance-with-Large-Files][17.6 Performance with Large Files]]
-  - [[#Integration-Issues][17.7 Integration Issues]]
-  - [[#Buffer_002dLocal-Variable-Issues][17.8 Buffer-Local Variable
+  - [[#Smart-Action-Issues][18.3 Smart Action Issues]]
+  - [[#Threading-Issues][18.4 Threading Issues]]
+    - [[#Author-Prompting-Problems][18.4.1 Author Prompting Problems]]
+    - [[#Thread-Display-Corruption][18.4.2 Thread Display Corruption]]
+    - [[#Reply-Issues][18.4.3 Reply Issues]]
+  - [[#Sexp-Editing-Issues][18.5 Sexp Editing Issues]]
+    - [[#Parsing-Errors][18.5.1 Parsing Errors]]
+    - [[#Data-Structure-Problems][18.5.2 Data Structure Problems]]
+    - [[#Validation-Failures][18.5.3 Validation Failures]]
+  - [[#Performance-with-Large-Files][18.6 Performance with Large Files]]
+  - [[#Integration-Issues][18.7 Integration Issues]]
+  - [[#Buffer_002dLocal-Variable-Issues][18.8 Buffer-Local Variable
     Issues]]
-  - [[#Common-Error-Messages][17.9 Common Error Messages]]
-  - [[#Getting-Help][17.10 Getting Help]]
+  - [[#Common-Error-Messages][18.9 Common Error Messages]]
+  - [[#Getting-Help][18.10 Getting Help]]
 - [[#Function-Index][Function Index]]
 - [[#Variable-Index][Variable Index]]
 - [[#Concept-Index][Concept Index]]
@@ -256,6 +262,9 @@ documentation and includes threading and collaboration features.
   both the global database and =project.el='s known projects) in a
   sortable summary table with per-status counts and one-keystroke
   drill-down to any project's table, org listing, or kanban board
+- *Transient menu*: Discoverable menu (M-s SPC) grouping every command
+  into labelled panels; swaps to a Dired-specific layout in Dired
+  buffers
 
 --------------
 
@@ -1622,6 +1631,22 @@ in source buffers (=simply-annotate-fringe-indicator= and
 =simply-annotate-fringe-face=). Indicators refresh automatically when
 the dired buffer is re-read (e.g. after pressing g).
 
+From a Dired buffer, =simply-annotate-dired-list-file= opens the
+annotation listing for the file under point. It visits the file (without
+selecting it) and, if that file has annotations, shows them in the
+standard listing buffer.
+
+=simply-annotate-dired-refresh-marks= re-computes the fringe indicators
+for the current Dired buffer. This is most useful after migrating
+annotations between the project and global databases, when the set of
+annotated files may have changed without Dired being re-read.
+
+When the transient menu (M-s SPC, see [[#Transient-Menu][Transient
+Menu]]) is invoked from a Dired buffer, it switches to
+=simply-annotate-dired-transient=, a Dired-focused layout exposing the
+fringe-mode toggle, per-file listing, refresh, project views, and
+database commands.
+
 <<Annotation-Buffer-Features>>
 *** 10.6 Annotation Buffer Features [[#Annotation-Buffer-Features][¶]]
 :PROPERTIES:
@@ -1674,7 +1699,7 @@ Version 1.0.0 adds project-aware storage and project-scoped views, using
 Emacs built-in =project.el=.
 
 - [[#Database-Strategy][Database Strategy]]
-- [[#Migrating-to-a-Project-Database][Migrating to a Project Database]]
+- [[#Migrating-Between-Databases][Migrating Between Databases]]
 - [[#Project_002dScoped-Views][Project-Scoped Views]]
 - [[#Stale-Annotation-Detection][Stale Annotation Detection]]
 - [[#Position-Tracking][Position Tracking]]
@@ -1706,6 +1731,8 @@ The =simply-annotate-project-file= variable (default
 =.simply-annotations.el=) sets the filename placed at the project root.
 
 - [[#Setup][Setup]]
+- [[#Switching-Strategy-Interactively][Switching Strategy
+  Interactively]]
 
 <<Setup>>
 **** 11.1.1 Setup [[#Setup][¶]]
@@ -1725,11 +1752,43 @@ The =simply-annotate-project-file= variable (default
 To share annotations with your team, commit =.simply-annotations.el=. To
 keep annotations private, add it to =.gitignore=.
 
-<<Migrating-to-a-Project-Database>>
-*** 11.2 Migrating to a Project Database [[#Migrating-to-a-Project-Database][¶]]
+<<Switching-Strategy-Interactively>>
+**** 11.1.2 Switching Strategy Interactively [[#Switching-Strategy-Interactively][¶]]
 :PROPERTIES:
-:CUSTOM_ID: migrating-to-a-project-database
+:CUSTOM_ID: switching-strategy-interactively
+:CLASS: subsection
+:END:
+=simply-annotate-set-database-strategy= (transient key S, see
+[[#Transient-Menu][Transient Menu]]) prompts for =global=, =project=, or
+=both= and updates =simply-annotate-database-strategy= in the current
+session. When =simply-annotate-mode= is active in the current buffer,
+overlays are cleared and annotations are reloaded from the newly
+selected database so the change takes effect immediately without M-x
+customize or a buffer restart.
+
+Changing the strategy at runtime does not move annotations between
+databases -- it only selects which database future reads and writes use.
+Use the migration commands below to move the data itself.
+
+<<Migrating-Between-Databases>>
+*** 11.2 Migrating Between Databases [[#Migrating-Between-Databases][¶]]
+:PROPERTIES:
+:CUSTOM_ID: migrating-between-databases
 :CLASS: section
+:END:
+The two migration commands move annotations for the current project
+between the global and project-local databases. Both require a file open
+inside the target project so =project-current= can detect the project
+root, and both are exposed on the transient menu under > and <.
+
+- [[#Global-to-Project][Global to Project]]
+- [[#Project-to-Global][Project to Global]]
+
+<<Global-to-Project>>
+**** 11.2.1 Global to Project [[#Global-to-Project][¶]]
+:PROPERTIES:
+:CUSTOM_ID: global-to-project
+:CLASS: subsection
 :END:
 When switching from =global= to =project= strategy, existing annotations
 live in the global database with absolute file paths. The migration
@@ -1747,8 +1806,31 @@ This command:
 3. Writes them to the project database with relative keys
 4. Removes migrated entries from the global database
 
-You must have a file open inside the target project before running this
-command, so that =project-current= can detect the project root.
+<<Project-to-Global>>
+**** 11.2.2 Project to Global [[#Project-to-Global][¶]]
+:PROPERTIES:
+:CUSTOM_ID: project-to-global
+:CLASS: subsection
+:END:
+The reverse command moves annotations from the project-local database
+back into the global database:
+
+#+begin_src example-preformatted
+M-x simply-annotate-migrate-to-global
+#+end_src
+
+This command:
+
+1. Reads =.simply-annotations.el= at the current project root
+2. Re-keys each entry as an absolute path under the project root
+   (entries that are already absolute, or Info-node keys, pass through
+   unchanged)
+3. Merges the result into the global database
+4. Deletes the project-local database file
+
+Use this when abandoning the =project= strategy for a repository, or
+when annotations originally committed alongside a project should become
+private per-user notes again.
 
 <<Project_002dScoped-Views>>
 *** 11.3 Project-Scoped Views [[#Project_002dScoped-Views][¶]]
@@ -2004,8 +2086,8 @@ select a tag shows only cards by that author with that tag.
 --------------
 
 <<Org_002dmode-Integration>>
-Next: [[#Key-Bindings][Key Bindings]], Previous: [[#Kanban-Board][Kanban
-Board]], Up: [[#Top][Simply Annotate]]  
+Next: [[#Transient-Menu][Transient Menu]], Previous:
+[[#Kanban-Board][Kanban Board]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
 ** 13 Org-mode Integration [[#Org_002dmode-Integration-1][¶]]
@@ -2119,12 +2201,115 @@ The exported files work seamlessly with:
 
 --------------
 
-<<Key-Bindings>>
-Next: [[#Customization][Customization]], Previous:
+<<Transient-Menu>>
+Next: [[#Key-Bindings][Key Bindings]], Previous:
 [[#Org_002dmode-Integration][Org-mode Integration]], Up: [[#Top][Simply
 Annotate]]   [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
-** 14 Key Bindings [[#Key-Bindings-1][¶]]
+** 14 Transient Menu [[#Transient-Menu-1][¶]]
+:PROPERTIES:
+:CUSTOM_ID: Transient-Menu-1
+:CLASS: chapter
+:END:
+M-s SPC (with the recommended prefix) opens =simply-annotate-menu=, a
+discoverable dispatcher that shows every command grouped into labelled
+panels. The dispatcher selects between two layouts based on context:
+
+- =simply-annotate-transient= in ordinary buffers
+- =simply-annotate-dired-transient= in Dired buffers
+
+The menu header shows the active =simply-annotate-database-strategy=
+and, when applicable, the current project root, so the storage context
+is always visible.
+
+The menu requires the =transient= package. It is bundled with Emacs 28.1
+and later; on earlier Emacs versions install it from GNU ELPA.
+
+- [[#Standard-Layout][Standard Layout]]
+- [[#Dired-Layout][Dired Layout]]
+
+<<Standard-Layout>>
+*** 14.1 Standard Layout [[#Standard-Layout][¶]]
+:PROPERTIES:
+:CUSTOM_ID: standard-layout
+:CLASS: section
+:END:
+| Panel         | Key | Command                                    |
+|---------------+-----+--------------------------------------------|
+| Navigate      | n   | =simply-annotate-next=                     |
+|               | v   | =simply-annotate-previous=                 |
+|               | f   | =simply-annotate-jump-to-file=             |
+| Create / Edit | j   | =simply-annotate-smart-action=             |
+|               | -   | =simply-annotate-remove=                   |
+|               | C   | =simply-annotate-clear-buffer-annotations= |
+|               | e   | =simply-annotate-edit-sexp=                |
+|               | o   | =simply-annotate-export-to-org-file=       |
+| Thread        | r   | =simply-annotate-reply-to-annotation=      |
+|               | s   | =simply-annotate-set-annotation-status=    |
+|               | p   | =simply-annotate-set-annotation-priority=  |
+|               | t   | =simply-annotate-add-annotation-tag=       |
+|               | x   | =simply-annotate-remove-annotation-tag=    |
+|               | a   | =simply-annotate-change-annotation-author= |
+| Lists         | l   | =simply-annotate-list=                     |
+|               | b   | =simply-annotate-list-table=               |
+|               | P   | =simply-annotate-show-project=             |
+|               | B   | =simply-annotate-list-project-table=       |
+|               | K   | =simply-annotate-kanban=                   |
+|               | L   | =simply-annotate-show-all=                 |
+|               | A   | =simply-annotate-list-projects=            |
+|               | F   | =simply-annotate-search-by-tag=            |
+| Display       | '   | =simply-annotate-cycle-display-style=      |
+|               | /   | =simply-annotate-toggle-inline=            |
+|               | [   | =simply-annotate-cycle-tag-backward=       |
+|               | ]   | =simply-annotate-cycle-tag-forward=        |
+|               | G   | =simply-annotate-set-tag-filter=           |
+|               | g   | =simply-annotate-update-display-style=     |
+| Database      | S   | =simply-annotate-set-database-strategy=    |
+|               | >   | =simply-annotate-migrate-to-project=       |
+|               | <   | =simply-annotate-migrate-to-global=        |
+|               | D   | =simply-annotate-dired-mode=               |
+
+Navigation and display-only commands (n, v, ', /, [, ], g) keep the
+transient open so you can chain operations; other commands close it.
+
+<<Dired-Layout>>
+*** 14.2 Dired Layout [[#Dired-Layout][¶]]
+:PROPERTIES:
+:CUSTOM_ID: dired-layout
+:CLASS: section
+:END:
+When invoked from a Dired buffer, the menu switches to a Dired-focused
+layout:
+
+| Panel    | Key | Command                                 |
+|----------+-----+-----------------------------------------|
+| Dired    | D   | =simply-annotate-dired-mode=            |
+|          | j   | =simply-annotate-dired-list-file=       |
+|          | g   | =simply-annotate-dired-refresh-marks=   |
+|          | f   | =simply-annotate-jump-to-file=          |
+| Views    | l   | =simply-annotate-list=                  |
+|          | P   | =simply-annotate-show-project=          |
+|          | B   | =simply-annotate-list-project-table=    |
+|          | K   | =simply-annotate-kanban=                |
+|          | L   | =simply-annotate-show-all=              |
+|          | A   | =simply-annotate-list-projects=         |
+|          | F   | =simply-annotate-search-by-tag=         |
+| Database | S   | =simply-annotate-set-database-strategy= |
+|          | >   | =simply-annotate-migrate-to-project=    |
+|          | <   | =simply-annotate-migrate-to-global=     |
+
+The project and database commands in this layout operate on the project
+that owns the Dired buffer's directory, so migrations and project views
+work directly from a file manager without first visiting a source file.
+
+--------------
+
+<<Key-Bindings>>
+Next: [[#Customization][Customization]], Previous:
+[[#Transient-Menu][Transient Menu]], Up: [[#Top][Simply Annotate]]  
+[[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
+
+** 15 Key Bindings [[#Key-Bindings-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Key-Bindings-1
 :CLASS: chapter
@@ -2138,7 +2323,7 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 - [[#Sexp-Editing-Mode][Sexp Editing Mode]]
 
 <<Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029>>
-*** 14.1 Mode Map (=simply-annotate-mode-map=) [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][¶]]
+*** 15.1 Mode Map (=simply-annotate-mode-map=) [[#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029][¶]]
 :PROPERTIES:
 :CUSTOM_ID: mode-map-simply-annotate-mode-map
 :CLASS: section
@@ -2151,7 +2336,7 @@ Always active when =simply-annotate-mode= is enabled:
 | M-p | =simply-annotate-previous= | Jump to previous annotation |
 
 <<Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029>>
-*** 14.2 Command Map (=simply-annotate-command-map=) [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][¶]]
+*** 15.2 Command Map (=simply-annotate-command-map=) [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][¶]]
 :PROPERTIES:
 :CUSTOM_ID: command-map-simply-annotate-command-map
 :CLASS: section
@@ -2160,38 +2345,39 @@ Accessed via your chosen prefix key. Examples below use M-s (the
 recommended prefix). See [[#Installation][Installation]], for how to
 bind the prefix.
 
-| Key     | Command                                    | Description                                              |
-|---------+--------------------------------------------+----------------------------------------------------------|
-| M-s j   | =simply-annotate-smart-action=             | Smart create/view/edit annotation                        |
-| M-s e   | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp                        |
-| M-s r   | =simply-annotate-reply-to-annotation=      | Add reply to annotation                                  |
-| M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                               |
-| M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                                  |
-| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                                    |
-| M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                               |
-| M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                                |
-| M-s a   | =simply-annotate-change-annotation-author= | Change author                                            |
-| M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                                       |
-| M-s -   | =simply-annotate-remove=                   | Delete annotation at point                               |
-| M-s C   | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer                       |
-| M-s l   | =simply-annotate-list=                     | List all annotations in current file                     |
-| M-s T   | =simply-annotate-list-table=               | Sortable table view of annotations                       |
-| M-s L   | =simply-annotate-show-all=                 | Browse annotations across all files                      |
-| M-s P   | =simply-annotate-show-project=             | Browse annotations in current project                    |
-| M-s C-t | =simply-annotate-list-project-table=       | Sortable project-wide table                              |
-| M-s f   | =simply-annotate-jump-to-file=             | Jump to annotated file (project-scoped)                  |
-| M-s [   | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file)              |
-| M-s ]   | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)               |
-| M-s '   | =simply-annotate-cycle-display-style=      | Cycle through display styles                             |
-| M-s /   | =simply-annotate-toggle-inline=            | Toggle inline annotation display                         |
-| M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations                      |
-| M-s A   | =simply-annotate-list-projects=            | Cross-project overview of every project with annotations |
-| M-s n   | =simply-annotate-next=                     | Jump to next annotation                                  |
-| M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                              |
-| M-s g   | =simply-annotate-update-display-style=     | Refresh all annotation overlays                          |
+| Key     | Command                                    | Description                                                       |
+|---------+--------------------------------------------+-------------------------------------------------------------------|
+| M-s j   | =simply-annotate-smart-action=             | Smart create/view/edit annotation                                 |
+| M-s e   | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp                                 |
+| M-s r   | =simply-annotate-reply-to-annotation=      | Add reply to annotation                                           |
+| M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                                        |
+| M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                                           |
+| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                                             |
+| M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                                        |
+| M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                                         |
+| M-s a   | =simply-annotate-change-annotation-author= | Change author                                                     |
+| M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                                                |
+| M-s -   | =simply-annotate-remove=                   | Delete annotation at point                                        |
+| M-s C   | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer                                |
+| M-s l   | =simply-annotate-list=                     | List all annotations in current file                              |
+| M-s T   | =simply-annotate-list-table=               | Sortable table view of annotations                                |
+| M-s L   | =simply-annotate-show-all=                 | Browse annotations across all files                               |
+| M-s P   | =simply-annotate-show-project=             | Browse annotations in current project                             |
+| M-s C-t | =simply-annotate-list-project-table=       | Sortable project-wide table                                       |
+| M-s f   | =simply-annotate-jump-to-file=             | Jump to annotated file (project-scoped)                           |
+| M-s [   | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file)                       |
+| M-s ]   | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)                        |
+| M-s '   | =simply-annotate-cycle-display-style=      | Cycle through display styles                                      |
+| M-s /   | =simply-annotate-toggle-inline=            | Toggle inline annotation display                                  |
+| M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations                               |
+| M-s A   | =simply-annotate-list-projects=            | Cross-project overview of every project with annotations          |
+| M-s n   | =simply-annotate-next=                     | Jump to next annotation                                           |
+| M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                                       |
+| M-s g   | =simply-annotate-update-display-style=     | Refresh all annotation overlays                                   |
+| M-s SPC | =simply-annotate-menu=                     | Open the transient menu (see [[#Transient-Menu][Transient Menu]]) |
 
 <<Annotation-Buffer-Bindings>>
-*** 14.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
+*** 15.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-buffer-bindings
 :CLASS: section
@@ -2205,7 +2391,7 @@ In the annotation buffer:
 | C-g     | =simply-annotate-cancel-edit=            | Cancel editing (alternative) |
 
 <<Smart-Action-Behavior>>
-*** 14.4 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
+*** 15.4 Smart Action Behavior [[#Smart-Action-Behavior][¶]]
 :PROPERTIES:
 :CUSTOM_ID: smart-action-behavior
 :CLASS: section
@@ -2220,7 +2406,7 @@ The M-s j key binding changes behavior based on context:
 | Elsewhere                 | Create annotation for current line     |
 
 <<Sexp-Editing-Mode>>
-*** 14.5 Sexp Editing Mode [[#Sexp-Editing-Mode][¶]]
+*** 15.5 Sexp Editing Mode [[#Sexp-Editing-Mode][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sexp-editing-mode
 :CLASS: section
@@ -2246,7 +2432,7 @@ Next: [[#Data-Storage][Data Storage]], Previous: [[#Key-Bindings][Key
 Bindings]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
-** 15 Customization [[#Customization-1][¶]]
+** 16 Customization [[#Customization-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Customization-1
 :CLASS: chapter
@@ -2264,7 +2450,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
 - [[#Advanced-Customization][Advanced Customization]]
 
 <<Basic-Configuration>>
-*** 15.1 Basic Configuration [[#Basic-Configuration][¶]]
+*** 16.1 Basic Configuration [[#Basic-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: basic-configuration
 :CLASS: section
@@ -2298,7 +2484,7 @@ Bindings]], Up: [[#Top][Simply Annotate]]  
 #+end_src
 
 <<Threading-and-Collaboration-Configuration>>
-*** 15.2 Threading and Collaboration Configuration [[#Threading-and-Collaboration-Configuration][¶]]
+*** 16.2 Threading and Collaboration Configuration [[#Threading-and-Collaboration-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: threading-and-collaboration-configuration
 :CLASS: section
@@ -2324,7 +2510,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Configuration-Examples>>
-*** 15.3 Configuration Examples [[#Configuration-Examples][¶]]
+*** 16.3 Configuration Examples [[#Configuration-Examples][¶]]
 :PROPERTIES:
 :CUSTOM_ID: configuration-examples
 :CLASS: section
@@ -2335,7 +2521,7 @@ Configure team collaboration and threading features:
 - [[#Project_002dAware-Setup][Project-Aware Setup]]
 
 <<Single-User-_0028Default_0029>>
-**** 15.3.1 Single User (Default) [[#Single-User-_0028Default_0029][¶]]
+**** 16.3.1 Single User (Default) [[#Single-User-_0028Default_0029][¶]]
 :PROPERTIES:
 :CUSTOM_ID: single-user-default
 :CLASS: subsection
@@ -2347,7 +2533,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Code-Review-Team>>
-**** 15.3.2 Code Review Team [[#Code-Review-Team][¶]]
+**** 16.3.2 Code Review Team [[#Code-Review-Team][¶]]
 :PROPERTIES:
 :CUSTOM_ID: code-review-team
 :CLASS: subsection
@@ -2361,7 +2547,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Multi_002dProject-Consultant>>
-**** 15.3.3 Multi-Project Consultant [[#Multi_002dProject-Consultant][¶]]
+**** 16.3.3 Multi-Project Consultant [[#Multi_002dProject-Consultant][¶]]
 :PROPERTIES:
 :CUSTOM_ID: multi-project-consultant
 :CLASS: subsection
@@ -2375,7 +2561,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Project_002dAware-Setup>>
-**** 15.3.4 Project-Aware Setup [[#Project_002dAware-Setup][¶]]
+**** 16.3.4 Project-Aware Setup [[#Project_002dAware-Setup][¶]]
 :PROPERTIES:
 :CUSTOM_ID: project-aware-setup
 :CLASS: subsection
@@ -2390,7 +2576,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Core-Customization-Variables>>
-*** 15.4 Core Customization Variables [[#Core-Customization-Variables][¶]]
+*** 16.4 Core Customization Variables [[#Core-Customization-Variables][¶]]
 :PROPERTIES:
 :CUSTOM_ID: core-customization-variables
 :CLASS: section
@@ -2483,7 +2669,7 @@ Configure team collaboration and threading features:
   italic.
 
 <<Annotation-Level-Variables>>
-*** 15.5 Annotation Level Variables [[#Annotation-Level-Variables][¶]]
+*** 16.5 Annotation Level Variables [[#Annotation-Level-Variables][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotation-level-variables
 :CLASS: section
@@ -2500,7 +2686,7 @@ Configure team collaboration and threading features:
   lack a level tag. Default: ='defun=
 
 <<Threading-and-Collaboration-Variables>>
-*** 15.6 Threading and Collaboration Variables [[#Threading-and-Collaboration-Variables][¶]]
+*** 16.6 Threading and Collaboration Variables [[#Threading-and-Collaboration-Variables][¶]]
 :PROPERTIES:
 :CUSTOM_ID: threading-and-collaboration-variables
 :CLASS: section
@@ -2535,7 +2721,7 @@ Configure team collaboration and threading features:
   ='("low" "normal" "high" "critical")=
 
 <<Custom-Faces>>
-*** 15.7 Custom Faces [[#Custom-Faces][¶]]
+*** 16.7 Custom Faces [[#Custom-Faces][¶]]
 :PROPERTIES:
 :CUSTOM_ID: custom-faces
 :CLASS: section
@@ -2558,7 +2744,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Display-Style-Configuration>>
-*** 15.8 Display Style Configuration [[#Display-Style-Configuration][¶]]
+*** 16.8 Display Style Configuration [[#Display-Style-Configuration][¶]]
 :PROPERTIES:
 :CUSTOM_ID: display-style-configuration
 :CLASS: section
@@ -2586,7 +2772,7 @@ Configure team collaboration and threading features:
 #+end_src
 
 <<Advanced-Customization>>
-*** 15.9 Advanced Customization [[#Advanced-Customization][¶]]
+*** 16.9 Advanced Customization [[#Advanced-Customization][¶]]
 :PROPERTIES:
 :CUSTOM_ID: advanced-customization
 :CLASS: section
@@ -2595,7 +2781,7 @@ Configure team collaboration and threading features:
 - [[#Global-Mode-Setup][Global Mode Setup]]
 
 <<Custom-Fringe-Bitmaps>>
-**** 15.9.1 Custom Fringe Bitmaps [[#Custom-Fringe-Bitmaps][¶]]
+**** 16.9.1 Custom Fringe Bitmaps [[#Custom-Fringe-Bitmaps][¶]]
 :PROPERTIES:
 :CUSTOM_ID: custom-fringe-bitmaps
 :CLASS: subsection
@@ -2619,7 +2805,7 @@ You can define custom fringe bitmaps:
 #+end_src
 
 <<Global-Mode-Setup>>
-**** 15.9.2 Global Mode Setup [[#Global-Mode-Setup][¶]]
+**** 16.9.2 Global Mode Setup [[#Global-Mode-Setup][¶]]
 :PROPERTIES:
 :CUSTOM_ID: global-mode-setup
 :CLASS: subsection
@@ -2643,7 +2829,7 @@ Next: [[#Troubleshooting][Troubleshooting]], Previous:
 [[#Customization][Customization]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
-** 16 Data Storage [[#Data-Storage-1][¶]]
+** 17 Data Storage [[#Data-Storage-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Data-Storage-1
 :CLASS: chapter
@@ -2656,7 +2842,7 @@ Next: [[#Troubleshooting][Troubleshooting]], Previous:
 - [[#Sexp-Editing-and-Data-Integrity][Sexp Editing and Data Integrity]]
 
 <<Storage-Format>>
-*** 16.1 Storage Format [[#Storage-Format][¶]]
+*** 17.1 Storage Format [[#Storage-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: storage-format
 :CLASS: section
@@ -2666,7 +2852,7 @@ Annotations are stored in a single Emacs Lisp file (by default
 can be version controlled if desired.
 
 <<Sample-Storage-Format>>
-*** 16.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
+*** 17.2 Sample Storage Format [[#Sample-Storage-Format][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sample-storage-format
 :CLASS: section
@@ -2708,7 +2894,7 @@ structures:
 #+end_src
 
 <<Data-Structure-Evolution>>
-*** 16.3 Data Structure Evolution [[#Data-Structure-Evolution][¶]]
+*** 17.3 Data Structure Evolution [[#Data-Structure-Evolution][¶]]
 :PROPERTIES:
 :CUSTOM_ID: data-structure-evolution
 :CLASS: section
@@ -2733,7 +2919,7 @@ structures:
   database at once
 
 <<Data-Management>>
-*** 16.4 Data Management [[#Data-Management][¶]]
+*** 17.4 Data Management [[#Data-Management][¶]]
 :PROPERTIES:
 :CUSTOM_ID: data-management
 :CLASS: section
@@ -2746,7 +2932,7 @@ structures:
 - Thread structures are validated when saving to prevent corruption
 
 <<File-Key-System>>
-*** 16.5 File Key System [[#File-Key-System][¶]]
+*** 17.5 File Key System [[#File-Key-System][¶]]
 :PROPERTIES:
 :CUSTOM_ID: file-key-system
 :CLASS: section
@@ -2759,7 +2945,7 @@ Each file is identified by a unique key:
 - Supports moving files (annotations follow the buffer name)
 
 <<Sexp-Editing-and-Data-Integrity>>
-*** 16.6 Sexp Editing and Data Integrity [[#Sexp-Editing-and-Data-Integrity][¶]]
+*** 17.6 Sexp Editing and Data Integrity [[#Sexp-Editing-and-Data-Integrity][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sexp-editing-and-data-integrity
 :CLASS: section
@@ -2779,7 +2965,7 @@ Next: [[#Function-Index][Function Index]], Previous:
 [[#Data-Storage][Data Storage]], Up: [[#Top][Simply Annotate]]  
 [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 
-** 17 Troubleshooting [[#Troubleshooting-1][¶]]
+** 18 Troubleshooting [[#Troubleshooting-1][¶]]
 :PROPERTIES:
 :CUSTOM_ID: Troubleshooting-1
 :CLASS: chapter
@@ -2796,7 +2982,7 @@ Next: [[#Function-Index][Function Index]], Previous:
 - [[#Getting-Help][Getting Help]]
 
 <<Annotations-Not-Persisting>>
-*** 17.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
+*** 18.1 Annotations Not Persisting [[#Annotations-Not-Persisting][¶]]
 :PROPERTIES:
 :CUSTOM_ID: annotations-not-persisting
 :CLASS: section
@@ -2811,7 +2997,7 @@ If your annotations aren't being saved between sessions:
 - Verify threading data structure isn't corrupted
 
 <<Display-Issues>>
-*** 17.2 Display Issues [[#Display-Issues][¶]]
+*** 18.2 Display Issues [[#Display-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: display-issues
 :CLASS: section
@@ -2820,7 +3006,7 @@ If your annotations aren't being saved between sessions:
 - [[#Fringe-Indicators-Not-Showing][Fringe Indicators Not Showing]]
 
 <<Highlighting-Not-Visible>>
-**** 17.2.1 Highlighting Not Visible [[#Highlighting-Not-Visible][¶]]
+**** 18.2.1 Highlighting Not Visible [[#Highlighting-Not-Visible][¶]]
 :PROPERTIES:
 :CUSTOM_ID: highlighting-not-visible
 :CLASS: subsection
@@ -2832,7 +3018,7 @@ If your annotations aren't being saved between sessions:
 - Verify the face definition with M-x describe-face
 
 <<Fringe-Indicators-Not-Showing>>
-**** 17.2.2 Fringe Indicators Not Showing [[#Fringe-Indicators-Not-Showing][¶]]
+**** 18.2.2 Fringe Indicators Not Showing [[#Fringe-Indicators-Not-Showing][¶]]
 :PROPERTIES:
 :CUSTOM_ID: fringe-indicators-not-showing
 :CLASS: subsection
@@ -2844,7 +3030,7 @@ If your annotations aren't being saved between sessions:
 - Verify fringe face colors are visible against your theme
 
 <<Smart-Action-Issues>>
-*** 17.3 Smart Action Issues [[#Smart-Action-Issues][¶]]
+*** 18.3 Smart Action Issues [[#Smart-Action-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: smart-action-issues
 :CLASS: section
@@ -2857,7 +3043,7 @@ If your annotations aren't being saved between sessions:
 - Verify the annotation buffer is responding to C-c C-c and C-c C-k
 
 <<Threading-Issues>>
-*** 17.4 Threading Issues [[#Threading-Issues][¶]]
+*** 18.4 Threading Issues [[#Threading-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: threading-issues
 :CLASS: section
@@ -2867,7 +3053,7 @@ If your annotations aren't being saved between sessions:
 - [[#Reply-Issues][Reply Issues]]
 
 <<Author-Prompting-Problems>>
-**** 17.4.1 Author Prompting Problems [[#Author-Prompting-Problems][¶]]
+**** 18.4.1 Author Prompting Problems [[#Author-Prompting-Problems][¶]]
 :PROPERTIES:
 :CUSTOM_ID: author-prompting-problems
 :CLASS: subsection
@@ -2877,7 +3063,7 @@ If your annotations aren't being saved between sessions:
 - Check that prompting mode matches your workflow needs
 
 <<Thread-Display-Corruption>>
-**** 17.4.2 Thread Display Corruption [[#Thread-Display-Corruption][¶]]
+**** 18.4.2 Thread Display Corruption [[#Thread-Display-Corruption][¶]]
 :PROPERTIES:
 :CUSTOM_ID: thread-display-corruption
 :CLASS: subsection
@@ -2888,7 +3074,7 @@ If your annotations aren't being saved between sessions:
 - Verify all required fields are present in thread data
 
 <<Reply-Issues>>
-**** 17.4.3 Reply Issues [[#Reply-Issues][¶]]
+**** 18.4.3 Reply Issues [[#Reply-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: reply-issues
 :CLASS: subsection
@@ -2899,7 +3085,7 @@ If your annotations aren't being saved between sessions:
 - Look for timestamp or author field corruption
 
 <<Sexp-Editing-Issues>>
-*** 17.5 Sexp Editing Issues [[#Sexp-Editing-Issues][¶]]
+*** 18.5 Sexp Editing Issues [[#Sexp-Editing-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: sexp-editing-issues
 :CLASS: section
@@ -2909,7 +3095,7 @@ If your annotations aren't being saved between sessions:
 - [[#Validation-Failures][Validation Failures]]
 
 <<Parsing-Errors>>
-**** 17.5.1 Parsing Errors [[#Parsing-Errors][¶]]
+**** 18.5.1 Parsing Errors [[#Parsing-Errors][¶]]
 :PROPERTIES:
 :CUSTOM_ID: parsing-errors
 :CLASS: subsection
@@ -2920,7 +3106,7 @@ If your annotations aren't being saved between sessions:
 - Use C-c C-k to cancel if unsure about changes
 
 <<Data-Structure-Problems>>
-**** 17.5.2 Data Structure Problems [[#Data-Structure-Problems][¶]]
+**** 18.5.2 Data Structure Problems [[#Data-Structure-Problems][¶]]
 :PROPERTIES:
 :CUSTOM_ID: data-structure-problems
 :CLASS: subsection
@@ -2931,7 +3117,7 @@ If your annotations aren't being saved between sessions:
 - Confirm =tags= field is a list, even if empty: =()=
 
 <<Validation-Failures>>
-**** 17.5.3 Validation Failures [[#Validation-Failures][¶]]
+**** 18.5.3 Validation Failures [[#Validation-Failures][¶]]
 :PROPERTIES:
 :CUSTOM_ID: validation-failures
 :CLASS: subsection
@@ -2942,7 +3128,7 @@ If your annotations aren't being saved between sessions:
 - Use the helpful comments in sexp editing mode as a guide
 
 <<Performance-with-Large-Files>>
-*** 17.6 Performance with Large Files [[#Performance-with-Large-Files][¶]]
+*** 18.6 Performance with Large Files [[#Performance-with-Large-Files][¶]]
 :PROPERTIES:
 :CUSTOM_ID: performance-with-large-files
 :CLASS: section
@@ -2956,7 +3142,7 @@ Simply Annotate is designed to be lightweight:
 - Consider splitting very large annotation sets across multiple files
 
 <<Integration-Issues>>
-*** 17.7 Integration Issues [[#Integration-Issues][¶]]
+*** 18.7 Integration Issues [[#Integration-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: integration-issues
 :CLASS: section
@@ -2969,7 +3155,7 @@ Simply Annotate is designed to be lightweight:
 - Sexp editing works in any buffer that supports Emacs Lisp editing
 
 <<Buffer_002dLocal-Variable-Issues>>
-*** 17.8 Buffer-Local Variable Issues [[#Buffer_002dLocal-Variable-Issues][¶]]
+*** 18.8 Buffer-Local Variable Issues [[#Buffer_002dLocal-Variable-Issues][¶]]
 :PROPERTIES:
 :CUSTOM_ID: buffer-local-variable-issues
 :CLASS: section
@@ -2982,7 +3168,7 @@ If annotations disappear when opening new files:
 - Use debug functions to check overlay state
 
 <<Common-Error-Messages>>
-*** 17.9 Common Error Messages [[#Common-Error-Messages][¶]]
+*** 18.9 Common Error Messages [[#Common-Error-Messages][¶]]
 :PROPERTIES:
 :CUSTOM_ID: common-error-messages
 :CLASS: section
@@ -3011,7 +3197,7 @@ If annotations disappear when opening new files:
   storage file location.
 
 <<Getting-Help>>
-*** 17.10 Getting Help [[#Getting-Help][¶]]
+*** 18.10 Getting Help [[#Getting-Help][¶]]
 :PROPERTIES:
 :CUSTOM_ID: getting-help
 :CLASS: section
@@ -3046,7 +3232,11 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 | [[#index-simply_002dannotate_002dcycle_002ddisplay_002dstyle][=simply-annotate-cycle-display-style=]]           | [[#Display-Styles][Display Styles]]                           |
 | [[#index-simply_002dannotate_002dcycle_002dlevel_002dbackward][=simply-annotate-cycle-level-backward=]]         | [[#Annotation-Levels][Annotation Levels]]                     |
 | [[#index-simply_002dannotate_002dcycle_002dlevel_002dforward][=simply-annotate-cycle-level-forward=]]           | [[#Annotation-Levels][Annotation Levels]]                     |
+| [[#index-simply_002dannotate_002ddired_002dlist_002dfile][=simply-annotate-dired-list-file=]]                   | [[#Advanced-Features][Advanced Features]]                     |
 | [[#index-simply_002dannotate_002ddired_002dmode][=simply-annotate-dired-mode=]]                                 | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002ddired_002drefresh_002dmarks][=simply-annotate-dired-refresh-marks=]]           | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002ddired_002dtransient][=simply-annotate-dired-transient=]]                       | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002ddired_002dtransient-1][=simply-annotate-dired-transient=]]                     | [[#Transient-Menu][Transient Menu]]                           |
 | [[#index-simply_002dannotate_002dedit_002dsexp][=simply-annotate-edit-sexp=]]                                   | [[#Advanced-Editing][Advanced Editing]]                       |
 | [[#index-simply_002dannotate_002dexport_002dto_002dorg_002dfile][=simply-annotate-export-to-org-file=]]         | [[#Org_002dmode-Integration][Org-mode Integration]]           |
 | [[#index-simply_002dannotate_002djump_002dto_002dfile][=simply-annotate-jump-to-file=]]                         | [[#Advanced-Features][Advanced Features]]                     |
@@ -3055,7 +3245,9 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 | [[#index-simply_002dannotate_002dlist][=simply-annotate-list=]]                                                 | [[#Advanced-Features][Advanced Features]]                     |
 | [[#index-simply_002dannotate_002dlist_002dproject_002dtable][=simply-annotate-list-project-table=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
 | [[#index-simply_002dannotate_002dlist_002dprojects][=simply-annotate-list-projects=]]                           | [[#Advanced-Features][Advanced Features]]                     |
+| [[#index-simply_002dannotate_002dmenu][=simply-annotate-menu=]]                                                 | [[#Transient-Menu][Transient Menu]]                           |
 | [[#index-simply_002dannotate_002dmigrate_002dthreading][=simply-annotate-migrate-threading=]]                   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dmigrate_002dto_002dglobal][=simply-annotate-migrate-to-global=]]               | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
 | [[#index-simply_002dannotate_002dmigrate_002dto_002dproject][=simply-annotate-migrate-to-project=]]             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
 | [[#index-simply_002dannotate_002dmode][=simply-annotate-mode=]]                                                 | [[#Basic-Usage][Basic Usage]]                                 |
 | [[#index-simply_002dannotate_002dnext][=simply-annotate-next=]]                                                 | [[#Navigation][Navigation]]                                   |
@@ -3067,12 +3259,14 @@ Next: [[#Variable-Index][Variable Index]], Previous:
 | [[#index-simply_002dannotate_002dsearch_002dby_002dtag][=simply-annotate-search-by-tag=]]                       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 | [[#index-simply_002dannotate_002dset_002dannotation_002dpriority][=simply-annotate-set-annotation-priority=]]   | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 | [[#index-simply_002dannotate_002dset_002dannotation_002dstatus][=simply-annotate-set-annotation-status=]]       | [[#Threading-and-Collaboration][Threading and Collaboration]] |
+| [[#index-simply_002dannotate_002dset_002ddatabase_002dstrategy][=simply-annotate-set-database-strategy=]]       | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
 | [[#index-simply_002dannotate_002dset_002dlevel][=simply-annotate-set-level=]]                                   | [[#Annotation-Levels][Annotation Levels]]                     |
 | [[#index-simply_002dannotate_002dshow][=simply-annotate-show=]]                                                 | [[#Navigation][Navigation]]                                   |
 | [[#index-simply_002dannotate_002dshow_002dall][=simply-annotate-show-all=]]                                     | [[#Advanced-Features][Advanced Features]]                     |
 | [[#index-simply_002dannotate_002dshow_002dproject][=simply-annotate-show-project=]]                             | [[#Project_002dAware-Annotations][Project-Aware Annotations]] |
 | [[#index-simply_002dannotate_002dsmart_002daction][=simply-annotate-smart-action=]]                             | [[#Basic-Usage][Basic Usage]]                                 |
 | [[#index-simply_002dannotate_002dtoggle_002dinline][=simply-annotate-toggle-inline=]]                           | [[#Display-Styles][Display Styles]]                           |
+| [[#index-simply_002dannotate_002dtransient][=simply-annotate-transient=]]                                       | [[#Transient-Menu][Transient Menu]]                           |
 | --------------                                                                                                  |                                                               |
 
 --------------
