@@ -1,8 +1,8 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.1.1
-;; Package-Requires: ((emacs "27.2"))
+;; Version: 2.2.0
+;; Package-Requires: ((emacs "27.2") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
 ;;
@@ -26,7 +26,8 @@
 ;; A lightweight annotation system for Emacs that allows you to add
 ;; persistent notes to any text file without modifying the original
 ;; content.  Enhanced with threading, collaboration, and org-mode
-;; integration.  Requires Emacs 27.2+, no external dependencies.
+;; integration.  Requires Emacs 27.2+; uses `transient' (bundled with
+;; Emacs 28.1+, available from GNU ELPA for earlier versions).
 ;;
 ;; Quick Start (use-package):
 ;;
@@ -225,6 +226,7 @@
 
 (require 'cl-lib)
 (require 'color)
+(require 'transient)
 
 (declare-function org-mode "org")
 (declare-function outline-hide-sublevels "outline")
@@ -5076,6 +5078,7 @@ When called interactively:
     (define-key map (kbd "n") #'simply-annotate-next)
     (define-key map (kbd "v") #'simply-annotate-previous)
     (define-key map (kbd "g") #'simply-annotate-update-display-style)
+    (define-key map (kbd "SPC") #'simply-annotate-menu)
     map)
   "Command map for Simply Annotate.
 This keymap contains all annotation commands with short single-key
@@ -5119,7 +5122,7 @@ Available keys:
   t  tag               o  org export      e  edit sexp
   [  level backward    ]  level forward   \\='  cycle style
   /  toggle inline     n  next            v  previous
-  g  refresh
+  g  refresh           SPC  transient menu
 
 When binding to M-s, you will shadow Emacs's default `search-map'
 prefix, so bindings like M-s o (occur) and M-s . (isearch-forward-
@@ -5278,6 +5281,68 @@ are removed from the global database."
           (delete-file simply-annotate-file)))
       (message "Migrated %d annotation(s) to %s" migrated project-path))))
 
+;;;###autoload
+(defun simply-annotate-migrate-to-global ()
+  "Migrate annotations for the current project from project to global database.
+Reads the project-local database, re-keys entries as absolute paths
+under the project root, and merges them into the global database.
+The project-local file is deleted after a successful migration.
+Info-node keys and already-absolute keys are preserved as-is."
+  (interactive)
+  (let* ((proj (project-current t))
+         (root (simply-annotate--project-root proj))
+         (project-path (expand-file-name simply-annotate-project-file root))
+         (project-db (simply-annotate--read-db project-path))
+         (global-db (or (simply-annotate--read-db simply-annotate-file) '()))
+         (migrated 0))
+    (unless project-db
+      (user-error "No project annotations database found at %s" project-path))
+    (dolist (entry project-db)
+      (let* ((key (car entry))
+             (annotations (cdr entry))
+             (abs-key (cond
+                       ((simply-annotate--key-info-p key) key)
+                       ((file-name-absolute-p key) key)
+                       (t (expand-file-name key root)))))
+        (setf (alist-get abs-key global-db nil nil #'string=) annotations)
+        (setq migrated (1+ migrated))))
+    (if (zerop migrated)
+        (message "Project database is empty: %s" project-path)
+      (with-temp-file simply-annotate-file
+        (insert ";;; Simply Annotate Database\n")
+        (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
+        (prin1 global-db (current-buffer))
+        (insert "\n"))
+      (when (file-exists-p project-path)
+        (delete-file project-path))
+      (message "Migrated %d annotation(s) from %s to global database"
+               migrated project-path))))
+
+;;;###autoload
+(defun simply-annotate-set-database-strategy (strategy)
+  "Set `simply-annotate-database-strategy' to STRATEGY and refresh current buffer.
+STRATEGY is one of `global', `project', or `both'.  When
+`simply-annotate-mode' is active in the current buffer, annotations
+are reloaded from the newly selected database."
+  (interactive
+   (list (intern
+          (completing-read
+           (format "Database strategy (current: %s): "
+                   simply-annotate-database-strategy)
+           '("global" "project" "both")
+           nil t nil nil
+           (symbol-name simply-annotate-database-strategy)))))
+  (unless (memq strategy '(global project both))
+    (user-error "Invalid strategy: %s" strategy))
+  (setq simply-annotate-database-strategy strategy)
+  (when simply-annotate-mode
+    (simply-annotate--clear-all-overlays)
+    (simply-annotate--cleanup-draft)
+    (simply-annotate--load-annotations)
+    (simply-annotate--apply-tag-filter)
+    (simply-annotate--update-header))
+  (message "Simply-annotate database strategy: %s" strategy))
+
 
 ;;; Dired Integration
 
@@ -5327,6 +5392,29 @@ are skipped."
   (mapc #'delete-overlay simply-annotate-dired-overlays)
   (setq simply-annotate-dired-overlays nil))
 
+;;;###autoload
+(defun simply-annotate-dired-list-file ()
+  "Open the annotation listing for the Dired entry at point."
+  (interactive)
+  (let ((file (ignore-errors (dired-get-filename nil t))))
+    (unless file
+      (user-error "No file at point"))
+    (with-current-buffer (find-file-noselect file)
+      (unless simply-annotate-mode
+        (simply-annotate-mode 1))
+      (if simply-annotate-overlays
+          (simply-annotate-list)
+        (user-error "No annotations for %s" file)))))
+
+;;;###autoload
+(defun simply-annotate-dired-refresh-marks ()
+  "Refresh fringe indicators in the current Dired buffer.
+Useful after migrating annotations between databases."
+  (interactive)
+  (unless (derived-mode-p 'dired-mode)
+    (user-error "Not in a Dired buffer"))
+  (simply-annotate--dired-mark-annotated))
+
 (defvar simply-annotate-dired-mode-map
   (make-sparse-keymap)
   "Keymap for `simply-annotate-dired-mode'.
@@ -5359,6 +5447,96 @@ local bindings on the same prefix."
     (simply-annotate--dired-clear-marks)
     (remove-hook 'dired-after-readin-hook
                  #'simply-annotate--dired-mark-annotated t)))
+
+;;; Transient Menu
+
+(defun simply-annotate--transient-description ()
+  "Header string for the simply-annotate transient menus."
+  (let ((root (when-let* ((proj (condition-case nil
+                                    (project-current nil)
+                                  (error nil))))
+                (simply-annotate--project-root proj))))
+    (format "Simply Annotate   strategy: %s%s"
+            simply-annotate-database-strategy
+            (if root (format "   project: %s"
+                             (abbreviate-file-name
+                              (directory-file-name root)))
+              ""))))
+
+;;;###autoload (autoload 'simply-annotate-transient "simply-annotate" nil t)
+(transient-define-prefix simply-annotate-transient ()
+  "Transient menu for `simply-annotate'."
+  [:description simply-annotate--transient-description
+   ["Navigate"
+    ("n" "next"              simply-annotate-next :transient t)
+    ("v" "previous"          simply-annotate-previous :transient t)
+    ("f" "jump to file"      simply-annotate-jump-to-file)]
+   ["Create / Edit"
+    ("j" "smart action"      simply-annotate-smart-action)
+    ("-" "remove"            simply-annotate-remove)
+    ("C" "clear buffer"      simply-annotate-clear-buffer-annotations)
+    ("e" "edit sexp"         simply-annotate-edit-sexp)
+    ("o" "export to org"     simply-annotate-export-to-org-file)]
+   ["Thread"
+    ("r" "reply"             simply-annotate-reply-to-annotation)
+    ("s" "status"            simply-annotate-set-annotation-status)
+    ("p" "priority"          simply-annotate-set-annotation-priority)
+    ("t" "add tag"           simply-annotate-add-annotation-tag)
+    ("x" "remove tag"        simply-annotate-remove-annotation-tag)
+    ("a" "author"            simply-annotate-change-annotation-author)]]
+  [["Lists"
+    ("l" "buffer list"       simply-annotate-list)
+    ("b" "buffer table"      simply-annotate-list-table)
+    ("P" "project list"      simply-annotate-show-project)
+    ("B" "project table"     simply-annotate-list-project-table)
+    ("K" "kanban"            simply-annotate-kanban)
+    ("L" "all files"         simply-annotate-show-all)
+    ("A" "all projects"      simply-annotate-list-projects)
+    ("F" "search by tag"     simply-annotate-search-by-tag)]
+   ["Display"
+    ("'" "cycle style"       simply-annotate-cycle-display-style :transient t)
+    ("/" "toggle inline"     simply-annotate-toggle-inline :transient t)
+    ("[" "prev tag filter"   simply-annotate-cycle-tag-backward :transient t)
+    ("]" "next tag filter"   simply-annotate-cycle-tag-forward :transient t)
+    ("G" "set tag filter"    simply-annotate-set-tag-filter)
+    ("g" "refresh display"   simply-annotate-update-display-style :transient t)]
+   ["Database"
+    ("S" "strategy..."       simply-annotate-set-database-strategy)
+    (">" "migrate → project" simply-annotate-migrate-to-project)
+    ("<" "migrate → global"  simply-annotate-migrate-to-global)
+    ("D" "dired mode"        simply-annotate-dired-mode)]])
+
+;;;###autoload (autoload 'simply-annotate-dired-transient "simply-annotate" nil t)
+(transient-define-prefix simply-annotate-dired-transient ()
+  "Transient menu for `simply-annotate' in Dired."
+  [:description simply-annotate--transient-description
+   ["Dired"
+    ("D" "toggle fringe marks"    simply-annotate-dired-mode)
+    ("j" "list file annotations"  simply-annotate-dired-list-file)
+    ("g" "refresh marks"          simply-annotate-dired-refresh-marks :transient t)
+    ("f" "jump to annotated file" simply-annotate-jump-to-file)]
+   ["Views"
+    ("l" "buffer list"       simply-annotate-list)
+    ("P" "project list"      simply-annotate-show-project)
+    ("B" "project table"     simply-annotate-list-project-table)
+    ("K" "kanban"            simply-annotate-kanban)
+    ("L" "all files"         simply-annotate-show-all)
+    ("A" "all projects"      simply-annotate-list-projects)
+    ("F" "search by tag"     simply-annotate-search-by-tag)]
+   ["Database"
+    ("S" "strategy..."       simply-annotate-set-database-strategy)
+    (">" "migrate → project" simply-annotate-migrate-to-project)
+    ("<" "migrate → global"  simply-annotate-migrate-to-global)]])
+
+;;;###autoload
+(defun simply-annotate-menu ()
+  "Dispatch to the context-appropriate simply-annotate transient menu.
+Opens `simply-annotate-dired-transient' in Dired buffers, otherwise
+`simply-annotate-transient'."
+  (interactive)
+  (if (derived-mode-p 'dired-mode)
+      (simply-annotate-dired-transient)
+    (simply-annotate-transient)))
 
 (provide 'simply-annotate)
 ;;; simply-annotate.el ends here

@@ -11,6 +11,16 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-04-22 Wed> *2.2.0*
+
+Transient menu and symmetric project/global migration.
+
+*** Features
+
+- *Transient menu* -- New ~simply-annotate-menu~ command (bound to ~SPC~ in the command map, so ~M-s SPC~ with the recommended prefix) opens a ~transient~ dispatcher that groups every annotation command into labelled panels: Navigate, Create/Edit, Thread, Lists, Display, Database.  In Dired buffers the dispatcher switches to a Dired-focused transient with fringe-mark toggling, per-file listing, and project views.  Requires the ~transient~ package (bundled with Emacs 28.1+, available from GNU ELPA otherwise).
+- *Project to Global migration* -- New ~simply-annotate-migrate-to-global~ command is the reverse of the existing ~simply-annotate-migrate-to-project~: it reads the current project's ~.simply-annotations.el~, re-keys entries as absolute paths, merges them into the global database, and deletes the project-local file.  Together with the existing command this gives quick round-tripping between storage modes.  Both migrations are exposed on the transient under ~>~ and ~<~.
+- *Interactive strategy toggle* -- ~simply-annotate-set-database-strategy~ (transient key ~S~) switches ~simply-annotate-database-strategy~ between ~global~, ~project~, and ~both~ and reloads annotations in the current buffer without needing ~M-x customize~.
+
 ** <2026-04-20 Mon> *2.1.1*
 
 Generalized directory-aware project views.
