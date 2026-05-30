@@ -39,9 +39,17 @@ Fixed along the reporter's suggested lines:
 
 Left as-is: the same-position sort heuristic (hardcodes =open=/=in-progress= as "active"; degrades to =string<= for custom statuses, only affects ordering) and the status→face =pcase= maps (unknown statuses get the default face).
 
-** TODO usability feedback on keybindings (hydra? repeat-mode?) #8
+** DONE usability feedback on keybindings (hydra? repeat-mode?) #8
 
-Reported by pedro-nonfree (2026-04-12). Feedback that =C-c a= clashes with the org-mode manual's suggested binding for =org-agenda=; alternatives like =C-c A= or =C-M-;= suggested. Main ask: repeatedly typing the prefix is uncomfortable — would prefer a hydra-style or =repeat-mode= interface for chained commands. The transient menu (added in 2.x) partially addresses this; consider documenting it as the answer and/or adding =repeat-mode= support for navigation/cycling commands. Issue includes a worked example =defhydra= the user is happy with.
+Reported by pedro-nonfree (2026-04-12). Feedback that =C-c a= clashes with the org-mode manual's suggested binding for =org-agenda=; main ask: repeatedly typing the prefix is uncomfortable — would prefer a hydra-style or =repeat-mode= interface for chained commands.
+
+Addressed via =repeat-mode= (the dependency-free, idiomatic option):
+- New =simply-annotate-repeat-map= makes the repeatable commands (=next=, =previous=, =cycle-display-style=, =toggle-inline=, =cycle-tag-backward/forward=, =update-display-style=) chainable with bare keys (=n v ' / [ ] g=) once =repeat-mode= is on, with each command tagged via =(put cmd 'repeat-map ...)=.  Keys mirror the command-map; inert on Emacs 27.2.
+- Documented in the Commentary alongside the existing =<prefix> SPC= transient menu (added in 2.2.0), which already gave a sticky/discoverable session.
+
+Intentionally *not* done:
+- *Hydra* -- would add a hard external dependency.  The reporter already has a working =defhydra= in their own config, which is the right place for it; =repeat-mode= + the transient cover the same ground built-in.
+- *Changing the default prefix* -- the package already recommends =M-s= as primary and lets the user bind any prefix; =C-c a= is only the deferred-loading alternative in the quick-start.  The =org-agenda= clash is a per-user choice, not a package default to change.
 
 ** DONE annotation glitch in style =bar= when annotation is cancelled #7
 

@@ -72,6 +72,16 @@
 ;;   (global-set-key (kbd "M-s") simply-annotate-command-map)
 ;;   (simply-annotate-inherit-search-map)
 ;;
+;; Two features reduce prefix-typing for repeated commands:
+;;
+;; - Transient menu: <prefix> SPC (`simply-annotate-menu') opens a
+;;   discoverable dispatcher; navigation and display toggles stay open
+;;   so you can repeat them without re-opening the menu.
+;; - `repeat-mode' (Emacs 28.1+): enable it with M-x repeat-mode (or
+;;   (repeat-mode 1) in your init).  After one navigation/display
+;;   command you can continue with the bare keys n v ' / [ ] g -- see
+;;   `simply-annotate-repeat-map'.
+;;
 ;; Threading & Collaboration:
 ;;
 ;; All keybindings below use <prefix> to denote your chosen prefix
@@ -5176,6 +5186,34 @@ for quick navigation between annotations.
 
 All other commands live in `simply-annotate-command-map', which you
 should bind to a prefix key of your choice (M-s is recommended).")
+
+(defvar simply-annotate-repeat-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "n") #'simply-annotate-next)
+    (define-key map (kbd "v") #'simply-annotate-previous)
+    (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
+    (define-key map (kbd "/") #'simply-annotate-toggle-inline)
+    (define-key map (kbd "[") #'simply-annotate-cycle-tag-backward)
+    (define-key map (kbd "]") #'simply-annotate-cycle-tag-forward)
+    (define-key map (kbd "g") #'simply-annotate-update-display-style)
+    map)
+  "Repeat map for the repeatable `simply-annotate' commands.
+When `repeat-mode' is enabled (Emacs 28.1+), invoking any of these
+commands once -- e.g. via M-n or your command-map prefix -- lets you
+continue with the bare keys shown here without re-typing the prefix:
+n/v to step between annotations, \\=' to cycle display style, / to
+toggle inline, [ and ] to cycle the tag filter, g to refresh.  The
+keys mirror their `simply-annotate-command-map' bindings.  On Emacs
+27.2 the `repeat-map' properties are simply inert.")
+
+(dolist (cmd '(simply-annotate-next
+               simply-annotate-previous
+               simply-annotate-cycle-display-style
+               simply-annotate-toggle-inline
+               simply-annotate-cycle-tag-backward
+               simply-annotate-cycle-tag-forward
+               simply-annotate-update-display-style))
+  (put cmd 'repeat-map 'simply-annotate-repeat-map))
 
 ;;;###autoload
 (define-minor-mode simply-annotate-mode
