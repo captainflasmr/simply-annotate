@@ -11,6 +11,19 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-05-30 Sat> *2.3.0*
+
+Configurable default status/priority and draft/path bug fixes.
+
+*** Features
+
+- *Configurable default status and priority* -- New annotations now take their default status from the first entry of ~simply-annotate-thread-statuses~ and their default priority from the first entry of ~simply-annotate-priority-levels~ (via the new ~simply-annotate--default-status~ / ~simply-annotate--default-priority~ helpers), instead of hard-coded ~open~ / ~normal~.  Customising ~simply-annotate-thread-statuses~ (e.g. to ~'("inbox" "doing" "done" "closed")~) now works end-to-end: new cards appear in the first kanban column rather than vanishing into a non-existent ~open~ column.  Every "missing value" fallback (kanban grouping, project status counts, table views, header line, summary, status cycling) also resolves to the configured default, so legacy threads without a status field and plain-string annotations land in the first column too.  The default ~simply-annotate-priority-levels~ list is reordered to ~'("normal" "low" "high" "critical")~ so existing setups keep ~normal~ as the default.  (#9)
+
+*** Bug Fixes
+
+- *Tilde paths in ~simply-annotate-file~* -- Paths such as ~"~/notes/simply-annotations.el"~ now work.  The value is normalised with ~expand-file-name~ at the read/write choke points (~simply-annotate--read-db~, ~simply-annotate--database-path~, and the migration commands), so a leading ~~~ is expanded everywhere instead of only when written verbatim.  (#10)
+- *Cancelled-draft artifact in text styles* -- Starting an annotation and cancelling it (~C-g~ or ~C-c C-k~) no longer leaves a stray indicator behind in the ~bar~, ~bracket~, and ~bracket-text~ styles.  The three draft-teardown paths now route through ~simply-annotate--remove-overlay~, which deletes the auxiliary alignment overlays before the main overlay, rather than calling ~delete-overlay~ on the main overlay alone.  (#7)
+
 ** <2026-04-22 Wed> *2.2.0*
 
 Transient menu and symmetric project/global migration.

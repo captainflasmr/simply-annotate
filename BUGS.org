@@ -25,11 +25,19 @@ Issues on the [[https://github.com/captainflasmr/simply-annotate/issues][GitHub 
 
 Reported by pedro-nonfree (2026-04-12). Setting =(setq simply-annotate-file "~/path/to/simply-annotations.el")= did not work, while the fully expanded =/home/user/...= path did.
 
-Fixed by normalising the path with =expand-file-name= at the choke points: =simply-annotate--read-db= now expands its PATH argument (covering every read), =simply-annotate--database-path= returns an expanded path (covering every save), and the two direct =with-temp-file= / =delete-file= calls on =simply-annotate-file= in the migration commands were wrapped too.
+Fixed by normalising the path with =expand-file-name= at the choke points: =simply-annotate--read-db= now =expands its PATH argument (covering every read), =simply-annotate--database-path= returns an expanded path (covering every save), and the two direct =with-temp-file= / =delete-file= calls on =simply-annotate-file= in the migration commands were wrapped too.
 
-** TODO allow using a different default state and priority than OPEN/NORMAL #9
+** DONE allow using a different default state and priority than OPEN/NORMAL #9
 
-Reported by pedro-nonfree (2026-04-12). New annotations are hardcoded to =OPEN= status and =NORMAL= priority, so a custom =(setq simply-annotate-thread-statuses '("inbox" "doing" "done" "closed"))= leaves new cards invisible in the kanban (no matching column). Suggestion: default the status to =(car simply-annotate-thread-statuses)= and the priority to =(car simply-annotate-priority-levels)=. Note this implies reordering the default priority list to put =normal= first, e.g. ='("normal" "low" "high" "critical")=.
+Reported by pedro-nonfree (2026-04-12). New annotations were hardcoded to =open= status and =normal= priority, so a custom =(setq simply-annotate-thread-statuses '("inbox" "doing" "done" "closed"))= left new cards invisible in the kanban (the =open= column did not exist, and =--kanban-group-by-status= silently drops cards whose status has no column).
+
+Fixed along the reporter's suggested lines:
+- New helpers =simply-annotate--default-status= and =simply-annotate--default-priority= return =(car simply-annotate-thread-statuses)= / =(car simply-annotate-priority-levels)=.
+- =simply-annotate--create-thread= now uses those helpers instead of literal =open= / =normal=.
+- The default =simply-annotate-priority-levels= list was reordered to ='("normal" "low" "high" "critical")= so existing users keep =normal= as the default (list order is purely cosmetic — nothing sorts by it).
+- Every "missing value" fallback (kanban grouping, project status counts, table views, header line, summary, status-cycling) now falls back to the configured default instead of literal =open= / =normal=, so legacy threads without a status field and plain-string annotations also land in the first column rather than vanishing.
+
+Left as-is: the same-position sort heuristic (hardcodes =open=/=in-progress= as "active"; degrades to =string<= for custom statuses, only affects ordering) and the status→face =pcase= maps (unknown statuses get the default face).
 
 ** TODO usability feedback on keybindings (hydra? repeat-mode?) #8
 

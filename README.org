@@ -53,6 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-05-30 Sat> *2.3.0*
+
+Configurable default status/priority and draft/path bug fixes.
+
+- *Configurable default status & priority* -- New annotations now default to the first entry of ~simply-annotate-thread-statuses~ and ~simply-annotate-priority-levels~ instead of hard-coded ~open~ / ~normal~.  Customising your statuses (e.g. ~'("inbox" "doing" "done" "closed")~) now works end-to-end -- new cards show in the first kanban column instead of disappearing.  The default priority list is reordered to ~'("normal" "low" "high" "critical")~ so existing setups keep ~normal~ as the default.
+- *Tilde paths fixed* -- ~simply-annotate-file~ now accepts ~~/...~ paths; the value is expanded everywhere it is read or written.
+- *Cancelled-draft artifact fixed* -- Cancelling a new annotation (~C-g~ / ~C-c C-k~) no longer leaves a stray indicator behind in the ~bar~, ~bracket~, and ~bracket-text~ styles.
+
 ** <2026-04-20 Mon> *2.1.1*
 
 Generalized directory-aware project views.

@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.2.0
+;; Version: 2.3.0
 ;; Package-Requires: ((emacs "27.2") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -482,8 +482,10 @@ This allows node-specific annotations in modes like Info or nov.el."
   :group 'simply-annotate)
 
 (defcustom simply-annotate-priority-levels
-  '("low" "normal" "high" "critical")
-  "Available priority levels for annotations."
+  '("normal" "low" "high" "critical")
+  "Available priority levels for annotations.
+The first entry is used as the default priority for new annotations
+\(see `simply-annotate--default-priority')."
   :type '(repeat string)
   :group 'simply-annotate)
 
@@ -632,6 +634,18 @@ annotations whose thread `tags' list contains that string.")
 (defun simply-annotate--timestamp ()
   "Generate current timestamp string."
   (format-time-string "%Y-%m-%dT%H:%M:%S"))
+
+(defun simply-annotate--default-status ()
+  "Return the default status for new and status-less annotations.
+This is the first entry of `simply-annotate-thread-statuses', so that
+customising that list (e.g. to omit \"open\") keeps new annotations
+visible in status-grouped views such as the kanban board."
+  (or (car simply-annotate-thread-statuses) "open"))
+
+(defun simply-annotate--default-priority ()
+  "Return the default priority for new and priority-less annotations.
+This is the first entry of `simply-annotate-priority-levels'."
+  (or (car simply-annotate-priority-levels) "normal"))
 
 (defvar Info-current-file)
 (defvar Info-current-node)
@@ -1530,8 +1544,8 @@ first root comment.  Returns THREAD."
         (id (format "thread-%s-%06d" (format-time-string "%s") (random 1000000))))
     `((id . ,id)
       (created . ,timestamp)
-      (status . "open")
-      (priority . ,(or priority "normal"))
+      (status . ,(simply-annotate--default-status))
+      (priority . ,(or priority (simply-annotate--default-priority)))
       (tags . ,(or tags '()))
       (comments . (((id . ,(simply-annotate--comment-id))
                     (parent-id . nil)
@@ -1659,7 +1673,7 @@ thread contains TAG.  Entries without the tag are removed entirely."
     (format "%s:%d  [%s] %s  %s"
             (simply-annotate--key-name file-key)
             start
-            (upcase (or status "open"))
+            (upcase (or status (simply-annotate--default-status)))
             (or preview "")
             (string-join tags " "))))
 
@@ -2263,8 +2277,8 @@ Optional TEXT is appended (e.g. status messages)."
        (if-let* ((overlay (simply-annotate--overlay-at-point))
                  (annotation-data (overlay-get overlay 'simply-annotation))
                  (thread (and (simply-annotate--thread-p annotation-data) annotation-data)))
-           (let ((status (or (alist-get 'status thread) "OPEN"))
-                 (priority (or (alist-get 'priority thread) "NORMAL"))
+           (let ((status (or (alist-get 'status thread) (upcase (simply-annotate--default-status))))
+                 (priority (or (alist-get 'priority thread) (upcase (simply-annotate--default-priority))))
                  (comment-count (length (alist-get 'comments thread))))
              (propertize
               (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
@@ -3196,8 +3210,8 @@ Uses `outline-mode' to fold headings cheaply, then activates
                           ('unknown "?")
                           (_ "")))
              (thread-p (simply-annotate--thread-p data))
-             (status (if thread-p (upcase (or (alist-get 'status data) "open")) "OPEN"))
-             (priority (if thread-p (upcase (or (alist-get 'priority data) "normal")) "NORMAL"))
+             (status (if thread-p (upcase (or (alist-get 'status data) (simply-annotate--default-status))) (upcase (simply-annotate--default-status))))
+             (priority (if thread-p (upcase (or (alist-get 'priority data) (simply-annotate--default-priority))) (upcase (simply-annotate--default-priority))))
              (tags (if thread-p
                        (string-join (or (alist-get 'tags data) nil) ",")
                      ""))
@@ -3389,8 +3403,8 @@ Each entry includes a File column."
                  (line-num (car line-info))
                  (col-num (cadr line-info))
                  (thread-p (simply-annotate--thread-p data))
-                 (status (if thread-p (upcase (or (alist-get 'status data) "open")) "OPEN"))
-                 (priority (if thread-p (upcase (or (alist-get 'priority data) "normal")) "NORMAL"))
+                 (status (if thread-p (upcase (or (alist-get 'status data) (simply-annotate--default-status))) (upcase (simply-annotate--default-status))))
+                 (priority (if thread-p (upcase (or (alist-get 'priority data) (simply-annotate--default-priority))) (upcase (simply-annotate--default-priority))))
                  (tags (if thread-p
                            (string-join (or (alist-get 'tags data) nil) ",")
                          ""))
@@ -3806,11 +3820,11 @@ Returns alist of (STATUS . cards) where each card is
                  (data (alist-get 'text ann))
                  (thread-p (simply-annotate--thread-p data))
                  (status (if thread-p
-                             (or (alist-get 'status data) "open")
-                           "open"))
+                             (or (alist-get 'status data) (simply-annotate--default-status))
+                           (simply-annotate--default-status)))
                  (priority (if thread-p
-                               (upcase (or (alist-get 'priority data) "normal"))
-                             "NORMAL"))
+                               (upcase (or (alist-get 'priority data) (simply-annotate--default-priority)))
+                             (upcase (simply-annotate--default-priority))))
                  (comments (if thread-p (alist-get 'comments data) nil))
                  (first-text (cond
                                (thread-p (or (alist-get 'text (car comments)) ""))
@@ -4261,8 +4275,8 @@ Plain string annotations are auto-converted to threads."
                     file-anns))
               (data (alist-get 'text ann)))
     (if (simply-annotate--thread-p data)
-        (or (alist-get 'status data) "open")
-      "open")))
+        (or (alist-get 'status data) (simply-annotate--default-status))
+      (simply-annotate--default-status))))
 
 (defun simply-annotate-kanban-move-right ()
   "Move the card at point one column to the right."
@@ -4604,9 +4618,10 @@ Keymap:\n\n  RET  open project annotation table\n  L    open project org listing
 (defun simply-annotate--count-statuses (db-entries statuses)
   "Return a hash table mapping each status in STATUSES to its count.
 DB-ENTRIES is a list of (file-key . annotations) pairs.  Each
-annotation's status defaults to \"open\"; legacy string
-annotations (no thread) are also counted as \"open\".  Statuses
-not in STATUSES are ignored."
+annotation's status defaults to the first entry of
+`simply-annotate-thread-statuses'; legacy string annotations (no
+thread) are counted the same way.  Statuses not in STATUSES are
+ignored."
   (let ((table (make-hash-table :test #'equal)))
     (dolist (st statuses) (puthash st 0 table))
     (dolist (entry db-entries)
@@ -4614,8 +4629,8 @@ not in STATUSES are ignored."
         (let* ((data (alist-get 'text ann))
                (thread-p (simply-annotate--thread-p data))
                (status (if thread-p
-                           (or (alist-get 'status data) "open")
-                         "open")))
+                           (or (alist-get 'status data) (simply-annotate--default-status))
+                         (simply-annotate--default-status))))
           (when (gethash status table)
             (puthash status (1+ (gethash status table)) table)))))
     table))
