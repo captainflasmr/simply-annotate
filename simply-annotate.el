@@ -2492,8 +2492,7 @@ For threads with multiple comments, prompts which comment to edit."
     (simply-annotate--update-header "EDITING")
     (simply-annotate--update-annotation-buffer annotation-data overlay 'edit edit-text)
     (simply-annotate--show-annotation-buffer t)
-    (goto-char simply-annotate-header-end-pos)
-))
+    (goto-char simply-annotate-header-end-pos)))
 
 (defun simply-annotate--create-new-annotation (start end)
   "Create new annotation from START to END."
@@ -3725,8 +3724,8 @@ The card is identified by its source file and position."
   (interactive)
   (let* ((root simply-annotate-kanban-project-root)
          (db (when root (simply-annotate--project-annotations root)))
-         (authors (when db (simply-annotate--kanban-collect-authors db)))
-         (choices (cons "[All]" authors))
+         (author-options (when db (simply-annotate--kanban-collect-authors db)))
+         (choices (cons "[All]" author-options))
          (selection (completing-read
                      (format "Filter by author%s: "
                              (if simply-annotate-kanban-filter-author
@@ -3854,8 +3853,9 @@ Returns alist of (STATUS . cards) where each card is
                  (card (list nav priority summary location data)))
             ;; Apply filters
             (when (and (or (null simply-annotate-kanban-filter-author)
-                           (string-equal-ignore-case
-                            author simply-annotate-kanban-filter-author))
+                           (string-equal
+                            (downcase author)
+                            (downcase simply-annotate-kanban-filter-author)))
                        (or (null simply-annotate-kanban-filter-tag)
                            (and thread-p
                                 (member simply-annotate-kanban-filter-tag
@@ -4810,8 +4810,8 @@ ARG is the raw prefix argument and selects the candidate set:
                           (project-current nil)))
          (root (when in-project
                  (simply-annotate--project-root in-project)))
-         (project-name (when root
-                         (file-name-nondirectory (directory-file-name root))))
+         (proj-name (when root
+                      (file-name-nondirectory (directory-file-name root))))
          (project-db (when root
                        (simply-annotate--project-annotations root)))
          (subdir (when (and root project-db (not arg))
@@ -4823,8 +4823,8 @@ ARG is the raw prefix argument and selects the candidate set:
               (t (simply-annotate--load-database))))
          (scope-label (cond
                        (all "global")
-                       (subdir (format "%s/%s" project-name subdir))
-                       (project-name project-name)
+                       (subdir (format "%s/%s" proj-name subdir))
+                       (proj-name proj-name)
                        (t "global"))))
     (if (not db)
         (message "No annotations database found")
@@ -4870,8 +4870,8 @@ ARG is the raw prefix argument and selects the candidate set:
                           (project-current nil)))
          (root (when in-project
                  (simply-annotate--project-root in-project)))
-         (project-name (when root
-                         (file-name-nondirectory (directory-file-name root))))
+         (proj-name (when root
+                      (file-name-nondirectory (directory-file-name root))))
          (project-db (when root
                        (simply-annotate--project-annotations root)))
          (subdir (when (and root project-db (not arg))
@@ -4883,8 +4883,8 @@ ARG is the raw prefix argument and selects the candidate set:
               (t (simply-annotate--load-database))))
          (scope-label (cond
                        (all "global")
-                       (subdir (format "%s/%s" project-name subdir))
-                       (project-name project-name)
+                       (subdir (format "%s/%s" proj-name subdir))
+                       (proj-name proj-name)
                        (t "global")))
          (all-tags (when db (simply-annotate--collect-all-tags db))))
     (if (not all-tags)

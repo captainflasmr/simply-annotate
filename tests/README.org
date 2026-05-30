@@ -10,7 +10,46 @@
 
 This file contains a description of my testing strategy for the =simply-annotate= Emacs package and the tests directory includes local unit tests and files to aid in robustly testing before pushing to =github= https://github.com/captainflasmr/simply-annotate and then on to MELPA.
 
-** Validate/lint elisp
+* Automated test suite (ERT)
+
+The package ships an ERT suite in =tests/simply-annotate-tests.el= driven by a =Makefile= at the project root.  The tests are batch-safe (no window system, no user interaction) and never touch the real annotation database -- file-based tests use temporary files, and the tilde-expansion test runs against a throwaway =HOME=.
+
+** Running locally
+
+#+begin_src bash
+make test       # run the ERT suite
+make compile    # byte-compile, treating warnings as errors
+make checkdoc   # run checkdoc on simply-annotate.el
+make lint       # run package-lint (after `make deps')
+make deps       # install transient + package-lint into ./.elpa
+make all        # compile + test + checkdoc
+#+end_src
+
+Target a specific Emacs binary with, e.g. =make EMACS=emacs-29.4 test=.
+
+Each target loads =tests/init.el= first, which points =package-user-dir= at a project-local =.elpa= (so dependency installs never disturb your real package store) and puts the working copy at the front of =load-path= (so it shadows any MELPA-installed =simply-annotate=).  On Emacs 28.1+ the bundled =transient= is used; on 27.2 =make deps= installs it from GNU ELPA.
+
+** Coverage
+
+The suite covers the logic that is meaningfully unit-testable in batch:
+
+- *Helpers* -- timestamp format, thread vs string detection, annotation text/summary extraction, boilerplate stripping, Info-key detection.
+- *Defaults* -- configured default status/priority resolution, and that the stock lists still lead with =open= / =normal= (issue #9).
+- *Threads* -- thread creation, replies (root and nested), legacy comment-id migration, comment-tree reconstruction, status/priority validation, tag add/remove, tag collection and filtering.
+- *Database* -- save/read round-trip, add/remove update, primary-wins merge, and tilde-path expansion (issue #10).
+- *Overlays* -- property/span recording, full clear, and auxiliary-overlay cleanup on removal in text styles (issue #7 regression).
+- *Serialization* -- serialize/deserialize round-trip, stale detection on edit, and relocation on moved text.
+- *Kanban / counts* -- custom-status visibility and legacy/plain-string fallback into the first column, status tallies (issue #9 regression).
+- *Keymaps* -- command-map and repeat-map wiring (issue #8).
+
+* Continuous integration
+
+=.github/workflows/ci.yml= runs the Makefile on every push and pull request:
+
+- A =test= matrix across Emacs 27.2, 28.2, 29.4, 30.1, and =snapshot= (snapshot is allowed to fail), each running =make deps compile test checkdoc=.
+- A separate =lint= job running =package-lint= on a stable Emacs.
+
+* Validate/lint elisp
 
 - Run =checkdoc=
 - =byte-compile= on simply-annotate.el

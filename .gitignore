@@ -1,1 +1,7 @@
 CLAUDE.md
+
+# Byte-compiled files
+*.elc
+
+# Project-local package store used by the Makefile/CI (make deps)
+.elpa/

@@ -24,6 +24,11 @@ Configurable default status/priority and draft/path bug fixes.
 
 - *Tilde paths in ~simply-annotate-file~* -- Paths such as ~"~/notes/simply-annotations.el"~ now work.  The value is normalised with ~expand-file-name~ at the read/write choke points (~simply-annotate--read-db~, ~simply-annotate--database-path~, and the migration commands), so a leading ~~~ is expanded everywhere instead of only when written verbatim.  (#10)
 - *Cancelled-draft artifact in text styles* -- Starting an annotation and cancelling it (~C-g~ or ~C-c C-k~) no longer leaves a stray indicator behind in the ~bar~, ~bracket~, and ~bracket-text~ styles.  The three draft-teardown paths now route through ~simply-annotate--remove-overlay~, which deletes the auxiliary alignment overlays before the main overlay, rather than calling ~delete-overlay~ on the main overlay alone.  (#7)
+- *Emacs 27.2 / 28.x compatibility* -- Kanban author filtering called ~string-equal-ignore-case~, which only exists in Emacs 29.1+, despite the package declaring ~(emacs "27.2")~.  Replaced with a ~downcase~ comparison so author filtering works on all supported Emacs versions.  Surfaced by the new ~package-lint~ CI gate.
+
+*** Development
+
+- *Automated test suite and CI* -- Added an ERT suite (~tests/simply-annotate-tests.el~) and a ~Makefile~ (~make test~ / ~compile~ / ~checkdoc~ / ~lint~), plus a GitHub Actions workflow running them across Emacs 27.2--30.1 and snapshot.  The suite covers helpers, threading, the database (including the fixes above), overlays, serialization/stale-detection, and kanban grouping; previously validation was entirely manual.
 
 ** <2026-04-22 Wed> *2.2.0*
 
