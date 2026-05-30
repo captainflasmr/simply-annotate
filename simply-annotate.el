@@ -5146,7 +5146,7 @@ Available keys:
   T  table             L  show all        P  show project
   A  all projects      C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp
-  [  level backward    ]  level forward   \\='  cycle style
+  [  prev tag filter   ]  next tag filter   \\='  cycle style
   /  toggle inline     n  next            v  previous
   g  refresh           SPC  transient menu
 
