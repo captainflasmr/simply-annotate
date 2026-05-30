@@ -21,6 +21,26 @@ Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck).
 
 Issues on the [[https://github.com/captainflasmr/simply-annotate/issues][GitHub Issues page]]
 
+** DONE simply-annotate-file path cannot include =~= #10
+
+Reported by pedro-nonfree (2026-04-12). Setting =(setq simply-annotate-file "~/path/to/simply-annotations.el")= did not work, while the fully expanded =/home/user/...= path did.
+
+Fixed by normalising the path with =expand-file-name= at the choke points: =simply-annotate--read-db= now expands its PATH argument (covering every read), =simply-annotate--database-path= returns an expanded path (covering every save), and the two direct =with-temp-file= / =delete-file= calls on =simply-annotate-file= in the migration commands were wrapped too.
+
+** TODO allow using a different default state and priority than OPEN/NORMAL #9
+
+Reported by pedro-nonfree (2026-04-12). New annotations are hardcoded to =OPEN= status and =NORMAL= priority, so a custom =(setq simply-annotate-thread-statuses '("inbox" "doing" "done" "closed"))= leaves new cards invisible in the kanban (no matching column). Suggestion: default the status to =(car simply-annotate-thread-statuses)= and the priority to =(car simply-annotate-priority-levels)=. Note this implies reordering the default priority list to put =normal= first, e.g. ='("normal" "low" "high" "critical")=.
+
+** TODO usability feedback on keybindings (hydra? repeat-mode?) #8
+
+Reported by pedro-nonfree (2026-04-12). Feedback that =C-c a= clashes with the org-mode manual's suggested binding for =org-agenda=; alternatives like =C-c A= or =C-M-;= suggested. Main ask: repeatedly typing the prefix is uncomfortable — would prefer a hydra-style or =repeat-mode= interface for chained commands. The transient menu (added in 2.x) partially addresses this; consider documenting it as the answer and/or adding =repeat-mode= support for navigation/cycling commands. Issue includes a worked example =defhydra= the user is happy with.
+
+** DONE annotation glitch in style =bar= when annotation is cancelled #7
+
+Reported by pedro-nonfree (2026-04-12, against =simply-annotate-20260412.923= / commit b52fd63). Starting an annotation with =<prefix> j= and then cancelling (=C-g= or =C-c C-k=) correctly creates no annotation in the database, but left a leftover graphical artifact in the buffer.
+
+Root cause: the text-based styles (=bar=, =bracket=, =bracket-text=) attach *auxiliary* alignment overlays (the =┃= / =┏= / =┗= indicators) stored as properties on the main overlay. The three draft-teardown paths (=simply-annotate--cancel-annotation=, =simply-annotate-cancel-edit=, =simply-annotate--cleanup-draft=) used a raw =delete-overlay= on the main draft overlay only, orphaning the indicator overlays. Fixed by routing all three through =simply-annotate--remove-overlay=, which runs the =--cleanup-*-overlays= helpers before deleting.
+
 ** DONE If an annotation is created outside of simply-annotate-mode, turning on the mode erases it #6
 
 Fixed in 0.9.2. Mode activation now persists any existing annotation overlays to the database before clearing and reloading, so annotations created while the mode was off are never lost.

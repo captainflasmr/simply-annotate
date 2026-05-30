@@ -799,16 +799,17 @@ When `simply-annotate-database-strategy' is `global', always returns
 project-local path if inside a recognised project, otherwise falls
 back to `simply-annotate-file'."
   (if (eq simply-annotate-database-strategy 'global)
-      simply-annotate-file
+      (expand-file-name simply-annotate-file)
     (if-let* ((proj (condition-case nil
                         (project-current nil)
                       (error nil)))
               (root (simply-annotate--project-root proj)))
         (expand-file-name simply-annotate-project-file root)
-      simply-annotate-file)))
+      (expand-file-name simply-annotate-file))))
 
 (defun simply-annotate--read-db (path)
   "Read and return the annotation alist from PATH, or nil."
+  (setq path (expand-file-name path))
   (when (file-exists-p path)
     (with-temp-buffer
       (insert-file-contents path)
@@ -2117,7 +2118,7 @@ When SELECT is non-nil, move point to the annotation buffer."
   (with-current-buffer simply-annotate-source-buffer
     (if is-draft
         (progn
-          (delete-overlay simply-annotate-draft-overlay)
+          (simply-annotate--remove-overlay simply-annotate-draft-overlay)
           (setq simply-annotate-draft-overlay nil))
       (progn
         (simply-annotate--remove-overlay overlay)
@@ -2188,7 +2189,7 @@ the current filter."
         (if is-draft
             (progn
               (when simply-annotate-draft-overlay
-                (delete-overlay simply-annotate-draft-overlay))
+                (simply-annotate--remove-overlay simply-annotate-draft-overlay))
               (setq simply-annotate-draft-overlay nil))
           (when (and simply-annotate-current-overlay
                      (overlay-buffer simply-annotate-current-overlay))
@@ -2202,7 +2203,7 @@ the current filter."
 (defun simply-annotate--cleanup-draft ()
   "Clean up any draft overlays when disabling mode."
   (when simply-annotate-draft-overlay
-    (delete-overlay simply-annotate-draft-overlay)
+    (simply-annotate--remove-overlay simply-annotate-draft-overlay)
     (setq simply-annotate-draft-overlay nil)))
 
 ;;; Header Management
@@ -5272,13 +5273,13 @@ are removed from the global database."
         (prin1 project-db (current-buffer))
         (insert "\n"))
       (if remaining
-          (with-temp-file simply-annotate-file
+          (with-temp-file (expand-file-name simply-annotate-file)
             (insert ";;; Simply Annotate Database\n")
             (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
             (prin1 (nreverse remaining) (current-buffer))
             (insert "\n"))
-        (when (file-exists-p simply-annotate-file)
-          (delete-file simply-annotate-file)))
+        (when (file-exists-p (expand-file-name simply-annotate-file))
+          (delete-file (expand-file-name simply-annotate-file))))
       (message "Migrated %d annotation(s) to %s" migrated project-path))))
 
 ;;;###autoload
@@ -5308,7 +5309,7 @@ Info-node keys and already-absolute keys are preserved as-is."
         (setq migrated (1+ migrated))))
     (if (zerop migrated)
         (message "Project database is empty: %s" project-path)
-      (with-temp-file simply-annotate-file
+      (with-temp-file (expand-file-name simply-annotate-file)
         (insert ";;; Simply Annotate Database\n")
         (insert ";;; This file is auto-generated. Do not edit manually.\n\n")
         (prin1 global-db (current-buffer))
