@@ -5295,7 +5295,13 @@ keys mirror their `simply-annotate-command-map' bindings.  On Emacs
         (add-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer nil t)
         (add-hook 'before-revert-hook #'simply-annotate--before-revert nil t)
         (add-hook 'after-revert-hook #'simply-annotate--after-revert nil t)
-        (add-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)
+        ;; `Info-selection-hook' is process-global, so only Info buffers
+        ;; manage it -- regular file buffers must not add/remove a global
+        ;; hook on every toggle.  The hook itself no-ops in buffers without
+        ;; the mode, so a stray registration (e.g. an Info buffer killed
+        ;; without disabling the mode) is harmless.
+        (when (derived-mode-p 'Info-mode)
+          (add-hook 'Info-selection-hook #'simply-annotate--info-selection-hook))
         (when simply-annotate-overlays
           (message "Simply-annotate: loaded %d annotations."
                    (length simply-annotate-overlays))))
@@ -5307,7 +5313,8 @@ keys mirror their `simply-annotate-command-map' bindings.  On Emacs
     (remove-hook 'before-save-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate--save-annotations t)
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)
-    (remove-hook 'Info-selection-hook #'simply-annotate--info-selection-hook)))
+    (when (derived-mode-p 'Info-mode)
+      (remove-hook 'Info-selection-hook #'simply-annotate--info-selection-hook))))
 
 ;;; Buffer Revert
 

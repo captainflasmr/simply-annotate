@@ -487,6 +487,29 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
     (should (= 1 (gethash "inbox" counts)))   ; plain string -> first status
     (should (= 0 (gethash "done" counts)))))
 
+;;; Mode / hooks
+
+(ert-deftest sa-test-info-hook-not-registered-in-file-buffers ()
+  "Enabling the mode in a non-Info buffer must not touch the global
+`Info-selection-hook' (issue I2)."
+  (require 'info)
+  (let ((saved (default-value 'Info-selection-hook))
+        (simply-annotate-database-strategy 'global)
+        (simply-annotate-file (expand-file-name
+                               (format "sa-test-%d.el" (random 1000000))
+                               temporary-file-directory)))
+    (set-default 'Info-selection-hook nil)
+    (unwind-protect
+        (with-temp-buffer
+          (insert "plain file buffer")
+          (simply-annotate-mode 1)
+          (should-not (memq #'simply-annotate--info-selection-hook
+                            (default-value 'Info-selection-hook)))
+          (simply-annotate-mode -1)
+          (should-not (memq #'simply-annotate--info-selection-hook
+                            (default-value 'Info-selection-hook))))
+      (set-default 'Info-selection-hook saved))))
+
 ;;; Keymaps (issues #8, general wiring)
 
 (ert-deftest sa-test-command-map-bindings ()

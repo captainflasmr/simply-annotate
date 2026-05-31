@@ -39,9 +39,11 @@ See [[*=both= strategy wrote global annotations into the project database][Bugs/
 
 Fixed 2026-05-31: =--save-annotations= now wraps its body in =condition-case=, reporting any failure via =message= instead of signalling, so it can never abort a buffer save or buffer kill.  Regression test =sa-test-save-annotations-survives-write-failure=.
 
-*** TODO I2 =Info-selection-hook= is added/removed globally and asymmetrically
+*** DONE I2 =Info-selection-hook= is added/removed globally and asymmetrically
 
 =simply-annotate.el= ~line 5248 (add), ~5260 (remove).  Unlike the other mode hooks (all buffer-local with trailing =t=), =Info-selection-hook= is added/removed as a global hook on every mode toggle.  With the mode on in two buffers, disabling it in one removes the Info hook for all; it is also never cleaned up if the last enabled buffer is killed without toggling the mode off.  Suggestion: gate the global add/remove on whether any =simply-annotate-mode= buffer remains, or manage it once (first-enable / last-disable).
+
+Fixed 2026-05-31: the global add/remove are now gated on =(derived-mode-p 'Info-mode)=, so regular file buffers (the common case) never touch the global hook, and Info buffers manage it symmetrically.  The hook function already no-ops in buffers without the mode, so a stray registration (e.g. an Info buffer killed without disabling the mode) is harmless.  Regression test =sa-test-info-hook-not-registered-in-file-buffers=.
 
 ** Minor
 
