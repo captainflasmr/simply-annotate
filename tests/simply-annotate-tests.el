@@ -277,6 +277,60 @@ Runs against a throwaway HOME so the real home directory is untouched."
                          '(("x.el" "n")))))
       (delete-directory home t))))
 
+(ert-deftest sa-test-both-strategy-no-global-pollution ()
+  "Saving under the `both' strategy must not copy global entries into
+the project-local database (critical bug C1).  Uses a transient project
+so the active store resolves to the project file."
+  (require 'project)
+  (let* ((root (file-name-as-directory (make-temp-file "sa-test-proj" t)))
+         (default-directory root)
+         (project-find-functions (list (lambda (_dir) (cons 'transient root))))
+         (simply-annotate-database-strategy 'both)
+         (simply-annotate-project-file ".simply-annotations.el")
+         (global (make-temp-file "sa-test-global" nil ".el"))
+         (simply-annotate-file global)
+         (proj-path (expand-file-name ".simply-annotations.el" root)))
+    (unwind-protect
+        (progn
+          ;; Global store holds an unrelated entry.
+          (with-temp-file global
+            (prin1 '(("/some/other/abs/file.el" "global note")) (current-buffer)))
+          ;; Sanity: the active store for this context is the project file.
+          (should (string= (simply-annotate--database-path) proj-path))
+          ;; Save an annotation for a project-relative key.
+          (simply-annotate--update-database "rel/file.el" '("project note"))
+          (let ((proj-db (simply-annotate--read-db proj-path)))
+            (should (equal (alist-get "rel/file.el" proj-db nil nil #'string=)
+                           '("project note")))
+            ;; The global entry must NOT have leaked into the project file.
+            (should-not (assoc "/some/other/abs/file.el" proj-db))))
+      (when (file-exists-p global) (delete-file global))
+      (delete-directory root t))))
+
+(ert-deftest sa-test-projects-database-file ()
+  "`--projects-database-file' resolves the backing store for a table row."
+  (let* ((root (file-name-as-directory (make-temp-file "sa-test-proj" t)))
+         (simply-annotate-project-file ".simply-annotations.el")
+         (global (make-temp-file "sa-test-global" nil ".el"))
+         (simply-annotate-file global)
+         (proj-file (expand-file-name ".simply-annotations.el" root)))
+    (unwind-protect
+        (progn
+          ;; The pseudo-root and nil resolve to the global database.
+          (should (string= (simply-annotate--projects-database-file "(no project)")
+                           (expand-file-name global)))
+          (should (string= (simply-annotate--projects-database-file nil)
+                           (expand-file-name global)))
+          ;; A project with no per-project file falls back to global.
+          (should (string= (simply-annotate--projects-database-file root)
+                           (expand-file-name global)))
+          ;; A project with a per-project file resolves to that file.
+          (with-temp-file proj-file (insert "()"))
+          (should (string= (simply-annotate--projects-database-file root)
+                           proj-file)))
+      (when (file-exists-p global) (delete-file global))
+      (delete-directory root t))))
+
 ;;; Overlay management
 
 (ert-deftest sa-test-create-overlay-sets-properties ()

@@ -9,13 +9,69 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
+** DONE =both= strategy wrote global annotations into the project database
+
+Found during an elisp review (2026-05-31).  With =simply-annotate-database-strategy= set to =both=, every save copied all global annotations -- including absolute-path keys for unrelated projects -- into the project-local =.simply-annotations.el=.  Cause: =simply-annotate--update-database= loaded the *merged* project+global view (=--load-database=) and wrote it back to the project file.  Fixed so it reads/writes only the active store (=--database-path=); the two databases stay separate.  Covered by =sa-test-both-strategy-no-global-pollution=.  Already-polluted project files are not auto-cleaned (remove stray absolute-path entries by hand if needed).
+
 ** TODO quickly switching between global and local annotations
 
 ** TODO look at indented brackets
 
-** TODO add automated unit tests
+** DONE add automated unit tests
 
-Currently validation is manual (byte-compile, checkdoc, package-lint, flycheck). Even a basic ERT suite covering database load/save, thread creation, and overlay placement would catch regressions.
+Done (2026-05-31).  Added an ERT suite (=tests/simply-annotate-tests.el=, 34 tests) covering helpers, defaults, threading, database load/save (incl. =~= expansion and the =both= pollution fix), overlays, serialization/stale-detection, kanban grouping, and keymaps.  Driven by a =Makefile= (=make test/compile/checkdoc/lint=) with a =tests/init.el= bootstrap, plus a GitHub Actions workflow (=.github/workflows/ci.yml=) across Emacs 27.2--30.1 and snapshot.
+
+* Code Review (2026-05-31)
+
+Full elisp review of =simply-annotate.el= (~5560 lines, v2.3.0).  Overall a mature, well-crafted package: =lexical-binding= on throughout, near-complete docstrings, consistent =simply-annotate-= / =--= naming, clean optional-dependency handling (=declare-function= + =fboundp= guards for =project= / =org= / =dired= / =info=, including an Emacs 27 =project-root= -> =project-roots= fallback), correct =user-error= usage, and graceful backward-compat migration.  Findings below; severity-grouped, flag-don't-fix.
+
+** Critical
+
+*** DONE C1 =both= strategy pollutes the project file with global annotations
+
+See [[*=both= strategy wrote global annotations into the project database][Bugs/Improvements above]].  Fixed 2026-05-31 in =simply-annotate--update-database=; regression test =sa-test-both-strategy-no-global-pollution=.
+
+** Important
+
+*** TODO I1 A failed annotation-DB write can abort the user's buffer save
+
+=simply-annotate.el= ~line 1955 (=--save-annotations=), ~870 (=--save-database=).  =--save-annotations= runs on =before-save-hook= and writes the DB via =with-temp-file= with no error guard.  If the DB path is unwritable (missing parent dir for a customised =simply-annotate-file=, read-only project root, full disk), the error propagates out of =before-save-hook= and aborts the user's actual file save.  Suggestion: wrap the DB write in =condition-case= and downgrade failures to a =message=/=warn= so the buffer still saves.
+
+*** TODO I2 =Info-selection-hook= is added/removed globally and asymmetrically
+
+=simply-annotate.el= ~line 5248 (add), ~5260 (remove).  Unlike the other mode hooks (all buffer-local with trailing =t=), =Info-selection-hook= is added/removed as a global hook on every mode toggle.  With the mode on in two buffers, disabling it in one removes the Info hook for all; it is also never cleaned up if the last enabled buffer is killed without toggling the mode off.  Suggestion: gate the global add/remove on whether any =simply-annotate-mode= buffer remains, or manage it once (first-enable / last-disable).
+
+** Minor
+
+*** TODO M1 Autoload cookies missing on a few user-facing commands
+
+=simply-annotate.el= ~line 2405 (=simply-annotate-smart-action=), ~3135 (=simply-annotate-list=), ~5564 (=simply-annotate-dired-transient=).  Most entry points have =;;;###autoload=, but the primary =j= command, =simply-annotate-list=, and the dired transient do not.  They work via the loaded command-map/menu, but lose =M-x= discoverability before load.  Suggestion: add cookies for parity; the dired transient wants the same =;;;###autoload (autoload ...)= line that =simply-annotate-transient= has.
+
+*** TODO M2 =(> (length x) 0)= for emptiness
+
+=simply-annotate.el= ~line 1878, 4003 (and =(> (length ...) 1)= at 4013).  Walks the sequence just to test non-emptiness.  Suggestion: use truthiness / =consp= / =string-empty-p=.  Cosmetic, O(1).
+
+*** TODO M3 =simply-annotate-show= silently no-ops with no annotation at point
+
+=simply-annotate.el= ~line 2367.  =if-let= with no else returns nil silently when there is no overlay at point.  Suggestion: add an else branch with a short =message= (matching =simply-annotate-next= etc.).
+
+*** TODO M4 =(nreverse (sort candidates ...))= to get descending order
+
+=simply-annotate.el= ~line 4908.  Sorting ascending then reversing is wasteful/obscure.  Suggestion: sort directly with the reversed predicate (=string>= / swapped comparator).
+
+** Optimisation
+
+*** TODO O1 Quadratic card accumulation in kanban grouping
+
+=simply-annotate.el= ~line 3865.  =(setcdr group (append (cdr group) (list card)))= appends to each group's tail for every annotation -> O(N^2) per status column.  Negligible for hundreds of annotations, scales poorly beyond.  Suggestion: =push= + =nreverse= once (the pattern already used at line 4553), or accumulate in a hash keyed by status.
+
+*** TODO O2 =append=-in-loop for the kanban card map
+
+=simply-annotate.el= ~line 4046.  =(setq all-card-map (append all-card-map (nth 1 result)))= inside the per-status loop is technically O(n^2); low real impact (~4 statuses).  Suggestion: =push=/=nconc= and reverse once.
+
+*** TODO O3 =with-temp-buffer= + =fill-region= per line in word-wrap
+
+=simply-annotate.el= ~line 896 (=--wrap-line=).  Allocates a temp buffer and runs =fill-region= per line of each comment on the render path.  Low priority -- =fill-region= is the right tool; only act if profiling shows it.  Suggestion: a reusable scratch buffer or a simple width splitter for the common case.
 
 * Issues
 

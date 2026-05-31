@@ -877,19 +877,24 @@ Respects `simply-annotate-database-strategy':
       (insert "\n"))))
 
 (defun simply-annotate--update-database (file-key annotations)
-  "Update database with ANNOTATIONS for FILE-KEY."
-  (let ((db (or (simply-annotate--load-database) '())))
+  "Update database with ANNOTATIONS for FILE-KEY.
+Reads and writes only the store that backs the current context
+\(`simply-annotate--database-path'), never the merged view returned by
+`simply-annotate--load-database'.  This matters for the `both'
+strategy: writing the merged set back would copy every global
+annotation into the project-local database file."
+  (let* ((path (simply-annotate--database-path))
+         (db (or (simply-annotate--read-db path) '())))
     (when (or annotations (alist-get file-key db nil nil #'string=))
       (if annotations
           (setf (alist-get file-key db nil nil #'string=) annotations)
         (setq db (cl-remove-if (lambda (entry)
                                  (string= (car entry) file-key))
                                db)))
-      (let ((path (simply-annotate--database-path)))
-        (if db
-            (simply-annotate--save-database db)
-          (when (file-exists-p path)
-            (delete-file path)))))))
+      (if db
+          (simply-annotate--save-database db)
+        (when (file-exists-p path)
+          (delete-file path))))))
 
 ;;; Display Management
 
@@ -4575,6 +4580,8 @@ under a \"(no project)\" pseudo-root."
     (define-key map (kbd "RET") #'simply-annotate-projects-goto-table)
     (define-key map (kbd "L") #'simply-annotate-projects-goto-org)
     (define-key map (kbd "K") #'simply-annotate-projects-goto-kanban)
+    (define-key map (kbd "d") #'simply-annotate-projects-goto-dired)
+    (define-key map (kbd "f") #'simply-annotate-projects-goto-database)
     (define-key map (kbd "g") #'simply-annotate-projects-refresh)
     (define-key map (kbd "q") #'quit-window)
     map)
@@ -4601,7 +4608,7 @@ Takes the initial of each hyphen- or space-separated word, so
 Status columns use initials: O=open, IP=in-progress, R=resolved,
 C=closed (derived from `simply-annotate-thread-statuses').
 
-Keymap:\n\n  RET  open project annotation table\n  L    open project org listing\n  K    open project kanban\n  g    refresh\n  q    quit"
+Keymap:\n\n  RET  open project annotation table\n  L    open project org listing\n  K    open project kanban\n  d    open project directory in Dired\n  f    open the backing annotation database file\n  g    refresh\n  q    quit"
   (let* ((statuses simply-annotate-thread-statuses)
          (status-cols
           (let ((col 3)
@@ -4713,6 +4720,39 @@ PROJECTS is an alist of (ROOT . DB-ENTRIES) as returned by
         (simply-annotate-kanban 'project))
     (message "No project at point")))
 
+(defun simply-annotate--projects-database-file (id)
+  "Return the annotation database file backing the projects-table row ID.
+For the \"(no project)\" pseudo-root, or a real project that stores its
+annotations in the global database, this is `simply-annotate-file'.
+Otherwise it is the project's `simply-annotate-project-file'."
+  (if (or (null id) (string= id "(no project)"))
+      (expand-file-name simply-annotate-file)
+    (let ((proj-file (expand-file-name simply-annotate-project-file
+                                       (file-name-as-directory id))))
+      (if (file-exists-p proj-file)
+          proj-file
+        (expand-file-name simply-annotate-file)))))
+
+(defun simply-annotate-projects-goto-dired ()
+  "Open the project directory for the entry at point in Dired."
+  (interactive)
+  (if-let ((root (simply-annotate--projects-root-at-point)))
+      (dired root)
+    (message "No project directory for this entry")))
+
+(defun simply-annotate-projects-goto-database ()
+  "Open the annotation database file backing the entry at point.
+For a real project this is its `simply-annotate-project-file' (when one
+exists); otherwise, and for the \"(no project)\" row, the global
+`simply-annotate-file'.  The file is auto-generated, so this is mainly
+for inspection."
+  (interactive)
+  (let* ((id (tabulated-list-get-id))
+         (file (simply-annotate--projects-database-file id)))
+    (if (file-exists-p file)
+        (find-file file)
+      (message "No annotation database file found"))))
+
 (defun simply-annotate-projects-refresh ()
   "Refresh the projects overview buffer."
   (interactive)
@@ -4729,7 +4769,8 @@ project roots (`project-known-project-roots') for per-project
 annotation files, displaying each project with file and
 annotation counts.  From the table you can drill down into any
 project's annotations via RET (table), L (org listing), or
-K (kanban)."
+K (kanban), open the project directory with d (Dired), or open the
+backing annotation database file with f."
   (interactive)
   (let* ((buffer-name "*Annotation Projects*")
          (existing (get-buffer buffer-name)))
