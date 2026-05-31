@@ -1958,15 +1958,24 @@ If relocation fails, the annotation is marked stale."
             (push ov simply-annotate-overlays)))))))
 
 (defun simply-annotate--save-annotations ()
-  "Save current buffer's annotations."
+  "Save current buffer's annotations.
+This runs on `before-save-hook' and `kill-buffer-hook', so any failure
+to write the annotation database is caught and reported rather than
+propagated -- otherwise an unwritable database path (missing parent
+directory, read-only project root, full disk) would abort the user's
+buffer save or buffer kill."
   (when simply-annotate-mode
-    (let ((file-key (simply-annotate--file-key)))
-      (when file-key
-        (let ((annotations (simply-annotate--serialize-annotations)))
-          (when (or annotations
-                    (let ((db (simply-annotate--load-database)))
-                      (and db (alist-get file-key db nil nil #'string=))))
-            (simply-annotate--update-database file-key annotations)))))))
+    (condition-case err
+        (let ((file-key (simply-annotate--file-key)))
+          (when file-key
+            (let ((annotations (simply-annotate--serialize-annotations)))
+              (when (or annotations
+                        (let ((db (simply-annotate--load-database)))
+                          (and db (alist-get file-key db nil nil #'string=))))
+                (simply-annotate--update-database file-key annotations)))))
+      (error
+       (message "Simply-annotate: could not save annotations: %s"
+                (error-message-string err))))))
 
 (defun simply-annotate--load-annotations ()
   "Load annotations for current buffer."

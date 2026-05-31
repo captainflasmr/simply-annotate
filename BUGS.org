@@ -33,9 +33,11 @@ See [[*=both= strategy wrote global annotations into the project database][Bugs/
 
 ** Important
 
-*** TODO I1 A failed annotation-DB write can abort the user's buffer save
+*** DONE I1 A failed annotation-DB write can abort the user's buffer save
 
 =simply-annotate.el= ~line 1955 (=--save-annotations=), ~870 (=--save-database=).  =--save-annotations= runs on =before-save-hook= and writes the DB via =with-temp-file= with no error guard.  If the DB path is unwritable (missing parent dir for a customised =simply-annotate-file=, read-only project root, full disk), the error propagates out of =before-save-hook= and aborts the user's actual file save.  Suggestion: wrap the DB write in =condition-case= and downgrade failures to a =message=/=warn= so the buffer still saves.
+
+Fixed 2026-05-31: =--save-annotations= now wraps its body in =condition-case=, reporting any failure via =message= instead of signalling, so it can never abort a buffer save or buffer kill.  Regression test =sa-test-save-annotations-survives-write-failure=.
 
 *** TODO I2 =Info-selection-hook= is added/removed globally and asymmetrically
 

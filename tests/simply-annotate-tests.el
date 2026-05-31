@@ -331,6 +331,25 @@ so the active store resolves to the project file."
       (when (file-exists-p global) (delete-file global))
       (delete-directory root t))))
 
+(ert-deftest sa-test-save-annotations-survives-write-failure ()
+  "A failed database write in `--save-annotations' must not signal (issue I1).
+On `before-save-hook' a propagated error would abort the user's buffer save."
+  (with-temp-buffer
+    (insert "some content here")
+    (setq-local simply-annotate-mode t)
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil)
+          (simply-annotate-database-strategy 'global)
+          ;; Unwritable: the parent directories do not exist.
+          (simply-annotate-file (expand-file-name
+                                 (format "sa-test-nodir-%d/sub/db.el" (random 1000000))
+                                 temporary-file-directory)))
+      (push (simply-annotate--create-overlay 1 5 "note") simply-annotate-overlays)
+      ;; Returns normally despite the write failing (no signal escapes).
+      (simply-annotate--save-annotations)
+      ;; And the unwritable path was indeed not created.
+      (should-not (file-exists-p simply-annotate-file)))))
+
 ;;; Overlay management
 
 (ert-deftest sa-test-create-overlay-sets-properties ()
