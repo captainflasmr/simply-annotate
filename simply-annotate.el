@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.3.0
+;; Version: 2.3.1
 ;; Package-Requires: ((emacs "27.2") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -95,6 +95,9 @@
 ;; - Press <prefix> s to set status (open, in-progress, resolved, closed)
 ;; - Press <prefix> p to set priority (low, normal, high, critical)
 ;; - Press <prefix> t to add tags for organization
+;; - Press <prefix> d to toggle hiding of done/closed threads; customise
+;;   `simply-annotate-hide-done-statuses' (e.g. '("resolved" "closed")) and
+;;   `simply-annotate-hide-done-style' (`full' or `indicator')
 ;;
 ;; * Author Management
 ;; - Configure team members: (setq simply-annotate-author-list '("John" "Jane" "Bob"))
@@ -499,6 +502,44 @@ The first entry is used as the default priority for new annotations
   :type '(repeat string)
   :group 'simply-annotate)
 
+;; Hide done/closed threads (issue #11)
+
+(defcustom simply-annotate-hide-done-statuses
+  nil
+  "Statuses whose annotation threads are hidden in the source buffer.
+Each entry is a string matching a value in `simply-annotate-thread-statuses'
+\(for example, `(\"resolved\" \"closed\")\).  Threads whose effective
+status is a member of this list are hidden from the source buffer so
+finished work does not clutter the view.  Nil (the default) disables
+hiding entirely, preserving the historic behaviour.
+
+Hiding is controlled at runtime by the buffer-local variable
+`simply-annotate-hide-done' (toggle with `simply-annotate-toggle-hide-done')
+and shaped by `simply-annotate-hide-done-style'.  Listing, table, kanban,
+and org-export views are unaffected -- they already group by status."
+  :type '(repeat string)
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-hide-done-style
+  'full
+  "How threads hidden by `simply-annotate-hide-done-statuses' are drawn.
+`full'      -- remove every visual cue (the overlay is invisible in the
+              source buffer; navigation and smart-action skip it).
+`indicator' -- collapse the thread to a single dim fringe indicator so a
+              residual marker remains, using
+              `simply-annotate-done-indicator-face'."
+  :type '(choice (const :tag "Full hide (no visual)" full)
+                 (const :tag "Residual fringe indicator" indicator))
+  :group 'simply-annotate)
+
+(defface simply-annotate-done-indicator-face
+  '((((class color) (min-colors 88)) :foreground "gray50")
+    (((class color)) :foreground "gray")
+    (t :inherit shadow))
+  "Face for the residual fringe indicator of a hidden done/closed thread.
+Only used when `simply-annotate-hide-done-style' is `indicator'."
+  :group 'simply-annotate)
+
 ;; Tag Filtering
 
 (defcustom simply-annotate-default-tag-filter nil
@@ -618,6 +659,14 @@ annotations whose thread `tags' list contains that string.")
 
 (defvar-local simply-annotate-inline nil
   "Non-nil when inline annotation display is active in this buffer.")
+
+(defvar-local simply-annotate-hide-done t
+  "Master switch for hiding done/closed threads in this buffer.
+When non-nil (the default), threads whose status is a member of
+`simply-annotate-hide-done-statuses' are hidden, drawn according to
+`simply-annotate-hide-done-style'.  When nil, no status-based hiding
+occurs even if `simply-annotate-hide-done-statuses' is set.  Toggle
+interactively with `simply-annotate-toggle-hide-done'.")
 
 (defvar-local simply-annotate-listing-source nil
   "Source buffer that generated this listing buffer.")
@@ -1091,43 +1140,56 @@ Normalises a single symbol to a one-element list."
 
 (defun simply-annotate--apply-display-style (overlay)
   "Apply current display style to OVERLAY.
-Overlays not matching the active tag filter are hidden.
-When no tag filter is active, background overlays (see
-`simply-annotate-background-threshold') skip per-line visual styles
-but still show inline text when enabled, so they do not drown out
-finer-grained annotations."
+Overlays hidden by status (see `simply-annotate-hide-done-statuses')
+are drawn according to `simply-annotate-hide-done-style' (full hide or
+a residual fringe indicator).  Overlays not matching the active tag
+filter are hidden.  When no tag filter is active, background overlays
+\(see `simply-annotate-background-threshold') skip per-line visual
+styles but still show inline text when enabled, so they do not drown
+out finer-grained annotations."
   (let ((subdue-background (and (null simply-annotate-current-tag-filter)
                                 (simply-annotate--background-overlay-p overlay))))
-    (if (simply-annotate--tag-match-p overlay)
-        (progn
-          (unless subdue-background
-            (dolist (style (simply-annotate--display-styles))
-              (pcase style
-                ('highlight
-                 (overlay-put overlay 'face 'simply-annotate-highlight-face))
-                ('tint
-                 (let ((bg (simply-annotate--tint-background)))
-                   (when bg
-                     (overlay-put overlay 'face `(:background ,bg :extend t)))))
-                ('fringe
-                 (simply-annotate--add-fringe-indicator overlay))
-                ('fringe-bracket
-                 (simply-annotate--add-fringe-bracket overlay))
-                ('bar
-                 (simply-annotate--add-bar-indicator overlay))
-                ('bracket
-                 (simply-annotate--add-bracket-indicator overlay))
-                ('subtle
-                 (overlay-put overlay 'face 'simply-annotate-subtle-face)))))
-          (simply-annotate--ensure-point-marker overlay)
-          (when simply-annotate-inline
-            (simply-annotate--add-inline-text overlay)))
+    (cond
+     ((simply-annotate--overlay-hidden-by-status-p overlay)
+      (simply-annotate--cleanup-bracket-overlays overlay)
+      (simply-annotate--cleanup-bar-overlays overlay)
+      (simply-annotate--cleanup-bracket-text-overlays overlay)
+      (overlay-put overlay 'face nil)
+      (overlay-put overlay 'after-string nil)
+      (if (eq simply-annotate-hide-done-style 'indicator)
+          (simply-annotate--add-done-indicator overlay)
+        (overlay-put overlay 'before-string nil)))
+     ((simply-annotate--tag-match-p overlay)
+      (progn
+        (unless subdue-background
+          (dolist (style (simply-annotate--display-styles))
+            (pcase style
+              ('highlight
+               (overlay-put overlay 'face 'simply-annotate-highlight-face))
+              ('tint
+               (let ((bg (simply-annotate--tint-background)))
+                 (when bg
+                   (overlay-put overlay 'face `(:background ,bg :extend t)))))
+              ('fringe
+               (simply-annotate--add-fringe-indicator overlay))
+              ('fringe-bracket
+               (simply-annotate--add-fringe-bracket overlay))
+              ('bar
+               (simply-annotate--add-bar-indicator overlay))
+              ('bracket
+               (simply-annotate--add-bracket-indicator overlay))
+              ('subtle
+               (overlay-put overlay 'face 'simply-annotate-subtle-face)))))
+        (simply-annotate--ensure-point-marker overlay)
+        (when simply-annotate-inline
+          (simply-annotate--add-inline-text overlay))))
+     (t
       (simply-annotate--cleanup-bracket-overlays overlay)
       (simply-annotate--cleanup-bar-overlays overlay)
       (simply-annotate--cleanup-bracket-text-overlays overlay)
       (overlay-put overlay 'face nil)
       (overlay-put overlay 'before-string nil)
-      (overlay-put overlay 'after-string nil))))
+      (overlay-put overlay 'after-string nil)))))
 
 (defun simply-annotate--tint-background ()
   "Return a background color slightly lighter than the default."
@@ -1144,6 +1206,21 @@ finer-grained annotations."
                    ('custom 'simply-annotate-fringe-bitmap)
                    (_ 'left-triangle)))
          (fringe-spec `(left-fringe ,bitmap simply-annotate-fringe-face)))
+    (overlay-put overlay 'before-string
+                 (propertize " " 'display fringe-spec))))
+
+(defun simply-annotate--add-done-indicator (overlay)
+  "Add a dim residual fringe indicator to a hidden-done OVERLAY.
+Uses `simply-annotate-done-indicator-face' so it is visually distinct
+from active fringe annotations.  Only meaningful when
+`simply-annotate-hide-done-style' is `indicator'."
+  (let* ((bitmap (pcase simply-annotate-fringe-indicator
+                   ('left-triangle 'left-triangle)
+                   ('right-triangle 'right-triangle)
+                   ('filled-rectangle 'filled-rectangle)
+                   ('custom 'simply-annotate-fringe-bitmap)
+                   (_ 'left-triangle)))
+         (fringe-spec `(left-fringe ,bitmap simply-annotate-done-indicator-face)))
     (overlay-put overlay 'before-string
                  (propertize " " 'display fringe-spec))))
 
@@ -1323,6 +1400,22 @@ annotation level.  This layers on top of the current display style."
   (simply-annotate-update-display-style)
   (message "Inline annotations %s" (if simply-annotate-inline "enabled" "disabled")))
 
+;;;###autoload
+(defun simply-annotate-toggle-hide-done ()
+  "Toggle hiding of done/closed annotation threads in this buffer.
+When enabled, threads whose status is a member of
+`simply-annotate-hide-done-statuses' are hidden in the source buffer,
+drawn according to `simply-annotate-hide-done-style'.  When disabled,
+all threads are shown regardless of status.  No effect when
+`simply-annotate-hide-done-statuses' is nil -- customise it first
+\(e.g. to `(\"resolved\" \"closed\")\).  Listings, tables, the kanban
+board, and org export are unaffected."
+  (interactive)
+  (setq simply-annotate-hide-done (not simply-annotate-hide-done))
+  (simply-annotate--apply-display-to-all)
+  (message "Hide done/closed %s"
+           (if simply-annotate-hide-done "enabled" "disabled")))
+
 ;;; Overlay Classification
 
 (defun simply-annotate--background-overlay-p (overlay)
@@ -1350,9 +1443,35 @@ A nil filter matches every overlay."
       (member simply-annotate-current-tag-filter
               (simply-annotate--overlay-tags overlay))))
 
+(defun simply-annotate--overlay-status (overlay)
+  "Return the effective status string of OVERLAY's annotation.
+Threads carry an explicit `status'; legacy bare-string annotations and
+threads without a status fall back to `simply-annotate--default-status'."
+  (let ((data (overlay-get overlay 'simply-annotation)))
+    (if (simply-annotate--thread-p data)
+        (or (alist-get 'status data) (simply-annotate--default-status))
+      (simply-annotate--default-status))))
+
+(defun simply-annotate--overlay-hidden-by-status-p (overlay)
+  "Return non-nil if OVERLAY should be hidden because of its status.
+Respects the buffer-local `simply-annotate-hide-done' switch and the
+`simply-annotate-hide-done-statuses' customisation.  Returns nil when
+either is disabled, so by default nothing is hidden."
+  (and simply-annotate-hide-done
+       simply-annotate-hide-done-statuses
+       (member (simply-annotate--overlay-status overlay)
+               simply-annotate-hide-done-statuses)))
+
+(defun simply-annotate--overlay-visible-p (overlay)
+  "Return non-nil if OVERLAY passes the tag and status-hide filters.
+Used by navigation and active-overlay selection so hidden threads are
+skipped by `simply-annotate-next'/`previous' and smart-action."
+  (and (simply-annotate--tag-match-p overlay)
+       (not (simply-annotate--overlay-hidden-by-status-p overlay))))
+
 (defun simply-annotate--active-overlays ()
-  "Return overlays matching the current tag filter."
-  (cl-remove-if-not #'simply-annotate--tag-match-p simply-annotate-overlays))
+  "Return overlays matching the current tag and status-hide filters."
+  (cl-remove-if-not #'simply-annotate--overlay-visible-p simply-annotate-overlays))
 
 (defun simply-annotate--buffer-tags ()
   "Return a sorted list of unique tag strings across buffer overlays."
@@ -1363,14 +1482,10 @@ A nil filter matches every overlay."
           (push tag tags))))
     (sort tags #'string<)))
 
-(defun simply-annotate--apply-tag-filter ()
-  "Update display after a tag-filter change.
-Hides the *Annotation* buffer if its current overlay no longer matches,
-then re-applies display styles so filtered overlays hide/show."
-  (when (and simply-annotate-current-overlay
-             (not (simply-annotate--tag-match-p simply-annotate-current-overlay))
-             (get-buffer-window simply-annotate-buffer-name))
-    (simply-annotate-hide-annotation-buffer))
+(defun simply-annotate--apply-display-to-all ()
+  "Re-apply the current display style to every annotation overlay.
+Clears each overlay's visual properties first so style changes, tag
+filters, and status-hide toggles take effect cleanly."
   (dolist (ov simply-annotate-overlays)
     (simply-annotate--cleanup-bracket-overlays ov)
     (simply-annotate--cleanup-bar-overlays ov)
@@ -1380,6 +1495,16 @@ then re-applies display styles so filtered overlays hide/show."
     (overlay-put ov 'after-string nil)
     (simply-annotate--apply-display-style ov))
   (simply-annotate--update-header))
+
+(defun simply-annotate--apply-tag-filter ()
+  "Update display after a tag-filter change.
+Hides the *Annotation* buffer if its current overlay no longer matches,
+then re-applies display styles so filtered overlays hide/show."
+  (when (and simply-annotate-current-overlay
+             (not (simply-annotate--tag-match-p simply-annotate-current-overlay))
+             (get-buffer-window simply-annotate-buffer-name))
+    (simply-annotate-hide-annotation-buffer))
+  (simply-annotate--apply-display-to-all))
 
 (defun simply-annotate--tag-cycle-choices ()
   "Return the cycle ring: nil (all) followed by buffer tags."
@@ -1479,8 +1604,9 @@ In fringe mode, searches the entire current line for overlays.
 When multiple overlays match, returns the most specific one.
 Background overlays are excluded when viewing everything, so that
 `smart-action' can create granular annotations anywhere in the buffer.
-Zero-width point annotations located exactly at POS are also returned,
-since `overlays-at' does not include empty overlays."
+Threads hidden by `simply-annotate-hide-done-statuses' are also
+excluded.  Zero-width point annotations located exactly at POS are
+also returned, since `overlays-at' does not include empty overlays."
   (let ((check-pos (or pos (point)))
         (unfiltered (null simply-annotate-current-tag-filter)))
     (if (cl-intersection (simply-annotate--display-styles) '(fringe fringe-bracket))
@@ -1489,6 +1615,7 @@ since `overlays-at' does not include empty overlays."
        (cl-remove-if-not (lambda (ov)
                            (and (overlay-get ov 'simply-annotation)
                                 (simply-annotate--tag-match-p ov)
+                                (not (simply-annotate--overlay-hidden-by-status-p ov))
                                 (not (and unfiltered
                                           (simply-annotate--background-overlay-p ov)))))
                          (append (overlays-at check-pos)
@@ -1502,7 +1629,8 @@ since `overlays-at' does not include empty overlays."
   "Find annotation overlay matching current level on the line containing POS.
 Matches any overlay whose region intersects the current line.
 When multiple overlays match, returns the most specific one.
-Background overlays are excluded when viewing everything."
+Background overlays are excluded when viewing everything, and threads
+hidden by `simply-annotate-hide-done-statuses' are excluded."
   (save-excursion
     (when pos (goto-char pos))
     (let ((line-start (line-beginning-position))
@@ -1512,6 +1640,7 @@ Background overlays are excluded when viewing everything."
        (cl-remove-if-not (lambda (overlay)
                            (and (overlay-get overlay 'simply-annotation)
                                 (simply-annotate--tag-match-p overlay)
+                                (not (simply-annotate--overlay-hidden-by-status-p overlay))
                                 (not (and unfiltered
                                           (simply-annotate--background-overlay-p overlay)))
                                 (<= (overlay-start overlay) line-end)
@@ -2350,7 +2479,7 @@ FORWARD t for next, nil for previous.
 If WRAP is non-nil, wrap around to the beginning/end."
   (let* ((pos (point))
          (active (cl-remove-if-not
-                  #'simply-annotate--tag-match-p
+                  #'simply-annotate--overlay-visible-p
                   (if forward
                       (simply-annotate--sorted-overlays)
                     (reverse (simply-annotate--sorted-overlays)))))
@@ -5151,6 +5280,7 @@ When called interactively:
     (define-key map (kbd "]") #'simply-annotate-cycle-tag-forward)
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
+    (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
     (define-key map (kbd "n") #'simply-annotate-next)
     (define-key map (kbd "v") #'simply-annotate-previous)
     (define-key map (kbd "g") #'simply-annotate-update-display-style)
@@ -5197,7 +5327,7 @@ Available keys:
   A  all projects      C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp
   [  prev tag filter   ]  next tag filter   \\='  cycle style
-  /  toggle inline     n  next            v  previous
+  /  toggle inline     d  toggle hide-done  n  next            v  previous
   g  refresh           SPC  transient menu
 
 When binding to M-s, you will shadow Emacs's default `search-map'
@@ -5243,6 +5373,7 @@ should bind to a prefix key of your choice (M-s is recommended).")
     (define-key map (kbd "v") #'simply-annotate-previous)
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
+    (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
     (define-key map (kbd "[") #'simply-annotate-cycle-tag-backward)
     (define-key map (kbd "]") #'simply-annotate-cycle-tag-forward)
     (define-key map (kbd "g") #'simply-annotate-update-display-style)
@@ -5252,14 +5383,15 @@ When `repeat-mode' is enabled (Emacs 28.1+), invoking any of these
 commands once -- e.g. via M-n or your command-map prefix -- lets you
 continue with the bare keys shown here without re-typing the prefix:
 n/v to step between annotations, \\=' to cycle display style, / to
-toggle inline, [ and ] to cycle the tag filter, g to refresh.  The
-keys mirror their `simply-annotate-command-map' bindings.  On Emacs
-27.2 the `repeat-map' properties are simply inert.")
+toggle inline, d to toggle hide-done, [ and ] to cycle the tag filter,
+g to refresh.  The keys mirror their `simply-annotate-command-map'
+bindings.  On Emacs 27.2 the `repeat-map' properties are simply inert.")
 
 (dolist (cmd '(simply-annotate-next
                simply-annotate-previous
                simply-annotate-cycle-display-style
                simply-annotate-toggle-inline
+               simply-annotate-toggle-hide-done
                simply-annotate-cycle-tag-backward
                simply-annotate-cycle-tag-forward
                simply-annotate-update-display-style))
@@ -5607,6 +5739,7 @@ local bindings on the same prefix."
    ["Display"
     ("'" "cycle style"       simply-annotate-cycle-display-style :transient t)
     ("/" "toggle inline"     simply-annotate-toggle-inline :transient t)
+    ("d" "toggle hide-done"  simply-annotate-toggle-hide-done :transient t)
     ("[" "prev tag filter"   simply-annotate-cycle-tag-backward :transient t)
     ("]" "next tag filter"   simply-annotate-cycle-tag-forward :transient t)
     ("G" "set tag filter"    simply-annotate-set-tag-filter)

@@ -388,6 +388,178 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
         ;; No orphaned indicator overlays remain.
         (should (= 0 (length (overlays-in (point-min) (point-max)))))))))
 
+;;; Hide done/closed threads (issue #11)
+
+(ert-deftest sa-test-overlay-status ()
+  "`--overlay-status' returns the thread status or the configured default."
+  (let ((simply-annotate-thread-statuses '("open" "resolved" "closed")))
+    (with-temp-buffer
+      (insert "some text")
+      (let ((simply-annotate-display-style 'highlight)
+            (simply-annotate-overlays nil))
+        (let ((ov-thread (simply-annotate--create-overlay
+                          1 5 '((id . "t")
+                                (status . "closed")
+                                (priority . "normal")
+                                (comments ((text . "x"))))))
+              (ov-bare (simply-annotate--create-overlay 1 5 "a plain note")))
+          (should (string= (simply-annotate--overlay-status ov-thread) "closed"))
+          ;; A bare-string annotation has no status; it falls back to the default.
+          (should (string= (simply-annotate--overlay-status ov-bare) "open")))))))
+
+(ert-deftest sa-test-overlay-hidden-by-status-p ()
+  "`--overlay-hidden-by-status-p' honours the switch and the status list."
+  (let ((simply-annotate-thread-statuses '("open" "resolved" "closed")))
+    (with-temp-buffer
+      (insert "some text")
+      (let ((simply-annotate-display-style 'highlight)
+            (simply-annotate-overlays nil)
+            (simply-annotate-hide-done t)
+            (simply-annotate-hide-done-statuses '("resolved" "closed")))
+        (let ((ov-closed (simply-annotate--create-overlay
+                          1 5 '((id . "t")
+                                (status . "closed")
+                                (priority . "normal")
+                                (comments ((text . "x"))))))
+              (ov-open (simply-annotate--create-overlay
+                        1 5 '((id . "u")
+                              (status . "open")
+                              (priority . "normal")
+                              (comments ((text . "y"))))))
+              (ov-bare (simply-annotate--create-overlay 1 5 "plain")))
+          (should (simply-annotate--overlay-hidden-by-status-p ov-closed))
+          (should-not (simply-annotate--overlay-hidden-by-status-p ov-open))
+          ;; Bare strings resolve to the default status "open", which is not hidden.
+          (should-not (simply-annotate--overlay-hidden-by-status-p ov-bare))
+          ;; Disabling the switch hides nothing.
+          (let ((simply-annotate-hide-done nil))
+            (should-not (simply-annotate--overlay-hidden-by-status-p ov-closed)))
+          ;; Empty status list hides nothing.
+          (let ((simply-annotate-hide-done-statuses nil))
+            (should-not (simply-annotate--overlay-hidden-by-status-p ov-closed))))))))
+
+(ert-deftest sa-test-overlay-visible-p-combines-filters ()
+  "`--overlay-visible-p' requires both tag match and status visibility."
+  (with-temp-buffer
+    (insert "some text")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil)
+          (simply-annotate-current-tag-filter nil)
+          (simply-annotate-hide-done t)
+          (simply-annotate-hide-done-statuses '("closed")))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t")
+                       (status . "closed")
+                       (priority . "normal")
+                       (tags "review")
+                       (comments ((text . "x")))))))
+        ;; No tag filter, but status is hidden -> not visible.
+        (should-not (simply-annotate--overlay-visible-p ov))
+        ;; Status visible again -> visible.
+        (let ((simply-annotate-hide-done nil))
+          (should (simply-annotate--overlay-visible-p ov)))
+        ;; Tag filter that does not match -> not visible even when status visible.
+        (let ((simply-annotate-hide-done nil)
+              (simply-annotate-current-tag-filter "other"))
+          (should-not (simply-annotate--overlay-visible-p ov)))))))
+
+(ert-deftest sa-test-active-overlays-excludes-hidden ()
+  "`--active-overlays' skips threads hidden by status (issue #11)."
+  (with-temp-buffer
+    (insert "alpha beta gamma")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil)
+          (simply-annotate-hide-done t)
+          (simply-annotate-hide-done-statuses '("closed")))
+      (push (simply-annotate--create-overlay
+             1 5 '((id . "t1")
+                   (status . "open")
+                   (priority . "normal")
+                   (comments ((text . "open one")))))
+            simply-annotate-overlays)
+      (push (simply-annotate--create-overlay
+             6 10 '((id . "t2")
+                    (status . "closed")
+                    (priority . "normal")
+                    (comments ((text . "closed one")))))
+            simply-annotate-overlays)
+      (should (= 2 (length simply-annotate-overlays)))
+      (should (= 1 (length (simply-annotate--active-overlays))))
+      ;; Disabling the switch brings both back.
+      (let ((simply-annotate-hide-done nil))
+        (should (= 2 (length (simply-annotate--active-overlays))))))))
+
+(ert-deftest sa-test-apply-display-style-full-hide ()
+  "A hidden thread gets no visual cue in `full' hide mode (issue #11)."
+  (with-temp-buffer
+    (insert "some content here")
+    (let ((simply-annotate-display-style 'bracket)
+          (simply-annotate-inline t)
+          (simply-annotate-overlays nil)
+          (simply-annotate-hide-done t)
+          (simply-annotate-hide-done-statuses '("closed"))
+          (simply-annotate-hide-done-style 'full))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t")
+                       (status . "closed")
+                       (priority . "normal")
+                       (comments ((text . "done here")))))))
+        (simply-annotate--apply-display-style ov)
+        (should-not (overlay-get ov 'face))
+        (should-not (overlay-get ov 'before-string))
+        (should-not (overlay-get ov 'after-string))))))
+
+(ert-deftest sa-test-apply-display-style-indicator ()
+  "A hidden thread keeps a fringe indicator in `indicator' mode (issue #11)."
+  (with-temp-buffer
+    (insert "some content here")
+    (let ((simply-annotate-display-style 'bracket)
+          (simply-annotate-inline t)
+          (simply-annotate-overlays nil)
+          (simply-annotate-hide-done t)
+          (simply-annotate-hide-done-statuses '("closed"))
+          (simply-annotate-hide-done-style 'indicator))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t")
+                       (status . "closed")
+                       (priority . "normal")
+                       (comments ((text . "done here")))))))
+        (simply-annotate--apply-display-style ov)
+        ;; Inline text and face are suppressed, but a fringe indicator remains.
+        (should-not (overlay-get ov 'face))
+        (should-not (overlay-get ov 'after-string))
+        (let ((before (overlay-get ov 'before-string)))
+          (should before)
+          ;; The before-string carries a left-fringe display spec.
+          (should (eq (car-safe (get-text-property 0 'display before)) 'left-fringe)))))))
+
+(ert-deftest sa-test-toggle-hide-done-flips-and-renders ()
+  "`simply-annotate-toggle-hide-done' flips the switch and re-renders."
+  (with-temp-buffer
+    (insert "some content here")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-inline t)
+          (simply-annotate-overlays nil)
+          (simply-annotate-hide-done t)
+          (simply-annotate-hide-done-statuses '("closed"))
+          (simply-annotate-hide-done-style 'full)
+          (simply-annotate-original-header-line nil))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t")
+                       (status . "closed")
+                       (priority . "normal")
+                       (comments ((text . "done")))))))
+        (push ov simply-annotate-overlays)
+        ;; Toggling off re-renders: the closed thread is now shown (highlight face).
+        (simply-annotate-toggle-hide-done)
+        (should-not simply-annotate-hide-done)
+        (should (eq (overlay-get ov 'face) 'simply-annotate-highlight-face))
+        ;; Toggling back on hides it again.
+        (simply-annotate-toggle-hide-done)
+        (should simply-annotate-hide-done)
+        (should-not (overlay-get ov 'face))
+        (should-not (overlay-get ov 'after-string))))))
+
 ;;; Serialization round-trip
 
 (ert-deftest sa-test-serialize-deserialize-roundtrip ()
@@ -516,7 +688,9 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
   "The command map exposes the expected core bindings."
   (should (keymapp simply-annotate-command-map))
   (should (eq (lookup-key simply-annotate-command-map "j") 'simply-annotate-smart-action))
-  (should (eq (lookup-key simply-annotate-command-map (kbd "SPC")) 'simply-annotate-menu)))
+  (should (eq (lookup-key simply-annotate-command-map (kbd "SPC")) 'simply-annotate-menu))
+  (should (eq (lookup-key simply-annotate-command-map "d")
+              'simply-annotate-toggle-hide-done)))
 
 (ert-deftest sa-test-repeat-map-wiring ()
   "The repeat map binds the repeatable commands and tags them (issue #8)."
@@ -524,10 +698,13 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
   (should (eq (lookup-key simply-annotate-repeat-map "n") 'simply-annotate-next))
   (should (eq (lookup-key simply-annotate-repeat-map "]")
               'simply-annotate-cycle-tag-forward))
+  (should (eq (lookup-key simply-annotate-repeat-map "d")
+              'simply-annotate-toggle-hide-done))
   (dolist (cmd '(simply-annotate-next
                  simply-annotate-previous
                  simply-annotate-cycle-display-style
                  simply-annotate-toggle-inline
+                 simply-annotate-toggle-hide-done
                  simply-annotate-cycle-tag-backward
                  simply-annotate-cycle-tag-forward
                  simply-annotate-update-display-style))

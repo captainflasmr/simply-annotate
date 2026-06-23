@@ -53,6 +53,12 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-06-23 Tue> *2.3.1*
+
+Hide resolved/closed threads in the source buffer.
+
+- *Hide done/closed threads* -- Set ~simply-annotate-hide-done-statuses~ (e.g. ~'("resolved" "closed")~) and threads with those statuses disappear from the source buffer.  Choose ~full~ (no visual) or ~indicator~ (a dim fringe marker) via ~simply-annotate-hide-done-style~.  Toggle at runtime with ~<prefix> d~ without losing your config.  Navigation and smart-action skip hidden threads; listings, kanban, and org export are unaffected.  (#11)
+
 ** <2026-05-30 Sat> *2.3.0*
 
 Configurable default status/priority, repeat-mode, and draft/path bug fixes.
@@ -337,6 +343,21 @@ listing, and org export all display the hierarchy with indentation.
 - Press =<prefix> s= to set status: open, in-progress, resolved, closed
 - Press =<prefix> p= to set priority: low, normal, high, critical
 - Press =<prefix> t= to add tags like review, bug, question
+- Press =<prefix> d= to toggle hiding of done/closed threads
+
+Hide finished threads so they stop cluttering the source buffer:
+
+#+begin_src emacs-lisp
+;; Statuses to hide (nil disables hiding entirely)
+(setq simply-annotate-hide-done-statuses '("resolved" "closed"))
+;; `full' (no visual) or `indicator' (a dim fringe marker)
+(setq simply-annotate-hide-done-style 'full)
+#+end_src
+
+=<prefix> d= (~simply-annotate-toggle-hide-done~) flips a buffer-local
+switch so you can temporarily reveal hidden threads without clearing your
+configuration.  Navigation and smart-action skip hidden threads; the kanban
+board, listings, and org export are unaffected (they already group by status).
 
 *** Author Management
 
@@ -485,6 +506,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> ]= | =simply-annotate-cycle-level-forward=      | Cycle annotation level forward       |
 | =<prefix> '= | =simply-annotate-cycle-display-style=      | Cycle through display styles         |
 | =<prefix> /= | =simply-annotate-toggle-inline=            | Toggle inline annotation display     |
+| =<prefix> d= | =simply-annotate-toggle-hide-done=         | Toggle hiding of done/closed threads |
 | =<prefix> K= | =simply-annotate-kanban=                   | Kanban board of project annotations  |
 | =<prefix> n= | =simply-annotate-next=                     | Jump to next annotation              |
 | =<prefix> v= | =simply-annotate-previous=                 | Jump to previous annotation          |
@@ -538,7 +560,11 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 
   ;; Customize available statuses and priorities
   (simply-annotate-thread-statuses '("open" "in-progress" "resolved" "closed"))
-  (simply-annotate-priority-levels '("low" "normal" "high" "critical")))
+  (simply-annotate-priority-levels '("low" "normal" "high" "critical"))
+
+  ;; Hide finished threads in the source buffer (issue #11)
+  (simply-annotate-hide-done-statuses '("resolved" "closed")) ; nil = disabled
+  (simply-annotate-hide-done-style 'full))                    ; or 'indicator
 #+end_src
 
 ** Configuration Examples

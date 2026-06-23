@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-06-23 Tue> *2.3.1*
+
+Hide resolved/closed threads in the source buffer.
+
+*** Features
+
+- *Hide done/closed annotation threads* -- Threads whose status is a member of the new ~simply-annotate-hide-done-statuses~ (nil by default; e.g. ~'("resolved" "closed")~) are hidden from the source buffer so finished work no longer clutters the view.  Two hide styles are available via ~simply-annotate-hide-done-style~: ~full~ (no visual at all) or ~indicator~ (a single dim fringe marker remains, drawn with the new ~simply-annotate-done-indicator-face~).  A buffer-local master switch ~simply-annotate-hide-done~ (default t) toggles the feature at runtime without clearing the configured statuses -- bind it with ~<prefix> d~ (~simply-annotate-toggle-hide-done~), also on the transient Display panel and in ~repeat-mode~.  Navigation (~<prefix> n~/~v~), smart-action, and the header position counter skip hidden threads; listing, table, kanban, and org-export views are unaffected since they already group by status.  (#11)
+
 ** <2026-05-30 Sat> *2.3.0*
 
 Configurable default status/priority and draft/path bug fixes.
