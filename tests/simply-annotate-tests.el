@@ -560,7 +560,142 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
         (should-not (overlay-get ov 'face))
         (should-not (overlay-get ov 'after-string))))))
 
-;;; Serialization round-trip
+;;; Inline collapse/expand (issue #12)
+
+(ert-deftest sa-test-inline-collapse-key-thread ()
+  "`--inline-collapse-key' returns the thread id for thread annotations."
+  (with-temp-buffer
+    (insert "some text")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "thread-abc")
+                       (status . "open")
+                       (priority . "normal")
+                       (comments ((text . "x")))))))
+        (should (string= (simply-annotate--inline-collapse-key ov) "thread-abc"))))))
+
+(ert-deftest sa-test-inline-collapse-key-bare ()
+  "`--inline-collapse-key' returns a stable fallback for bare strings."
+  (with-temp-buffer
+    (insert "some text")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil))
+      (let ((ov (simply-annotate--create-overlay 1 5 "a plain note")))
+        (let ((key (simply-annotate--inline-collapse-key ov)))
+          (should (string-prefix-p "bare-1-" key)))))))
+
+(ert-deftest sa-test-inline-expanded-p-default ()
+  "Threads are expanded by default; toggling collapses them (issue #12)."
+  (with-temp-buffer
+    (insert "some text")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil)
+          (simply-annotate-inline-expanded t)
+          (simply-annotate-inline-toggled-threads nil))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t1")
+                       (status . "open")
+                       (priority . "normal")
+                       (comments ((text . "x")))))))
+        (should (simply-annotate--inline-expanded-p ov))
+        ;; Toggle: now collapsed.
+        (let ((simply-annotate-inline-toggled-threads (make-hash-table :test 'equal)))
+          (puthash "t1" t simply-annotate-inline-toggled-threads)
+          (should-not (simply-annotate--inline-expanded-p ov))
+          ;; Flip the global default: toggled thread is now expanded again.
+          (let ((simply-annotate-inline-expanded nil))
+            (should (simply-annotate--inline-expanded-p ov))))))))
+
+(ert-deftest sa-test-inline-expanded-p-global-collapsed ()
+  "When global default is collapsed, non-toggled threads are collapsed."
+  (with-temp-buffer
+    (insert "some text")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-overlays nil)
+          (simply-annotate-inline-expanded nil)
+          (simply-annotate-inline-toggled-threads nil))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t1")
+                       (status . "open")
+                       (priority . "normal")
+                       (comments ((text . "x")))))))
+        (should-not (simply-annotate--inline-expanded-p ov))
+        ;; Toggle: now expanded.
+        (let ((simply-annotate-inline-toggled-threads (make-hash-table :test 'equal)))
+          (puthash "t1" t simply-annotate-inline-toggled-threads)
+          (should (simply-annotate--inline-expanded-p ov)))))))
+
+(ert-deftest sa-test-inline-text-collapsed-render ()
+  "A collapsed thread renders a header-only box with no body lines (issue #12)."
+  (with-temp-buffer
+    (insert "some content here")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-inline t)
+          (simply-annotate-overlays nil)
+          (simply-annotate-inline-expanded t)
+          (simply-annotate-inline-toggled-threads
+           (make-hash-table :test 'equal)))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t1")
+                       (status . "open")
+                       (priority . "normal")
+                       (comments ((text . "first") (author . "A"))
+                                 ((text . "second") (author . "B")))))))
+        (puthash "t1" t simply-annotate-inline-toggled-threads)
+        (let ((text (simply-annotate--inline-text ov)))
+          (should (string-match-p "┌─" text))
+          (should (string-match-p "└" text))
+          ;; Collapsed form has a comment-count hint.
+          (should (string-match-p "2 comments" text))
+          ;; No body line with │ prefix (only header and footer).
+          (should-not (string-match-p "^│ [^─]" text)))))))
+
+(ert-deftest sa-test-inline-text-expanded-render ()
+  "An expanded thread renders the full body (issue #12)."
+  (with-temp-buffer
+    (insert "some content here")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-inline t)
+          (simply-annotate-overlays nil)
+          (simply-annotate-inline-expanded t)
+          (simply-annotate-inline-toggled-threads nil))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t1")
+                       (status . "open")
+                       (priority . "normal")
+                       (comments ((text . "the body text")))))))
+        (let ((text (simply-annotate--inline-text ov)))
+          (should (string-match-p "┌─" text))
+          (should (string-match-p "└" text))
+          ;; Body is present.
+          (should (string-match-p "the body text" text)))))))
+
+(ert-deftest sa-test-toggle-inline-collapse-roundtrip ()
+  "`simply-annotate-toggle-inline-collapse' flips state and re-renders (issue #12)."
+  (with-temp-buffer
+    (insert "some content here")
+    (let ((simply-annotate-display-style 'highlight)
+          (simply-annotate-inline t)
+          (simply-annotate-overlays nil)
+          (simply-annotate-inline-expanded t)
+          (simply-annotate-inline-toggled-threads nil)
+          (simply-annotate-original-header-line nil))
+      (let ((ov (simply-annotate--create-overlay
+                 1 5 '((id . "t1")
+                       (status . "open")
+                       (priority . "normal")
+                       (comments ((text . "body")))))))
+        (push ov simply-annotate-overlays)
+        (goto-char 1)
+        ;; Initially expanded.
+        (should (simply-annotate--inline-expanded-p ov))
+        ;; Toggle to collapsed.
+        (simply-annotate-toggle-inline-collapse)
+        (should-not (simply-annotate--inline-expanded-p ov))
+        ;; Toggle back to expanded.
+        (simply-annotate-toggle-inline-collapse)
+        (should (simply-annotate--inline-expanded-p ov))))))
 
 (ert-deftest sa-test-serialize-deserialize-roundtrip ()
   "Annotations survive a serialize/clear/deserialize cycle intact."
@@ -690,7 +825,9 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
   (should (eq (lookup-key simply-annotate-command-map "j") 'simply-annotate-smart-action))
   (should (eq (lookup-key simply-annotate-command-map (kbd "SPC")) 'simply-annotate-menu))
   (should (eq (lookup-key simply-annotate-command-map "d")
-              'simply-annotate-toggle-hide-done)))
+              'simply-annotate-toggle-hide-done))
+  (should (eq (lookup-key simply-annotate-command-map "c")
+              'simply-annotate-toggle-inline-collapse)))
 
 (ert-deftest sa-test-repeat-map-wiring ()
   "The repeat map binds the repeatable commands and tags them (issue #8)."
@@ -700,11 +837,14 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
               'simply-annotate-cycle-tag-forward))
   (should (eq (lookup-key simply-annotate-repeat-map "d")
               'simply-annotate-toggle-hide-done))
+  (should (eq (lookup-key simply-annotate-repeat-map "c")
+              'simply-annotate-toggle-inline-collapse))
   (dolist (cmd '(simply-annotate-next
                  simply-annotate-previous
                  simply-annotate-cycle-display-style
                  simply-annotate-toggle-inline
                  simply-annotate-toggle-hide-done
+                 simply-annotate-toggle-inline-collapse
                  simply-annotate-cycle-tag-backward
                  simply-annotate-cycle-tag-forward
                  simply-annotate-update-display-style))

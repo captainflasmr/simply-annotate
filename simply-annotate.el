@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.3.1
+;; Version: 2.3.2
 ;; Package-Requires: ((emacs "27.2") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -98,6 +98,8 @@
 ;; - Press <prefix> d to toggle hiding of done/closed threads; customise
 ;;   `simply-annotate-hide-done-statuses' (e.g. '("resolved" "closed")) and
 ;;   `simply-annotate-hide-done-style' (`full' or `indicator')
+;; - Press <prefix> c to collapse/expand the inline annotation thread at
+;;   point (requires inline display to be on via <prefix> /)
 ;;
 ;; * Author Management
 ;; - Configure team members: (setq simply-annotate-author-list '("John" "Jane" "Bob"))
@@ -660,6 +662,21 @@ annotations whose thread `tags' list contains that string.")
 (defvar-local simply-annotate-inline nil
   "Non-nil when inline annotation display is active in this buffer.")
 
+(defvar-local simply-annotate-inline-expanded t
+  "Default expand state for inline annotation threads in this buffer.
+When non-nil (the default), all threads render fully expanded unless
+individually toggled via `simply-annotate-inline-toggled-threads'.
+When nil, threads render collapsed unless individually toggled.
+Toggle interactively with `simply-annotate-toggle-inline-collapse'.")
+
+(defvar-local simply-annotate-inline-toggled-threads nil
+  "Hash table of thread ids whose inline collapse state was individually toggled.
+An entry means \"opposite of `simply-annotate-inline-expanded'\".  This
+follows the same opt-in/opt-out model as the kanban board's
+`simply-annotate-kanban-expanded-cards'.  State is buffer-local and
+session-only (never persisted to the database); it survives overlay
+rebuilds because it is keyed by thread id, not overlay identity.")
+
 (defvar-local simply-annotate-hide-done t
   "Master switch for hiding done/closed threads in this buffer.
 When non-nil (the default), threads whose status is a member of
@@ -998,6 +1015,31 @@ Returns lines in display order (not reversed)."
         (cl-incf idx)))
     (nreverse lines)))
 
+(defun simply-annotate--inline-collapse-key (overlay)
+  "Return a stable key for OVERLAY's inline collapse state.
+Threads are keyed by their `id'; legacy bare-string annotations (no
+thread id) are keyed by a string derived from the overlay start and
+the annotation text, so the state survives overlay rebuilds within a
+session."
+  (let ((data (overlay-get overlay 'simply-annotation))
+        (start (overlay-start overlay)))
+    (if (simply-annotate--thread-p data)
+        (alist-get 'id data)
+      (format "bare-%d-%d" start (sxhash-equal data)))))
+
+(defun simply-annotate--inline-expanded-p (overlay)
+  "Return non-nil if OVERLAY's inline text should render expanded.
+Resolves `simply-annotate-inline-expanded' (the buffer default) against
+`simply-annotate-inline-toggled-threads' (per-thread overrides), using
+the same opt-in/opt-out model as the kanban board: when the default is
+expanded, toggled threads are collapsed, and vice-versa."
+  (let* ((key (simply-annotate--inline-collapse-key overlay))
+         (toggled (and simply-annotate-inline-toggled-threads
+                       (gethash key simply-annotate-inline-toggled-threads))))
+    (if toggled
+        (not simply-annotate-inline-expanded)
+      simply-annotate-inline-expanded)))
+
 (defun simply-annotate--inline-text (overlay)
   "Return the inline display string for OVERLAY as a box-drawn block."
   (let* ((data (overlay-get overlay 'simply-annotation))
@@ -1030,52 +1072,72 @@ Returns lines in display order (not reversed)."
                           (propertize " [MOVED]" 'face 'font-lock-warning-face))))
          (rule-len (max 20 (+ 4 (string-width label))))
          (wrap-width (when simply-annotate-inline-fill-column
-                       (- simply-annotate-inline-fill-column 4))))
+                       (- simply-annotate-inline-fill-column 4)))
+         (collapsed (not (simply-annotate--inline-expanded-p overlay))))
 
-    ;; Build tree and format using common renderer
-    (if is-thread
-        (let* ((tree (simply-annotate--build-comment-tree comments))
-               (last-idx (1- (length tree)))
-               (idx 0))
-          (dolist (root-node tree)
-            (setq formatted-lines
-                  (append formatted-lines
-                          (simply-annotate--comment-node-lines
-                           root-node 0 nil (= idx last-idx) wrap-width)))
-            (cl-incf idx)))
-      ;; Non-thread: use common renderer with a synthetic node
-      (setq formatted-lines
-            (simply-annotate--comment-node-lines
-             (cons (car comments) nil) 0 nil t wrap-width)))
+    (if collapsed
+        ;; Collapsed: render a compact header-only box with a comment-count hint.
+        (let* ((count (length comments))
+               (hint (if (> count 1)
+                         (format " (%d comment%s)" count (if (= count 1) "" "s"))
+                       ""))
+               (collapsed-label (concat label hint))
+               (collapsed-rule-len (max 20 (+ 4 (string-width collapsed-label))))
+               (header (propertize (concat "┌─ " collapsed-label " "
+                                            (make-string
+                                             (max 1 (- collapsed-rule-len 4
+                                                       (string-width collapsed-label)))
+                                             ?─))
+                                    'face 'simply-annotate-inline-border-face))
+               (footer (propertize (concat "└" (make-string (max 1 collapsed-rule-len) ?─) "┘")
+                                   'face 'simply-annotate-inline-border-face)))
+          (concat "\n" header "\n" footer "\n"))
+      ;; Expanded: build tree and format the full block.
+      (progn
+        ;; Build tree and format using common renderer
+        (if is-thread
+            (let* ((tree (simply-annotate--build-comment-tree comments))
+                   (last-idx (1- (length tree)))
+                   (idx 0))
+              (dolist (root-node tree)
+                (setq formatted-lines
+                      (append formatted-lines
+                              (simply-annotate--comment-node-lines
+                               root-node 0 nil (= idx last-idx) wrap-width)))
+                (cl-incf idx)))
+          ;; Non-thread: use common renderer with a synthetic node
+          (setq formatted-lines
+                (simply-annotate--comment-node-lines
+                 (cons (car comments) nil) 0 nil t wrap-width)))
 
-    ;; Handle max lines if necessary
-    (when (and simply-annotate-inline-max-lines
-               (> (length formatted-lines) simply-annotate-inline-max-lines))
-      (setq formatted-lines
-            (append (seq-take formatted-lines simply-annotate-inline-max-lines)
-                    (list (format "… +%d lines"
-                                  (- (length formatted-lines)
-                                     simply-annotate-inline-max-lines))))))
+        ;; Handle max lines if necessary
+        (when (and simply-annotate-inline-max-lines
+                   (> (length formatted-lines) simply-annotate-inline-max-lines))
+          (setq formatted-lines
+                (append (seq-take formatted-lines simply-annotate-inline-max-lines)
+                        (list (format "… +%d lines"
+                                      (- (length formatted-lines)
+                                         simply-annotate-inline-max-lines))))))
 
-    (let ((header (propertize (concat "┌─ " label " "
-                                     (make-string
-                                      (max 1 (- rule-len 4 (string-width label)))
-                                      ?─))
-                             'face 'simply-annotate-inline-border-face))
-          (body (mapconcat
-                 (lambda (line)
-                   (let ((styled-line (copy-sequence line)))
-                     (add-face-text-property
-                      0 (length styled-line)
-                      'simply-annotate-inline-face t styled-line)
-                     (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
-                             styled-line)))
-                 formatted-lines "\n"))
-          (footer (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
-                              'face 'simply-annotate-inline-border-face)))
-      (let ((result (concat "\n" header "\n" body "\n" footer "\n")))
-        ;; Collapse runs of multiple blank lines to at most one
-        (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result)))))
+        (let ((header (propertize (concat "┌─ " label " "
+                                          (make-string
+                                           (max 1 (- rule-len 4 (string-width label)))
+                                           ?─))
+                                  'face 'simply-annotate-inline-border-face))
+              (body (mapconcat
+                     (lambda (line)
+                       (let ((styled-line (copy-sequence line)))
+                         (add-face-text-property
+                          0 (length styled-line)
+                          'simply-annotate-inline-face t styled-line)
+                         (concat (propertize "│ " 'face 'simply-annotate-inline-border-face)
+                                 styled-line)))
+                     formatted-lines "\n"))
+              (footer (propertize (concat "└" (make-string (max 1 rule-len) ?─) "┘")
+                                  'face 'simply-annotate-inline-border-face)))
+          (let ((result (concat "\n" header "\n" body "\n" footer "\n")))
+            ;; Collapse runs of multiple blank lines to at most one
+            (replace-regexp-in-string "\n\\(\n\\)\\(\n\\)+" "\n\n" result)))))))
 
 (defun simply-annotate--add-inline-text (overlay)
   "Add inline annotation text to OVERLAY.
@@ -1415,6 +1477,34 @@ board, and org export are unaffected."
   (simply-annotate--apply-display-to-all)
   (message "Hide done/closed %s"
            (if simply-annotate-hide-done "enabled" "disabled")))
+
+;;;###autoload
+(defun simply-annotate-toggle-inline-collapse ()
+  "Toggle expand/collapse of the inline annotation thread at point.
+When collapsed, the thread renders as a compact header-only box (status,
+priority, tags, and a comment-count hint) instead of the full body.
+The collapse state is buffer-local and session-only; it is keyed by
+thread id so it survives `simply-annotate-refresh' (`<prefix> g').
+
+Uses the same opt-in/opt-out model as the kanban board: when
+`simply-annotate-inline-expanded' is t (the default), toggling a thread
+collapses it; when nil, toggling expands it.  No effect when inline
+display is off -- enable it first with `simply-annotate-toggle-inline'
+\(`<prefix> /')."
+  (interactive)
+  (let ((overlay (simply-annotate--overlay-at-point)))
+    (if overlay
+        (let ((key (simply-annotate--inline-collapse-key overlay)))
+          (unless simply-annotate-inline-toggled-threads
+            (setq simply-annotate-inline-toggled-threads (make-hash-table :test 'equal)))
+          (if (gethash key simply-annotate-inline-toggled-threads)
+              (remhash key simply-annotate-inline-toggled-threads)
+            (puthash key t simply-annotate-inline-toggled-threads))
+          (simply-annotate--apply-display-to-all)
+          (message "Inline thread %s"
+                   (if (simply-annotate--inline-expanded-p overlay)
+                       "expanded" "collapsed")))
+      (message "No annotation at point"))))
 
 ;;; Overlay Classification
 
@@ -5281,6 +5371,7 @@ When called interactively:
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
+    (define-key map (kbd "c") #'simply-annotate-toggle-inline-collapse)
     (define-key map (kbd "n") #'simply-annotate-next)
     (define-key map (kbd "v") #'simply-annotate-previous)
     (define-key map (kbd "g") #'simply-annotate-update-display-style)
@@ -5327,7 +5418,8 @@ Available keys:
   A  all projects      C-t  project table   f  jump to file    p  priority
   t  tag               o  org export      e  edit sexp
   [  prev tag filter   ]  next tag filter   \\='  cycle style
-  /  toggle inline     d  toggle hide-done  n  next            v  previous
+  /  toggle inline     d  toggle hide-done  c  collapse thread
+  n  next            v  previous
   g  refresh           SPC  transient menu
 
 When binding to M-s, you will shadow Emacs's default `search-map'
@@ -5374,6 +5466,7 @@ should bind to a prefix key of your choice (M-s is recommended).")
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
+    (define-key map (kbd "c") #'simply-annotate-toggle-inline-collapse)
     (define-key map (kbd "[") #'simply-annotate-cycle-tag-backward)
     (define-key map (kbd "]") #'simply-annotate-cycle-tag-forward)
     (define-key map (kbd "g") #'simply-annotate-update-display-style)
@@ -5383,15 +5476,17 @@ When `repeat-mode' is enabled (Emacs 28.1+), invoking any of these
 commands once -- e.g. via M-n or your command-map prefix -- lets you
 continue with the bare keys shown here without re-typing the prefix:
 n/v to step between annotations, \\=' to cycle display style, / to
-toggle inline, d to toggle hide-done, [ and ] to cycle the tag filter,
-g to refresh.  The keys mirror their `simply-annotate-command-map'
-bindings.  On Emacs 27.2 the `repeat-map' properties are simply inert.")
+toggle inline, d to toggle hide-done, c to collapse/expand a thread,
+[ and ] to cycle the tag filter, g to refresh.  The keys mirror their
+`simply-annotate-command-map' bindings.  On Emacs 27.2 the `repeat-map'
+properties are simply inert.")
 
 (dolist (cmd '(simply-annotate-next
                simply-annotate-previous
                simply-annotate-cycle-display-style
                simply-annotate-toggle-inline
                simply-annotate-toggle-hide-done
+               simply-annotate-toggle-inline-collapse
                simply-annotate-cycle-tag-backward
                simply-annotate-cycle-tag-forward
                simply-annotate-update-display-style))
@@ -5740,6 +5835,7 @@ local bindings on the same prefix."
     ("'" "cycle style"       simply-annotate-cycle-display-style :transient t)
     ("/" "toggle inline"     simply-annotate-toggle-inline :transient t)
     ("d" "toggle hide-done"  simply-annotate-toggle-hide-done :transient t)
+    ("c" "collapse thread"   simply-annotate-toggle-inline-collapse :transient t)
     ("[" "prev tag filter"   simply-annotate-cycle-tag-backward :transient t)
     ("]" "next tag filter"   simply-annotate-cycle-tag-forward :transient t)
     ("G" "set tag filter"    simply-annotate-set-tag-filter)

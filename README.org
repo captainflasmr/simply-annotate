@@ -53,6 +53,12 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-06-24 Wed> *2.3.2*
+
+Per-thread inline collapse/expand.
+
+- *Collapse individual threads* -- Press ~<prefix> c~ to collapse the inline annotation thread at point to a one-line header box (with status, priority, tags, and a comment count), or expand it back.  State is buffer-local and survives ~<prefix> g~ refresh.  Also on the transient Display panel and in ~repeat-mode~.  Requires inline display (~<prefix> /~).  (#12)
+
 ** <2026-06-23 Tue> *2.3.1*
 
 Hide resolved/closed threads in the source buffer.
@@ -507,6 +513,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> '= | =simply-annotate-cycle-display-style=      | Cycle through display styles         |
 | =<prefix> /= | =simply-annotate-toggle-inline=            | Toggle inline annotation display     |
 | =<prefix> d= | =simply-annotate-toggle-hide-done=         | Toggle hiding of done/closed threads |
+| =<prefix> c= | =simply-annotate-toggle-inline-collapse=   | Collapse/expand thread at point      |
 | =<prefix> K= | =simply-annotate-kanban=                   | Kanban board of project annotations  |
 | =<prefix> n= | =simply-annotate-next=                     | Jump to next annotation              |
 | =<prefix> v= | =simply-annotate-previous=                 | Jump to previous annotation          |
@@ -614,6 +621,8 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =simply-annotate-remember-author-per-file= | =nil=                                | Remember author choice per file                 |
 | =simply-annotate-thread-statuses=          | ='("open" "in-progress" ...)=        | Available status values                         |
 | =simply-annotate-priority-levels=          | ='("low" "normal" "high" ...)=       | Available priority levels                       |
+| =simply-annotate-hide-done-statuses=       | =nil=                                | Statuses whose threads are hidden in source     |
+| =simply-annotate-hide-done-style=          | ='full=                              | =full= or =indicator= for hidden threads        |
 
 ** Custom Faces
 

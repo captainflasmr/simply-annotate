@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-06-24 Wed> *2.3.2*
+
+Per-thread inline collapse/expand.
+
+*** Features
+
+- *Collapse/expand individual inline threads* -- Press ~<prefix> c~ (~simply-annotate-toggle-inline-collapse~) to collapse the inline annotation thread at point to a compact header-only box (status, priority, tags, and a comment-count hint) or expand it back.  The state is buffer-local and session-only, keyed by thread id so it survives ~simply-annotate-refresh~ (~<prefix> g~).  Uses the same opt-in/opt-out model as the kanban board: when ~simply-annotate-inline-expanded~ is ~t~ (the default), toggling a thread collapses it; when nil, toggling expands it.  Also on the transient Display panel and in ~repeat-mode~.  Requires inline display to be on (~<prefix> /~).  (#12)
+
 ** <2026-06-23 Tue> *2.3.1*
 
 Hide resolved/closed threads in the source buffer.
