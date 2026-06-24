@@ -348,7 +348,10 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </li><li><strong class="strong">Dired integration</strong>: Fringe indicators in dired for files with annotations
 </li><li><strong class="strong">Kanban board</strong>: Visual board view of project annotations grouped by status columns
 </li><li><strong class="strong">Cross-project overview</strong>: Discover all projects with annotations (from both the global database and <code class="code">project.el</code>&rsquo;s known projects) in a sortable summary table with per-status counts and one-keystroke drill-down to any project&rsquo;s table, org listing, or kanban board
-</li><li><strong class="strong">Transient menu</strong>: Discoverable menu (<kbd class="kbd">M-s SPC</kbd>) grouping every command into labelled panels; swaps to a Dired-specific layout in Dired buffers
+</li><li><strong class="strong">Transient menu</strong>: Discoverable menu (<kbd class="kbd">M-s ?</kbd>) grouping every command into labelled panels; swaps to a Dired-specific layout in Dired buffers
+</li><li><strong class="strong">Hide done/closed threads</strong>: Configurable hiding of resolved/closed annotation threads in the source buffer, with full-hide or residual-indicator styles (<kbd class="kbd">M-s d</kbd>)
+</li><li><strong class="strong">Inline collapse/expand</strong>: Collapse individual inline annotation threads to a compact header-only box and expand them back (<kbd class="kbd">M-s c</kbd>)
+</li><li><strong class="strong">Auto-enable</strong>: Automatically enables <code class="code">simply-annotate-mode</code> for files that already have annotations when opened
 </li></ul>
 
 <hr>
@@ -375,7 +378,7 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 <pre class="lisp-preformatted">(use-package simply-annotate
   :ensure t
   :demand t
-  :hook (find-file-hook . simply-annotate-mode)
+  :hook (find-file . simply-annotate-mode)
   :config
   (global-set-key (kbd &quot;M-s&quot;) simply-annotate-command-map))
 </pre></div>
@@ -388,9 +391,11 @@ content. It&rsquo;s perfect for code review, research, note-taking, and document
 </p>
 <dl class="table">
 <dt><code class="code">simply-annotate-mode-map</code></dt>
-<dd><p>The minor mode keymap, intentionally minimal.  Only binds <kbd class="kbd">M-n</kbd>
-(next annotation) and <kbd class="kbd">M-p</kbd> (previous annotation) so it won&rsquo;t
-conflict with other packages.
+<dd><p>The minor mode keymap, intentionally minimal.  It does not install
+global <kbd class="kbd">M-n</kbd>/<kbd class="kbd">M-p</kbd> bindings.  Use the command-map prefix
+(e.g. <kbd class="kbd">M-s n</kbd> / <kbd class="kbd">M-s p</kbd>) for navigation, or enable
+<code class="code">repeat-mode</code> to use bare <kbd class="kbd">n</kbd>/<kbd class="kbd">p</kbd> after invoking a
+navigation command.
 </p>
 </dd>
 <dt><code class="code">simply-annotate-command-map</code></dt>
@@ -427,7 +432,7 @@ loaded.
 ;; it defers loading until first use.
 (use-package simply-annotate
   :bind-keymap (&quot;C-c a&quot; . simply-annotate-command-map)
-  :hook (find-file-hook . simply-annotate-mode))
+  :hook (find-file . simply-annotate-mode))
 </pre></div>
 
 </div>
@@ -464,11 +469,11 @@ loaded.
 </li><li> Enable annotation mode: <kbd class="kbd">M-x simply-annotate-mode</kbd>
 </li><li> Select some text and press <kbd class="kbd">M-s j</kbd> to create your first annotation
 </li><li> Type your annotation text and press <kbd class="kbd">C-c C-c</kbd> to save
-</li><li> Navigate with <kbd class="kbd">M-n</kbd> (next) and <kbd class="kbd">M-p</kbd> (previous)
+</li><li> Navigate with <kbd class="kbd">M-s n</kbd> (next) and <kbd class="kbd">M-s p</kbd> (previous)
 </li><li> Press <kbd class="kbd">M-s '</kbd> to cycle through different display styles
 </li><li> Press <kbd class="kbd">M-s [</kbd> and <kbd class="kbd">M-s ]</kbd> to cycle through annotation levels
 </li><li> Press <kbd class="kbd">M-s r</kbd> to add a reply to any annotation
-</li><li> Press <kbd class="kbd">M-s s</kbd> to set status (open, resolved, etc.)
+</li><li> Press <kbd class="kbd">M-s S</kbd> to set status (open, resolved, etc.)
 </li><li> Press <kbd class="kbd">M-s e</kbd> to edit annotation data structure directly
 </li><li> Press <kbd class="kbd">M-s o</kbd> to export annotations to org-mode
 </li><li> Press <kbd class="kbd">M-s A</kbd> to see every project that has annotations in a sortable overview
@@ -899,7 +904,7 @@ of the root comment.
 </p>
 <ol class="enumerate">
 <li> Place cursor on annotated text
-</li><li> Press <kbd class="kbd">M-s s</kbd> to set status
+</li><li> Press <kbd class="kbd">M-s S</kbd> to set status
 </li><li> Choose from: <code class="code">open</code>, <code class="code">in-progress</code>, <code class="code">resolved</code>, <code class="code">closed</code>
 </li></ol>
 
@@ -916,7 +921,7 @@ of the root comment.
 </p>
 <ol class="enumerate">
 <li> Place cursor on annotated text
-</li><li> Press <kbd class="kbd">M-s p</kbd> to set priority
+</li><li> Press <kbd class="kbd">M-s ,</kbd> to set priority
 </li><li> Choose from: <code class="code">low</code>, <code class="code">normal</code>, <code class="code">high</code>, <code class="code">critical</code>
 </li></ol>
 
@@ -1063,11 +1068,11 @@ automatically narrowed to that subdirectory.
 
 <ol class="enumerate">
 <li> <strong class="strong">Reviewer</strong> creates annotations on problematic code sections
-</li><li> Set priority with <kbd class="kbd">M-s p</kbd> (high for blocking issues)
+</li><li> Set priority with <kbd class="kbd">M-s ,</kbd> (high for blocking issues)
 </li><li> Add relevant tags with <kbd class="kbd">M-s t</kbd> (<code class="code">#security</code>, <code class="code">#performance</code>, <code class="code">#style</code>)
 </li><li> <strong class="strong">Developer</strong> adds replies with <kbd class="kbd">M-s r</kbd> explaining or asking questions
 </li><li> <strong class="strong">Reviewer</strong> responds with additional context or approval
-</li><li> Mark as resolved with <kbd class="kbd">M-s s</kbd> when fixed
+</li><li> Mark as resolved with <kbd class="kbd">M-s S</kbd> when fixed
 </li><li> Export final review with <kbd class="kbd">M-s o</kbd> to org-mode for documentation
 </li></ol>
 
@@ -1078,7 +1083,7 @@ automatically narrowed to that subdirectory.
 <ol class="enumerate">
 <li> <strong class="strong">Author</strong> writes draft document
 </li><li> <strong class="strong">Reviewers</strong> add annotations with feedback using different author names
-</li><li> Track status of each feedback item with <kbd class="kbd">M-s s</kbd>
+</li><li> Track status of each feedback item with <kbd class="kbd">M-s S</kbd>
 </li><li> Use <kbd class="kbd">M-s l</kbd> to get overview of all feedback
 </li><li> Export to org-mode with <kbd class="kbd">M-s o</kbd> for final review meeting
 </li><li> Archive resolved items, keep open ones visible
@@ -1369,7 +1374,7 @@ removed, but the underlying text remains visible:
 <ul class="itemize mark-bullet">
 <li><strong class="strong">Display</strong>: Only overlays matching the active level show highlights,
 fringe indicators, and inline blocks.
-</li><li><strong class="strong">Navigation</strong>: <kbd class="kbd">M-n</kbd> and <kbd class="kbd">M-p</kbd> visit only annotations at the
+</li><li><strong class="strong">Navigation</strong>: <kbd class="kbd">M-s n</kbd> and <kbd class="kbd">M-s p</kbd> visit only annotations at the
 active level.
 </li><li><strong class="strong">Editing</strong>: <kbd class="kbd">M-s j</kbd> on annotated text only opens annotations matching
 the active level.
@@ -1471,10 +1476,10 @@ required.
 <p>Simply Annotate provides convenient commands for navigation:
 </p>
 <dl class="table">
-<dt><kbd class="kbd">M-n</kbd></dt>
+<dt><kbd class="kbd">M-s n</kbd></dt>
 <dd><p><code class="code">simply-annotate-next</code> - Jump to next annotation
 </p></dd>
-<dt><kbd class="kbd">M-p</kbd></dt>
+<dt><kbd class="kbd">M-s p</kbd></dt>
 <dd><p><code class="code">simply-annotate-previous</code> - Jump to previous annotation
 </p></dd>
 </dl>
@@ -1771,7 +1776,7 @@ migrating annotations between the project and global databases, when the
 set of annotated files may have changed without Dired being re-read.
 </p>
 <a class="index-entry-id" id="index-simply_002dannotate_002ddired_002dtransient"></a>
-<p>When the transient menu (<kbd class="kbd">M-s SPC</kbd>, see <a class="pxref" href="#Transient-Menu">Transient Menu</a>) is invoked
+<p>When the transient menu (<kbd class="kbd">M-s ?</kbd>, see <a class="pxref" href="#Transient-Menu">Transient Menu</a>) is invoked
 from a Dired buffer, it switches to <code class="code">simply-annotate-dired-transient</code>,
 a Dired-focused layout exposing the fringe-mode toggle, per-file listing,
 refresh, project views, and database commands.
@@ -1786,7 +1791,7 @@ refresh, project views, and database commands.
 <li>Shows helpful instructions with threading commands in the header
 </li><li>Displays thread information, status, and priority
 </li><li>Shows complete conversation thread with replies
-</li><li>Access to threading commands (<kbd class="kbd">M-s r</kbd>, <kbd class="kbd">M-s s</kbd>, <kbd class="kbd">M-s p</kbd>, <kbd class="kbd">M-s t</kbd>)
+</li><li>Access to threading commands (<kbd class="kbd">M-s r</kbd>, <kbd class="kbd">M-s S</kbd>, <kbd class="kbd">M-s ,</kbd>, <kbd class="kbd">M-s t</kbd>)
 </li><li>Access to advanced sexp editing with <kbd class="kbd">M-s e</kbd>
 </li><li>Supports multi-line annotations with full editing capabilities
 </li><li>Starts in edit mode for immediate typing
@@ -2347,7 +2352,7 @@ making the conversation structure visible and foldable in org-mode.
 <a class="index-entry-id" id="index-simply_002dannotate_002dmenu"></a>
 <a class="index-entry-id" id="index-simply_002dannotate_002dtransient"></a>
 <a class="index-entry-id" id="index-simply_002dannotate_002ddired_002dtransient-1"></a>
-<p><kbd class="kbd">M-s SPC</kbd> (with the recommended prefix) opens
+<p><kbd class="kbd">M-s ?</kbd> (with the recommended prefix) opens
 <code class="code">simply-annotate-menu</code>, a discoverable dispatcher that shows every
 command grouped into labelled panels.  The dispatcher selects between two
 layouts based on context:
@@ -2375,16 +2380,17 @@ ELPA.
 <table class="multitable">
 <thead><tr><th width="12%">Panel</th><th width="30%">Key</th><th width="58%">Command</th></tr></thead>
 <tbody><tr><td width="12%">Navigate</td><td width="30%"><kbd class="kbd">n</kbd></td><td width="58%"><code class="code">simply-annotate-next</code></td></tr>
-<tr><td width="12%"></td><td width="30%"><kbd class="kbd">v</kbd></td><td width="58%"><code class="code">simply-annotate-previous</code></td></tr>
+<tr><td width="12%"></td><td width="30%"><kbd class="kbd">p</kbd></td><td width="58%"><code class="code">simply-annotate-previous</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">f</kbd></td><td width="58%"><code class="code">simply-annotate-jump-to-file</code></td></tr>
 <tr><td width="12%">Create / Edit</td><td width="30%"><kbd class="kbd">j</kbd></td><td width="58%"><code class="code">simply-annotate-smart-action</code></td></tr>
+<tr><td width="12%"></td><td width="30%"><kbd class="kbd">SPC</kbd></td><td width="58%"><code class="code">simply-annotate-smart-action</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">-</kbd></td><td width="58%"><code class="code">simply-annotate-remove</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">C</kbd></td><td width="58%"><code class="code">simply-annotate-clear-buffer-annotations</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">e</kbd></td><td width="58%"><code class="code">simply-annotate-edit-sexp</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">o</kbd></td><td width="58%"><code class="code">simply-annotate-export-to-org-file</code></td></tr>
 <tr><td width="12%">Thread</td><td width="30%"><kbd class="kbd">r</kbd></td><td width="58%"><code class="code">simply-annotate-reply-to-annotation</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">s</kbd></td><td width="58%"><code class="code">simply-annotate-set-annotation-status</code></td></tr>
-<tr><td width="12%"></td><td width="30%"><kbd class="kbd">p</kbd></td><td width="58%"><code class="code">simply-annotate-set-annotation-priority</code></td></tr>
+<tr><td width="12%"></td><td width="30%"><kbd class="kbd">,</kbd></td><td width="58%"><code class="code">simply-annotate-set-annotation-priority</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">t</kbd></td><td width="58%"><code class="code">simply-annotate-add-annotation-tag</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">x</kbd></td><td width="58%"><code class="code">simply-annotate-remove-annotation-tag</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">a</kbd></td><td width="58%"><code class="code">simply-annotate-change-annotation-author</code></td></tr>
@@ -2398,6 +2404,8 @@ ELPA.
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">F</kbd></td><td width="58%"><code class="code">simply-annotate-search-by-tag</code></td></tr>
 <tr><td width="12%">Display</td><td width="30%"><kbd class="kbd">'</kbd></td><td width="58%"><code class="code">simply-annotate-cycle-display-style</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">/</kbd></td><td width="58%"><code class="code">simply-annotate-toggle-inline</code></td></tr>
+<tr><td width="12%"></td><td width="30%"><kbd class="kbd">d</kbd></td><td width="58%"><code class="code">simply-annotate-toggle-hide-done</code></td></tr>
+<tr><td width="12%"></td><td width="30%"><kbd class="kbd">c</kbd></td><td width="58%"><code class="code">simply-annotate-toggle-inline-collapse</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">[</kbd></td><td width="58%"><code class="code">simply-annotate-cycle-tag-backward</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">]</kbd></td><td width="58%"><code class="code">simply-annotate-cycle-tag-forward</code></td></tr>
 <tr><td width="12%"></td><td width="30%"><kbd class="kbd">G</kbd></td><td width="58%"><code class="code">simply-annotate-set-tag-filter</code></td></tr>
@@ -2409,9 +2417,9 @@ ELPA.
 </tbody>
 </table>
 
-<p>Navigation and display-only commands (<kbd class="kbd">n</kbd>, <kbd class="kbd">v</kbd>, <kbd class="kbd">'</kbd>, <kbd class="kbd">/</kbd>,
-<kbd class="kbd">[</kbd>, <kbd class="kbd">]</kbd>, <kbd class="kbd">g</kbd>) keep the transient open so you can chain
-operations; other commands close it.
+<p>Navigation and display-only commands (<kbd class="kbd">n</kbd>, <kbd class="kbd">p</kbd>, <kbd class="kbd">'</kbd>, <kbd class="kbd">/</kbd>,
+<kbd class="kbd">d</kbd>, <kbd class="kbd">c</kbd>, <kbd class="kbd">[</kbd>, <kbd class="kbd">]</kbd>, <kbd class="kbd">g</kbd>) keep the transient open so
+you can chain operations; other commands close it.
 </p>
 </div>
 <div class="section-level-extent" id="Dired-Layout">
@@ -2461,15 +2469,11 @@ work directly from a file manager without first visiting a source file.
 <div class="section-level-extent" id="Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029">
 <h3 class="section"><span>15.1 Mode Map (<code class="code">simply-annotate-mode-map</code>)<a class="copiable-link" href="#Mode-Map-_0028simply_002dannotate_002dmode_002dmap_0029"> &para;</a></span></h3>
 
-<p>Always active when <code class="code">simply-annotate-mode</code> is enabled:
+<p>Intentionally minimal: no global <kbd class="kbd">M-n</kbd>/<kbd class="kbd">M-p</kbd> bindings are
+installed.  Use the command-map prefix (e.g. <kbd class="kbd">M-s n</kbd> /
+<kbd class="kbd">M-s p</kbd>) for navigation, or enable <code class="code">repeat-mode</code> to use
+bare <kbd class="kbd">n</kbd>/<kbd class="kbd">p</kbd> after invoking a navigation command.
 </p>
-<table class="multitable">
-<thead><tr><th width="15%">Key</th><th width="35%">Command</th><th width="50%">Description</th></tr></thead>
-<tbody><tr><td width="15%"><kbd class="kbd">M-n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-p</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
-</tbody>
-</table>
-
 </div>
 <div class="section-level-extent" id="Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029">
 <h3 class="section"><span>15.2 Command Map (<code class="code">simply-annotate-command-map</code>)<a class="copiable-link" href="#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029"> &para;</a></span></h3>
@@ -2479,13 +2483,13 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 </p>
 <table class="multitable">
 <thead><tr><th width="15%">Key</th><th width="35%">Command</th><th width="50%">Description</th></tr></thead>
-<tbody><tr><td width="15%"><kbd class="kbd">M-s j</kbd></td><td width="35%"><code class="code">simply-annotate-smart-action</code></td><td width="50%">Smart create/view/edit annotation</td></tr>
+<tbody><tr><td width="15%"><kbd class="kbd">M-s j</kbd> or <kbd class="kbd">M-s SPC</kbd></td><td width="35%"><code class="code">simply-annotate-smart-action</code></td><td width="50%">Smart create/view/edit annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s e</kbd></td><td width="35%"><code class="code">simply-annotate-edit-sexp</code></td><td width="50%">Edit annotation as raw Elisp sexp</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s r</kbd></td><td width="35%"><code class="code">simply-annotate-reply-to-annotation</code></td><td width="50%">Add reply to annotation</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s s</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="50%">Set status (open/resolved)</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="50%">Set priority (low/high)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s S</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-status</code></td><td width="50%">Set status (open/resolved)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s ,</kbd></td><td width="35%"><code class="code">simply-annotate-set-annotation-priority</code></td><td width="50%">Set priority (low/high)</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s t</kbd></td><td width="35%"><code class="code">simply-annotate-add-annotation-tag</code></td><td width="50%">Add tag (review, bug)</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s C-t</kbd></td><td width="35%"><code class="code">simply-annotate-remove-annotation-tag</code></td><td width="50%">Remove tag from annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s C-d</kbd></td><td width="35%"><code class="code">simply-annotate-remove-annotation-tag</code></td><td width="50%">Remove tag from annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s F</kbd></td><td width="35%"><code class="code">simply-annotate-search-by-tag</code></td><td width="50%">Search annotations by tag</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s a</kbd></td><td width="35%"><code class="code">simply-annotate-change-annotation-author</code></td><td width="50%">Change author</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s o</kbd></td><td width="35%"><code class="code">simply-annotate-export-to-org-file</code></td><td width="50%">Export to org-mode</td></tr>
@@ -2497,16 +2501,18 @@ recommended prefix).  See <a class="xref" href="#Installation">Installation</a>,
 <tr><td width="15%"><kbd class="kbd">M-s P</kbd></td><td width="35%"><code class="code">simply-annotate-show-project</code></td><td width="50%">Browse annotations in current project</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s C-t</kbd></td><td width="35%"><code class="code">simply-annotate-list-project-table</code></td><td width="50%">Sortable project-wide table</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s f</kbd></td><td width="35%"><code class="code">simply-annotate-jump-to-file</code></td><td width="50%">Jump to annotated file (project-scoped)</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s [</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level-backward</code></td><td width="50%">Cycle levels backward (line &rArr; defun &rArr; file)</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s ]</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-level-forward</code></td><td width="50%">Cycle levels forward (file &rArr; defun &rArr; line)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s [</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-tag-backward</code></td><td width="50%">Cycle tag filter backward</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s ]</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-tag-forward</code></td><td width="50%">Cycle tag filter forward</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s '</kbd></td><td width="35%"><code class="code">simply-annotate-cycle-display-style</code></td><td width="50%">Cycle through display styles</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s /</kbd></td><td width="35%"><code class="code">simply-annotate-toggle-inline</code></td><td width="50%">Toggle inline annotation display</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s d</kbd></td><td width="35%"><code class="code">simply-annotate-toggle-hide-done</code></td><td width="50%">Toggle hiding of done/closed threads</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s c</kbd></td><td width="35%"><code class="code">simply-annotate-toggle-inline-collapse</code></td><td width="50%">Collapse/expand thread at point</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s K</kbd></td><td width="35%"><code class="code">simply-annotate-kanban</code></td><td width="50%">Kanban board of project annotations</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s A</kbd></td><td width="35%"><code class="code">simply-annotate-list-projects</code></td><td width="50%">Cross-project overview of every project with annotations</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s n</kbd></td><td width="35%"><code class="code">simply-annotate-next</code></td><td width="50%">Jump to next annotation</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s v</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s p</kbd></td><td width="35%"><code class="code">simply-annotate-previous</code></td><td width="50%">Jump to previous annotation</td></tr>
 <tr><td width="15%"><kbd class="kbd">M-s g</kbd></td><td width="35%"><code class="code">simply-annotate-update-display-style</code></td><td width="50%">Refresh all annotation overlays</td></tr>
-<tr><td width="15%"><kbd class="kbd">M-s SPC</kbd></td><td width="35%"><code class="code">simply-annotate-menu</code></td><td width="50%">Open the transient menu (see <a class="pxref" href="#Transient-Menu">Transient Menu</a>)</td></tr>
+<tr><td width="15%"><kbd class="kbd">M-s ?</kbd></td><td width="35%"><code class="code">simply-annotate-menu</code></td><td width="50%">Open the transient menu (see <a class="pxref" href="#Transient-Menu">Transient Menu</a>)</td></tr>
 </tbody>
 </table>
 
@@ -2762,6 +2768,13 @@ Supports multiline strings (use <code class="code">\n</code>).  Set to <code cla
 <dt><a id="index-simply_002dannotate_002dstale_002dface"></a><span><code class="code">simply-annotate-stale-face</code><a class="copiable-link" href="#index-simply_002dannotate_002dstale_002dface"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dstale_002dface-1"></a>
 <p>Face used for stale annotation markers.  Default: tomato foreground, italic.
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dauto_002denable"></a><span><code class="code">simply-annotate-auto-enable</code><a class="copiable-link" href="#index-simply_002dannotate_002dauto_002denable"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dauto_002denable-1"></a>
+<p>When non-nil, automatically enable <code class="code">simply-annotate-mode</code> for
+files that have annotations in the database when opened.  Set to
+<code class="code">nil</code> to require manual enabling.  Default: <code class="code">t</code>
 </p></dd>
 </dl>
 
@@ -2809,6 +2822,22 @@ Supports multiline strings (use <code class="code">\n</code>).  Set to <code cla
 <dt><a id="index-simply_002dannotate_002dpriority_002dlevels-1"></a><span><code class="code">simply-annotate-priority-levels</code><a class="copiable-link" href="#index-simply_002dannotate_002dpriority_002dlevels-1"> &para;</a></span></dt>
 <dd><a class="index-entry-id" id="index-simply_002dannotate_002dpriority_002dlevels-2"></a>
 <p>Available priority levels for annotations. Default: <code class="code">'(&quot;low&quot; &quot;normal&quot; &quot;high&quot; &quot;critical&quot;)</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dhide_002ddone_002dstatuses"></a><span><code class="code">simply-annotate-hide-done-statuses</code><a class="copiable-link" href="#index-simply_002dannotate_002dhide_002ddone_002dstatuses"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dhide_002ddone_002dstatuses-1"></a>
+<p>Statuses whose annotation threads are hidden in the source buffer.
+Each entry is a string matching a value in
+<code class="code">simply-annotate-thread-statuses</code>.  Nil disables hiding entirely.
+Toggle at runtime with <code class="code">simply-annotate-toggle-hide-done</code>
+(<kbd class="kbd">M-s d</kbd>).  Default: <code class="code">nil</code>
+</p>
+</dd>
+<dt><a id="index-simply_002dannotate_002dhide_002ddone_002dstyle"></a><span><code class="code">simply-annotate-hide-done-style</code><a class="copiable-link" href="#index-simply_002dannotate_002dhide_002ddone_002dstyle"> &para;</a></span></dt>
+<dd><a class="index-entry-id" id="index-simply_002dannotate_002dhide_002ddone_002dstyle-1"></a>
+<p>How threads hidden by <code class="code">simply-annotate-hide-done-statuses</code> are
+drawn.  <code class="code">full</code> removes every visual cue; <code class="code">indicator</code> leaves
+a single dim fringe marker.  Default: <code class="code">'full</code>
 </p></dd>
 </dl>
 
@@ -2895,13 +2924,17 @@ Supports multiline strings (use <code class="code">\n</code>).  Set to <code cla
 <div class="example lisp">
 <pre class="lisp-preformatted">(use-package simply-annotate
   :hook
-  (find-file-hook . simply-annotate-mode)
+  (find-file . simply-annotate-mode)
   :bind
   (&quot;C-c A&quot; . simply-annotate-mode)
   (&quot;C-c 0&quot; . simply-annotate-show-all)
   (&quot;C-c 9&quot; . simply-annotate-jump-to-file))
 </pre></div>
 
+<p>With <code class="code">simply-annotate-auto-enable</code> set to <code class="code">t</code> (the default),
+files that already have annotations in the database will enable the
+mode automatically even without the <code class="code">find-file</code> hook.
+</p>
 <hr>
 </div>
 </div>
@@ -3379,6 +3412,8 @@ positioned on annotated text. In fringe mode, make sure you&rsquo;re on the corr
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Threading-and-Collaboration">Threading and Collaboration</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist-1"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauthor_002dlist-2"><code>simply-annotate-author-list</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauto_002denable"><code>simply-annotate-auto-enable</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dauto_002denable-1"><code>simply-annotate-auto-enable</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dheight-1"><code>simply-annotate-buffer-height</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dbuffer_002dname"><code>simply-annotate-buffer-name</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
@@ -3399,6 +3434,10 @@ positioned on annotated text. In fringe mode, make sure you&rsquo;re on the corr
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Display-Styles">Display Styles</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-1"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dfringe_002dindicator-2"><code>simply-annotate-fringe-indicator</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhide_002ddone_002dstatuses"><code>simply-annotate-hide-done-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhide_002ddone_002dstatuses-1"><code>simply-annotate-hide-done-statuses</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhide_002ddone_002dstyle"><code>simply-annotate-hide-done-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
+<tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhide_002ddone_002dstyle-1"><code>simply-annotate-hide-done-style</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dhighlight_002dface-1"><code>simply-annotate-highlight-face</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>
 <tr><td class="printindex-index-entry"><a href="#index-simply_002dannotate_002dinline_002dmax_002dlines"><code>simply-annotate-inline-max-lines</code></a></td><td class="printindex-index-section"><a href="#Customization">Customization</a></td></tr>

@@ -129,7 +129,13 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @item
 @strong{Cross-project overview}: Discover all projects with annotations (from both the global database and @code{project.el}'s known projects) in a sortable summary table with per-status counts and one-keystroke drill-down to any project's table, org listing, or kanban board
 @item
-@strong{Transient menu}: Discoverable menu (@kbd{M-s SPC}) grouping every command into labelled panels; swaps to a Dired-specific layout in Dired buffers
+@strong{Transient menu}: Discoverable menu (@kbd{M-s ?}) grouping every command into labelled panels; swaps to a Dired-specific layout in Dired buffers
+@item
+@strong{Hide done/closed threads}: Configurable hiding of resolved/closed annotation threads in the source buffer, with full-hide or residual-indicator styles (@kbd{M-s d})
+@item
+@strong{Inline collapse/expand}: Collapse individual inline annotation threads to a compact header-only box and expand them back (@kbd{M-s c})
+@item
+@strong{Auto-enable}: Automatically enables @code{simply-annotate-mode} for files that already have annotations when opened
 @end itemize
 
 @node Installation
@@ -145,7 +151,7 @@ The easiest way to install Simply Annotate is through MELPA:
 (use-package simply-annotate
   :ensure t
   :demand t
-  :hook (find-file-hook . simply-annotate-mode)
+  :hook (find-file . simply-annotate-mode)
   :config
   (global-set-key (kbd "M-s") simply-annotate-command-map))
 @end lisp
@@ -156,9 +162,11 @@ Simply Annotate provides two keymaps:
 
 @table @code
 @item simply-annotate-mode-map
-The minor mode keymap, intentionally minimal.  Only binds @kbd{M-n}
-(next annotation) and @kbd{M-p} (previous annotation) so it won't
-conflict with other packages.
+The minor mode keymap, intentionally minimal.  It does not install
+global @kbd{M-n}/@kbd{M-p} bindings.  Use the command-map prefix
+(e.g.@: @kbd{M-s n} / @kbd{M-s p}) for navigation, or enable
+@code{repeat-mode} to use bare @kbd{n}/@kbd{p} after invoking a
+navigation command.
 
 @item simply-annotate-command-map
 The main command keymap with short single-key bindings (@kbd{j}, @kbd{r},
@@ -193,7 +201,7 @@ If @kbd{M-s} conflicts with other packages (e.g.@: Consult), use
 ;; it defers loading until first use.
 (use-package simply-annotate
   :bind-keymap ("C-c a" . simply-annotate-command-map)
-  :hook (find-file-hook . simply-annotate-mode))
+  :hook (find-file . simply-annotate-mode))
 @end lisp
 
 @section Manual Installation
@@ -230,7 +238,7 @@ Select some text and press @kbd{M-s j} to create your first annotation
 @item
 Type your annotation text and press @kbd{C-c C-c} to save
 @item
-Navigate with @kbd{M-n} (next) and @kbd{M-p} (previous)
+Navigate with @kbd{M-s n} (next) and @kbd{M-s p} (previous)
 @item
 Press @kbd{M-s '} to cycle through different display styles
 @item
@@ -238,7 +246,7 @@ Press @kbd{M-s [} and @kbd{M-s ]} to cycle through annotation levels
 @item
 Press @kbd{M-s r} to add a reply to any annotation
 @item
-Press @kbd{M-s s} to set status (open, resolved, etc.)
+Press @kbd{M-s S} to set status (open, resolved, etc.)
 @item
 Press @kbd{M-s e} to edit annotation data structure directly
 @item
@@ -610,7 +618,7 @@ Track the lifecycle of your annotations:
 @item
 Place cursor on annotated text
 @item
-Press @kbd{M-s s} to set status
+Press @kbd{M-s S} to set status
 @item
 Choose from: @code{open}, @code{in-progress}, @code{resolved}, @code{closed}
 @end enumerate
@@ -628,7 +636,7 @@ Organize annotations by importance:
 @item
 Place cursor on annotated text
 @item
-Press @kbd{M-s p} to set priority
+Press @kbd{M-s ,} to set priority
 @item
 Choose from: @code{low}, @code{normal}, @code{high}, @code{critical}
 @end enumerate
@@ -753,7 +761,7 @@ Prompt only when adding replies (great for code reviews)
 @item
 @strong{Reviewer} creates annotations on problematic code sections
 @item
-Set priority with @kbd{M-s p} (high for blocking issues)
+Set priority with @kbd{M-s ,} (high for blocking issues)
 @item
 Add relevant tags with @kbd{M-s t} (@code{#security}, @code{#performance}, @code{#style})
 @item
@@ -761,7 +769,7 @@ Add relevant tags with @kbd{M-s t} (@code{#security}, @code{#performance}, @code
 @item
 @strong{Reviewer} responds with additional context or approval
 @item
-Mark as resolved with @kbd{M-s s} when fixed
+Mark as resolved with @kbd{M-s S} when fixed
 @item
 Export final review with @kbd{M-s o} to org-mode for documentation
 @end enumerate
@@ -774,7 +782,7 @@ Export final review with @kbd{M-s o} to org-mode for documentation
 @item
 @strong{Reviewers} add annotations with feedback using different author names
 @item
-Track status of each feedback item with @kbd{M-s s}
+Track status of each feedback item with @kbd{M-s S}
 @item
 Use @kbd{M-s l} to get overview of all feedback
 @item
@@ -1013,7 +1021,7 @@ removed, but the underlying text remains visible:
 @strong{Display}: Only overlays matching the active level show highlights,
 fringe indicators, and inline blocks.
 @item
-@strong{Navigation}: @kbd{M-n} and @kbd{M-p} visit only annotations at the
+@strong{Navigation}: @kbd{M-s n} and @kbd{M-s p} visit only annotations at the
 active level.
 @item
 @strong{Editing}: @kbd{M-s j} on annotated text only opens annotations matching
@@ -1094,9 +1102,9 @@ Users can then browse these layered annotations at their preferred depth.
 Simply Annotate provides convenient commands for navigation:
 
 @table @kbd
-@item M-n
+@item M-s n
 @code{simply-annotate-next} - Jump to next annotation
-@item M-p
+@item M-s p
 @code{simply-annotate-previous} - Jump to previous annotation
 @end table
 
@@ -1359,7 +1367,7 @@ migrating annotations between the project and global databases, when the
 set of annotated files may have changed without Dired being re-read.
 
 @findex simply-annotate-dired-transient
-When the transient menu (@kbd{M-s SPC}, @pxref{Transient Menu}) is invoked
+When the transient menu (@kbd{M-s ?}, @pxref{Transient Menu}) is invoked
 from a Dired buffer, it switches to @code{simply-annotate-dired-transient},
 a Dired-focused layout exposing the fringe-mode toggle, per-file listing,
 refresh, project views, and database commands.
@@ -1376,7 +1384,7 @@ Displays thread information, status, and priority
 @item
 Shows complete conversation thread with replies
 @item
-Access to threading commands (@kbd{M-s r}, @kbd{M-s s}, @kbd{M-s p}, @kbd{M-s t})
+Access to threading commands (@kbd{M-s r}, @kbd{M-s S}, @kbd{M-s ,}, @kbd{M-s t})
 @item
 Access to advanced sexp editing with @kbd{M-s e}
 @item
@@ -1865,7 +1873,7 @@ Version control for tracking annotation history
 @findex simply-annotate-menu
 @findex simply-annotate-transient
 @findex simply-annotate-dired-transient
-@kbd{M-s SPC} (with the recommended prefix) opens
+@kbd{M-s ?} (with the recommended prefix) opens
 @code{simply-annotate-menu}, a discoverable dispatcher that shows every
 command grouped into labelled panels.  The dispatcher selects between two
 layouts based on context:
@@ -1890,16 +1898,17 @@ ELPA.
 @multitable @columnfractions .12 .3 .58
 @headitem Panel @tab Key @tab Command
 @item Navigate   @tab @kbd{n} @tab @code{simply-annotate-next}
-@item            @tab @kbd{v} @tab @code{simply-annotate-previous}
+@item            @tab @kbd{p} @tab @code{simply-annotate-previous}
 @item            @tab @kbd{f} @tab @code{simply-annotate-jump-to-file}
 @item Create / Edit @tab @kbd{j} @tab @code{simply-annotate-smart-action}
+@item            @tab @kbd{SPC} @tab @code{simply-annotate-smart-action}
 @item            @tab @kbd{-} @tab @code{simply-annotate-remove}
 @item            @tab @kbd{C} @tab @code{simply-annotate-clear-buffer-annotations}
 @item            @tab @kbd{e} @tab @code{simply-annotate-edit-sexp}
 @item            @tab @kbd{o} @tab @code{simply-annotate-export-to-org-file}
 @item Thread     @tab @kbd{r} @tab @code{simply-annotate-reply-to-annotation}
 @item            @tab @kbd{s} @tab @code{simply-annotate-set-annotation-status}
-@item            @tab @kbd{p} @tab @code{simply-annotate-set-annotation-priority}
+@item            @tab @kbd{,} @tab @code{simply-annotate-set-annotation-priority}
 @item            @tab @kbd{t} @tab @code{simply-annotate-add-annotation-tag}
 @item            @tab @kbd{x} @tab @code{simply-annotate-remove-annotation-tag}
 @item            @tab @kbd{a} @tab @code{simply-annotate-change-annotation-author}
@@ -1913,6 +1922,8 @@ ELPA.
 @item            @tab @kbd{F} @tab @code{simply-annotate-search-by-tag}
 @item Display    @tab @kbd{'} @tab @code{simply-annotate-cycle-display-style}
 @item            @tab @kbd{/} @tab @code{simply-annotate-toggle-inline}
+@item            @tab @kbd{d} @tab @code{simply-annotate-toggle-hide-done}
+@item            @tab @kbd{c} @tab @code{simply-annotate-toggle-inline-collapse}
 @item            @tab @kbd{[} @tab @code{simply-annotate-cycle-tag-backward}
 @item            @tab @kbd{]} @tab @code{simply-annotate-cycle-tag-forward}
 @item            @tab @kbd{G} @tab @code{simply-annotate-set-tag-filter}
@@ -1923,9 +1934,9 @@ ELPA.
 @item            @tab @kbd{D} @tab @code{simply-annotate-dired-mode}
 @end multitable
 
-Navigation and display-only commands (@kbd{n}, @kbd{v}, @kbd{'}, @kbd{/},
-@kbd{[}, @kbd{]}, @kbd{g}) keep the transient open so you can chain
-operations; other commands close it.
+Navigation and display-only commands (@kbd{n}, @kbd{p}, @kbd{'}, @kbd{/},
+@kbd{d}, @kbd{c}, @kbd{[}, @kbd{]}, @kbd{g}) keep the transient open so
+you can chain operations; other commands close it.
 
 @section Dired Layout
 
@@ -1959,13 +1970,10 @@ work directly from a file manager without first visiting a source file.
 
 @section Mode Map (@code{simply-annotate-mode-map})
 
-Always active when @code{simply-annotate-mode} is enabled:
-
-@multitable @columnfractions .15 .35 .5
-@headitem Key @tab Command @tab Description
-@item @kbd{M-n} @tab @code{simply-annotate-next} @tab Jump to next annotation
-@item @kbd{M-p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
-@end multitable
+Intentionally minimal: no global @kbd{M-n}/@kbd{M-p} bindings are
+installed.  Use the command-map prefix (e.g.@: @kbd{M-s n} /
+@kbd{M-s p}) for navigation, or enable @code{repeat-mode} to use
+bare @kbd{n}/@kbd{p} after invoking a navigation command.
 
 @section Command Map (@code{simply-annotate-command-map})
 
@@ -1974,13 +1982,13 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 
 @multitable @columnfractions .15 .35 .5
 @headitem Key @tab Command @tab Description
-@item @kbd{M-s j} @tab @code{simply-annotate-smart-action} @tab Smart create/view/edit annotation
+@item @kbd{M-s j} or @kbd{M-s SPC} @tab @code{simply-annotate-smart-action} @tab Smart create/view/edit annotation
 @item @kbd{M-s e} @tab @code{simply-annotate-edit-sexp} @tab Edit annotation as raw Elisp sexp
 @item @kbd{M-s r} @tab @code{simply-annotate-reply-to-annotation} @tab Add reply to annotation
-@item @kbd{M-s s} @tab @code{simply-annotate-set-annotation-status} @tab Set status (open/resolved)
-@item @kbd{M-s p} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
+@item @kbd{M-s S} @tab @code{simply-annotate-set-annotation-status} @tab Set status (open/resolved)
+@item @kbd{M-s ,} @tab @code{simply-annotate-set-annotation-priority} @tab Set priority (low/high)
 @item @kbd{M-s t} @tab @code{simply-annotate-add-annotation-tag} @tab Add tag (review, bug)
-@item @kbd{M-s C-t} @tab @code{simply-annotate-remove-annotation-tag} @tab Remove tag from annotation
+@item @kbd{M-s C-d} @tab @code{simply-annotate-remove-annotation-tag} @tab Remove tag from annotation
 @item @kbd{M-s F} @tab @code{simply-annotate-search-by-tag} @tab Search annotations by tag
 @item @kbd{M-s a} @tab @code{simply-annotate-change-annotation-author} @tab Change author
 @item @kbd{M-s o} @tab @code{simply-annotate-export-to-org-file} @tab Export to org-mode
@@ -1992,16 +2000,18 @@ recommended prefix).  @xref{Installation}, for how to bind the prefix.
 @item @kbd{M-s P} @tab @code{simply-annotate-show-project} @tab Browse annotations in current project
 @item @kbd{M-s C-t} @tab @code{simply-annotate-list-project-table} @tab Sortable project-wide table
 @item @kbd{M-s f} @tab @code{simply-annotate-jump-to-file} @tab Jump to annotated file (project-scoped)
-@item @kbd{M-s [} @tab @code{simply-annotate-cycle-level-backward} @tab Cycle levels backward (line @result{} defun @result{} file)
-@item @kbd{M-s ]} @tab @code{simply-annotate-cycle-level-forward} @tab Cycle levels forward (file @result{} defun @result{} line)
+@item @kbd{M-s [} @tab @code{simply-annotate-cycle-tag-backward} @tab Cycle tag filter backward
+@item @kbd{M-s ]} @tab @code{simply-annotate-cycle-tag-forward} @tab Cycle tag filter forward
 @item @kbd{M-s '} @tab @code{simply-annotate-cycle-display-style} @tab Cycle through display styles
 @item @kbd{M-s /} @tab @code{simply-annotate-toggle-inline} @tab Toggle inline annotation display
+@item @kbd{M-s d} @tab @code{simply-annotate-toggle-hide-done} @tab Toggle hiding of done/closed threads
+@item @kbd{M-s c} @tab @code{simply-annotate-toggle-inline-collapse} @tab Collapse/expand thread at point
 @item @kbd{M-s K} @tab @code{simply-annotate-kanban} @tab Kanban board of project annotations
 @item @kbd{M-s A} @tab @code{simply-annotate-list-projects} @tab Cross-project overview of every project with annotations
 @item @kbd{M-s n} @tab @code{simply-annotate-next} @tab Jump to next annotation
-@item @kbd{M-s v} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
+@item @kbd{M-s p} @tab @code{simply-annotate-previous} @tab Jump to previous annotation
 @item @kbd{M-s g} @tab @code{simply-annotate-update-display-style} @tab Refresh all annotation overlays
-@item @kbd{M-s SPC} @tab @code{simply-annotate-menu} @tab Open the transient menu (@pxref{Transient Menu})
+@item @kbd{M-s ?} @tab @code{simply-annotate-menu} @tab Open the transient menu (@pxref{Transient Menu})
 @end multitable
 
 @section Annotation Buffer Bindings
@@ -2201,6 +2211,12 @@ Supports multiline strings (use @code{\n}).  Set to @code{nil} to disable.  Defa
 @item simply-annotate-stale-face
 @vindex simply-annotate-stale-face
 Face used for stale annotation markers.  Default: tomato foreground, italic.
+
+@item simply-annotate-auto-enable
+@vindex simply-annotate-auto-enable
+When non-nil, automatically enable @code{simply-annotate-mode} for
+files that have annotations in the database when opened.  Set to
+@code{nil} to require manual enabling.  Default: @code{t}
 @end vtable
 
 @section Annotation Level Variables
@@ -2237,6 +2253,20 @@ Available status values for annotation threads. Default: @code{'("open" "in-prog
 @item simply-annotate-priority-levels
 @vindex simply-annotate-priority-levels
 Available priority levels for annotations. Default: @code{'("low" "normal" "high" "critical")}
+
+@item simply-annotate-hide-done-statuses
+@vindex simply-annotate-hide-done-statuses
+Statuses whose annotation threads are hidden in the source buffer.
+Each entry is a string matching a value in
+@code{simply-annotate-thread-statuses}.  Nil disables hiding entirely.
+Toggle at runtime with @code{simply-annotate-toggle-hide-done}
+(@kbd{M-s d}).  Default: @code{nil}
+
+@item simply-annotate-hide-done-style
+@vindex simply-annotate-hide-done-style
+How threads hidden by @code{simply-annotate-hide-done-statuses} are
+drawn.  @code{full} removes every visual cue; @code{indicator} leaves
+a single dim fringe marker.  Default: @code{'full}
 @end vtable
 
 @section Custom Faces
@@ -2309,12 +2339,16 @@ To enable annotation mode automatically:
 @lisp
 (use-package simply-annotate
   :hook
-  (find-file-hook . simply-annotate-mode)
+  (find-file . simply-annotate-mode)
   :bind
   ("C-c A" . simply-annotate-mode)
   ("C-c 0" . simply-annotate-show-all)
   ("C-c 9" . simply-annotate-jump-to-file))
 @end lisp
+
+With @code{simply-annotate-auto-enable} set to @code{t} (the default),
+files that already have annotations in the database will enable the
+mode automatically even without the @code{find-file} hook.
 
 @node Data Storage
 @chapter Data Storage

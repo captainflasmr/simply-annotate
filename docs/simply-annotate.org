@@ -262,9 +262,16 @@ documentation and includes threading and collaboration features.
   both the global database and =project.el='s known projects) in a
   sortable summary table with per-status counts and one-keystroke
   drill-down to any project's table, org listing, or kanban board
-- *Transient menu*: Discoverable menu (M-s SPC) grouping every command
+- *Transient menu*: Discoverable menu (M-s ?) grouping every command
   into labelled panels; swaps to a Dired-specific layout in Dired
   buffers
+- *Hide done/closed threads*: Configurable hiding of resolved/closed
+  annotation threads in the source buffer, with full-hide or
+  residual-indicator styles (M-s d)
+- *Inline collapse/expand*: Collapse individual inline annotation
+  threads to a compact header-only box and expand them back (M-s c)
+- *Auto-enable*: Automatically enables =simply-annotate-mode= for files
+  that already have annotations when opened
 
 --------------
 
@@ -296,7 +303,7 @@ The easiest way to install Simply Annotate is through MELPA:
 (use-package simply-annotate
   :ensure t
   :demand t
-  :hook (find-file-hook . simply-annotate-mode)
+  :hook (find-file . simply-annotate-mode)
   :config
   (global-set-key (kbd "M-s") simply-annotate-command-map))
 #+end_src
@@ -310,8 +317,9 @@ The easiest way to install Simply Annotate is through MELPA:
 Simply Annotate provides two keymaps:
 
 - =simply-annotate-mode-map= :: The minor mode keymap, intentionally
-  minimal. Only binds M-n (next annotation) and M-p (previous
-  annotation) so it won't conflict with other packages.
+  minimal. It does not install global M-n/M-p bindings. Use the
+  command-map prefix (e.g. M-s n / M-s p) for navigation, or enable
+  =repeat-mode= to use bare n/p after invoking a navigation command.
 
 - =simply-annotate-command-map= :: The main command keymap with short
   single-key bindings (j, r, n, e, etc.). You bind this to a prefix key
@@ -343,7 +351,7 @@ with a free prefix like C-c a:
 ;; it defers loading until first use.
 (use-package simply-annotate
   :bind-keymap ("C-c a" . simply-annotate-command-map)
-  :hook (find-file-hook . simply-annotate-mode))
+  :hook (find-file . simply-annotate-mode))
 #+end_src
 
 <<Manual-Installation>>
@@ -383,11 +391,11 @@ Here's how to get started with Simply Annotate:
 2. Enable annotation mode: M-x simply-annotate-mode
 3. Select some text and press M-s j to create your first annotation
 4. Type your annotation text and press C-c C-c to save
-5. Navigate with M-n (next) and M-p (previous)
+5. Navigate with M-s n (next) and M-s p (previous)
 6. Press M-s ' to cycle through different display styles
 7. Press M-s [ and M-s ] to cycle through annotation levels
 8. Press M-s r to add a reply to any annotation
-9. Press M-s s to set status (open, resolved, etc.)
+9. Press M-s S to set status (open, resolved, etc.)
 10. Press M-s e to edit annotation data structure directly
 11. Press M-s o to export annotations to org-mode
 12. Press M-s A to see every project that has annotations in a sortable
@@ -820,7 +828,7 @@ updating.
 Track the lifecycle of your annotations:
 
 1. Place cursor on annotated text
-2. Press M-s s to set status
+2. Press M-s S to set status
 3. Choose from: =open=, =in-progress=, =resolved=, =closed=
 
 The default statuses can be customized via
@@ -835,7 +843,7 @@ The default statuses can be customized via
 Organize annotations by importance:
 
 1. Place cursor on annotated text
-2. Press M-s p to set priority
+2. Press M-s , to set priority
 3. Choose from: =low=, =normal=, =high=, =critical=
 
 <<Adding-Tags>>
@@ -956,11 +964,11 @@ Configure team members and prompting behavior:
 :CLASS: subsection
 :END:
 1. *Reviewer* creates annotations on problematic code sections
-2. Set priority with M-s p (high for blocking issues)
+2. Set priority with M-s , (high for blocking issues)
 3. Add relevant tags with M-s t (=#security=, =#performance=, =#style=)
 4. *Developer* adds replies with M-s r explaining or asking questions
 5. *Reviewer* responds with additional context or approval
-6. Mark as resolved with M-s s when fixed
+6. Mark as resolved with M-s S when fixed
 7. Export final review with M-s o to org-mode for documentation
 
 <<Document-Collaboration>>
@@ -972,7 +980,7 @@ Configure team members and prompting behavior:
 1. *Author* writes draft document
 2. *Reviewers* add annotations with feedback using different author
    names
-3. Track status of each feedback item with M-s s
+3. Track status of each feedback item with M-s S
 4. Use M-s l to get overview of all feedback
 5. Export to org-mode with M-s o for final review meeting
 6. Archive resolved items, keep open ones visible
@@ -1250,7 +1258,8 @@ inline blocks) removed, but the underlying text remains visible:
 
 - *Display*: Only overlays matching the active level show highlights,
   fringe indicators, and inline blocks.
-- *Navigation*: M-n and M-p visit only annotations at the active level.
+- *Navigation*: M-s n and M-s p visit only annotations at the active
+  level.
 - *Editing*: M-s j on annotated text only opens annotations matching the
   active level.
 - *Header display*: The annotation count and position indicator reflect
@@ -1361,9 +1370,9 @@ Next: [[#Advanced-Features][Advanced Features]], Previous:
 :END:
 Simply Annotate provides convenient commands for navigation:
 
-- M-n :: =simply-annotate-next= - Jump to next annotation
+- M-s n :: =simply-annotate-next= - Jump to next annotation
 
-- M-p :: =simply-annotate-previous= - Jump to previous annotation
+- M-s p :: =simply-annotate-previous= - Jump to previous annotation
 
 These commands automatically wrap around, so you can continuously
 navigate through all annotations in a buffer. Navigation is filtered to
@@ -1641,8 +1650,8 @@ for the current Dired buffer. This is most useful after migrating
 annotations between the project and global databases, when the set of
 annotated files may have changed without Dired being re-read.
 
-When the transient menu (M-s SPC, see [[#Transient-Menu][Transient
-Menu]]) is invoked from a Dired buffer, it switches to
+When the transient menu (M-s ?, see [[#Transient-Menu][Transient Menu]])
+is invoked from a Dired buffer, it switches to
 =simply-annotate-dired-transient=, a Dired-focused layout exposing the
 fringe-mode toggle, per-file listing, refresh, project views, and
 database commands.
@@ -1659,7 +1668,7 @@ support:
 - Shows helpful instructions with threading commands in the header
 - Displays thread information, status, and priority
 - Shows complete conversation thread with replies
-- Access to threading commands (M-s r, M-s s, M-s p, M-s t)
+- Access to threading commands (M-s r, M-s S, M-s ,, M-s t)
 - Access to advanced sexp editing with M-s e
 - Supports multi-line annotations with full editing capabilities
 - Starts in edit mode for immediate typing
@@ -2211,7 +2220,7 @@ Annotate]]   [[[#SEC_Contents][Contents]]][[[#Concept-Index][Index]]]
 :CUSTOM_ID: Transient-Menu-1
 :CLASS: chapter
 :END:
-M-s SPC (with the recommended prefix) opens =simply-annotate-menu=, a
+M-s ? (with the recommended prefix) opens =simply-annotate-menu=, a
 discoverable dispatcher that shows every command grouped into labelled
 panels. The dispatcher selects between two layouts based on context:
 
@@ -2237,16 +2246,17 @@ and later; on earlier Emacs versions install it from GNU ELPA.
 | Panel         | Key | Command                                    |
 |---------------+-----+--------------------------------------------|
 | Navigate      | n   | =simply-annotate-next=                     |
-|               | v   | =simply-annotate-previous=                 |
+|               | p   | =simply-annotate-previous=                 |
 |               | f   | =simply-annotate-jump-to-file=             |
 | Create / Edit | j   | =simply-annotate-smart-action=             |
+|               | SPC | =simply-annotate-smart-action=             |
 |               | -   | =simply-annotate-remove=                   |
 |               | C   | =simply-annotate-clear-buffer-annotations= |
 |               | e   | =simply-annotate-edit-sexp=                |
 |               | o   | =simply-annotate-export-to-org-file=       |
 | Thread        | r   | =simply-annotate-reply-to-annotation=      |
 |               | s   | =simply-annotate-set-annotation-status=    |
-|               | p   | =simply-annotate-set-annotation-priority=  |
+|               | ,   | =simply-annotate-set-annotation-priority=  |
 |               | t   | =simply-annotate-add-annotation-tag=       |
 |               | x   | =simply-annotate-remove-annotation-tag=    |
 |               | a   | =simply-annotate-change-annotation-author= |
@@ -2260,6 +2270,8 @@ and later; on earlier Emacs versions install it from GNU ELPA.
 |               | F   | =simply-annotate-search-by-tag=            |
 | Display       | '   | =simply-annotate-cycle-display-style=      |
 |               | /   | =simply-annotate-toggle-inline=            |
+|               | d   | =simply-annotate-toggle-hide-done=         |
+|               | c   | =simply-annotate-toggle-inline-collapse=   |
 |               | [   | =simply-annotate-cycle-tag-backward=       |
 |               | ]   | =simply-annotate-cycle-tag-forward=        |
 |               | G   | =simply-annotate-set-tag-filter=           |
@@ -2269,8 +2281,8 @@ and later; on earlier Emacs versions install it from GNU ELPA.
 |               | <   | =simply-annotate-migrate-to-global=        |
 |               | D   | =simply-annotate-dired-mode=               |
 
-Navigation and display-only commands (n, v, ', /, [, ], g) keep the
-transient open so you can chain operations; other commands close it.
+Navigation and display-only commands (n, p, ', /, d, c, [, ], g) keep
+the transient open so you can chain operations; other commands close it.
 
 <<Dired-Layout>>
 *** 14.2 Dired Layout [[#Dired-Layout][¶]]
@@ -2328,12 +2340,9 @@ Next: [[#Customization][Customization]], Previous:
 :CUSTOM_ID: mode-map-simply-annotate-mode-map
 :CLASS: section
 :END:
-Always active when =simply-annotate-mode= is enabled:
-
-| Key | Command                    | Description                 |
-|-----+----------------------------+-----------------------------|
-| M-n | =simply-annotate-next=     | Jump to next annotation     |
-| M-p | =simply-annotate-previous= | Jump to previous annotation |
+Intentionally minimal: no global M-n/M-p bindings are installed. Use the
+command-map prefix (e.g. M-s n / M-s p) for navigation, or enable
+=repeat-mode= to use bare n/p after invoking a navigation command.
 
 <<Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029>>
 *** 15.2 Command Map (=simply-annotate-command-map=) [[#Command-Map-_0028simply_002dannotate_002dcommand_002dmap_0029][¶]]
@@ -2345,36 +2354,38 @@ Accessed via your chosen prefix key. Examples below use M-s (the
 recommended prefix). See [[#Installation][Installation]], for how to
 bind the prefix.
 
-| Key     | Command                                    | Description                                                       |
-|---------+--------------------------------------------+-------------------------------------------------------------------|
-| M-s j   | =simply-annotate-smart-action=             | Smart create/view/edit annotation                                 |
-| M-s e   | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp                                 |
-| M-s r   | =simply-annotate-reply-to-annotation=      | Add reply to annotation                                           |
-| M-s s   | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                                        |
-| M-s p   | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                                           |
-| M-s t   | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                                             |
-| M-s C-t | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                                        |
-| M-s F   | =simply-annotate-search-by-tag=            | Search annotations by tag                                         |
-| M-s a   | =simply-annotate-change-annotation-author= | Change author                                                     |
-| M-s o   | =simply-annotate-export-to-org-file=       | Export to org-mode                                                |
-| M-s -   | =simply-annotate-remove=                   | Delete annotation at point                                        |
-| M-s C   | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer                                |
-| M-s l   | =simply-annotate-list=                     | List all annotations in current file                              |
-| M-s T   | =simply-annotate-list-table=               | Sortable table view of annotations                                |
-| M-s L   | =simply-annotate-show-all=                 | Browse annotations across all files                               |
-| M-s P   | =simply-annotate-show-project=             | Browse annotations in current project                             |
-| M-s C-t | =simply-annotate-list-project-table=       | Sortable project-wide table                                       |
-| M-s f   | =simply-annotate-jump-to-file=             | Jump to annotated file (project-scoped)                           |
-| M-s [   | =simply-annotate-cycle-level-backward=     | Cycle levels backward (line ⇒ defun ⇒ file)                       |
-| M-s ]   | =simply-annotate-cycle-level-forward=      | Cycle levels forward (file ⇒ defun ⇒ line)                        |
-| M-s '   | =simply-annotate-cycle-display-style=      | Cycle through display styles                                      |
-| M-s /   | =simply-annotate-toggle-inline=            | Toggle inline annotation display                                  |
-| M-s K   | =simply-annotate-kanban=                   | Kanban board of project annotations                               |
-| M-s A   | =simply-annotate-list-projects=            | Cross-project overview of every project with annotations          |
-| M-s n   | =simply-annotate-next=                     | Jump to next annotation                                           |
-| M-s v   | =simply-annotate-previous=                 | Jump to previous annotation                                       |
-| M-s g   | =simply-annotate-update-display-style=     | Refresh all annotation overlays                                   |
-| M-s SPC | =simply-annotate-menu=                     | Open the transient menu (see [[#Transient-Menu][Transient Menu]]) |
+| Key              | Command                                    | Description                                                       |
+|------------------+--------------------------------------------+-------------------------------------------------------------------|
+| M-s j or M-s SPC | =simply-annotate-smart-action=             | Smart create/view/edit annotation                                 |
+| M-s e            | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp                                 |
+| M-s r            | =simply-annotate-reply-to-annotation=      | Add reply to annotation                                           |
+| M-s S            | =simply-annotate-set-annotation-status=    | Set status (open/resolved)                                        |
+| M-s ,            | =simply-annotate-set-annotation-priority=  | Set priority (low/high)                                           |
+| M-s t            | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                                             |
+| M-s C-d          | =simply-annotate-remove-annotation-tag=    | Remove tag from annotation                                        |
+| M-s F            | =simply-annotate-search-by-tag=            | Search annotations by tag                                         |
+| M-s a            | =simply-annotate-change-annotation-author= | Change author                                                     |
+| M-s o            | =simply-annotate-export-to-org-file=       | Export to org-mode                                                |
+| M-s -            | =simply-annotate-remove=                   | Delete annotation at point                                        |
+| M-s C            | =simply-annotate-clear-buffer-annotations= | Delete all annotations from buffer                                |
+| M-s l            | =simply-annotate-list=                     | List all annotations in current file                              |
+| M-s T            | =simply-annotate-list-table=               | Sortable table view of annotations                                |
+| M-s L            | =simply-annotate-show-all=                 | Browse annotations across all files                               |
+| M-s P            | =simply-annotate-show-project=             | Browse annotations in current project                             |
+| M-s C-t          | =simply-annotate-list-project-table=       | Sortable project-wide table                                       |
+| M-s f            | =simply-annotate-jump-to-file=             | Jump to annotated file (project-scoped)                           |
+| M-s [            | =simply-annotate-cycle-tag-backward=       | Cycle tag filter backward                                         |
+| M-s ]            | =simply-annotate-cycle-tag-forward=        | Cycle tag filter forward                                          |
+| M-s '            | =simply-annotate-cycle-display-style=      | Cycle through display styles                                      |
+| M-s /            | =simply-annotate-toggle-inline=            | Toggle inline annotation display                                  |
+| M-s d            | =simply-annotate-toggle-hide-done=         | Toggle hiding of done/closed threads                              |
+| M-s c            | =simply-annotate-toggle-inline-collapse=   | Collapse/expand thread at point                                   |
+| M-s K            | =simply-annotate-kanban=                   | Kanban board of project annotations                               |
+| M-s A            | =simply-annotate-list-projects=            | Cross-project overview of every project with annotations          |
+| M-s n            | =simply-annotate-next=                     | Jump to next annotation                                           |
+| M-s p            | =simply-annotate-previous=                 | Jump to previous annotation                                       |
+| M-s g            | =simply-annotate-update-display-style=     | Refresh all annotation overlays                                   |
+| M-s ?            | =simply-annotate-menu=                     | Open the transient menu (see [[#Transient-Menu][Transient Menu]]) |
 
 <<Annotation-Buffer-Bindings>>
 *** 15.3 Annotation Buffer Bindings [[#Annotation-Buffer-Bindings][¶]]
@@ -2668,6 +2679,13 @@ Configure team collaboration and threading features:
   Face used for stale annotation markers. Default: tomato foreground,
   italic.
 
+- <<index-simply_002dannotate_002dauto_002denable>>=simply-annotate-auto-enable=
+  [[#index-simply_002dannotate_002dauto_002denable][¶]] :: 
+
+  When non-nil, automatically enable =simply-annotate-mode= for files
+  that have annotations in the database when opened. Set to =nil= to
+  require manual enabling. Default: =t=
+
 <<Annotation-Level-Variables>>
 *** 16.5 Annotation Level Variables [[#Annotation-Level-Variables][¶]]
 :PROPERTIES:
@@ -2719,6 +2737,22 @@ Configure team collaboration and threading features:
 
   Available priority levels for annotations. Default:
   ='("low" "normal" "high" "critical")=
+
+- <<index-simply_002dannotate_002dhide_002ddone_002dstatuses>>=simply-annotate-hide-done-statuses=
+  [[#index-simply_002dannotate_002dhide_002ddone_002dstatuses][¶]] :: 
+
+  Statuses whose annotation threads are hidden in the source buffer.
+  Each entry is a string matching a value in
+  =simply-annotate-thread-statuses=. Nil disables hiding entirely.
+  Toggle at runtime with =simply-annotate-toggle-hide-done= (M-s d).
+  Default: =nil=
+
+- <<index-simply_002dannotate_002dhide_002ddone_002dstyle>>=simply-annotate-hide-done-style=
+  [[#index-simply_002dannotate_002dhide_002ddone_002dstyle][¶]] :: 
+
+  How threads hidden by =simply-annotate-hide-done-statuses= are drawn.
+  =full= removes every visual cue; =indicator= leaves a single dim
+  fringe marker. Default: ='full=
 
 <<Custom-Faces>>
 *** 16.7 Custom Faces [[#Custom-Faces][¶]]
@@ -2815,12 +2849,16 @@ To enable annotation mode automatically:
 #+begin_src lisp-preformatted
 (use-package simply-annotate
   :hook
-  (find-file-hook . simply-annotate-mode)
+  (find-file . simply-annotate-mode)
   :bind
   ("C-c A" . simply-annotate-mode)
   ("C-c 0" . simply-annotate-show-all)
   ("C-c 9" . simply-annotate-jump-to-file))
 #+end_src
+
+With =simply-annotate-auto-enable= set to =t= (the default), files that
+already have annotations in the database will enable the mode
+automatically even without the =find-file= hook.
 
 --------------
 
@@ -3311,6 +3349,8 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 | [[#index-simply_002dannotate_002dauthor_002dlist][=simply-annotate-author-list=]]                                     | [[#Threading-and-Collaboration][Threading and Collaboration]] |
 | [[#index-simply_002dannotate_002dauthor_002dlist-1][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dauthor_002dlist-2][=simply-annotate-author-list=]]                                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dauto_002denable][=simply-annotate-auto-enable=]]                                     | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dauto_002denable-1][=simply-annotate-auto-enable=]]                                   | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dbuffer_002dheight][=simply-annotate-buffer-height=]]                                 | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dbuffer_002dheight-1][=simply-annotate-buffer-height=]]                               | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dbuffer_002dname][=simply-annotate-buffer-name=]]                                     | [[#Customization][Customization]]                             |
@@ -3331,6 +3371,10 @@ Next: [[#Concept-Index][Concept Index]], Previous:
 | [[#index-simply_002dannotate_002dfringe_002dindicator][=simply-annotate-fringe-indicator=]]                           | [[#Display-Styles][Display Styles]]                           |
 | [[#index-simply_002dannotate_002dfringe_002dindicator-1][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dfringe_002dindicator-2][=simply-annotate-fringe-indicator=]]                         | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dhide_002ddone_002dstatuses][=simply-annotate-hide-done-statuses=]]                   | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dhide_002ddone_002dstatuses-1][=simply-annotate-hide-done-statuses=]]                 | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dhide_002ddone_002dstyle][=simply-annotate-hide-done-style=]]                         | [[#Customization][Customization]]                             |
+| [[#index-simply_002dannotate_002dhide_002ddone_002dstyle-1][=simply-annotate-hide-done-style=]]                       | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dhighlight_002dface][=simply-annotate-highlight-face=]]                               | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dhighlight_002dface-1][=simply-annotate-highlight-face=]]                             | [[#Customization][Customization]]                             |
 | [[#index-simply_002dannotate_002dinline_002dmax_002dlines][=simply-annotate-inline-max-lines=]]                       | [[#Customization][Customization]]                             |
