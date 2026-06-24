@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.3.2
+;; Version: 2.4.0
 ;; Package-Requires: ((emacs "27.2") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -33,7 +33,7 @@
 ;;
 ;;   (use-package simply-annotate
 ;;     :bind-keymap ("C-c a" . simply-annotate-command-map)
-;;     :hook (find-file-hook . simply-annotate-mode))
+;;     :hook (find-file . simply-annotate-mode))
 ;;
 ;;   (with-eval-after-load 'simply-annotate
 ;;     (add-hook 'dired-mode-hook #'simply-annotate-dired-mode))
@@ -50,12 +50,12 @@
 ;;
 ;; 1. Open any file
 ;; 2. Select text and press C-c a j to create your first annotation
-;; 3. Navigate with M-n (next) and M-p (previous)
+;; 3. Navigate with the command prefix then `n` (next) and `p` (previous)
 ;;
 ;; Keymap Configuration:
 ;;
-;; `simply-annotate-mode-map' is intentionally minimal (only M-n and
-;; M-p for navigation).  All other commands are in
+;; `simply-annotate-mode-map' is intentionally minimal and does not
+;; install global `M-n`/`M-p` bindings.  All other commands are in
 ;; `simply-annotate-command-map':
 ;;
 ;;   ;; Recommended: C-c a prefix (defers loading until first use)
@@ -74,12 +74,12 @@
 ;;
 ;; Two features reduce prefix-typing for repeated commands:
 ;;
-;; - Transient menu: <prefix> SPC (`simply-annotate-menu') opens a
+;; - Transient menu: <prefix> ? (`simply-annotate-menu') opens a
 ;;   discoverable dispatcher; navigation and display toggles stay open
 ;;   so you can repeat them without re-opening the menu.
-;; - `repeat-mode' (Emacs 28.1+): enable it with M-x repeat-mode (or
+;; - `repeat_mode' (Emacs 28.1+): enable it with M-x repeat-mode (or
 ;;   (repeat-mode 1) in your init).  After one navigation/display
-;;   command you can continue with the bare keys n v ' / [ ] g -- see
+;;   command you can continue with the bare keys n p ' / [ ] g -- see
 ;;   `simply-annotate-repeat-map'.
 ;;
 ;; Threading & Collaboration:
@@ -426,6 +426,16 @@ Set to nil to disable wrapping."
 
 (defcustom simply-annotate-inline-default nil
   "When non-nil, enable inline annotation display when the mode starts."
+  :type 'boolean
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-auto-enable t
+  "When non-nil, automatically enable mode for files with annotations.
+This enables `simply-annotate-mode' automatically for files that
+have annotations in the database when opened.
+
+Set to nil to require manual enabling (or use a global hook in your
+init file)."
   :type 'boolean
   :group 'simply-annotate)
 
@@ -1431,7 +1441,12 @@ Uses box-drawing characters (┏, ┃, ┗) on the left of the annotated region.
     (overlay-put overlay 'after-string nil)
     ;; Reapply based on current style
     (simply-annotate--apply-display-style overlay))
-  (message "Updated display style to: %s" simply-annotate-display-style))
+  (message "Updated display style to: %s" simply-annotate-display-style)
+  ;; Refresh header-line in all buffers where the minor mode is active
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (boundp 'simply-annotate-mode) simply-annotate-mode)
+        (simply-annotate--update-header)))))
 
 (defun simply-annotate-cycle-display-style ()
   "Cycle through individual display styles.
@@ -2196,6 +2211,25 @@ buffer save or buffer kill."
        (message "Simply-annotate: could not save annotations: %s"
                 (error-message-string err))))))
 
+;;;###autoload
+(defun simply-annotate-save-now ()
+  "Force-save annotations for the current buffer.
+This saves the current buffer's annotations into the database even
+when `simply-annotate-mode' is not enabled.  Useful when annotations
+were created via transient commands or when auto-enable is disabled.
+Errors are reported with `message' rather than signaled."
+  (interactive)
+  (let ((file-key (simply-annotate--file-key)))
+    (unless file-key
+      (user-error "Simply-annotate: buffer has no file key; cannot save"))
+    (condition-case err
+        (let ((annotations (simply-annotate--serialize-annotations)))
+          (simply-annotate--update-database file-key annotations)
+          (message "Simply-annotate: annotations saved."))
+      (error
+       (message "Simply-annotate: could not save annotations: %s"
+                (error-message-string err))))))
+
 (defun simply-annotate--load-annotations ()
   "Load annotations for current buffer."
   (let* ((file-key (simply-annotate--file-key))
@@ -2509,25 +2543,34 @@ total count when no filter is active."
                (propertize " | " 'face '(:height 0.9)))))
 
 (defun simply-annotate--format-header (&optional text)
-  "Header format showing level counts with embedded position.
+  "Header format showing display style, level counts, and embedded position.
 Optional TEXT is appended (e.g. status messages)."
   (let ((total (length simply-annotate-overlays)))
     (when (> total 0)
-      (concat
-       " "
-       (simply-annotate--tag-counts)
-       " "
-       (if-let* ((overlay (simply-annotate--overlay-at-point))
-                 (annotation-data (overlay-get overlay 'simply-annotation))
-                 (thread (and (simply-annotate--thread-p annotation-data) annotation-data)))
-           (let ((status (or (alist-get 'status thread) (upcase (simply-annotate--default-status))))
-                 (priority (or (alist-get 'priority thread) (upcase (simply-annotate--default-priority))))
-                 (comment-count (length (alist-get 'comments thread))))
-             (propertize
-              (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
-              'face '(:height 0.9)))
-         "")
-       (if text (concat text " ") "")))))
+      (let* ((styles (simply-annotate--display-styles))
+             (styles-str (if (listp styles)
+                             (mapconcat (lambda (s) (format "%s" s)) styles ",")
+                           (format "%s" styles)))
+             (inline (and simply-annotate-inline
+                          (format "inline:%s" simply-annotate-inline-position)))
+             (display-info (string-join (delq nil (list (format "display:%s" styles-str) inline)) " ")))
+        (concat
+         " "
+         display-info
+         " "
+         (simply-annotate--tag-counts)
+         " "
+         (if-let* ((overlay (simply-annotate--overlay-at-point))
+                   (annotation-data (overlay-get overlay 'simply-annotation))
+                   (thread (and (simply-annotate--thread-p annotation-data) annotation-data)))
+             (let ((status (or (alist-get 'status thread) (upcase (simply-annotate--default-status))))
+                   (priority (or (alist-get 'priority thread) (upcase (simply-annotate--default-priority))))
+                   (comment-count (length (alist-get 'comments thread))))
+               (propertize
+                (format "[%s/%s:%d] " (upcase status) (upcase priority) comment-count)
+                'face '(:height 0.9)))
+           "")
+         (if text (concat text " ") ""))))))
 
 (defun simply-annotate--update-header (&optional text)
   "Enhanced header update that handles threading information with optional TEXT."
@@ -5324,8 +5367,8 @@ When called interactively:
     (define-key map (kbd "C-c C-k") #'simply-annotate-cancel-edit)
     (define-key map (kbd "C-g") #'simply-annotate-cancel-edit)
     (define-key map (kbd "M-s r") #'simply-annotate-reply-to-annotation)
-    (define-key map (kbd "M-s s") #'simply-annotate-set-annotation-status)
-    (define-key map (kbd "M-s p") #'simply-annotate-set-annotation-priority)
+    (define-key map (kbd "M-s S") #'simply-annotate-set-annotation-status)
+    (define-key map (kbd "M-s P") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "M-s t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "M-s C-t") #'simply-annotate-remove-annotation-tag)
     (define-key map (kbd "M-s o") #'simply-annotate-export-to-org-file)
@@ -5334,8 +5377,9 @@ When called interactively:
     (define-key map (kbd "M-s ]") #'simply-annotate-cycle-tag-forward)
     (define-key map (kbd "M-s T") #'simply-annotate-set-tag-filter)
     (define-key map (kbd "M-s '") #'simply-annotate-cycle-display-style)
-    (define-key map (kbd "M-p") #'simply-annotate-previous)
-    (define-key map (kbd "M-n") #'simply-annotate-next)
+    ;; Navigation is provided via the command prefix (e.g. M-s n / M-s p)
+    ;; and the repeat map (`n`/`p`) when `repeat-mode' is enabled.
+    ;; No global M-n / M-p bindings are installed here.
     map)
   "Keymap for simply-annotate annotation buffer.")
 
@@ -5347,6 +5391,7 @@ When called interactively:
 (defvar simply-annotate-command-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "j") #'simply-annotate-smart-action)
+    (define-key map (kbd "SPC") #'simply-annotate-smart-action)
     (define-key map (kbd "r") #'simply-annotate-reply-to-annotation)
     (define-key map (kbd "s") #'simply-annotate-set-annotation-status)
     (define-key map (kbd "-") #'simply-annotate-remove)
@@ -5360,7 +5405,7 @@ When called interactively:
     (define-key map (kbd "K") #'simply-annotate-kanban)
     (define-key map (kbd "A") #'simply-annotate-list-projects)
     (define-key map (kbd "f") #'simply-annotate-jump-to-file)
-    (define-key map (kbd "p") #'simply-annotate-set-annotation-priority)
+    (define-key map (kbd ",") #'simply-annotate-set-annotation-priority)
     (define-key map (kbd "t") #'simply-annotate-add-annotation-tag)
     (define-key map (kbd "C-d") #'simply-annotate-remove-annotation-tag)
     (define-key map (kbd "F") #'simply-annotate-search-by-tag)
@@ -5373,9 +5418,9 @@ When called interactively:
     (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
     (define-key map (kbd "c") #'simply-annotate-toggle-inline-collapse)
     (define-key map (kbd "n") #'simply-annotate-next)
-    (define-key map (kbd "v") #'simply-annotate-previous)
+    (define-key map (kbd "p") #'simply-annotate-previous)
     (define-key map (kbd "g") #'simply-annotate-update-display-style)
-    (define-key map (kbd "SPC") #'simply-annotate-menu)
+    (define-key map (kbd "?") #'simply-annotate-menu)
     map)
   "Command map for Simply Annotate.
 This keymap contains all annotation commands with short single-key
@@ -5384,7 +5429,8 @@ prefix is M-s:
 
   (global-set-key (kbd \"M-s\") simply-annotate-command-map)
 
-This gives you M-s j (smart action), M-s r (reply), M-s l (list), etc.
+This gives you M-s j or M-s SPC (smart action), M-s r (reply),
+M-s l (list), etc.
 
 Note: use `global-set-key' in :config for the M-s prefix.
 :bind-keymap defers loading by creating an autoload proxy -- a
@@ -5399,7 +5445,7 @@ directly to the real keymap after the package has loaded.
   ;; :demand t loads immediately so M-s works from startup
   (use-package simply-annotate
     :demand t
-    :hook (find-file-hook . simply-annotate-mode)
+    :hook (find-file . simply-annotate-mode)
     :config
     (global-set-key (kbd \"M-s\") simply-annotate-command-map))
 
@@ -5408,21 +5454,21 @@ directly to the real keymap after the package has loaded.
   ;; existing prefix map, and defers loading until first use
   (use-package simply-annotate
     :bind-keymap (\"C-c a\" . simply-annotate-command-map)
-    :hook (find-file-hook . simply-annotate-mode))
+    :hook (find-file . simply-annotate-mode))
 
 Available keys:
 
-  j  smart-action      r  reply           s  status
+  j/SPC  smart-action   r  reply           s  status
   -  remove            C  clear buffer     a  change author   l  list
   T  table             L  show all        P  show project
-  A  all projects      C-t  project table   f  jump to file    p  priority
+  A  all projects      C-t  project table   f  jump to file    ,  priority
   t  tag               o  org export      e  edit sexp
   [  prev tag filter   ]  next tag filter   \\='  cycle style
   /  toggle inline     d  toggle hide-done  c  collapse thread
-  n  next            v  previous
-  g  refresh           SPC  transient menu
+  n  next              p  previous
+  g  refresh           ?  transient menu
 
-When binding to M-s, you will shadow Emacs's default `search-map'
+When binding to M-s, you will shadow Emacs's default `search_map'
 prefix, so bindings like M-s o (occur) and M-s . (isearch-forward-
 symbol-at-point) will stop working.  Call
 `simply-annotate-inherit-search-map' after loading the package to
@@ -5449,20 +5495,17 @@ search-map keys, so e.g. M-s n remains `simply-annotate-next'."
 
 (defvar simply-annotate-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "M-p") #'simply-annotate-previous)
-    (define-key map (kbd "M-n") #'simply-annotate-next)
     map)
   "Keymap for `simply-annotate-mode'.
-This keymap is intentionally minimal -- it only binds M-n and M-p
-for quick navigation between annotations.
-
-All other commands live in `simply-annotate-command-map', which you
-should bind to a prefix key of your choice (M-s is recommended).")
+This keymap is intentionally minimal -- it does not install global
+`M-n`/`M-p` bindings.  Use the command-map prefix (for example
+`M-s n` / `M-s p`) for navigation, or enable `repeat-mode' to use
+bare `n`/`p` after invoking a navigation command.")
 
 (defvar simply-annotate-repeat-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "n") #'simply-annotate-next)
-    (define-key map (kbd "v") #'simply-annotate-previous)
+    (define-key map (kbd "p") #'simply-annotate-previous)
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
@@ -5473,9 +5516,9 @@ should bind to a prefix key of your choice (M-s is recommended).")
     map)
   "Repeat map for the repeatable `simply-annotate' commands.
 When `repeat-mode' is enabled (Emacs 28.1+), invoking any of these
-commands once -- e.g. via M-n or your command-map prefix -- lets you
+commands once -- e.g. via your command-map prefix -- lets you
 continue with the bare keys shown here without re-typing the prefix:
-n/v to step between annotations, \\=' to cycle display style, / to
+n/p to step between annotations, \\=' to cycle display style, / to
 toggle inline, d to toggle hide-done, c to collapse/expand a thread,
 [ and ] to cycle the tag filter, g to refresh.  The keys mirror their
 `simply-annotate-command-map' bindings.  On Emacs 27.2 the `repeat-map'
@@ -5542,6 +5585,23 @@ properties are simply inert.")
     (remove-hook 'kill-buffer-hook #'simply-annotate-hide-annotation-buffer t)
     (when (derived-mode-p 'Info-mode)
       (remove-hook 'Info-selection-hook #'simply-annotate--info-selection-hook))))
+
+;; Auto-enable helper
+(defun simply-annotate--maybe-enable-on-find-file ()
+  "Enable `simply-annotate-mode' for this buffer if annotations exist.
+This is intended for `find-file-hook'.  It is a no-op when the mode
+is already enabled or when `simply-annotate-auto-enable' is nil.
+The check uses `simply-annotate--file-key' and the configured
+database path(s)."
+  (when (and simply-annotate-auto-enable (not simply-annotate-mode))
+    (let ((fk (ignore-errors (simply-annotate--file-key))))
+      (when fk
+        (let ((db (simply-annotate--load-database)))
+          (when (and db (alist-get fk db nil nil #'string=))
+            (simply-annotate-mode 1)))))))
+
+;; Register on find-file so files with existing annotations enable the mode
+(add-hook 'find-file-hook #'simply-annotate--maybe-enable-on-find-file)
 
 ;;; Buffer Revert
 
@@ -5804,69 +5864,70 @@ local bindings on the same prefix."
 ;;;###autoload (autoload 'simply-annotate-transient "simply-annotate" nil t)
 (transient-define-prefix simply-annotate-transient ()
   "Transient menu for `simply-annotate'."
-  [:description simply-annotate--transient-description
-   ["Navigate"
-    ("n" "next"              simply-annotate-next :transient t)
-    ("v" "previous"          simply-annotate-previous :transient t)
-    ("f" "jump to file"      simply-annotate-jump-to-file)]
-   ["Create / Edit"
-    ("j" "smart action"      simply-annotate-smart-action)
-    ("-" "remove"            simply-annotate-remove)
-    ("C" "clear buffer"      simply-annotate-clear-buffer-annotations)
-    ("e" "edit sexp"         simply-annotate-edit-sexp)
-    ("o" "export to org"     simply-annotate-export-to-org-file)]
-   ["Thread"
-    ("r" "reply"             simply-annotate-reply-to-annotation)
-    ("s" "status"            simply-annotate-set-annotation-status)
-    ("p" "priority"          simply-annotate-set-annotation-priority)
-    ("t" "add tag"           simply-annotate-add-annotation-tag)
-    ("x" "remove tag"        simply-annotate-remove-annotation-tag)
-    ("a" "author"            simply-annotate-change-annotation-author)]]
-  [["Lists"
-    ("l" "buffer list"       simply-annotate-list)
-    ("b" "buffer table"      simply-annotate-list-table)
-    ("P" "project list"      simply-annotate-show-project)
-    ("B" "project table"     simply-annotate-list-project-table)
-    ("K" "kanban"            simply-annotate-kanban)
-    ("L" "all files"         simply-annotate-show-all)
-    ("A" "all projects"      simply-annotate-list-projects)
-    ("F" "search by tag"     simply-annotate-search-by-tag)]
-   ["Display"
-    ("'" "cycle style"       simply-annotate-cycle-display-style :transient t)
-    ("/" "toggle inline"     simply-annotate-toggle-inline :transient t)
-    ("d" "toggle hide-done"  simply-annotate-toggle-hide-done :transient t)
-    ("c" "collapse thread"   simply-annotate-toggle-inline-collapse :transient t)
-    ("[" "prev tag filter"   simply-annotate-cycle-tag-backward :transient t)
-    ("]" "next tag filter"   simply-annotate-cycle-tag-forward :transient t)
-    ("G" "set tag filter"    simply-annotate-set-tag-filter)
-    ("g" "refresh display"   simply-annotate-update-display-style :transient t)]
-   ["Database"
-    ("S" "strategy..."       simply-annotate-set-database-strategy)
-    (">" "migrate → project" simply-annotate-migrate-to-project)
-    ("<" "migrate → global"  simply-annotate-migrate-to-global)
-    ("D" "dired mode"        simply-annotate-dired-mode)]])
+  [[:description simply-annotate--transient-description
+    ["Navigate"
+     ("n" "next"              simply-annotate-next :transient t)
+     ("p" "previous"          simply-annotate-previous :transient t)
+     ("f" "jump to file"      simply-annotate-jump-to-file)]
+    ["Create / Edit"
+     ("j" "smart action"      simply-annotate-smart-action)
+     ("SPC" "smart action"    simply-annotate-smart-action)
+     ("-" "remove"            simply-annotate-remove)
+     ("C" "clear buffer"      simply-annotate-clear-buffer-annotations)
+     ("e" "edit sexp"         simply-annotate-edit-sexp)
+     ("o" "export to org"     simply-annotate-export-to-org-file)]
+    ["Thread"
+     ("r" "reply"             simply-annotate-reply-to-annotation)
+     ("s" "status"            simply-annotate-set-annotation-status)
+     ("," "priority"          simply-annotate-set-annotation-priority)
+     ("t" "add tag"           simply-annotate-add-annotation-tag)
+     ("x" "remove tag"        simply-annotate-remove-annotation-tag)
+     ("a" "author"            simply-annotate-change-annotation-author)]
+    ["Lists"
+     ("l" "buffer list"       simply-annotate-list)
+     ("b" "buffer table"      simply-annotate-list-table)
+     ("P" "project list"      simply-annotate-show-project)
+     ("B" "project table"     simply-annotate-list-project-table)
+     ("K" "kanban"            simply-annotate-kanban)
+     ("L" "all files"         simply-annotate-show-all)
+     ("A" "all projects"      simply-annotate-list-projects)
+     ("F" "search by tag"     simply-annotate-search-by-tag)]
+    ["Display"
+     ("'" "cycle style"       simply-annotate-cycle-display-style :transient t)
+     ("/" "toggle inline"     simply-annotate-toggle-inline :transient t)
+     ("d" "toggle hide-done"  simply-annotate-toggle-hide-done :transient t)
+     ("c" "collapse thread"   simply-annotate-toggle-inline-collapse :transient t)
+     ("[" "prev tag filter"   simply-annotate-cycle-tag-backward :transient t)
+     ("]" "next tag filter"   simply-annotate-cycle-tag-forward :transient t)
+     ("G" "set tag filter"    simply-annotate-set-tag-filter)
+     ("g" "refresh display"   simply-annotate-update-display-style :transient t)]
+    ["Database"
+     ("S" "strategy..."       simply-annotate-set-database-strategy)
+     (">" "migrate → project" simply-annotate-migrate-to-project)
+     ("<" "migrate → global"  simply-annotate-migrate-to-global)
+     ("D" "dired mode"        simply-annotate-dired-mode)]]])
 
 ;;;###autoload (autoload 'simply-annotate-dired-transient "simply-annotate" nil t)
 (transient-define-prefix simply-annotate-dired-transient ()
   "Transient menu for `simply-annotate' in Dired."
-  [:description simply-annotate--transient-description
-   ["Dired"
-    ("D" "toggle fringe marks"    simply-annotate-dired-mode)
-    ("j" "list file annotations"  simply-annotate-dired-list-file)
-    ("g" "refresh marks"          simply-annotate-dired-refresh-marks :transient t)
-    ("f" "jump to annotated file" simply-annotate-jump-to-file)]
-   ["Views"
-    ("l" "buffer list"       simply-annotate-list)
-    ("P" "project list"      simply-annotate-show-project)
-    ("B" "project table"     simply-annotate-list-project-table)
-    ("K" "kanban"            simply-annotate-kanban)
-    ("L" "all files"         simply-annotate-show-all)
-    ("A" "all projects"      simply-annotate-list-projects)
-    ("F" "search by tag"     simply-annotate-search-by-tag)]
-   ["Database"
-    ("S" "strategy..."       simply-annotate-set-database-strategy)
-    (">" "migrate → project" simply-annotate-migrate-to-project)
-    ("<" "migrate → global"  simply-annotate-migrate-to-global)]])
+  [[:description simply-annotate--transient-description
+    ["Dired"
+     ("D" "toggle fringe marks"    simply-annotate-dired-mode)
+     ("j" "list file annotations"  simply-annotate-dired-list-file)
+     ("g" "refresh marks"          simply-annotate-dired-refresh-marks :transient t)
+     ("f" "jump to annotated file" simply-annotate-jump-to-file)]
+    ["Views"
+     ("l" "buffer list"       simply-annotate-list)
+     ("P" "project list"      simply-annotate-show-project)
+     ("B" "project table"     simply-annotate-list-project-table)
+     ("K" "kanban"            simply-annotate-kanban)
+     ("L" "all files"         simply-annotate-show-all)
+     ("A" "all projects"      simply-annotate-list-projects)
+     ("F" "search by tag"     simply-annotate-search-by-tag)]
+    ["Database"
+     ("S" "strategy..."       simply-annotate-set-database-strategy)
+     (">" "migrate → project" simply-annotate-migrate-to-project)
+     ("<" "migrate → global"  simply-annotate-migrate-to-global)]]])
 
 ;;;###autoload
 (defun simply-annotate-menu ()

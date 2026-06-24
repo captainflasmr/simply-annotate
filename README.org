@@ -53,11 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
-** <2026-06-24 Wed> *2.3.2*
+** <2026-06-24 Wed> *2.4.0*
 
-Per-thread inline collapse/expand.
+Auto-enable, force-save, header display info, and revised keybindings.
 
-- *Collapse individual threads* -- Press ~<prefix> c~ to collapse the inline annotation thread at point to a one-line header box (with status, priority, tags, and a comment count), or expand it back.  State is buffer-local and survives ~<prefix> g~ refresh.  Also on the transient Display panel and in ~repeat-mode~.  Requires inline display (~<prefix> /~).  (#12)
+- *Auto-enable* -- Files with existing annotations now enable ~simply-annotate-mode~ automatically on open (configurable via ~simply-annotate-auto-enable~).  New ~simply-annotate-save-now~ force-saves even when the mode is off.
+- *Header display info* -- The header-line shows the active display style and inline position alongside tag counts and thread status.
+- *Collapse individual threads* -- Press ~<prefix> c~ to collapse the inline annotation thread at point to a one-line header box, or expand it back.  State is buffer-local and survives ~<prefix> g~ refresh.  (#12)
+- *Revised keys* -- ~n~/~p~ for next/previous (was ~v~ for previous), ~,~ for priority (was ~p~), ~?~ for transient menu (was ~SPC~), ~SPC~ is now smart-action (same as ~j~).  No global ~M-n~/~M-p~.
 
 ** <2026-06-23 Tue> *2.3.1*
 
@@ -492,11 +495,11 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 
 | Key          | Command                                    | Description                          |
 |--------------+--------------------------------------------+--------------------------------------|
-| =<prefix> j= | =simply-annotate-smart-action=             | Smart create/view/edit annotation    |
+| =<prefix> j= or =<prefix> SPC= | =simply-annotate-smart-action=    | Smart create/view/edit annotation    |
 | =<prefix> e= | =simply-annotate-edit-sexp=                | Edit annotation as raw Elisp sexp    |
 | =<prefix> r= | =simply-annotate-reply-to-annotation=      | Add reply to annotation              |
 | =<prefix> s= | =simply-annotate-set-annotation-status=    | Set status (open/resolved)           |
-| =<prefix> p= | =simply-annotate-set-annotation-priority=  | Set priority (low/high)              |
+| =<prefix> ,= | =simply-annotate-set-annotation-priority=  | Set priority (low/high)              |
 | =<prefix> t= | =simply-annotate-add-annotation-tag=       | Add tag (review, bug)                |
 | =<prefix> C-d= | =simply-annotate-remove-annotation-tag=  | Remove tag from annotation           |
 | =<prefix> F= | =simply-annotate-search-by-tag=            | Search annotations by tag            |
@@ -516,7 +519,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =<prefix> c= | =simply-annotate-toggle-inline-collapse=   | Collapse/expand thread at point      |
 | =<prefix> K= | =simply-annotate-kanban=                   | Kanban board of project annotations  |
 | =<prefix> n= | =simply-annotate-next=                     | Jump to next annotation              |
-| =<prefix> v= | =simply-annotate-previous=                 | Jump to previous annotation          |
+| =<prefix> p= | =simply-annotate-previous=                 | Jump to previous annotation          |
 | =<prefix> g= | =simply-annotate-update-display-style=      | Refresh all annotation overlays       |
 
 ** Annotation Buffer
@@ -623,6 +626,7 @@ Accessed via your chosen prefix key (=<prefix>=).  For example, with =C-c a= as 
 | =simply-annotate-priority-levels=          | ='("low" "normal" "high" ...)=       | Available priority levels                       |
 | =simply-annotate-hide-done-statuses=       | =nil=                                | Statuses whose threads are hidden in source     |
 | =simply-annotate-hide-done-style=          | ='full=                              | =full= or =indicator= for hidden threads        |
+| =simply-annotate-auto-enable=              | =t=                                  | Auto-enable mode for files with annotations     |
 
 ** Custom Faces
 

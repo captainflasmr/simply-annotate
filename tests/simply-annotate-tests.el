@@ -823,16 +823,21 @@ On `before-save-hook' a propagated error would abort the user's buffer save."
   "The command map exposes the expected core bindings."
   (should (keymapp simply-annotate-command-map))
   (should (eq (lookup-key simply-annotate-command-map "j") 'simply-annotate-smart-action))
-  (should (eq (lookup-key simply-annotate-command-map (kbd "SPC")) 'simply-annotate-menu))
+  (should (eq (lookup-key simply-annotate-command-map (kbd "SPC")) 'simply-annotate-smart-action))
+  (should (eq (lookup-key simply-annotate-command-map (kbd "?")) 'simply-annotate-menu))
   (should (eq (lookup-key simply-annotate-command-map "d")
               'simply-annotate-toggle-hide-done))
   (should (eq (lookup-key simply-annotate-command-map "c")
-              'simply-annotate-toggle-inline-collapse)))
+              'simply-annotate-toggle-inline-collapse))
+  (should (eq (lookup-key simply-annotate-command-map "p") 'simply-annotate-previous))
+  (should (eq (lookup-key simply-annotate-command-map ",")
+              'simply-annotate-set-annotation-priority)))
 
 (ert-deftest sa-test-repeat-map-wiring ()
   "The repeat map binds the repeatable commands and tags them (issue #8)."
   (should (keymapp simply-annotate-repeat-map))
   (should (eq (lookup-key simply-annotate-repeat-map "n") 'simply-annotate-next))
+  (should (eq (lookup-key simply-annotate-repeat-map "p") 'simply-annotate-previous))
   (should (eq (lookup-key simply-annotate-repeat-map "]")
               'simply-annotate-cycle-tag-forward))
   (should (eq (lookup-key simply-annotate-repeat-map "d")
