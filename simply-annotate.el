@@ -2018,7 +2018,7 @@ have more siblings.  LAST-P is non-nil if this node is the last sibling."
 (defun simply-annotate--select-author (&optional default-author current-author)
   "Prompt user to select an author from the configured list.
 DEFAULT-AUTHOR is pre-selected. CURRENT-AUTHOR is shown when editing."
-  (let* ((authors (if (> (length simply-annotate-author-list) 1)
+  (let* ((authors (if (consp (cdr simply-annotate-author-list))
                       simply-annotate-author-list
                     (append simply-annotate-author-list (list "Other..."))))
          (prompt (if current-author
@@ -2114,7 +2114,7 @@ Keeps up to 150 characters to allow reliable relocation."
   "Search for CONTEXT in the current buffer and return (START . END) or nil.
 ORIGINAL-START is used to prefer the closest match when duplicates exist.
 REGION-LENGTH is the original annotation length."
-  (when (and context (> (length context) 0))
+  (when (and context (not (string-empty-p context)))
     (save-excursion
       (goto-char (point-min))
       (let ((matches nil)
@@ -2646,7 +2646,8 @@ If WRAP is non-nil, wrap around to the beginning/end."
   (if-let ((overlay (simply-annotate--overlay-at-point)))
       (let ((annotation-data (overlay-get overlay 'simply-annotation)))
         (simply-annotate--update-annotation-buffer annotation-data overlay 'view)
-        (simply-annotate--show-annotation-buffer))))
+        (simply-annotate--show-annotation-buffer))
+    (message "No annotation at point")))
 
 ;;;###autoload
 (defun simply-annotate-next ()
@@ -2678,6 +2679,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
 
 ;;; Interactive Commands
 
+;;;###autoload
 (defun simply-annotate-smart-action ()
   "Enhanced smart action with author support."
   (interactive)
@@ -4276,7 +4278,7 @@ is the next available ID."
                               cid)
                         block))))
             ;; Tags
-            (when (and tags (> (length tags) 0))
+            (when (and tags (consp tags))
               (let* ((tag-str (mapconcat (lambda (tg) (concat "#" tg)) tags " "))
                      (tag-trunc (simply-annotate--kanban-truncate tag-str (- inner 1)))
                      (tag-display (propertize tag-trunc 'face 'font-lock-constant-face))
@@ -4286,7 +4288,7 @@ is the next available ID."
                             cid)
                       block)))
             ;; Reply count
-            (when (and comments (> (length comments) 1))
+            (when (and comments (consp (cdr comments)))
               (let* ((reply-str (format "%d replies" (1- (length comments))))
                      (rpad (max 0 (- inner 1 (string-width reply-str)))))
                 (push (cons (concat "│ "
@@ -5217,7 +5219,7 @@ ARG is the raw prefix argument and selects the candidate set:
                       (push (cons (simply-annotate--format-tag-annotation-entry file-key ann)
                                   (cons file-key ann))
                             candidates))))))
-            (let* ((sorted (nreverse (sort candidates (lambda (a b) (string< (car a) (car b))))))
+            (let* ((sorted (sort candidates (lambda (a b) (string> (car a) (car b)))))
                    (selected-display (completing-read
                                       (format "Annotation with %s [%s]: " tag scope-label)
                                       (mapcar #'car sorted) nil t))

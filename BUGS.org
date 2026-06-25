@@ -47,21 +47,29 @@ Fixed 2026-05-31: the global add/remove are now gated on =(derived-mode-p 'Info-
 
 ** Minor
 
-*** TODO M1 Autoload cookies missing on a few user-facing commands
+*** DONE M1 Autoload cookies missing on a few user-facing commands
 
 =simply-annotate.el= ~line 2405 (=simply-annotate-smart-action=), ~3135 (=simply-annotate-list=), ~5564 (=simply-annotate-dired-transient=).  Most entry points have =;;;###autoload=, but the primary =j= command, =simply-annotate-list=, and the dired transient do not.  They work via the loaded command-map/menu, but lose =M-x= discoverability before load.  Suggestion: add cookies for parity; the dired transient wants the same =;;;###autoload (autoload ...)= line that =simply-annotate-transient= has.
 
-*** TODO M2 =(> (length x) 0)= for emptiness
+Fixed 2026-06-25: =simply-annotate-list=, =simply-annotate-show= and =simply-annotate-dired-transient= already carried =;;;###autoload= cookies in the current tree; added the missing =;;;###autoload= before =simply-annotate-smart-action= for parity.
+
+*** DONE M2 =(> (length x) 0)= for emptiness
 
 =simply-annotate.el= ~line 1878, 4003 (and =(> (length ...) 1)= at 4013).  Walks the sequence just to test non-emptiness.  Suggestion: use truthiness / =consp= / =string-empty-p=.  Cosmetic, O(1).
 
-*** TODO M3 =simply-annotate-show= silently no-ops with no annotation at point
+Fixed 2026-06-25: replaced the four emptiness/more-than-one checks with =consp= (lists: =tags=, =comments=) / =consp (cdr ...)= (more-than-one for =authors=, =comments=) / =not string-empty-p= (the =context= string).  Unrelated numeric comparisons (=length text= vs 150, =formatted-lines= vs max, =first-text= cross-compare) left as-is.
+
+*** DONE M3 =simply-annotate-show= silently no-ops with no annotation at point
 
 =simply-annotate.el= ~line 2367.  =if-let= with no else returns nil silently when there is no overlay at point.  Suggestion: add an else branch with a short =message= (matching =simply-annotate-next= etc.).
 
-*** TODO M4 =(nreverse (sort candidates ...))= to get descending order
+Fixed 2026-06-25: added an else branch reporting ="No annotation at point"=, matching =simply-annotate-next= / =-previous=.
+
+*** DONE M4 =(nreverse (sort candidates ...))= to get descending order
 
 =simply-annotate.el= ~line 4908.  Sorting ascending then reversing is wasteful/obscure.  Suggestion: sort directly with the reversed predicate (=string>= / swapped comparator).
+
+Fixed 2026-06-25: =--find-annotation-by-tag= now sorts with =string>= directly, dropping the =nreverse=.
 
 ** Optimisation
 

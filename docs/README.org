@@ -28,7 +28,7 @@ It has been converted using the following command:
 
 #+begin_src bash
 makeinfo --html --no-split simply-annotate.texi -o simply-annotate.html
-pandoc -f html -t org -o simply-annotate.org simply-annotate.html
+pandoc -f html -t org -o simply-annotate.org simply-annotate.htmlg
 #+end_src
 
 #+RESULTS:
