@@ -11,6 +11,19 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-06-25 Thu> *2.5.0*
+
+Minimum Emacs raised to 28.1; obsolete-macro and minor review fixes.
+
+*** Breaking
+
+- *Minimum Emacs 28.1* -- Raised from 27.2 (= Package-Requires= now =((emacs "28.1") (transient "0.4"))=).  The GNU ELPA =transient= package now declares =((emacs "28.1"))= and could no longer be installed on 27.2, so the supported floor moves to 28.1 (where =transient= is also bundled).  The CI test matrix drops the =27.2= row.
+
+*** Fixes
+
+- *Obsolete macro cleanup* -- All bare =when-let= / =if-let= replaced with =when-let*= / =if-let*=, which are the non-obsolete forms (the bare aliases were obsoleted in Emacs 31.1).  Fixes the byte-compile-with-warnings-as-errors failure on the Emacs snapshot CI row.
+- *Minor review fixes* -- =;;;###autoload= added to =simply-annotate-smart-action=; =--find-annotation-by-tag= sorts with =string>= directly instead of =nreverse=-ing an ascending sort; =simply-annotate-show= now messages "No annotation at point" instead of silently returning nil; the =tags= / =comments= / =context= / =author-list= emptiness checks use =consp= / =string-empty-p= instead of =(> (length ...) 0)=.
+
 ** <2026-06-24 Wed> *2.4.0*
 
 Auto-enable, force-save, header display info, and revised keybindings.

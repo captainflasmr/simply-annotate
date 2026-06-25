@@ -27,7 +27,7 @@ make all        # compile + test + checkdoc
 
 Target a specific Emacs binary with, e.g. =make EMACS=emacs-29.4 test=.
 
-Each target loads =tests/init.el= first, which points =package-user-dir= at a project-local =.elpa= (so dependency installs never disturb your real package store) and puts the working copy at the front of =load-path= (so it shadows any MELPA-installed =simply-annotate=).  On Emacs 28.1+ the bundled =transient= is used; on 27.2 =make deps= installs it from GNU ELPA.
+Each target loads =tests/init.el= first, which points =package-user-dir= at a project-local =.elpa= (so dependency installs never disturb your real package store) and puts the working copy at the front of =load-path= (so it shadows any MELPA-installed =simply-annotate=).  Since the package requires Emacs 28.1+, the bundled =transient= is always available and =make deps= is a no-op for the test matrix.
 
 ** Coverage
 
@@ -46,7 +46,7 @@ The suite covers the logic that is meaningfully unit-testable in batch:
 
 =.github/workflows/ci.yml= runs the Makefile on every push and pull request:
 
-- A =test= matrix across Emacs 27.2, 28.2, 29.4, 30.1, and =snapshot= (snapshot is allowed to fail), each running =make deps compile test checkdoc=.
+- A =test= matrix across Emacs 28.2, 29.4, 30.1, and =snapshot= (snapshot is allowed to fail), each running =make deps compile test checkdoc=.
 - A separate =lint= job running =package-lint= on a stable Emacs.
 
 * Validate/lint elisp
@@ -79,7 +79,6 @@ done
 
 ** Run simply-annotate with different Emacs versions
 
-- [ ] emacs-27.2
 - [X] emacs-28.1
 - [X] emacs-29.3
 - [X] emacs-29.4

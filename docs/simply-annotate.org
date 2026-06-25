@@ -285,7 +285,7 @@ Next: [[#Quick-Start][Quick Start]], Previous:
 :CUSTOM_ID: Installation-1
 :CLASS: chapter
 :END:
-Requires *Emacs 27.2* or later. No external dependencies.
+Requires *Emacs 28.1* or later. No external dependencies.
 
 - [[#Using-MELPA-_0028Recommended_0029][Using MELPA (Recommended)]]
 - [[#Keymap-Configuration][Keymap Configuration]]

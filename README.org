@@ -53,6 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-06-25 Thu> *2.5.0*
+
+Minimum Emacs raised to 28.1; obsolete-macro and CI fixes.
+
+- *Minimum Emacs 28.1* -- Raised from 27.2.  The =transient= dependency (now declaring =emacs 28.1=) could no longer be installed on 27.2 from GNU ELPA, so the supported floor moves to 28.1, where =transient= is also bundled.  '#27.2' removed from the CI matrix.
+- *Obsolete macro cleanup* -- Replaced all bare =when-let= / =if-let= with =when-let*= / =if-let*= (obsolete as of Emacs 31.1), so byte-compile with warnings-as-errors passes on snapshot.
+- *Minor review fixes* -- =;;;###autoload= on =simply-annotate-smart-action=; emptiness checks use =consp= / =string-empty-p=; =simply-annotate-show= reports "No annotation at point"; =--find-annotation-by-tag= sorts with =string>= directly.
+
 ** <2026-06-24 Wed> *2.4.0*
 
 Auto-enable, force-save, header display info, and revised keybindings.
@@ -199,7 +207,7 @@ See [[file:CHANGELOG.org]] for full version history.
 
 * Installation
 
-Requires *Emacs 27.2* or later.  No external dependencies.
+Requires *Emacs 28.1* or later.  No external dependencies.
 
 ** MELPA
 
@@ -802,7 +810,7 @@ A cross-cutting view of key features across popular Emacs annotation packages.
 | Database switching             | Yes         | No                | No         | No        | No              |
 | No external dependencies       | Yes         | No                | No         | No        | Yes             |
 | MELPA                          | Yes         | Yes               | Yes        | Yes       | No              |
-| Emacs requirement              | 24.4        | N/A               | 27.1       | 24.4      | 27.2            |
+| Emacs requirement              | 24.4        | N/A               | 27.1       | 24.4      | 28.1            |
 
 * Contributing
 

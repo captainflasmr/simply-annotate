@@ -131,7 +131,7 @@ File: simply-annotate.info,  Node: Installation,  Next: Quick Start,  Prev: Intr
 2 Installation
 **************
 
-Requires *Emacs 27.2* or later.  No external dependencies.
+Requires *Emacs 28.1* or later.  No external dependencies.
 
 2.1 Using MELPA (Recommended)
 =============================

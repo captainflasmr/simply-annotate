@@ -141,7 +141,7 @@ content. It's perfect for code review, research, note-taking, and documentation 
 @node Installation
 @chapter Installation
 
-Requires @strong{Emacs 27.2} or later.  No external dependencies.
+Requires @strong{Emacs 28.1} or later.  No external dependencies.
 
 @section Using MELPA (Recommended)
 

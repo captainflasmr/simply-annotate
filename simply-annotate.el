@@ -1,8 +1,8 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.4.0
-;; Package-Requires: ((emacs "27.2") (transient "0.4"))
+;; Version: 2.5.0
+;; Package-Requires: ((emacs "28.1") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
 ;;
@@ -26,8 +26,7 @@
 ;; A lightweight annotation system for Emacs that allows you to add
 ;; persistent notes to any text file without modifying the original
 ;; content.  Enhanced with threading, collaboration, and org-mode
-;; integration.  Requires Emacs 27.2+; uses `transient' (bundled with
-;; Emacs 28.1+, available from GNU ELPA for earlier versions).
+;; integration.  Requires Emacs 28.1+ (which bundles `transient').
 ;;
 ;; Quick Start (use-package):
 ;;
@@ -5523,8 +5522,8 @@ continue with the bare keys shown here without re-typing the prefix:
 n/p to step between annotations, \\=' to cycle display style, / to
 toggle inline, d to toggle hide-done, c to collapse/expand a thread,
 [ and ] to cycle the tag filter, g to refresh.  The keys mirror their
-`simply-annotate-command-map' bindings.  On Emacs 27.2 the `repeat-map'
-properties are simply inert.")
+`simply-annotate-command-map' bindings.  The `repeat-map' properties
+require `repeat-mode' (Emacs 28.1+) which is always available.")
 
 (dolist (cmd '(simply-annotate-next
                simply-annotate-previous
