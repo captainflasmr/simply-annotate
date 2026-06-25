@@ -4,8 +4,9 @@
 #   make test       run the ERT suite
 #   make compile    byte-compile (warnings are errors)
 #   make checkdoc   run checkdoc on the package
-#   make lint       run package-lint (needs `make deps')
-#   make deps       install dependencies (transient, package-lint) into ./.elpa
+#   make lint       run package-lint (needs `make deps-lint')
+#   make deps       install runtime deps (transient) into ./.elpa
+#   make deps-lint  install lint deps (package-lint; needs Emacs 28.1+) into ./.elpa
 #   make all        compile + test + checkdoc
 #   make clean      remove byte-compiled files
 #
@@ -22,11 +23,17 @@ INIT    = tests/init.el
 # and the working copy shadows any installed simply-annotate.
 BATCH = $(EMACS) -Q --batch -l $(INIT)
 
-.PHONY: all compile test checkdoc lint deps clean
+.PHONY: all compile test checkdoc lint deps deps-lint clean
 
 all: compile test checkdoc
 
 deps:
+	$(BATCH) \
+	  --eval "(unless package-archive-contents (package-refresh-contents))" \
+	  --eval "(dolist (p '(transient)) \
+	            (unless (package-installed-p p) (package-install p)))"
+
+deps-lint:
 	$(BATCH) \
 	  --eval "(unless package-archive-contents (package-refresh-contents))" \
 	  --eval "(dolist (p '(transient package-lint)) \

@@ -52,7 +52,7 @@ jobs:
           version: '30.1'
 
       - name: Install dependencies
-        run: make deps
+        run: make deps-lint
 
       - name: package-lint
         run: make lint

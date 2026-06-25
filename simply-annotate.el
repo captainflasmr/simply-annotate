@@ -886,7 +886,7 @@ Relative keys are resolved against the current project root."
           (find-file resolved)
         (find-file-noselect resolved)))
      (t
-      (when-let ((buf (get-buffer resolved)))
+      (when-let* ((buf (get-buffer resolved)))
         (when select (switch-to-buffer buf))
         buf)))))
 
@@ -2643,7 +2643,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
 (defun simply-annotate-show ()
   "Enhanced version that handles threading."
   (interactive)
-  (if-let ((overlay (simply-annotate--overlay-at-point)))
+  (if-let* ((overlay (simply-annotate--overlay-at-point)))
       (let ((annotation-data (overlay-get overlay 'simply-annotation)))
         (simply-annotate--update-annotation-buffer annotation-data overlay 'view)
         (simply-annotate--show-annotation-buffer))
@@ -2658,7 +2658,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
                          (current-buffer))))
     (if (and source-buffer (buffer-live-p source-buffer))
         (with-current-buffer source-buffer
-          (if-let ((next-overlay (simply-annotate--find-annotation t t)))
+          (if-let* ((next-overlay (simply-annotate--find-annotation t t)))
               (simply-annotate--navigate-to-overlay next-overlay)
             (message "No more annotations in buffer")))
       (message "Source buffer not available"))))
@@ -2672,7 +2672,7 @@ If WRAP is non-nil, wrap around to the beginning/end."
                          (current-buffer))))
     (if (and source-buffer (buffer-live-p source-buffer))
         (with-current-buffer source-buffer
-          (if-let ((prev-overlay (simply-annotate--find-annotation nil t)))
+          (if-let* ((prev-overlay (simply-annotate--find-annotation nil t)))
               (simply-annotate--navigate-to-overlay prev-overlay)
             (message "No more annotations in buffer")))
       (message "Source buffer not available"))))
@@ -2805,7 +2805,7 @@ For threads with multiple comments, prompts which comment to edit."
 (defun simply-annotate-remove ()
   "Remove annotation at point."
   (interactive)
-  (if-let ((overlay (simply-annotate--overlay-at-point)))
+  (if-let* ((overlay (simply-annotate--overlay-at-point)))
       (when (y-or-n-p "Really remove annotation? ")
         (simply-annotate--remove-overlay overlay)
         (simply-annotate--save-annotations)
@@ -3037,7 +3037,7 @@ Select from the annotation's existing tags via `completing-read'."
 (defun simply-annotate-change-annotation-author ()
   "Change the author of the current annotation or specific comment in a thread."
   (interactive)
-  (if-let ((overlay (simply-annotate--overlay-at-point)))
+  (if-let* ((overlay (simply-annotate--overlay-at-point)))
       (let* ((current-data (overlay-get overlay 'simply-annotation)))
         (if (simply-annotate--thread-p current-data)
             (simply-annotate--change-thread-author overlay current-data)
@@ -3330,7 +3330,7 @@ If NAV is nil, derive it from point."
       (let ((file (plist-get props :file))
             (line (plist-get props :line))
             (col  (plist-get props :col)))
-        (if-let ((source-buf (simply-annotate--get-key-buffer file)))
+        (if-let* ((source-buf (simply-annotate--get-key-buffer file)))
             (let ((win (display-buffer source-buf
                                        '(display-buffer-use-some-window
                                          (inhibit-same-window . t)))))
@@ -3344,7 +3344,7 @@ If NAV is nil, derive it from point."
                 (forward-line (1- line))
                 (forward-char (max 0 (1- col)))
                 ;; Pulse the annotation overlay at this position
-                (when-let ((ov (simply-annotate--overlay-at-point)))
+                (when-let* ((ov (simply-annotate--overlay-at-point)))
                   (pulse-momentary-highlight-region
                    (overlay-start ov) (overlay-end ov))))))))))
 
@@ -3386,7 +3386,7 @@ jump to the source location."
   (interactive)
   (let ((file-key (simply-annotate--listing-file-at-point)))
     (if file-key
-        (when-let ((buf (simply-annotate--get-key-buffer file-key t)))
+        (when-let* ((buf (simply-annotate--get-key-buffer file-key t)))
           (let ((win (get-buffer-window buf)))
             (select-window win)
             (unless simply-annotate-mode
@@ -3422,7 +3422,7 @@ jump to the source location."
 
 (defun simply-annotate--invalidate-listing ()
   "Kill the cached listing buffer so the next open rebuilds it."
-  (when-let ((buf (get-buffer "*Annotations*")))
+  (when-let* ((buf (get-buffer "*Annotations*")))
     (kill-buffer buf)))
 
 (defun simply-annotate--finish-annotation-list-mode ()
@@ -3542,13 +3542,13 @@ Uses `outline-mode' to fold headings cheaply, then activates
 (defun simply-annotate-table-goto-source ()
   "Jump to the source location of the annotation at point."
   (interactive)
-  (when-let ((entry (tabulated-list-get-id)))
+  (when-let* ((entry (tabulated-list-get-id)))
     (simply-annotate--listing-goto-source entry)))
 
 (defun simply-annotate-table-delete ()
   "Delete the annotation at point."
   (interactive)
-  (when-let ((nav (tabulated-list-get-id)))
+  (when-let* ((nav (tabulated-list-get-id)))
     (let ((file-key (plist-get nav :file))
           (start-pos (plist-get nav :start)))
       (when (and file-key start-pos
@@ -3939,7 +3939,7 @@ Annotations are grouped into columns by their status."
 (defun simply-annotate-kanban-toggle-expand ()
   "Toggle expanded view for the card at point."
   (interactive)
-  (when-let ((cid (get-text-property (point) 'simply-annotate-kanban-card)))
+  (when-let* ((cid (get-text-property (point) 'simply-annotate-kanban-card)))
     (unless simply-annotate-kanban-expanded-cards
       (setq simply-annotate-kanban-expanded-cards (make-hash-table)))
     (if (gethash cid simply-annotate-kanban-expanded-cards)
@@ -4413,7 +4413,7 @@ is the next available ID."
   (let ((current-id (get-text-property (point) 'simply-annotate-kanban-card)))
     (if (null current-id)
         ;; Not on a card -- jump to first card
-        (when-let ((first (car simply-annotate-kanban-card-positions)))
+        (when-let* ((first (car simply-annotate-kanban-card-positions)))
           (goto-char (car first)))
       (when-let* ((coord (gethash current-id simply-annotate-kanban-card-coords))
                   (col-idx (car coord))
@@ -4421,7 +4421,7 @@ is the next available ID."
                   (col-cards (aref simply-annotate-kanban-card-grid col-idx))
                   (next-row (1+ row)))
         (when (< next-row (length col-cards))
-          (when-let ((pos (simply-annotate-kanban--card-position
+          (when-let* ((pos (simply-annotate-kanban--card-position
                            (nth next-row col-cards))))
             (goto-char pos)))))))
 
@@ -4436,7 +4436,7 @@ is the next available ID."
                   (col-cards (aref simply-annotate-kanban-card-grid col-idx))
                   (prev-row (1- row)))
         (when (>= prev-row 0)
-          (when-let ((pos (simply-annotate-kanban--card-position
+          (when-let* ((pos (simply-annotate-kanban--card-position
                            (nth prev-row col-cards))))
             (goto-char pos)))))))
 
@@ -4447,7 +4447,7 @@ is the next available ID."
         (grid simply-annotate-kanban-card-grid)
         (num-cols (length simply-annotate-kanban-card-grid)))
     (if (null current-id)
-        (when-let ((first (car simply-annotate-kanban-card-positions)))
+        (when-let* ((first (car simply-annotate-kanban-card-positions)))
           (goto-char (car first)))
       (when-let* ((coord (gethash current-id simply-annotate-kanban-card-coords))
                   (col-idx (car coord))
@@ -4457,7 +4457,7 @@ is the next available ID."
                  for c = (mod (+ col-idx i) num-cols)
                  for col-cards = (aref grid c)
                  when (and col-cards (< row (length col-cards)))
-                 do (when-let ((pos (simply-annotate-kanban--card-position
+                 do (when-let* ((pos (simply-annotate-kanban--card-position
                                      (nth row col-cards))))
                       (goto-char pos))
                  and return nil)))))
@@ -4469,7 +4469,7 @@ is the next available ID."
         (grid simply-annotate-kanban-card-grid)
         (num-cols (length simply-annotate-kanban-card-grid)))
     (if (null current-id)
-        (when-let ((first (car simply-annotate-kanban-card-positions)))
+        (when-let* ((first (car simply-annotate-kanban-card-positions)))
           (goto-char (car first)))
       (when-let* ((coord (gethash current-id simply-annotate-kanban-card-coords))
                   (col-idx (car coord))
@@ -4479,7 +4479,7 @@ is the next available ID."
                  for c = (mod (- col-idx i) num-cols)
                  for col-cards = (aref grid c)
                  when (and col-cards (< row (length col-cards)))
-                 do (when-let ((pos (simply-annotate-kanban--card-position
+                 do (when-let* ((pos (simply-annotate-kanban--card-position
                                      (nth row col-cards))))
                       (goto-char pos))
                  and return nil)))))
@@ -4728,7 +4728,7 @@ directory filter on project commands."
   "Display annotations from DB in a buffer called BUFFER-NAME.
 TITLE is inserted as the org #+TITLE header.  Shared rendering
 logic used by `simply-annotate-show-all' and `simply-annotate-show-project'."
-  (if-let ((existing (get-buffer buffer-name)))
+  (if-let* ((existing (get-buffer buffer-name)))
       (pop-to-buffer existing)
     (if (not db)
         (message "No annotations database found")
@@ -4800,7 +4800,7 @@ under a \"(no project)\" pseudo-root."
   (let ((result nil)
         (project-cache (make-hash-table :test #'equal)))
     ;; 1. Scan the global database.
-    (when-let ((db (simply-annotate--read-db simply-annotate-file)))
+    (when-let* ((db (simply-annotate--read-db simply-annotate-file)))
       (dolist (entry db)
         (let* ((key (car entry))
                (root
@@ -4836,7 +4836,7 @@ under a \"(no project)\" pseudo-root."
                (ann-file (expand-file-name simply-annotate-project-file root)))
           (when (and (file-directory-p root)
                      (file-exists-p ann-file))
-            (when-let ((db (simply-annotate--read-db ann-file)))
+            (when-let* ((db (simply-annotate--read-db ann-file)))
               (let ((existing (alist-get root result nil nil #'string=))
                     (new-entries nil))
                 (dolist (entry db)
@@ -4967,7 +4967,7 @@ PROJECTS is an alist of (ROOT . DB-ENTRIES) as returned by
 (defun simply-annotate-projects-goto-table ()
   "Open the project annotation table for the project at point."
   (interactive)
-  (if-let ((root (simply-annotate--projects-root-at-point)))
+  (if-let* ((root (simply-annotate--projects-root-at-point)))
       (let ((default-directory root))
         (simply-annotate--show-project-table root nil nil))
     (message "No project at point")))
@@ -4975,7 +4975,7 @@ PROJECTS is an alist of (ROOT . DB-ENTRIES) as returned by
 (defun simply-annotate-projects-goto-org ()
   "Open the project org listing for the project at point."
   (interactive)
-  (if-let ((root (simply-annotate--projects-root-at-point)))
+  (if-let* ((root (simply-annotate--projects-root-at-point)))
       (let* ((project-name (file-name-nondirectory
                             (directory-file-name root)))
              (db (simply-annotate--project-annotations root)))
@@ -4988,7 +4988,7 @@ PROJECTS is an alist of (ROOT . DB-ENTRIES) as returned by
 (defun simply-annotate-projects-goto-kanban ()
   "Open the kanban board for the project at point."
   (interactive)
-  (if-let ((root (simply-annotate--projects-root-at-point)))
+  (if-let* ((root (simply-annotate--projects-root-at-point)))
       (let ((default-directory root))
         (simply-annotate-kanban 'project))
     (message "No project at point")))
@@ -5009,7 +5009,7 @@ Otherwise it is the project's `simply-annotate-project-file'."
 (defun simply-annotate-projects-goto-dired ()
   "Open the project directory for the entry at point in Dired."
   (interactive)
-  (if-let ((root (simply-annotate--projects-root-at-point)))
+  (if-let* ((root (simply-annotate--projects-root-at-point)))
       (dired root)
     (message "No project directory for this entry")))
 
