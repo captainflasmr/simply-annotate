@@ -9,67 +9,11 @@ This document contains the current bugs/improvements, this is just for me mainly
 
 * Bugs/Improvements
 
-** DONE =both= strategy wrote global annotations into the project database
-
-Found during an elisp review (2026-05-31).  With =simply-annotate-database-strategy= set to =both=, every save copied all global annotations -- including absolute-path keys for unrelated projects -- into the project-local =.simply-annotations.el=.  Cause: =simply-annotate--update-database= loaded the *merged* project+global view (=--load-database=) and wrote it back to the project file.  Fixed so it reads/writes only the active store (=--database-path=); the two databases stay separate.  Covered by =sa-test-both-strategy-no-global-pollution=.  Already-polluted project files are not auto-cleaned (remove stray absolute-path entries by hand if needed).
-
 ** TODO quickly switching between global and local annotations
 
 ** TODO look at indented brackets
 
-** DONE add automated unit tests
-
-Done (2026-05-31).  Added an ERT suite (=tests/simply-annotate-tests.el=, 34 tests) covering helpers, defaults, threading, database load/save (incl. =~= expansion and the =both= pollution fix), overlays, serialization/stale-detection, kanban grouping, and keymaps.  Driven by a =Makefile= (=make test/compile/checkdoc/lint=) with a =tests/init.el= bootstrap, plus a GitHub Actions workflow (=.github/workflows/ci.yml=) across Emacs 27.2--30.1 and snapshot.
-
 * Code Review (2026-05-31)
-
-Full elisp review of =simply-annotate.el= (~5560 lines, v2.3.0).  Overall a mature, well-crafted package: =lexical-binding= on throughout, near-complete docstrings, consistent =simply-annotate-= / =--= naming, clean optional-dependency handling (=declare-function= + =fboundp= guards for =project= / =org= / =dired= / =info=, including an Emacs 27 =project-root= -> =project-roots= fallback), correct =user-error= usage, and graceful backward-compat migration.  Findings below; severity-grouped, flag-don't-fix.
-
-** Critical
-
-*** DONE C1 =both= strategy pollutes the project file with global annotations
-
-See [[*=both= strategy wrote global annotations into the project database][Bugs/Improvements above]].  Fixed 2026-05-31 in =simply-annotate--update-database=; regression test =sa-test-both-strategy-no-global-pollution=.
-
-** Important
-
-*** DONE I1 A failed annotation-DB write can abort the user's buffer save
-
-=simply-annotate.el= ~line 1955 (=--save-annotations=), ~870 (=--save-database=).  =--save-annotations= runs on =before-save-hook= and writes the DB via =with-temp-file= with no error guard.  If the DB path is unwritable (missing parent dir for a customised =simply-annotate-file=, read-only project root, full disk), the error propagates out of =before-save-hook= and aborts the user's actual file save.  Suggestion: wrap the DB write in =condition-case= and downgrade failures to a =message=/=warn= so the buffer still saves.
-
-Fixed 2026-05-31: =--save-annotations= now wraps its body in =condition-case=, reporting any failure via =message= instead of signalling, so it can never abort a buffer save or buffer kill.  Regression test =sa-test-save-annotations-survives-write-failure=.
-
-*** DONE I2 =Info-selection-hook= is added/removed globally and asymmetrically
-
-=simply-annotate.el= ~line 5248 (add), ~5260 (remove).  Unlike the other mode hooks (all buffer-local with trailing =t=), =Info-selection-hook= is added/removed as a global hook on every mode toggle.  With the mode on in two buffers, disabling it in one removes the Info hook for all; it is also never cleaned up if the last enabled buffer is killed without toggling the mode off.  Suggestion: gate the global add/remove on whether any =simply-annotate-mode= buffer remains, or manage it once (first-enable / last-disable).
-
-Fixed 2026-05-31: the global add/remove are now gated on =(derived-mode-p 'Info-mode)=, so regular file buffers (the common case) never touch the global hook, and Info buffers manage it symmetrically.  The hook function already no-ops in buffers without the mode, so a stray registration (e.g. an Info buffer killed without disabling the mode) is harmless.  Regression test =sa-test-info-hook-not-registered-in-file-buffers=.
-
-** Minor
-
-*** DONE M1 Autoload cookies missing on a few user-facing commands
-
-=simply-annotate.el= ~line 2405 (=simply-annotate-smart-action=), ~3135 (=simply-annotate-list=), ~5564 (=simply-annotate-dired-transient=).  Most entry points have =;;;###autoload=, but the primary =j= command, =simply-annotate-list=, and the dired transient do not.  They work via the loaded command-map/menu, but lose =M-x= discoverability before load.  Suggestion: add cookies for parity; the dired transient wants the same =;;;###autoload (autoload ...)= line that =simply-annotate-transient= has.
-
-Fixed 2026-06-25: =simply-annotate-list=, =simply-annotate-show= and =simply-annotate-dired-transient= already carried =;;;###autoload= cookies in the current tree; added the missing =;;;###autoload= before =simply-annotate-smart-action= for parity.
-
-*** DONE M2 =(> (length x) 0)= for emptiness
-
-=simply-annotate.el= ~line 1878, 4003 (and =(> (length ...) 1)= at 4013).  Walks the sequence just to test non-emptiness.  Suggestion: use truthiness / =consp= / =string-empty-p=.  Cosmetic, O(1).
-
-Fixed 2026-06-25: replaced the four emptiness/more-than-one checks with =consp= (lists: =tags=, =comments=) / =consp (cdr ...)= (more-than-one for =authors=, =comments=) / =not string-empty-p= (the =context= string).  Unrelated numeric comparisons (=length text= vs 150, =formatted-lines= vs max, =first-text= cross-compare) left as-is.
-
-*** DONE M3 =simply-annotate-show= silently no-ops with no annotation at point
-
-=simply-annotate.el= ~line 2367.  =if-let= with no else returns nil silently when there is no overlay at point.  Suggestion: add an else branch with a short =message= (matching =simply-annotate-next= etc.).
-
-Fixed 2026-06-25: added an else branch reporting ="No annotation at point"=, matching =simply-annotate-next= / =-previous=.
-
-*** DONE M4 =(nreverse (sort candidates ...))= to get descending order
-
-=simply-annotate.el= ~line 4908.  Sorting ascending then reversing is wasteful/obscure.  Suggestion: sort directly with the reversed predicate (=string>= / swapped comparator).
-
-Fixed 2026-06-25: =--find-annotation-by-tag= now sorts with =string>= directly, dropping the =nreverse=.
 
 ** Optimisation
 
