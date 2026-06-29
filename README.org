@@ -53,6 +53,12 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-06-29 Mon> *2.5.1*
+
+Fix transient menu rendering on newer transient versions.
+
+- *Transient menu fix* -- The ~simply-annotate-transient~ and ~simply-annotate-dired-transient~ menus no longer error with "No applicable method: transient-format" on recent transient releases.  Fixed a `[[:description ... [...]]]` double-wrapping layout issue.
+
 ** <2026-06-25 Thu> *2.5.0*
 
 Minimum Emacs raised to 28.1; obsolete-macro and CI fixes.

@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.5.0
+;; Version: 2.5.1
 ;; Package-Requires: ((emacs "28.1") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -5865,7 +5865,7 @@ local bindings on the same prefix."
 ;;;###autoload (autoload 'simply-annotate-transient "simply-annotate" nil t)
 (transient-define-prefix simply-annotate-transient ()
   "Transient menu for `simply-annotate'."
-  [[:description simply-annotate--transient-description
+  [:description simply-annotate--transient-description
     ["Navigate"
      ("n" "next"              simply-annotate-next :transient t)
      ("p" "previous"          simply-annotate-previous :transient t)
@@ -5906,12 +5906,12 @@ local bindings on the same prefix."
      ("S" "strategy..."       simply-annotate-set-database-strategy)
      (">" "migrate → project" simply-annotate-migrate-to-project)
      ("<" "migrate → global"  simply-annotate-migrate-to-global)
-     ("D" "dired mode"        simply-annotate-dired-mode)]]])
+     ("D" "dired mode"        simply-annotate-dired-mode)]])
 
 ;;;###autoload (autoload 'simply-annotate-dired-transient "simply-annotate" nil t)
 (transient-define-prefix simply-annotate-dired-transient ()
   "Transient menu for `simply-annotate' in Dired."
-  [[:description simply-annotate--transient-description
+  [:description simply-annotate--transient-description
     ["Dired"
      ("D" "toggle fringe marks"    simply-annotate-dired-mode)
      ("j" "list file annotations"  simply-annotate-dired-list-file)
@@ -5928,7 +5928,7 @@ local bindings on the same prefix."
     ["Database"
      ("S" "strategy..."       simply-annotate-set-database-strategy)
      (">" "migrate → project" simply-annotate-migrate-to-project)
-     ("<" "migrate → global"  simply-annotate-migrate-to-global)]]])
+     ("<" "migrate → global"  simply-annotate-migrate-to-global)]])
 
 ;;;###autoload
 (defun simply-annotate-menu ()

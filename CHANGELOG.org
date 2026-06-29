@@ -11,6 +11,14 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-06-29 Mon> *2.5.1*
+
+Fix transient menu rendering on newer transient versions.
+
+*** Fixes
+
+- *Transient menu layout* -- The `simply-annotate-transient` and `simply-annotate-dired-transient` menus used a `[[:description ... [...]]]` layout that created a double-wrapped `transient-columns` group, causing "No applicable method: transient-format" on the inner group objects.  Changed to `[:description ... [...]]]` so the `transient-columns` group directly contains `transient-column` children.
+
 ** <2026-06-25 Thu> *2.5.0*
 
 Minimum Emacs raised to 28.1; obsolete-macro and minor review fixes.
