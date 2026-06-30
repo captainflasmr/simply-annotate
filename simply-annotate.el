@@ -1,7 +1,7 @@
 ;;; simply-annotate.el --- Enhanced annotation system with threading -*- lexical-binding: t; -*-
 ;;
 ;; Author: James Dyer <captainflasmr@gmail.com>
-;; Version: 2.5.1
+;; Version: 2.6.0
 ;; Package-Requires: ((emacs "28.1") (transient "0.4"))
 ;; Keywords: applications, tools, convenience
 ;; URL: https://github.com/captainflasmr/simply-annotate
@@ -192,6 +192,21 @@
 ;;
 ;; (setq simply-annotate-inline-pointer-after "┃\n┃\n┗━━▶")
 ;; (setq simply-annotate-inline-pointer-above "┏━━▶\n┃\n┃")
+;;
+;; Margin Inline Display:
+;;
+;; Use `simply-annotate-inline-position' set to `margin-left' or
+;; `margin-right' to show annotation boxes in the Emacs display margin
+;; (not to be confused with text margins for filling).  Each line of the
+;; annotation box appears in the margin next to the corresponding line
+;; of the annotated region.  Wraps to `simply-annotate-margin-width'
+;; columns (default 30).  If the annotation is longer than the annotated
+;; region, extra lines are truncated with "... +N lines".  Requires the
+;; base display style (fringe, bracket, etc.) to locate annotations in
+;; the buffer since the margin alone provides no markers.
+;;
+;; Press <prefix> ; to cycle `simply-annotate-inline-position' (after,
+;; above, margin-left, margin-right) without leaving the transient menu.
 ;;
 ;; Project-Aware Annotations:
 ;;
@@ -389,9 +404,20 @@ Uses overline and underline to bracket the annotated region."
 (defcustom simply-annotate-inline-position 'after
   "Where to display inline annotation blocks relative to the annotated region.
 - after: Below the annotated text (as an after-string)
-- above: Above the annotated text (as a before-string)"
+- above: Above the annotated text (as a before-string)
+- margin-left: In the left display margin, aligned to the annotated region
+- margin-right: In the right display margin, aligned to the annotated region"
   :type '(choice (const :tag "After annotated region" after)
-                 (const :tag "Above annotated region" above))
+                 (const :tag "Above annotated region" above)
+                 (const :tag "Left margin, aligned to region" margin-left)
+                 (const :tag "Right margin, aligned to region" margin-right))
+  :group 'simply-annotate)
+
+(defcustom simply-annotate-margin-width 30
+  "Width of the display margin for margin-positioned annotations, in characters.
+Used when `simply-annotate-inline-position' is `margin-left' or `margin-right'.
+Lines wider than this are truncated with `...'."
+  :type 'integer
   :group 'simply-annotate)
 
 (defcustom simply-annotate-use-org-editing t
@@ -682,9 +708,14 @@ Toggle interactively with `simply-annotate-toggle-inline-collapse'.")
   "Hash table of thread ids whose inline collapse state was individually toggled.
 An entry means \"opposite of `simply-annotate-inline-expanded'\".  This
 follows the same opt-in/opt-out model as the kanban board's
-`simply-annotate-kanban-expanded-cards'.  State is buffer-local and
+ `simply-annotate-kanban-expanded-cards'.  State is buffer-local and
 session-only (never persisted to the database); it survives overlay
 rebuilds because it is keyed by thread id, not overlay identity.")
+
+(defvar-local simply-annotate--margin-saved-width nil
+  "Cons (LEFT . RIGHT) of margin widths saved before margin mode was activated.
+Used to restore the original margin widths when margin inline is disabled.
+Only non-nil while margin inline mode is active.")
 
 (defvar-local simply-annotate-hide-done t
   "Master switch for hiding done/closed threads in this buffer.
@@ -1193,6 +1224,154 @@ and `simply-annotate-inline-pointer-above'."
                        (concat text (or fringe ""))))
       (overlay-put overlay 'after-string text))))
 
+(defun simply-annotate--margin-active-p ()
+  "Return non-nil if margin inline mode is active in this buffer."
+  (and simply-annotate-inline
+       (memq simply-annotate-inline-position '(margin-left margin-right))))
+
+(defun simply-annotate--margin-setup ()
+  "Set up display margins for margin-positioned inline annotations.
+Saves the current margin widths, sets the requested side's margin to
+`simply-annotate-margin-width', and applies to all windows showing the buffer."
+  (unless simply-annotate--margin-saved-width
+    (setq simply-annotate--margin-saved-width
+          (cons (or (car (window-margins)) 0)
+                (or (cdr (window-margins)) 0))))
+  (let* ((saved-left (car simply-annotate--margin-saved-width))
+         (saved-right (cdr simply-annotate--margin-saved-width))
+         (new-left (if (eq simply-annotate-inline-position 'margin-left)
+                       simply-annotate-margin-width
+                     saved-left))
+         (new-right (if (eq simply-annotate-inline-position 'margin-right)
+                        simply-annotate-margin-width
+                      saved-right)))
+    (setq left-margin-width new-left
+          right-margin-width new-right)
+    (dolist (win (get-buffer-window-list (current-buffer) nil t))
+      (set-window-margins win new-left new-right))))
+
+(defun simply-annotate--margin-cleanup ()
+  "Restore display margins to their pre-margin-mode state."
+  (when simply-annotate--margin-saved-width
+    (let ((old-left (car simply-annotate--margin-saved-width))
+          (old-right (cdr simply-annotate--margin-saved-width)))
+      (setq left-margin-width (if (> old-left 0) old-left nil)
+            right-margin-width (if (> old-right 0) old-right nil))
+      (dolist (win (get-buffer-window-list (current-buffer) nil t))
+        (set-window-margins win old-left old-right))
+      (setq simply-annotate--margin-saved-width nil))))
+
+(defun simply-annotate--next-visible-overlay (overlay)
+  "Return the next visible annotation overlay after OVERLAY in buffer order.
+Uses `simply-annotate--overlay-visible-p' to skip status-hidden and
+tag-filtered overlays, so they do not block margin extension.
+Returns nil if OVERLAY is the last visible annotation."
+  (let ((pos (overlay-start overlay))
+        (next nil))
+    (dolist (ov simply-annotate-overlays)
+      (when (and (overlayp ov)
+                 (not (eq ov overlay))
+                 (> (overlay-start ov) pos)
+                 (simply-annotate--overlay-visible-p ov)
+                 (or (null next)
+                     (< (overlay-start ov) (overlay-start next))))
+        (setq next ov)))
+    next))
+
+(defun simply-annotate--cleanup-margin-overlays (overlay)
+  "Remove auxiliary margin overlays associated with OVERLAY."
+  (dolist (aux (overlay-get overlay 'simply-annotate-margin-overlays))
+    (when (overlayp aux)
+      (delete-overlay aux)))
+  (overlay-put overlay 'simply-annotate-margin-overlays nil))
+
+(defun simply-annotate--margin-box-lines (overlay region-lines available-lines)
+  "Return margin-display strings for OVERLAY.
+REGION-LINES is the height of the annotated region.
+AVAILABLE-LINES is the total margin lines available (up to next
+annotation or `most-positive-fixnum' if this is the last).
+Text wraps to `simply-annotate-margin-width'.  When shorter than the
+region, padding lines are added.  When longer than available space,
+the excess is replaced by a \"... +N lines\" truncation marker."
+  (let* ((wrap (or simply-annotate-margin-width 30))
+         (simply-annotate-inline-fill-column wrap)
+         (all-lines (split-string
+                     (string-trim (simply-annotate--inline-text overlay)
+                                  "\n+" "\n+")
+                     "\n"))
+         (n (length all-lines))
+         (display-lines (if (> n available-lines)
+                            available-lines
+                          (max region-lines n))))
+    (cond
+     ((> n display-lines)
+      (if (>= display-lines 2)
+          (setq all-lines (append (seq-take all-lines (1- display-lines))
+                                  (list (format "... +%d lines"
+                                                (- n (1- display-lines))))))
+        (setq all-lines (list (car all-lines)))))
+     ((< n region-lines)
+      (setq all-lines (append all-lines
+                              (make-list (- region-lines n) "")))))
+    (mapcar (lambda (line)
+              (let* ((w (string-width line))
+                     (truncated (if (> w wrap)
+                                    (concat (truncate-string-to-width
+                                             line (- wrap 1))
+                                            "…")
+                                  line))
+                     (padded (format (format "%%-%ds" wrap) truncated)))
+                (add-face-text-property 0 (length padded)
+                                        'simply-annotate-inline-face
+                                        t padded)
+                padded))
+            all-lines)))
+
+(defun simply-annotate--add-margin-text (overlay)
+  "Add margin annotation text to OVERLAY.
+Creates zero-width overlays for each line of the annotation box,
+extending below the annotated region up to the next visible annotation.
+When no next annotation exists, the full box is shown (bounded by
+`simply-annotate-inline-max-lines')."
+  (simply-annotate--cleanup-margin-overlays overlay)
+  (save-excursion
+    (let* ((start (overlay-start overlay))
+           (end (overlay-end overlay))
+           (start-line (line-number-at-pos start t))
+           (end-line (line-number-at-pos
+                      (if (and (> end start)
+                               (= (char-before end) ?\n))
+                          (1- end)
+                        end)
+                      t))
+           (region-lines (1+ (- end-line start-line)))
+           (next-ov (simply-annotate--next-visible-overlay overlay))
+           (available-lines (if next-ov
+                                (- (line-number-at-pos
+                                    (overlay-start next-ov) t)
+                                   start-line)
+                              most-positive-fixnum))
+           (margin-side (if (eq simply-annotate-inline-position 'margin-right)
+                            'right-margin
+                          'left-margin))
+           (box-lines (simply-annotate--margin-box-lines
+                       overlay region-lines available-lines))
+           (display-lines (length box-lines))
+           (aux-overlays nil))
+      (goto-char start)
+      (beginning-of-line)
+      (dotimes (_ display-lines)
+        (when (eobp) (cl-return))
+        (let* ((line (or (pop box-lines) ""))
+               (display-spec `((margin ,margin-side) ,line))
+               (str (propertize " " 'display display-spec))
+               (aux (make-overlay (point) (point))))
+          (overlay-put aux 'before-string str)
+          (overlay-put aux 'simply-annotate-margin t)
+          (push aux aux-overlays))
+        (forward-line 1))
+      (overlay-put overlay 'simply-annotate-margin-overlays aux-overlays))))
+
 (defun simply-annotate--refresh-overlay-display (overlay)
   "Refresh display properties of OVERLAY after a data change.
 Does a full display re-apply to update inline text."
@@ -1253,7 +1432,9 @@ out finer-grained annotations."
                (overlay-put overlay 'face 'simply-annotate-subtle-face)))))
         (simply-annotate--ensure-point-marker overlay)
         (when simply-annotate-inline
-          (simply-annotate--add-inline-text overlay))))
+          (if (memq simply-annotate-inline-position '(margin-left margin-right))
+              (simply-annotate--add-margin-text overlay)
+            (simply-annotate--add-inline-text overlay)))))
      (t
       (simply-annotate--cleanup-bracket-overlays overlay)
       (simply-annotate--cleanup-bar-overlays overlay)
@@ -1435,6 +1616,7 @@ Uses box-drawing characters (┏, ┃, ┗) on the left of the annotated region.
     (simply-annotate--cleanup-bracket-overlays overlay)
     (simply-annotate--cleanup-bar-overlays overlay)
     (simply-annotate--cleanup-bracket-text-overlays overlay)
+    (simply-annotate--cleanup-margin-overlays overlay)
     (overlay-put overlay 'face nil)
     (overlay-put overlay 'before-string nil)
     (overlay-put overlay 'after-string nil)
@@ -1446,6 +1628,14 @@ Uses box-drawing characters (┏, ┃, ┗) on the left of the annotated region.
     (with-current-buffer buf
       (when (and (boundp 'simply-annotate-mode) simply-annotate-mode)
         (simply-annotate--update-header)))))
+
+(defun simply-annotate--refresh-on-theme-change (&rest _)
+  "Refresh annotation display in all buffers after a theme change.
+Recalculates tint colors and reapplies display styles."
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (boundp 'simply-annotate-mode) simply-annotate-mode)
+        (simply-annotate--apply-display-to-all)))))
 
 (defun simply-annotate-cycle-display-style ()
   "Cycle through individual display styles.
@@ -1473,8 +1663,39 @@ relative to the annotated region, filtered to the current
 annotation level.  This layers on top of the current display style."
   (interactive)
   (setq simply-annotate-inline (not simply-annotate-inline))
+  (if simply-annotate-inline
+      (when (simply-annotate--margin-active-p)
+        (simply-annotate--margin-setup))
+    (simply-annotate--margin-cleanup))
   (simply-annotate-update-display-style)
   (message "Inline annotations %s" (if simply-annotate-inline "enabled" "disabled")))
+
+;;;###autoload
+(defun simply-annotate-cycle-inline-position ()
+  "Cycle `simply-annotate-inline-position' through the available options.
+Cycles after → above → margin-left → margin-right → after.
+When inline display is active, refreshes the display immediately.
+Handles margin setup/cleanup when crossing the overlay/margin boundary."
+  (interactive)
+  (let ((was-margin (simply-annotate--margin-active-p)))
+    (setq simply-annotate-inline-position
+          (pcase simply-annotate-inline-position
+            ('after 'above)
+            ('above 'margin-left)
+            ('margin-left 'margin-right)
+            ('margin-right 'after)
+            (_ 'after)))
+    (let ((now-margin (simply-annotate--margin-active-p)))
+      (cond
+       ((and was-margin (not now-margin))
+        (simply-annotate--margin-cleanup))
+       ((and now-margin simply-annotate-inline)
+        (simply-annotate--margin-setup))))
+    (when simply-annotate-inline
+      (simply-annotate-update-display-style))
+    (message "Inline position: %s%s"
+             simply-annotate-inline-position
+             (if simply-annotate-inline "" " (inline off)"))))
 
 ;;;###autoload
 (defun simply-annotate-toggle-hide-done ()
@@ -1594,6 +1815,7 @@ filters, and status-hide toggles take effect cleanly."
     (simply-annotate--cleanup-bracket-overlays ov)
     (simply-annotate--cleanup-bar-overlays ov)
     (simply-annotate--cleanup-bracket-text-overlays ov)
+    (simply-annotate--cleanup-margin-overlays ov)
     (overlay-put ov 'face nil)
     (overlay-put ov 'before-string nil)
     (overlay-put ov 'after-string nil)
@@ -1673,14 +1895,19 @@ START and END define the region, TEXT is the annotation content."
   (simply-annotate--cleanup-bracket-overlays overlay)
   (simply-annotate--cleanup-bar-overlays overlay)
   (simply-annotate--cleanup-bracket-text-overlays overlay)
+  (simply-annotate--cleanup-margin-overlays overlay)
   (setq simply-annotate-overlays (delq overlay simply-annotate-overlays))
-  (delete-overlay overlay))
+  (delete-overlay overlay)
+  (unless simply-annotate-overlays
+    (simply-annotate--margin-cleanup)))
 
 (defun simply-annotate--clear-all-overlays ()
   "Remove all annotation overlays from buffer."
+  (simply-annotate--margin-cleanup)
   (mapc #'simply-annotate--cleanup-bracket-overlays simply-annotate-overlays)
   (mapc #'simply-annotate--cleanup-bar-overlays simply-annotate-overlays)
   (mapc #'simply-annotate--cleanup-bracket-text-overlays simply-annotate-overlays)
+  (mapc #'simply-annotate--cleanup-margin-overlays simply-annotate-overlays)
   (mapc #'delete-overlay simply-annotate-overlays)
   (setq simply-annotate-overlays nil))
 
@@ -5415,6 +5642,7 @@ When called interactively:
     (define-key map (kbd "[") #'simply-annotate-cycle-tag-backward)
     (define-key map (kbd "]") #'simply-annotate-cycle-tag-forward)
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
+    (define-key map (kbd ";") #'simply-annotate-cycle-inline-position)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
     (define-key map (kbd "c") #'simply-annotate-toggle-inline-collapse)
@@ -5508,6 +5736,7 @@ bare `n`/`p` after invoking a navigation command.")
     (define-key map (kbd "n") #'simply-annotate-next)
     (define-key map (kbd "p") #'simply-annotate-previous)
     (define-key map (kbd "'") #'simply-annotate-cycle-display-style)
+    (define-key map (kbd ";") #'simply-annotate-cycle-inline-position)
     (define-key map (kbd "/") #'simply-annotate-toggle-inline)
     (define-key map (kbd "d") #'simply-annotate-toggle-hide-done)
     (define-key map (kbd "c") #'simply-annotate-toggle-inline-collapse)
@@ -5520,14 +5749,16 @@ When `repeat-mode' is enabled (Emacs 28.1+), invoking any of these
 commands once -- e.g. via your command-map prefix -- lets you
 continue with the bare keys shown here without re-typing the prefix:
 n/p to step between annotations, \\=' to cycle display style, / to
-toggle inline, d to toggle hide-done, c to collapse/expand a thread,
-[ and ] to cycle the tag filter, g to refresh.  The keys mirror their
+toggle inline, ; to cycle inline position, d to toggle hide-done,
+c to collapse/expand a thread, [ and ] to cycle the tag filter,
+g to refresh.  The keys mirror their
 `simply-annotate-command-map' bindings.  The `repeat-map' properties
 require `repeat-mode' (Emacs 28.1+) which is always available.")
 
 (dolist (cmd '(simply-annotate-next
                simply-annotate-previous
                simply-annotate-cycle-display-style
+               simply-annotate-cycle-inline-position
                simply-annotate-toggle-inline
                simply-annotate-toggle-hide-done
                simply-annotate-toggle-inline-collapse
@@ -5558,6 +5789,8 @@ require `repeat-mode' (Emacs 28.1+) which is always available.")
         (simply-annotate--load-annotations)
         (setq simply-annotate-current-tag-filter simply-annotate-default-tag-filter)
         (setq simply-annotate-inline simply-annotate-inline-default)
+        (when (simply-annotate--margin-active-p)
+          (simply-annotate--margin-setup))
         (simply-annotate--apply-tag-filter)
         (simply-annotate--setup-header)
         (simply-annotate--update-header)
@@ -5603,6 +5836,11 @@ database path(s)."
 
 ;; Register on find-file so files with existing annotations enable the mode
 (add-hook 'find-file-hook #'simply-annotate--maybe-enable-on-find-file)
+;; Refresh display when themes change so tint colors recalculate
+(when (boundp 'enable-theme-functions)
+  (add-hook 'enable-theme-functions #'simply-annotate--refresh-on-theme-change))
+(when (boundp 'disable-theme-functions)
+  (add-hook 'disable-theme-functions #'simply-annotate--refresh-on-theme-change))
 
 ;;; Buffer Revert
 
@@ -5895,6 +6133,7 @@ local bindings on the same prefix."
      ("F" "search by tag"     simply-annotate-search-by-tag)]
     ["Display"
      ("'" "cycle style"       simply-annotate-cycle-display-style :transient t)
+     (";" "cycle inline pos"  simply-annotate-cycle-inline-position :transient t)
      ("/" "toggle inline"     simply-annotate-toggle-inline :transient t)
      ("d" "toggle hide-done"  simply-annotate-toggle-hide-done :transient t)
      ("c" "collapse thread"   simply-annotate-toggle-inline-collapse :transient t)

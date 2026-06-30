@@ -53,6 +53,14 @@ Go to the directory level and now browse the 2 files
 
 * Whats New
 
+** <2026-06-30 Tue> *2.6.0*
+
+Margin-based inline annotation display.
+
+- *Margin inline display* -- Set `simply-annotate-inline-position` to `margin-left` or `margin-right` to show annotation boxes in the display margin, automatically sized to the annotated region.  Customise the margin width with `simply-annotate-margin-width`.  Pair with fringe, bracket, or other base styles for position markers.
+- *Cycle inline position* -- Press `<prefix> ;` to cycle between after, above, margin-left, and margin-right positions.  Available in the transient Display panel, the command map, and repeat-mode.
+- *Margin extension* -- Margin display now extends below the annotated region up to the next annotation, so large comments on a single line are no longer squeezed.
+
 ** <2026-06-29 Mon> *2.5.1*
 
 Fix transient menu rendering on newer transient versions.

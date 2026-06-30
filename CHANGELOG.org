@@ -11,6 +11,19 @@ project's main git repository: [[https://github.com/captainflasmr/simply-annotat
 
 * Versions
 
+** <2026-06-30 Tue> *2.6.0*
+
+Margin-based inline annotation display.
+
+*** Features
+
+- *Margin inline display* -- New `margin-left` and `margin-right` values for `simply-annotate-inline-position` render the annotation box in the Emacs display margin, one line per line of the annotated region.  Controlled by new `simply-annotate-margin-width` option (default 30 columns).  Extra annotation lines are truncated with "... +N lines"; annotations shorter than the region leave empty margin lines.  Ideal paired with a lightweight base style (fringe, bracket, subtile).
+- *Cycle inline position* -- New `simply-annotate-cycle-inline-position` (`<prefix> ;`) cycles through the four `simply-annotate-inline-position` values (after, above, margin-left, margin-right).  Bound to `;` in the command map, the repeat map, and the transient Display panel.  Handles margin setup/teardown automatically when crossing the overlay/margin boundary.
+
+*** Fixes
+
+- *Margin extension* -- The margin display now extends below the annotated region up to the next annotation, rather than capping at the region height.  A large comment on a single line is no longer squeezed into one margin line.  Truncation with "... +N lines" only occurs when the next annotation is nearby.
+
 ** <2026-06-29 Mon> *2.5.1*
 
 Fix transient menu rendering on newer transient versions.

@@ -1142,6 +1142,16 @@ The position is controlled by =simply-annotate-inline-position=:
     (apply #'+ (mapcar #'price items)))
   #+end_src
 
+- =margin-left= / =margin-right= :: The block is rendered in the Emacs
+  display margin (left or right), one margin line per line of the
+  annotated region.  The margin width is controlled by
+  =simply-annotate-margin-width= (default 30 columns).  Lines are
+  word-wrapped to the margin width; if the annotation has more lines
+  than the annotated region, the last line shows "... +N lines".  This
+  mode does not add any permanent marks in the text area, so it is
+  best paired with a base display style (fringe, bracket, bar) to
+  visually locate annotations in the buffer.
+
 Both inline blocks and the underlying display style (highlight, fringe,
 both, or subtle) are filtered to the active annotation level --- cycling
 levels with M-s [ updates which annotations are visible.
@@ -1149,6 +1159,8 @@ levels with M-s [ updates which annotations are visible.
 Long annotations are truncated after =simply-annotate-inline-max-lines=
 lines (default 20). Thread metadata (status, priority, comment count)
 appears in the header.
+
+The inline position can be cycled interactively with =<prefix> ;= (=simply-annotate-cycle-inline-position=), which steps through after, above, margin-left, and margin-right.  This key is available in the command map, the transient Display panel, and =repeat-mode=.
 
 - [[#Inline-Pointer][Inline Pointer]]
 - [[#Inline-Customisation][Inline Customisation]]
@@ -1197,7 +1209,8 @@ Customise the appearance with:
 - =simply-annotate-inline-face=: face for the annotation body text
 - =simply-annotate-inline-border-face=: face for the box-drawing border
 - =simply-annotate-inline-max-lines=: maximum lines before truncation
-- =simply-annotate-inline-position=: ='after= or ='above=
+- =simply-annotate-inline-position=: ='after=, ='above=, ='margin-left=, or ='margin-right=
+- =simply-annotate-margin-width=: display margin width in columns (default 30)
 - =simply-annotate-inline-pointer-after=: pointer string for ='after=
   position
 - =simply-annotate-inline-pointer-above=: pointer string for ='above=
