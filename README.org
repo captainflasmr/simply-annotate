@@ -25,7 +25,7 @@ The main functional aspects that I felt were important to me that generally diff
 - Lightweight (if possible <1000 lines - [UPDATE], no its not possible, lets try <2000 lines!)
 - Multi-purpose key to show/edit/toggle annotations
 - Dedicated annotation buffer that can pop in and out
-- Quickly step through annotations with =M-n= and =M-p=
+- Quickly step through annotations (=M-s n= / =M-s p=, or bind =M-n= / =M-p= in your config)
 - Buffer summary of annotations in grep-mode format
 - Quickly browse through all annotated files using completing-read
 - Smart action command that adapts based on context
@@ -94,7 +94,7 @@ Requires *Emacs 28.1* or later.  No external dependencies.
 
 Simply Annotate provides two keymaps:
 
-- =simply-annotate-mode-map= -- The minor mode keymap, intentionally minimal.  Only binds =M-n= (next annotation) and =M-p= (previous annotation) so it won't conflict with other packages.
+- =simply-annotate-mode-map= -- The minor mode keymap, intentionally minimal.  It does not install global =M-n= / =M-p= bindings (to avoid conflicts with other packages).  Navigation is via the command-map prefix (e.g. =M-s n= / =M-s p=) or =repeat-mode=.  Users who prefer =M-n= / =M-p= can add them to the mode map in their config (see below).
 - =simply-annotate-command-map= -- The main command keymap with short single-key bindings (=j=, =r=, =n=, =e=, etc.).  You bind this to a prefix key of your choice.
 
 *** Recommended setup (C-c a prefix)
@@ -121,6 +121,13 @@ If you prefer =M-s= as your prefix, use =:demand t= with =global-set-key= in =:c
 
 =:demand t= ensures the package loads immediately so the prefix is available from startup.
 
+To add back =M-n= / =M-p= navigation bindings (not installed by default):
+
+#+begin_src emacs-lisp
+(define-key simply-annotate-mode-map (kbd "M-n") #'simply-annotate-next)
+(define-key simply-annotate-mode-map (kbd "M-p") #'simply-annotate-previous)
+#+end_src
+
 *Note:* Do not use =:bind-keymap= for the =M-s= prefix.  =:bind-keymap= defers loading by creating an autoload proxy -- a temporary non-prefix command that loads the package on first keypress.  This works for free keys like =C-c a=, but =M-s= is already Emacs's =search-map= prefix.  The proxy replaces =search-map= with a non-prefix command, breaking anything else that tries to bind under =M-s=.  Using =global-set-key= in =:config= binds directly to the real keymap after the package has loaded.
 
 ** Manual Installation
@@ -144,7 +151,7 @@ In the examples below, =<prefix>= refers to your chosen prefix key (e.g. =C-c a=
 2. Enable annotation mode: =M-x simply-annotate-mode=, or if =find-file-hook= is configured it will be autoloaded
 3. Select/mark text and press =<prefix> j= to create your first annotation
 4. Create some more annotations
-5. Navigate with =M-n= (next) and =M-p= (previous)
+5. Navigate with =<prefix> n= (next) and =<prefix> p= (previous)
 6. Add replies: Press =<prefix> r= on any annotation to reply
 7. Set status: Press =<prefix> s= to track progress (open/resolved/etc.)
 8. Advanced editing: Press =<prefix> e= to edit annotation data structure directly
@@ -299,8 +306,8 @@ When =simply-annotate-mode= is active:
 
 | Key Binding  | Action                       |
 |--------------+------------------------------|
-| =M-n=        | Jump to next annotation      |
-| =M-p=        | Jump to previous annotation  |
+| =<prefix> n= | Jump to next annotation      |
+| =<prefix> p= | Jump to previous annotation  |
 | =<prefix> j= | Smart action (context-aware) |
 
 ** Managing Annotations
@@ -360,12 +367,17 @@ Export your annotation threads to org-mode files for further processing:
 
 ** Mode Map (=simply-annotate-mode-map=)
 
-Always active when =simply-annotate-mode= is enabled:
+Always active when =simply-annotate-mode= is enabled.  Intentionally
+minimal: no default keybindings are installed.  Use the command-map
+prefix (e.g. =M-s n= / =M-s p=) for navigation, or enable =repeat-mode=
+to use bare =n= / =p= after invoking a navigation command.
 
-| Key Binding | Command                    | Description                 |
-|-------------+----------------------------+-----------------------------|
-| =M-n=       | =simply-annotate-next=     | Jump to next annotation     |
-| =M-p=       | =simply-annotate-previous= | Jump to previous annotation |
+If you prefer =M-n= and =M-p=, add them yourself:
+
+#+begin_src emacs-lisp
+(define-key simply-annotate-mode-map (kbd "M-n") #'simply-annotate-next)
+(define-key simply-annotate-mode-map (kbd "M-p") #'simply-annotate-previous)
+#+end_src
 
 ** Command Map (=simply-annotate-command-map=)
 
